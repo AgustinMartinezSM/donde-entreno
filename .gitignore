@@ -1,0 +1,80 @@
+# =========================
+# SISTEMA OPERATIVO
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDEs / EDITORES
+# =========================
+.idea/
+*.iml
+.vscode/
+
+# =========================
+# JAVA / SPRING BOOT / MAVEN
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven Wrapper sí puede subirse,
+# por eso NO ignoramos .mvn/ ni mvnw ni mvnw.cmd
+
+# =========================
+# LOGS
+# =========================
+*.log
+logs/
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# SPRING CONFIG SENSIBLE
+# =========================
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+application-prod.properties
+application-prod.yml
+
+# OJO:
+# application.properties se puede subir solo si NO tiene contraseñas reales.
+
+# =========================
+# NODE / NEXT.JS
+# =========================
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# =========================
+# NEXT / VERCEL
+# =========================
+.vercel/
+
+# =========================
+# TYPESCRIPT
+# =========================
+*.tsbuildinfo
+
+# =========================
+# TEST / COVERAGE
+# =========================
+coverage/
+
+# =========================
+# ARCHIVOS TEMPORALES
+# =========================
+tmp/
+temp/

@@ -1,5 +1,21 @@
 import Link from "next/link";
 import { Header } from "../../components/layout/Header";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  /*
+    Metadata específica para la página provisoria de publicación.
+    Más adelante, cuando esta página tenga formulario real, podemos ajustarla.
+  */
+  title: "Publicar actividad",
+  description:
+    "Publicá tu actividad deportiva en DondeEntreno. Próximamente disponible para clubes, profesores, gimnasios y espacios deportivos.",
+  openGraph: {
+    title: "Publicar actividad - DondeEntreno",
+    description:
+      "Próximamente vas a poder publicar actividades deportivas en DondeEntreno.",
+  },
+};
 
 export default function PublicarPage() {
   return (

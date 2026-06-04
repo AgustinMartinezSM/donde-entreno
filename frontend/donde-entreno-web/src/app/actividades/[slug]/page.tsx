@@ -4,12 +4,52 @@ import { obtenerDetalleActividad } from "../../../services/actividadService";
     import { ContactButton } from "../../../components/actividad/ContactButton";
 import { API_BASE_URL } from "../../../lib/apiConfig";
 import { ActivityImage } from "../../../components/actividad/ActivityImage";
+import type { Metadata } from "next";
 
 type ActividadDetallePageProps = {
   params: Promise<{
     slug: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: ActividadDetallePageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const actividad = await obtenerDetalleActividad(slug);
+
+    const titulo = actividad.titulo || "Detalle de actividad";
+
+    const descripcion =
+      actividad.descripcion ||
+      `Conocé más información sobre ${actividad.deporteNombre || "esta actividad"} en DondeEntreno.`;
+
+    return {
+      /*
+        Como en layout.tsx usamos template "%s | DondeEntreno",
+        este title se va a ver como:
+        "Boxeo recreativo para adultos principiantes | DondeEntreno"
+      */
+      title: titulo,
+      description: descripcion,
+      openGraph: {
+        title: `${titulo} - DondeEntreno`,
+        description: descripcion,
+        type: "article",
+      },
+    };
+  } catch (error) {
+    console.error("Error al generar metadata de actividad:", error);
+
+    return {
+      title: "Detalle de actividad",
+      description:
+        "Conocé más información sobre una actividad deportiva disponible en DondeEntreno.",
+    };
+  }
+}
 
 export default async function ActividadDetallePage({
   params,

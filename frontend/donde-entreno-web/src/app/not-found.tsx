@@ -1,5 +1,16 @@
 import Link from "next/link";
 import { Header } from "../components/layout/Header";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  /*
+    Metadata para rutas inexistentes.
+    Sirve para que la pestaña y los datos básicos no queden genéricos.
+  */
+  title: "Página no encontrada",
+  description:
+    "La página que buscás no existe o todavía no está disponible en DondeEntreno.",
+};
 
 export default function NotFound() {
   return (

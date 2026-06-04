@@ -7,6 +7,23 @@ import { Pagination } from "../../components/explorar/Pagination";
 import { SortSelect } from "../../components/explorar/SortSelect";
 import { FiltersPanel } from "../../components/explorar/FiltersPanel";
 import { obtenerOpcionesFiltros } from "../../services/filtrosService";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  /*
+    Metadata específica para la página de exploración.
+    En el navegador se va a ver:
+    "Explorar actividades | DondeEntreno"
+  */
+  title: "Explorar actividades",
+  description:
+    "Buscá y compará actividades deportivas, clubes, gimnasios y profesores disponibles en tu ciudad.",
+  openGraph: {
+    title: "Explorar actividades - DondeEntreno",
+    description:
+      "Encontrá deportes, clubes, gimnasios, profesores y actividades deportivas cerca tuyo.",
+  },
+};
 
 type ExplorarPageProps = {
   searchParams: Promise<{

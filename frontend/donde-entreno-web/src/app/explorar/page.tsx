@@ -1,0 +1,167 @@
+import type { Actividad } from "../../types/actividad";
+import { Header } from "../../components/layout/Header";
+import { ActivityList } from "../../components/explorar/ActivityList";
+import { buscarActividades } from "../../services/actividadService";
+import { SearchBar } from "../../components/home/SearchBar";
+import { Pagination } from "../../components/explorar/Pagination";
+import { SortSelect } from "../../components/explorar/SortSelect";
+import { FiltersPanel } from "../../components/explorar/FiltersPanel";
+import { obtenerOpcionesFiltros } from "../../services/filtrosService";
+
+type ExplorarPageProps = {
+  searchParams: Promise<{
+    texto?: string;
+    page?: string;
+    orden?: string;
+
+    ciudadId?: string;
+    barrioId?: string;
+    deporteSlug?: string;
+    nivel?: string;
+    modalidad?: string;
+  }>;
+};
+
+export default async function ExplorarPage({ searchParams }: ExplorarPageProps) {
+  /*
+    En Next.js 16, searchParams puede venir como Promise.
+    Por eso usamos await para leer los parámetros de la URL.
+  */
+  const params = await searchParams;
+
+  /*
+    Leemos el texto que venga en la URL.
+    Ejemplo:
+    /explorar?texto=boxeo
+  */
+  const textoBuscado = params.texto || "";
+  const paginaActual = params.page ? Number(params.page) : 0;
+  const ordenActual = params.orden || "";
+
+  const ciudadIdActual = params.ciudadId || "";
+  const barrioIdActual = params.barrioId || "";
+  const deporteSlugActual = params.deporteSlug || "";
+  const nivelActual = params.nivel || "";
+  const modalidadActual = params.modalidad || "";
+
+  let actividades: Actividad[] = [];
+  let totalElementos = 0;
+  let totalPaginas = 0;
+
+  let filtros = {
+    categorias: [],
+    deportes: [],
+    ciudades: [],
+    barrios: [],
+    niveles: [],
+    modalidades: [],
+    ordenes: [],
+  };
+
+  try {
+    /*
+      Pedimos actividades al backend usando el texto de búsqueda.
+      Si textoBuscado está vacío, trae actividades sin filtrar.
+    */
+    const [respuestaActividades, respuestaFiltros] = await Promise.all([
+      buscarActividades({
+        texto: textoBuscado,
+        page: paginaActual,
+        size: 6,
+        orden: ordenActual,
+
+        ciudadId: ciudadIdActual ? Number(ciudadIdActual) : undefined,
+        barrioId: barrioIdActual ? Number(barrioIdActual) : undefined,
+        deporteSlug: deporteSlugActual || undefined,
+        nivel: nivelActual || undefined,
+        modalidad: modalidadActual || undefined,
+      }),
+      obtenerOpcionesFiltros(),
+    ]);
+
+    actividades = respuestaActividades.contenido;
+    totalElementos = respuestaActividades.totalElementos;
+    totalPaginas = respuestaActividades.totalPaginas;
+    filtros = respuestaFiltros;
+
+  } catch (error) {
+    console.error("Error al cargar actividades en explorar:", error);
+  }
+
+    const descripcionResultados = textoBuscado
+      ? totalElementos === 1
+        ? `1 actividad encontrada relacionada con "${textoBuscado}".`
+        : `${totalElementos} actividades encontradas relacionadas con "${textoBuscado}".`
+      : totalElementos === 1
+        ? "1 actividad encontrada en DondeEntreno."
+        : `${totalElementos} actividades encontradas en DondeEntreno.`;
+
+  return (
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+      <section className="mx-auto w-full max-w-6xl px-4 py-6">
+        <Header />
+
+        <div className="py-8 sm:py-10">
+          <div className="mb-8">
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+              Explorar actividades
+            </p>
+
+            <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">              {textoBuscado
+                ? `Resultados para "${textoBuscado}"`
+                : "Todas las actividades"}
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">              Buscá y compará actividades deportivas disponibles en tu ciudad.
+            </p>
+
+            <div className="max-w-2xl">
+              <SearchBar valorInicial={textoBuscado} />
+            </div>
+
+            <SortSelect
+              textoBuscado={textoBuscado}
+              ordenActual={ordenActual}
+              ciudadIdActual={ciudadIdActual}
+              barrioIdActual={barrioIdActual}
+              deporteSlugActual={deporteSlugActual}
+              nivelActual={nivelActual}
+              modalidadActual={modalidadActual}
+            />
+
+            <FiltersPanel
+              filtros={filtros}
+              textoBuscado={textoBuscado}
+              ciudadIdActual={ciudadIdActual}
+              barrioIdActual={barrioIdActual}
+              deporteSlugActual={deporteSlugActual}
+              nivelActual={nivelActual}
+              modalidadActual={modalidadActual}
+              ordenActual={ordenActual}
+            />
+
+          </div>
+
+          <ActivityList
+            actividades={actividades}
+            titulo="Resultados encontrados"
+            descripcion={descripcionResultados}
+          />
+
+          <Pagination
+            paginaActual={paginaActual}
+            totalPaginas={totalPaginas}
+            textoBuscado={textoBuscado}
+            ordenActual={ordenActual}
+            ciudadIdActual={ciudadIdActual}
+            barrioIdActual={barrioIdActual}
+            deporteSlugActual={deporteSlugActual}
+            nivelActual={nivelActual}
+            modalidadActual={modalidadActual}
+          />
+
+        </div>
+      </section>
+    </main>
+  );
+}

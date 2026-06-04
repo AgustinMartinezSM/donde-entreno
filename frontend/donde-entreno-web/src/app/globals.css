@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  /* Marca */
+  --color-primary: #0F3D5E;
+  --color-secondary: #2EB872;
+  --color-accent: #4FB3D9;
+
+  /* Fondos */
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+
+  /* Texto */
+  --color-text: #102A43;
+  --color-muted: #627D98;
+
+  /* Bordes */
+  --color-border: #D9E2EC;
+
+  /* Radios */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Sombras */
+  --shadow-card: 0 8px 24px rgba(15, 61, 94, 0.08);
+  --shadow-button: 0 6px 16px rgba(15, 61, 94, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}

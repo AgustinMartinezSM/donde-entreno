@@ -45,18 +45,31 @@ export function FiltersPanel({
     nivelActual ||
     modalidadActual;
 
-  const [filtrosAbiertos, setFiltrosAbiertos] = useState(Boolean(hayFiltrosActivos));
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(
+    Boolean(hayFiltrosActivos),
+  );
 
   function aplicarFiltros() {
     const params = new URLSearchParams();
 
     /*
-      Conservamos búsqueda y orden si ya existían.
+      UX importante:
+      Si el usuario selecciona un deporte desde el filtro, limpiamos la búsqueda
+      escrita para evitar combinaciones confusas como:
+
+      /explorar?texto=jiu+jitsu&deporteSlug=boxeo
+
+      Eso buscaría "jiu jitsu" dentro de Boxeo y probablemente no mostraría nada.
+      Para el usuario común es más claro:
+      selecciono Boxeo -> veo Boxeo.
     */
-    if (textoBuscado) {
+    if (textoBuscado && !deporteSlug) {
       params.set("texto", textoBuscado);
     }
 
+    /*
+      Conservamos el orden si ya existía.
+    */
     if (ordenActual) {
       params.set("orden", ordenActual);
     }

@@ -1,28 +1,28 @@
-"use client";
-
-import { useState } from "react";
+import Image from "next/image";
 
 type ActivityImageProps = {
   src?: string | null;
   alt: string;
-  fallbackText: string;
+  fallbackText?: string;
   heightClassName?: string;
 };
 
 export function ActivityImage({
   src,
   alt,
-  fallbackText,
-  heightClassName = "h-56",
+  fallbackText = "Actividad",
+  heightClassName = "h-44",
 }: ActivityImageProps) {
-  const [imagenConError, setImagenConError] = useState(false);
-
-  if (!src || imagenConError) {
+  /*
+    Si todavía no tenemos una imagen real desde el backend,
+    mostramos un bloque visual prolijo con texto.
+  */
+  if (!src) {
     return (
       <div
-        className={`flex ${heightClassName} items-center justify-center rounded-[var(--radius-lg)] bg-[#E6F7EF]`}
+        className={`flex ${heightClassName} items-center justify-center rounded-[var(--radius-lg)] bg-gradient-to-br from-[#E8F6FB] to-[#E6F7EF] px-4 text-center`}
       >
-        <span className="text-sm font-bold text-[#167A4A]">
+        <span className="text-sm font-extrabold uppercase tracking-[0.18em] text-[var(--color-primary)]">
           {fallbackText}
         </span>
       </div>
@@ -31,13 +31,14 @@ export function ActivityImage({
 
   return (
     <div
-      className={`${heightClassName} overflow-hidden rounded-[var(--radius-lg)] bg-[#E6F7EF]`}
+      className={`relative overflow-hidden rounded-[var(--radius-lg)] ${heightClassName}`}
     >
-      <img
+      <Image
         src={src}
         alt={alt}
-        className="h-full w-full object-cover"
-        onError={() => setImagenConError(true)}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+        className="object-cover"
       />
     </div>
   );

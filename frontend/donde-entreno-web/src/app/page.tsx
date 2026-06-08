@@ -6,6 +6,8 @@ import { ActivityList } from "../components/explorar/ActivityList";
 import { ErrorState } from "../components/feedback/ErrorState";
 import { buscarActividades } from "../services/actividadService";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   /*
     Metadata específica de la Home.

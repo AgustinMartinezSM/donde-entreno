@@ -1,5 +1,4 @@
 import { API_BASE_URL } from "../lib/apiConfig";
-import type { ActividadDetalle, PaginaActividades } from "../types/actividad";
 import type {
   ActividadDetalle,
   HorarioActividad,

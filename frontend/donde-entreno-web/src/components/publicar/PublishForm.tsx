@@ -214,6 +214,121 @@ export function PublishForm() {
           />
         </div>
 
+        {/* Dirección opcional */}
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <label
+            htmlFor="direccion"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Dirección
+          </label>
+
+          <input
+            id="direccion"
+            name="direccion"
+            type="text"
+            placeholder="Ej: Av. Independencia 1234"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+        </div>
+
+        {/* Precio de referencia opcional */}
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="precioReferencia"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Precio de referencia
+          </label>
+
+          <input
+            id="precioReferencia"
+            name="precioReferencia"
+            type="number"
+            min="0"
+            placeholder="Ej: 18000"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+        </div>
+
+        {/* Edad mínima opcional */}
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="edadMinima"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Edad mínima
+          </label>
+
+          <input
+            id="edadMinima"
+            name="edadMinima"
+            type="number"
+            min="0"
+            placeholder="Ej: 18"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+        </div>
+
+        {/* Instagram opcional */}
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="instagram"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Instagram
+          </label>
+
+          <input
+            id="instagram"
+            name="instagram"
+            type="text"
+            placeholder="Ej: @dondeentreno"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+        </div>
+
+        {/* Email opcional */}
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="email"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Email
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Ej: contacto@club.com"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+        </div>
+
+        {/* Horarios iniciales opcionales */}
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <label
+            htmlFor="horarios"
+            className="text-sm font-bold text-[var(--color-primary)]"
+          >
+            Horarios
+          </label>
+
+          <textarea
+            id="horarios"
+            name="horarios"
+            rows={3}
+            placeholder="Ej: Lunes y miércoles de 18:00 a 19:30. Viernes de 19:00 a 20:30."
+            className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm outline-none focus:border-[var(--color-accent)]"
+          />
+
+          <p className="text-xs leading-5 text-[var(--color-muted)]">
+            Por ahora cargamos los horarios como texto libre. Más adelante
+            podemos convertirlos en horarios estructurados por día.
+          </p>
+        </div>
+
         {/* Descripción */}
         <div className="flex flex-col gap-2 sm:col-span-2">
           <label

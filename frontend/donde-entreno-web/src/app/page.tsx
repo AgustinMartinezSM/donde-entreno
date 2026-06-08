@@ -1,9 +1,10 @@
+import type { Metadata } from "next";
 import type { Actividad } from "../types/actividad";
 import { Header } from "../components/layout/Header";
 import { HomeHero } from "../components/home/HomeHero";
 import { ActivityList } from "../components/explorar/ActivityList";
+import { ErrorState } from "../components/feedback/ErrorState";
 import { buscarActividades } from "../services/actividadService";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   /*
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   let actividades: Actividad[] = [];
+  let huboError = false;
 
   try {
     // Pedimos las primeras 6 actividades al backend.
@@ -34,8 +36,11 @@ export default async function Home() {
 
     actividades = respuesta.contenido;
   } catch (error) {
-    // Si el backend está apagado o falla la petición,
-    // dejamos la lista vacía para que la home no explote.
+    /*
+      Si el backend está apagado o falla la petición,
+      marcamos que hubo error para mostrar un mensaje prolijo.
+    */
+    huboError = true;
     console.error("Error al cargar actividades:", error);
   }
 
@@ -47,7 +52,18 @@ export default async function Home() {
         <div className="py-16">
           <HomeHero />
 
-          <ActivityList actividades={actividades} />
+          {huboError ? (
+            <div className="mt-12">
+              <ErrorState
+                titulo="No pudimos cargar las actividades"
+                descripcion="Puede que el backend esté apagado o que haya un problema temporal con la conexión."
+                mostrarBotonInicio={false}
+                mostrarBotonExplorar
+              />
+            </div>
+          ) : (
+            <ActivityList actividades={actividades} />
+          )}
         </div>
       </section>
     </main>

@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import type { Actividad } from "../../types/actividad";
+import type { FiltrosOpciones } from "../../types/filtros";
+
 import { Header } from "../../components/layout/Header";
 import { ActivityList } from "../../components/explorar/ActivityList";
 import { buscarActividades } from "../../services/actividadService";
@@ -7,7 +10,7 @@ import { Pagination } from "../../components/explorar/Pagination";
 import { SortSelect } from "../../components/explorar/SortSelect";
 import { FiltersPanel } from "../../components/explorar/FiltersPanel";
 import { obtenerOpcionesFiltros } from "../../services/filtrosService";
-import type { Metadata } from "next";
+import { ErrorState } from "../../components/feedback/ErrorState";
 
 export const metadata: Metadata = {
   /*
@@ -47,9 +50,11 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   const params = await searchParams;
 
   /*
-    Leemos el texto que venga en la URL.
-    Ejemplo:
+    Leemos los parámetros que vengan en la URL.
+    Ejemplos:
     /explorar?texto=boxeo
+    /explorar?deporteSlug=jiu-jitsu&page=0
+    /explorar?orden=precio_asc&page=0
   */
   const textoBuscado = params.texto || "";
   const paginaActual = params.page ? Number(params.page) : 0;
@@ -64,8 +69,13 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   let actividades: Actividad[] = [];
   let totalElementos = 0;
   let totalPaginas = 0;
+  let huboError = false;
 
-  let filtros = {
+  /*
+    Opciones iniciales vacías para evitar que la página explote
+    si todavía no llegaron los filtros o si el backend falla.
+  */
+  let filtros: FiltrosOpciones = {
     categorias: [],
     deportes: [],
     ciudades: [],
@@ -77,7 +87,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
   try {
     /*
-      Pedimos actividades al backend usando el texto de búsqueda.
+      Pedimos actividades y opciones de filtros al backend al mismo tiempo.
       Si textoBuscado está vacío, trae actividades sin filtrar.
     */
     const [respuestaActividades, respuestaFiltros] = await Promise.all([
@@ -100,18 +110,22 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
     totalElementos = respuestaActividades.totalElementos;
     totalPaginas = respuestaActividades.totalPaginas;
     filtros = respuestaFiltros;
-
   } catch (error) {
-    console.error("Error al cargar actividades en explorar:", error);
+    /*
+      Si el backend está apagado o falla alguna petición,
+      mostramos un estado de error prolijo.
+    */
+    huboError = true;
+    console.error("Error al cargar actividades o filtros:", error);
   }
 
-    const descripcionResultados = textoBuscado
-      ? totalElementos === 1
-        ? `1 actividad encontrada relacionada con "${textoBuscado}".`
-        : `${totalElementos} actividades encontradas relacionadas con "${textoBuscado}".`
-      : totalElementos === 1
-        ? "1 actividad encontrada en DondeEntreno."
-        : `${totalElementos} actividades encontradas en DondeEntreno.`;
+  const descripcionResultados = textoBuscado
+    ? totalElementos === 1
+      ? `1 actividad encontrada relacionada con "${textoBuscado}".`
+      : `${totalElementos} actividades encontradas relacionadas con "${textoBuscado}".`
+    : totalElementos === 1
+      ? "1 actividad encontrada en DondeEntreno."
+      : `${totalElementos} actividades encontradas en DondeEntreno.`;
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -124,59 +138,77 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               Explorar actividades
             </p>
 
-            <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">              {textoBuscado
+            <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+              {textoBuscado
                 ? `Resultados para "${textoBuscado}"`
                 : "Todas las actividades"}
             </h1>
 
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">              Buscá y compará actividades deportivas disponibles en tu ciudad.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
+              Buscá y compará actividades deportivas disponibles en tu ciudad.
             </p>
 
+            {/* Dejamos el buscador visible aunque haya error */}
             <div className="max-w-2xl">
               <SearchBar valorInicial={textoBuscado} />
             </div>
 
-            <SortSelect
-              textoBuscado={textoBuscado}
-              ordenActual={ordenActual}
-              ciudadIdActual={ciudadIdActual}
-              barrioIdActual={barrioIdActual}
-              deporteSlugActual={deporteSlugActual}
-              nivelActual={nivelActual}
-              modalidadActual={modalidadActual}
-            />
+            {huboError ? (
+              <div className="mt-8">
+                <ErrorState
+                  titulo="No pudimos cargar las actividades"
+                  descripcion="Puede que el backend esté apagado o que haya un problema temporal al obtener los filtros y resultados."
+                  mostrarBotonInicio
+                  mostrarBotonExplorar={false}
+                />
+              </div>
+            ) : (
+              <>
+                <SortSelect
+                  textoBuscado={textoBuscado}
+                  ordenActual={ordenActual}
+                  ciudadIdActual={ciudadIdActual}
+                  barrioIdActual={barrioIdActual}
+                  deporteSlugActual={deporteSlugActual}
+                  nivelActual={nivelActual}
+                  modalidadActual={modalidadActual}
+                />
 
-            <FiltersPanel
-              filtros={filtros}
-              textoBuscado={textoBuscado}
-              ciudadIdActual={ciudadIdActual}
-              barrioIdActual={barrioIdActual}
-              deporteSlugActual={deporteSlugActual}
-              nivelActual={nivelActual}
-              modalidadActual={modalidadActual}
-              ordenActual={ordenActual}
-            />
-
+                <FiltersPanel
+                  filtros={filtros}
+                  textoBuscado={textoBuscado}
+                  ciudadIdActual={ciudadIdActual}
+                  barrioIdActual={barrioIdActual}
+                  deporteSlugActual={deporteSlugActual}
+                  nivelActual={nivelActual}
+                  modalidadActual={modalidadActual}
+                  ordenActual={ordenActual}
+                />
+              </>
+            )}
           </div>
 
-          <ActivityList
-            actividades={actividades}
-            titulo="Resultados encontrados"
-            descripcion={descripcionResultados}
-          />
+          {!huboError && (
+            <>
+              <ActivityList
+                actividades={actividades}
+                titulo="Resultados encontrados"
+                descripcion={descripcionResultados}
+              />
 
-          <Pagination
-            paginaActual={paginaActual}
-            totalPaginas={totalPaginas}
-            textoBuscado={textoBuscado}
-            ordenActual={ordenActual}
-            ciudadIdActual={ciudadIdActual}
-            barrioIdActual={barrioIdActual}
-            deporteSlugActual={deporteSlugActual}
-            nivelActual={nivelActual}
-            modalidadActual={modalidadActual}
-          />
-
+              <Pagination
+                paginaActual={paginaActual}
+                totalPaginas={totalPaginas}
+                textoBuscado={textoBuscado}
+                ordenActual={ordenActual}
+                ciudadIdActual={ciudadIdActual}
+                barrioIdActual={barrioIdActual}
+                deporteSlugActual={deporteSlugActual}
+                nivelActual={nivelActual}
+                modalidadActual={modalidadActual}
+              />
+            </>
+          )}
         </div>
       </section>
     </main>

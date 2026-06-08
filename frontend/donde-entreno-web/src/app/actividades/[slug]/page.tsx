@@ -5,6 +5,7 @@ import { obtenerDetalleActividad } from "../../../services/actividadService";
 import { API_BASE_URL } from "../../../lib/apiConfig";
 import { ActivityImage } from "../../../components/actividad/ActivityImage";
 import type { Metadata } from "next";
+import { ErrorState } from "../../../components/feedback/ErrorState";
 
 type ActividadDetallePageProps = {
   params: Promise<{
@@ -41,13 +42,24 @@ export async function generateMetadata({
       },
     };
   } catch (error) {
-    console.error("Error al generar metadata de actividad:", error);
+    console.error("Error al cargar detalle de actividad:", error);
 
-    return {
-      title: "Detalle de actividad",
-      description:
-        "Conocé más información sobre una actividad deportiva disponible en DondeEntreno.",
-    };
+    return (
+      <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+        <section className="mx-auto w-full max-w-6xl px-4 py-6">
+          <Header />
+
+          <div className="py-10">
+            <ErrorState
+              titulo="No pudimos cargar esta actividad"
+              descripcion="Puede que el backend esté apagado, que la actividad no exista o que haya un problema temporal con la conexión."
+              mostrarBotonInicio
+              mostrarBotonExplorar
+            />
+          </div>
+        </section>
+      </main>
+    );
   }
 }
 

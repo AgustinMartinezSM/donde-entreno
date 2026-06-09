@@ -263,3 +263,62 @@ Se ejecutó una validación manual del MVP público con backend, frontend y base
 ### Estado
 
 El MVP público queda validado manualmente y listo para la próxima etapa de preparación para deploy.
+
+
+# Testing manual - DondeEntreno
+
+Este documento registra las pruebas manuales realizadas sobre el MVP de DondeEntreno.
+
+## Entornos probados
+
+```text
+Frontend local: http://localhost:3000
+Backend local: http://localhost:8080
+Frontend producción: https://donde-entreno-web.vercel.app
+Backend producción: https://donde-entreno-api.onrender.com
+Checklist general
+Frontend
+ La Home carga correctamente.
+ El logo DondeEntreno se visualiza correctamente.
+ El buscador se muestra correctamente.
+ Las actividades destacadas se cargan.
+ Las cards muestran título, deporte, ubicación y botón de detalle.
+ El botón "Ver detalle" navega correctamente.
+ La página Explorar carga correctamente.
+ Los filtros se muestran correctamente.
+ El ordenamiento funciona.
+ La paginación funciona.
+ El botón de limpiar filtros funciona.
+ La página Publicar carga correctamente.
+ La página 404 personalizada funciona.
+ El footer se visualiza correctamente.
+ El diseño se adapta correctamente a mobile.
+Backend
+ GET /api/actividades devuelve actividades.
+ GET /api/actividades/{slug} devuelve una actividad existente.
+ GET /api/actividades/{slug}/detalle devuelve el detalle.
+ GET /api/actividades/{slug}/horarios devuelve horarios.
+ GET /api/actividades/{slug}/imagenes devuelve imágenes.
+ GET /api/filtros/opciones devuelve opciones para filtros.
+ Los endpoints de catálogos responden correctamente.
+Base de datos
+ Las tablas principales existen.
+ Los datos iniciales fueron cargados.
+ Los datos de prueba fueron cargados.
+ Las actividades publicadas aparecen correctamente.
+ Los filtros tienen datos disponibles.
+Integración
+ El frontend local consume correctamente el backend local.
+ El frontend online consume correctamente el backend online.
+ El backend online se conecta correctamente a Supabase.
+ CORS permite peticiones desde Vercel.
+ Las rutas dinámicas de detalle funcionan en producción.
+Pruebas de rutas principales
+/
+ /explorar
+ /publicar
+ /actividades/boxeo-recreativo-adultos-principiantes
+ /actividades/actividad-inexistente
+ /ruta-inexistente
+Resultado actual
+MVP full stack desplegado y funcionando correctamente.

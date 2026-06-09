@@ -163,3 +163,49 @@ Orden de ejecución:
 02_seed_data.sql
 03_seed_test_data.sql
 04_test_queries.sql
+
+## Deploy actual del MVP
+
+El MVP de DondeEntreno ya se encuentra desplegado con la siguiente arquitectura:
+
+```text
+Frontend: Vercel
+Backend: Render
+Base de datos: Supabase PostgreSQL
+Repositorio: GitHub
+URLs principales
+Frontend:
+https://donde-entreno-web.vercel.app
+
+Backend:
+https://donde-entreno-api.onrender.com
+
+Endpoint principal:
+https://donde-entreno-api.onrender.com/api/actividades
+Variables de entorno usadas
+Frontend - Vercel
+NEXT_PUBLIC_API_URL=https://donde-entreno-api.onrender.com
+Backend - Render
+SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:5432/postgres
+SPRING_DATASOURCE_USERNAME=postgres.qqdpbmyyadlwatydyhis
+SPRING_DATASOURCE_PASSWORD=********
+APP_CORS_ALLOWED_ORIGINS=https://donde-entreno-web.vercel.app
+PORT=8080
+Estado del deploy
+Supabase PostgreSQL online: OK
+Scripts SQL ejecutados: OK
+Backend Spring Boot en Render: OK
+Frontend Next.js en Vercel: OK
+Conexión frontend-backend: OK
+CORS configurado para frontend online: OK
+Notas
+
+El backend está desplegado en el plan gratuito de Render, por lo que puede entrar en reposo después de períodos de inactividad. La primera request puede tardar algunos segundos más en responder.
+
+El frontend está desplegado en Vercel usando el directorio:
+
+frontend/donde-entreno-web
+
+El backend está desplegado en Render usando Docker desde el directorio:
+
+backend/donde-entreno-api/donde-entreno-api

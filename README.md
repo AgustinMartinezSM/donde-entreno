@@ -12,6 +12,37 @@ El proyecto se encuentra en desarrollo y actualmente cuenta con un MVP público 
 
 El MVP ya permite navegar actividades deportivas, buscar, filtrar, ordenar, paginar resultados y ver el detalle de cada actividad conectándose a un backend real desarrollado con Spring Boot y una base de datos PostgreSQL.
 
+## Deploy online
+
+El MVP full stack de DondeEntreno se encuentra desplegado online.
+
+```text
+Frontend:
+https://donde-entreno-web.vercel.app
+
+Backend:
+https://donde-entreno-api.onrender.com
+
+Endpoint principal:
+https://donde-entreno-api.onrender.com/api/actividades
+```
+
+### Arquitectura de deploy
+
+* Frontend: Vercel.
+* Backend: Render.
+* Base de datos: Supabase PostgreSQL.
+* Repositorio: GitHub.
+
+### Estado actual
+
+* Frontend online funcionando.
+* Backend online funcionando.
+* Base de datos online conectada.
+* API consumida correctamente desde el frontend.
+* CORS configurado para permitir peticiones desde Vercel.
+
+
 ## Objetivo del MVP
 
 El objetivo del MVP es validar la idea principal de la plataforma:

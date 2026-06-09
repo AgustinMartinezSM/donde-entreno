@@ -51,23 +51,41 @@ frontend/donde-entreno-web/.env.local
 Archivo de ejemplo versionado:
 
 frontend/donde-entreno-web/.env.example
-Variables de entorno del backend
 
-El backend necesita conectarse a PostgreSQL.
+## Variables de entorno del backend
 
-Variables o propiedades necesarias:
+El backend necesita conectarse a PostgreSQL y conocer qué frontend tiene permitido consumir la API.
 
-spring.datasource.url=jdbc:postgresql://HOST:PUERTO/NOMBRE_DB
-spring.datasource.username=USUARIO
-spring.datasource.password=PASSWORD
+Archivo de ejemplo versionado:
 
-En desarrollo local se usan en:
+```text
+backend/donde-entreno-api/donde-entreno-api/src/main/resources/application-prod.example.properties
 
-backend/donde-entreno-api/donde-entreno-api/src/main/resources/application-local.properties
+Variables necesarias para producción:
 
-Este archivo no debe subirse al repositorio.
+PORT
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+APP_CORS_ALLOWED_ORIGINS
 
-CORS
+Ejemplo:
+
+server.port=${PORT:8080}
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+
+app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS}
+
+Ejemplo de valor para CORS en producción:
+
+APP_CORS_ALLOWED_ORIGINS=https://donde-entreno.vercel.app
+
+En desarrollo local se usa:
+
+http://localhost:3000
 
 Actualmente el backend permite conexión desde:
 

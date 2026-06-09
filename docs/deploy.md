@@ -139,3 +139,27 @@ Render PostgreSQL.
 Estado actual
 
 El proyecto está validado localmente y listo para preparar el deploy, pero todavía no fue desplegado.
+
+## Revisión de scripts SQL para deploy
+
+Se revisaron los scripts ubicados en `database/scripts/` antes de preparar el deploy.
+
+Resultado:
+
+- No usan `CREATE DATABASE`.
+- No usan `DROP DATABASE`.
+- No usan `DROP TABLE`.
+- No usan `ALTER DATABASE`.
+- No usan `OWNER TO`.
+- No usan comandos `\c`.
+- Usan sintaxis compatible con PostgreSQL como `BIGSERIAL`, `TIMESTAMPTZ`, `NOW()`, `CONSTRAINT` y `FOREIGN KEY`.
+- Los datos insertados fueron revisados y no presentan caracteres rotos en nombres o descripciones.
+- Los scripts pueden ejecutarse en una base PostgreSQL online como Supabase o Neon, siempre respetando el orden definido.
+
+Orden de ejecución:
+
+```text
+01_create_tables.sql
+02_seed_data.sql
+03_seed_test_data.sql
+04_test_queries.sql

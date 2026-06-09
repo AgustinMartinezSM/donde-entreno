@@ -1,17 +1,18 @@
 package com.dondeentreno.api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configuración global de CORS.
+ * Configuracion global de CORS.
  *
  * CORS permite que el frontend pueda hacer peticiones
- * al backend aunque estén corriendo en puertos distintos.
+ * al backend aunque esten corriendo en dominios o puertos distintos.
  *
- * Ejemplo:
+ * Ejemplo local:
  * Frontend Next.js: http://localhost:3000
  * Backend Spring Boot: http://localhost:8080
  */
@@ -19,29 +20,34 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig {
 
     /**
-     * Bean que configura reglas CORS para toda la API.
+     * Origenes permitidos para consumir la API.
      *
-     * Por ahora permitimos el origen local de Next.js:
+     * En local se usa:
      * http://localhost:3000
      *
-     * Más adelante, cuando subamos el proyecto,
-     * vamos a agregar el dominio real del frontend.
+     * En produccion se puede configurar con la URL publica del frontend.
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String[] allowedOrigins;
+
+    /**
+     * Bean que configura reglas CORS para toda la API.
      *
-     * @return configuración CORS personalizada.
+     * @return configuracion CORS personalizada.
      */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
 
             /**
-             * Define qué rutas aceptan peticiones desde otros orígenes.
+             * Define que rutas aceptan peticiones desde otros origenes.
              *
-             * @param registry registro de configuración CORS.
+             * @param registry registro de configuracion CORS.
              */
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins(allowedOrigins)
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(false)

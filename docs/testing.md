@@ -229,3 +229,37 @@ La documentación está actualizada.
 Notas
 
 Este checklist se irá actualizando a medida que el proyecto sume nuevas funcionalidades como login, panel administrativo, favoritos, reseñas, métricas o publicación real de actividades.
+
+## Resultado de pruebas ejecutadas
+
+Fecha de validación: 08/06/2026
+
+Se ejecutó una validación manual del MVP público con backend, frontend y base de datos corriendo en entorno local.
+
+### Resultado general
+
+- Backend local funcionando en `http://localhost:8080`.
+- Frontend local funcionando en `http://localhost:3000`.
+- Base de datos PostgreSQL conectada correctamente.
+- Endpoint `GET /api/actividades` respondiendo con datos reales.
+- Home cargando correctamente.
+- Página Explorar cargando actividades desde el backend.
+- Búsqueda funcionando correctamente.
+- Filtros y ordenamiento funcionando correctamente.
+- Página de detalle por slug funcionando correctamente.
+- Ruta de actividad inexistente mostrando pantalla controlada.
+- Página Publicar funcionando como formulario inicial del MVP.
+- Página 404 personalizada funcionando correctamente.
+- Responsive probado en mobile, tablet y escritorio.
+- Build del backend finalizado correctamente.
+- Build del frontend finalizado correctamente.
+- Repositorio limpio y sin archivos sensibles versionados.
+
+### Observaciones
+
+- La página `Publicar` todavía no guarda datos en el backend. Actualmente funciona como interfaz inicial del flujo de publicación.
+- En modo desarrollo, una actividad inexistente puede mostrar overlay de error de Next.js antes de la pantalla controlada. Para el MVP es aceptable, pero puede mejorarse más adelante usando `notFound()` o un manejo específico de errores.
+
+### Estado
+
+El MVP público queda validado manualmente y listo para la próxima etapa de preparación para deploy.

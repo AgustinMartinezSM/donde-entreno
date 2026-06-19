@@ -186,9 +186,9 @@ Variables de entorno usadas
 Frontend - Vercel
 NEXT_PUBLIC_API_URL=https://donde-entreno-api.onrender.com
 Backend - Render
-SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:5432/postgres
-SPRING_DATASOURCE_USERNAME=postgres.qqdpbmyyadlwatydyhis
-SPRING_DATASOURCE_PASSWORD=********
+SPRING_DATASOURCE_URL=jdbc:postgresql://<POSTGRES_HOST>:5432/<POSTGRES_DATABASE>
+SPRING_DATASOURCE_USERNAME=<POSTGRES_USERNAME>
+SPRING_DATASOURCE_PASSWORD=<POSTGRES_PASSWORD>
 APP_CORS_ALLOWED_ORIGINS=https://donde-entreno-web.vercel.app
 PORT=8080
 Estado del deploy

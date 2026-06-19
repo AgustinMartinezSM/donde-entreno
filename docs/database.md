@@ -323,9 +323,9 @@ Este archivo no debe subirse al repositorio porque puede contener datos sensible
 Ejemplo de configuración local:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/donde_entreno_db
-spring.datasource.username=postgres
-spring.datasource.password=TU_PASSWORD_LOCAL
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 ```
 
 ## Seguridad

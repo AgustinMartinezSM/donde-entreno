@@ -1,6 +1,7 @@
 package com.dondeentreno.api.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 /**
  * DTO para respuestas de error.
@@ -13,6 +14,7 @@ public class ErrorResponseDTO {
     private int status;
     private String error;
     private String mensaje;
+    private Map<String, String> errores;
     private String path;
     private OffsetDateTime timestamp;
 
@@ -33,6 +35,22 @@ public class ErrorResponseDTO {
         this.timestamp = timestamp;
     }
 
+    public ErrorResponseDTO(
+            int status,
+            String error,
+            String mensaje,
+            Map<String, String> errores,
+            String path,
+            OffsetDateTime timestamp
+    ) {
+        this.status = status;
+        this.error = error;
+        this.mensaje = mensaje;
+        this.errores = errores;
+        this.path = path;
+        this.timestamp = timestamp;
+    }
+
     public int getStatus() {
         return status;
     }
@@ -43,6 +61,10 @@ public class ErrorResponseDTO {
 
     public String getMensaje() {
         return mensaje;
+    }
+
+    public Map<String, String> getErrores() {
+        return errores;
     }
 
     public String getPath() {
@@ -63,6 +85,10 @@ public class ErrorResponseDTO {
 
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
+    }
+
+    public void setErrores(Map<String, String> errores) {
+        this.errores = errores;
     }
 
     public void setPath(String path) {

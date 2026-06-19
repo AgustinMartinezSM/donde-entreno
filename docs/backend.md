@@ -41,9 +41,9 @@ Este archivo no debe subirse al repositorio porque puede contener datos sensible
 
 Ejemplo de configuración local:
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/donde_entreno_db
-spring.datasource.username=postgres
-spring.datasource.password=TU_PASSWORD_LOCAL
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 Seguridad de configuración
 
 No subir al repositorio archivos con contraseñas, tokens o credenciales reales.
@@ -93,6 +93,31 @@ GET /api/ciudades
 GET /api/barrios
 GET /api/perfiles-publicadores
 GET /api/ubicaciones
+POST /api/solicitudes-publicacion
+
+Endpoint publico de solicitudes de publicacion
+POST /api/solicitudes-publicacion
+
+Objetivo:
+Recibir una solicitud publica sin login y dejarla en estado inicial PENDIENTE, sin crear todavia una actividad real.
+
+Respuesta exitosa:
+201 Created
+
+Campos de respuesta:
+id
+codigoSeguimiento
+estado
+createdAt
+mensaje
+
+Errores:
+400 por Bean Validation.
+400 por JSON mal formado.
+400 por reglas de negocio o referencias invalidas.
+
+Transaccion:
+La solicitud principal y sus horarios se guardan en una unica transaccion. Si falla cualquier parte de la operacion, se revierte todo y no queda una solicitud parcial.
 Endpoint principal de actividades
 GET /api/actividades
 

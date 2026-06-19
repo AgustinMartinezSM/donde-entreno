@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -13,9 +14,18 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12">
           {/* Columna de marca */}
           <div>
-            <Link href="/" className="inline-block text-2xl font-extrabold tracking-tight">
-              <span className="text-[var(--color-primary)]">Donde</span>
-              <span className="text-[var(--color-secondary)]">Entreno</span>
+            <Link
+              href="/"
+              className="inline-flex items-center transition hover:opacity-90"
+              aria-label="Ir al inicio de DondeEntreno"
+            >
+              <Image
+                src="/brand/logo-horizontal.png"
+                alt="DondeEntreno"
+                width={180}
+                height={48}
+                className="h-auto w-[150px] sm:w-[170px]"
+              />
             </Link>
 
             <p className="mt-3 max-w-md text-sm leading-6 text-[var(--color-muted)]">

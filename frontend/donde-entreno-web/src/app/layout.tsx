@@ -26,6 +26,11 @@ export const metadata: Metadata = {
   },
   description:
     "Encontrá deportes, clubes, profesores, gimnasios y actividades deportivas cerca tuyo.",
+    icons: {
+        icon: "/brand/favicon.png",
+        shortcut: "/brand/favicon.png",
+        apple: "/brand/favicon.png",
+      },
   keywords: [
     "DondeEntreno",
     "deportes",

@@ -3,29 +3,50 @@
 // estamos validando exactamente qué devuelve el endpoint.
 export type Actividad = {
   id: number;
-  nombre: string;
+  titulo: string;
   slug: string;
 
   // Datos descriptivos
   descripcion?: string;
+  edadMinima?: number | null;
+  edadMaxima?: number | null;
   nivel?: string;
+  enfoque?: string;
   modalidad?: string;
 
   // Datos de ubicación
+  ubicacionId?: number;
+  ubicacionNombre?: string;
+  ciudadId?: number;
   ciudadNombre?: string;
+  barrioId?: number;
   barrioNombre?: string;
   direccion?: string;
 
   // Datos relacionados al deporte o categoría
+  deporteId?: number;
   deporteNombre?: string;
-  categoriaNombre?: string;
+  deporteSlug?: string;
+  categoriaDeportivaId?: number;
+  categoriaDeportivaNombre?: string;
+  categoriaDeportivaSlug?: string;
 
   // Datos del publicador
+  perfilPublicadorId?: number;
   perfilPublicadorNombre?: string;
+  tipoPublicador?: string;
+  perfilVerificado?: boolean;
 
   // Datos visuales o económicos
   imagenPrincipalUrl?: string | null;
-  precioDesde?: number | null;
+  precioReferencia?: number | null;
+  mostrarPrecio?: boolean;
+  requiereInscripcion?: boolean;
+  cuposLimitados?: boolean;
+
+  whatsappContacto?: string | null;
+  instagramContacto?: string | null;
+  emailContacto?: string | null;
 };
 
 // Representa la respuesta paginada del endpoint GET /api/actividades.

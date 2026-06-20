@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { Actividad } from "../../types/actividad";
@@ -53,9 +54,11 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
         </p>
 
         <div className="flex items-start gap-2 text-sm font-medium text-[var(--color-text)]">
-          <img
+          <Image
             src="/icons/icon-location.png"
             alt=""
+            width={16}
+            height={16}
             aria-hidden="true"
             className="mt-0.5 h-4 w-4 shrink-0"
           />

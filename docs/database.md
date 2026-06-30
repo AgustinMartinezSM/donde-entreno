@@ -30,6 +30,8 @@ Archivos disponibles:
 04_test_queries.sql
 05_create_solicitud_publicacion.sql
 06_test_solicitud_publicacion_queries.sql
+07_prepare_auth_security.sql
+08_test_auth_security_queries.sql
 ```
 
 ## Orden de uso local
@@ -41,18 +43,22 @@ Para preparar una base local desde cero, usar este orden:
 2. 02_seed_data.sql
 3. 03_seed_test_data.sql
 4. 05_create_solicitud_publicacion.sql
+5. 07_prepare_auth_security.sql
 ```
 
 Los scripts de validación se ejecutan después de tener la estructura y los datos necesarios:
 
 ```text
-5. 04_test_queries.sql
-6. 06_test_solicitud_publicacion_queries.sql
+6. 04_test_queries.sql
+7. 06_test_solicitud_publicacion_queries.sql
+8. 08_test_auth_security_queries.sql
 ```
 
 `04_test_queries.sql` contiene consultas de control del MVP inicial.
 
 `06_test_solicitud_publicacion_queries.sql` valida localmente la migración `05`. Comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos de prueba persistidos.
+
+`08_test_auth_security_queries.sql` valida localmente la migración `07`. Comienza con `BEGIN`, termina con `ROLLBACK` y no conserva usuarios temporales.
 
 ## Descripción de cada script
 
@@ -109,6 +115,8 @@ Incluye ejemplos de:
 
 Estos datos permiten probar el backend y el frontend sin tener que cargar información manualmente.
 
+Este script es exclusivamente local. No debe ejecutarse en producción. Sus usuarios ficticios se crean inactivos y no verificados, y sus `password_hash` son placeholders que no sirven para login real.
+
 ### 04_test_queries.sql
 
 Contiene consultas de control para verificar que la base de datos inicial esté funcionando correctamente.
@@ -147,6 +155,37 @@ Valida:
 * ausencia de datos persistidos al finalizar.
 
 El script comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos de prueba persistidos.
+
+### 07_prepare_auth_security.sql
+
+Es una migración aditiva y no destructiva para preparar reglas mínimas de Auth y Seguridad.
+
+Realiza estos cambios:
+
+* amplía la constraint `chk_rol_nombre` para permitir `SUPER_ADMIN`, `ADMIN`, `PUBLICADOR` y `USUARIO`;
+* inserta el rol `USUARIO` de forma idempotente;
+* agrega constraints para evitar `usuario.nombre`, `usuario.email` y `usuario.password_hash` vacíos o compuestos solo por espacios;
+* crea el índice único funcional `idx_usuario_email_normalizado_unico` sobre `LOWER(BTRIM(email))`.
+
+No crea administradores, no modifica hashes existentes, no agrega tokens, no agrega secretos y no cambia relaciones existentes.
+
+### 08_test_auth_security_queries.sql
+
+Es un script de validación local para ejecutar únicamente después de aplicar correctamente `07_prepare_auth_security.sql`.
+
+Valida:
+
+* existencia del rol `USUARIO`;
+* valores permitidos por `chk_rol_nombre`;
+* existencia de las constraints nuevas de `usuario`;
+* existencia y carácter único de `idx_usuario_email_normalizado_unico`;
+* inserción temporal de un usuario válido;
+* rechazo de usuarios con nombre, email o `password_hash` vacíos;
+* rechazo de roles no permitidos;
+* rechazo de emails duplicados por mayúsculas, minúsculas o espacios externos;
+* confirmación de que la unicidad también contempla usuarios con `deleted_at`.
+
+El script comienza con `BEGIN`, termina con `ROLLBACK` y no conserva usuarios temporales.
 
 ## Modelo actual de tablas
 
@@ -191,6 +230,72 @@ Relaciones del modelo de solicitudes:
 Las relaciones opcionales desde `solicitud_publicacion` hacia `deporte`, `ciudad`, `barrio`, `usuario` y `actividad` no eliminan solicitudes en cascada.
 
 La relación `solicitud_publicacion 1:N solicitud_publicacion_horario` sí usa borrado en cascada respecto de su solicitud. Si se borra físicamente una solicitud, se eliminan sus horarios asociados.
+
+## Auth y Seguridad
+
+### Roles
+
+La tabla `rol` define los roles permitidos para cuentas de usuario:
+
+* `SUPER_ADMIN`
+* `ADMIN`
+* `PUBLICADOR`
+* `USUARIO`
+
+Cada registro de `usuario` tiene un solo rol mediante `usuario.rol_id`.
+
+`SUPER_ADMIN` y `ADMIN` quedan reservados para administración. `PUBLICADOR` representa cuentas que gestionan perfiles y actividades. `USUARIO` representa una cuenta común para funciones básicas de una persona registrada.
+
+### Usuario
+
+La tabla `usuario` guarda cuentas de acceso al sistema.
+
+Reglas y campos relevantes:
+
+* `email` es obligatorio.
+* `password_hash` es obligatorio.
+* No existe una columna para contraseña plana.
+* `activo` controla si la cuenta puede autenticarse.
+* `email_verificado` indica si el email fue confirmado.
+* `ultimo_login_at` permite registrar el último inicio de sesión.
+* `deleted_at` representa baja lógica.
+* `email` mantiene la restricción única original.
+* Además, `idx_usuario_email_normalizado_unico` asegura unicidad case-insensitive y tolerante a espacios externos mediante `LOWER(BTRIM(email))`.
+
+La unicidad normalizada aplica a todos los usuarios, incluidos los que tengan `deleted_at`. Por eso un email de una cuenta eliminada lógicamente no se reutiliza automáticamente.
+
+### BCrypt
+
+El hash BCrypt se generará en el backend.
+
+PostgreSQL no recibe ni almacena la contraseña plana. Solo persiste el valor de `password_hash`.
+
+Todavía no se aplica una regex BCrypt en la base de datos porque existen placeholders históricos de prueba en seeds locales. Esa validación deberá incorporarse más adelante, cuando los datos históricos estén normalizados o reemplazados.
+
+### Primer SUPER_ADMIN
+
+La estrategia aprobada para crear el primer `SUPER_ADMIN` real es un bootstrap posterior desde Spring Boot.
+
+Ese bootstrap deberá:
+
+* recibir email y contraseña mediante variables de entorno;
+* generar el hash con BCrypt en runtime;
+* crear la cuenta de forma idempotente usando el email normalizado configurado;
+* no guardar contraseña ni hash real en Git;
+* retirar o desactivar las variables de bootstrap después de crear la cuenta;
+* no usar como única condición “no existe ningún SUPER_ADMIN”, porque podrían existir usuarios de prueba históricos.
+
+### Seeds de usuarios
+
+`03_seed_test_data.sql` es exclusivamente local y no debe ejecutarse en producción.
+
+Sus usuarios ficticios se crean con:
+
+* `activo = false`;
+* `email_verificado = false`;
+* hashes placeholder que no sirven para login real.
+
+Modificar ese seed no cambia bases donde el script ya fue ejecutado. Las bases existentes deben inspeccionarse antes de habilitar Auth real, especialmente si tienen usuarios históricos activos, verificados o con hashes de prueba.
 
 ## Solicitudes de publicación
 
@@ -283,8 +388,10 @@ Pasos sugeridos:
 6. Repetir el proceso con `02_seed_data.sql`.
 7. Repetir el proceso con `03_seed_test_data.sql`.
 8. Ejecutar `05_create_solicitud_publicacion.sql`.
-9. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
-10. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
+9. Ejecutar `07_prepare_auth_security.sql`.
+10. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
+11. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
+12. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
 
 ## Ejecución desde terminal
 
@@ -297,6 +404,7 @@ psql -U postgres -d donde_entreno_db -f database/scripts/01_create_tables.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/02_seed_data.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/03_seed_test_data.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/05_create_solicitud_publicacion.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/07_prepare_auth_security.sql
 ```
 
 Ejemplo para validaciones locales:
@@ -304,6 +412,7 @@ Ejemplo para validaciones locales:
 ```bash
 psql -U postgres -d donde_entreno_db -f database/scripts/04_test_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/06_test_solicitud_publicacion_queries.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/08_test_auth_security_queries.sql
 ```
 
 El usuario `postgres` puede cambiar según la configuración local de cada máquina.
@@ -355,6 +464,9 @@ Después de ejecutar los scripts, se recomienda verificar:
 * Que las actividades tengan ubicación.
 * Que existan las tablas `solicitud_publicacion` y `solicitud_publicacion_horario`.
 * Que `06_test_solicitud_publicacion_queries.sql` termine con `ROLLBACK` y no deje datos temporales persistidos.
+* Que exista el rol `USUARIO`.
+* Que exista el índice `idx_usuario_email_normalizado_unico`.
+* Que `08_test_auth_security_queries.sql` termine con `ROLLBACK` y no conserve usuarios temporales.
 * Que los endpoints del backend respondan correctamente.
 
 Endpoint útil para probar:
@@ -367,6 +479,8 @@ Si devuelve actividades, la base de datos está correctamente conectada con el b
 
 ## Estado actual
 
-La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control y una migración aditiva para solicitudes públicas de publicación.
+La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación y una migración aditiva de preparación de Auth y Seguridad.
 
 Después de aplicar `05_create_solicitud_publicacion.sql`, el modelo local pasa de 11 a 13 tablas.
+
+Después de aplicar `07_prepare_auth_security.sql`, no se agregan tablas nuevas. Se endurecen reglas sobre roles, usuarios y unicidad de email normalizado.

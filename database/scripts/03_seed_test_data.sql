@@ -6,6 +6,11 @@
 -- Este script carga datos ficticios para probar búsquedas,
 -- filtros, perfiles publicadores, actividades, horarios e imágenes.
 --
+-- ADVERTENCIA:
+-- Este seed es exclusivamente local y no debe ejecutarse en producción.
+-- Sus password_hash son placeholders y no sirven para login real.
+-- Modificar este archivo no cambia bases donde el seed ya fue ejecutado.
+--
 -- Debe ejecutarse después de:
 -- 01_create_tables.sql
 -- 02_seed_data.sql
@@ -19,6 +24,7 @@
 -- Estos password_hash son valores de prueba.
 -- Más adelante, cuando conectemos Spring Security, vamos a generar
 -- contraseñas reales con BCrypt desde el backend.
+-- Los usuarios ficticios se crean inactivos y no verificados.
 -- ============================================================
 
 INSERT INTO usuario (rol_id, nombre, apellido, email, password_hash, telefono, activo, email_verificado)
@@ -30,8 +36,8 @@ VALUES
         'admin@dondeentreno.com',
         '$2a$10$ejemploHashTemporalNoUsarEnProduccion123456789',
         '2230000000',
-        true,
-        true
+        false,
+        false
     ),
     (
         (SELECT id FROM rol WHERE nombre = 'PUBLICADOR'),
@@ -40,8 +46,8 @@ VALUES
         'contacto@kimberley.com',
         '$2a$10$ejemploHashTemporalNoUsarEnProduccion123456789',
         '2231111111',
-        true,
-        true
+        false,
+        false
     ),
     (
         (SELECT id FROM rol WHERE nombre = 'PUBLICADOR'),
@@ -50,8 +56,8 @@ VALUES
         'juan.entrena@gmail.com',
         '$2a$10$ejemploHashTemporalNoUsarEnProduccion123456789',
         '2232222222',
-        true,
-        true
+        false,
+        false
     ),
     (
         (SELECT id FROM rol WHERE nombre = 'PUBLICADOR'),
@@ -60,8 +66,8 @@ VALUES
         'laura.yoga@gmail.com',
         '$2a$10$ejemploHashTemporalNoUsarEnProduccion123456789',
         '2233333333',
-        true,
-        true
+        false,
+        false
     ),
     (
         (SELECT id FROM rol WHERE nombre = 'PUBLICADOR'),
@@ -70,8 +76,8 @@ VALUES
         'martin.boxeo@gmail.com',
         '$2a$10$ejemploHashTemporalNoUsarEnProduccion123456789',
         '2234444444',
-        true,
-        true
+        false,
+        false
     );
 
 

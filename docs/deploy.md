@@ -191,6 +191,28 @@ SPRING_DATASOURCE_USERNAME=<POSTGRES_USERNAME>
 SPRING_DATASOURCE_PASSWORD=<POSTGRES_PASSWORD>
 APP_CORS_ALLOWED_ORIGINS=https://donde-entreno-web.vercel.app
 PORT=8080
+
+Variables de Auth para Backend - Render
+
+Además de las variables anteriores, el backend con autenticación requiere:
+
+```text
+DONDEENTRENO_AUTH_JWT_SECRET=<JWT_SECRET_LARGO_ALEATORIO_PRIVADO>
+DONDEENTRENO_AUTH_JWT_ISSUER=<IDENTIFICADOR_DEL_EMISOR>
+DONDEENTRENO_AUTH_JWT_EXPIRATION_MINUTES=60
+DONDEENTRENO_BOOTSTRAP_SUPER_ADMIN_ENABLED=false
+```
+
+`DONDEENTRENO_AUTH_JWT_SECRET` es obligatorio para que el backend con Auth arranque. Debe ser un valor largo, aleatorio, privado y de al menos 32 caracteres. No debe guardarse en Git, documentacion, archivos `.env` versionados ni compartirse por chat.
+
+`DONDEENTRENO_AUTH_JWT_ISSUER` identifica al emisor del token. Puede usarse un valor de entorno como `dondeentreno-api`, sin hardcodearlo como secreto ni valor obligatorio.
+
+`DONDEENTRENO_AUTH_JWT_EXPIRATION_MINUTES` define la duracion del access token. Un ejemplo no sensible es `60`.
+
+`DONDEENTRENO_BOOTSTRAP_SUPER_ADMIN_ENABLED` debe estar en `false` por defecto en produccion. Solo debe activarse de forma controlada cuando la migracion 07 ya este aplicada en la base correspondiente, se quieran crear las credenciales iniciales del primer `SUPER_ADMIN` y existan las variables de bootstrap necesarias. Luego debe volver inmediatamente a `false`.
+
+La migracion 07 todavia debe aplicarse en Supabase/produccion antes de usar login o bootstrap reales alli.
+
 Estado del deploy
 Supabase PostgreSQL online: OK
 Scripts SQL ejecutados: OK

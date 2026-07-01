@@ -14,4 +14,8 @@ import java.util.List;
 public interface SolicitudPublicacionHorarioRepository extends JpaRepository<SolicitudPublicacionHorario, Long> {
 
     List<SolicitudPublicacionHorario> findBySolicitudPublicacion_Id(Long solicitudPublicacionId);
+
+    List<SolicitudPublicacionHorario> findBySolicitudPublicacion_IdOrderByDiaSemanaAscHoraInicioAsc(
+            Long solicitudPublicacionId
+    );
 }

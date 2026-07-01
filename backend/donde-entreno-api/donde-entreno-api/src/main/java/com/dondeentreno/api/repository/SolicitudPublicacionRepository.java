@@ -1,7 +1,12 @@
 package com.dondeentreno.api.repository;
 
 import com.dondeentreno.api.entity.SolicitudPublicacion;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 /**
  * Repository de SolicitudPublicacion.
@@ -17,4 +22,28 @@ public interface SolicitudPublicacionRepository extends JpaRepository<SolicitudP
      * Esto permite evitar colisiones al generar codigos publicos.
      */
     boolean existsByCodigoSeguimiento(String codigoSeguimiento);
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio"
+    })
+    Page<SolicitudPublicacion> findByDeletedAtIsNull(Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio"
+    })
+    Page<SolicitudPublicacion> findByEstadoAndDeletedAtIsNull(String estado, Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio",
+            "revisadoPorUsuario",
+            "revisadoPorUsuario.rol",
+            "actividadGenerada"
+    })
+    Optional<SolicitudPublicacion> findByIdAndDeletedAtIsNull(Long id);
 }

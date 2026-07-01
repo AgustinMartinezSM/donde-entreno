@@ -7,6 +7,11 @@ import { obtenerDetalleActividad } from "../../../services/actividadService";
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { ActivityImage } from "../../../components/actividad/ActivityImage";
 import { ErrorState } from "../../../components/feedback/ErrorState";
+import { API_BASE_URL } from "../../../lib/apiConfig";
+import {
+  obtenerImagenActividad,
+  obtenerImagenFallbackActividad,
+} from "../../../lib/activityImages";
 
 type ActividadDetallePageProps = {
   params: Promise<{
@@ -81,14 +86,14 @@ export default async function ActividadDetallePage({
 
   if (huboError || !actividad) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+      <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
         <section className="mx-auto w-full max-w-6xl px-4 py-6">
           <Header />
 
           <div className="py-10">
             <ErrorState
               titulo="No pudimos cargar esta actividad"
-              descripcion="Puede que el backend esté apagado, que la actividad no exista o que haya un problema temporal con la conexión."
+              descripcion="No encontramos esta actividad o no pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
               mostrarBotonInicio
               mostrarBotonExplorar
             />
@@ -103,33 +108,40 @@ export default async function ActividadDetallePage({
   );
 
   /*
-    Temporalmente dejamos la imagen en null porque todavía no estamos sirviendo
-    imágenes reales desde el backend. ActivityImage muestra el fallback prolijo.
-    Más adelante, cuando backend sirva imágenes, volvemos a armar la URL real.
+    Usamos la misma prioridad visual que las cards:
+    imagen real, imagen default por deporte y placeholder general.
   */
-  const imagenPrincipalUrl = null;
+  const imagenBackend = construirUrlImagenBackend(imagenPrincipal?.url);
+  const imagenUrl = obtenerImagenActividad({
+    imagenBackend,
+    deporteSlug: actividad.deporteSlug,
+  });
+  const imagenFallbackUrl = obtenerImagenFallbackActividad({
+    deporteSlug: actividad.deporteSlug,
+  });
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
         <div className="py-8 sm:py-10">
           <Link
             href="/explorar"
-            className="text-sm font-bold text-[var(--color-primary)]"
+            className="text-sm font-bold text-[var(--color-primary)] transition hover:text-[#0B314D]"
           >
             ← Volver a explorar
           </Link>
 
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.4fr_0.8fr] lg:gap-6">
             {/* Columna principal */}
-            <article className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:p-5">
+            <article className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_18px_50px_rgba(12,52,80,0.10)] transition duration-200 ease-out sm:p-5">
               <ActivityImage
-                src={imagenPrincipalUrl}
+                src={imagenUrl}
+                fallbackSrc={imagenFallbackUrl}
                 alt={imagenPrincipal?.descripcion || actividad.titulo}
                 fallbackText={actividad.deporteNombre || "Actividad"}
-                heightClassName="h-40 sm:h-56"
+                heightClassName="h-48 sm:h-72"
               />
 
               <div className="mt-6">
@@ -186,7 +198,7 @@ export default async function ActividadDetallePage({
                       {actividad.horarios.map((horario) => (
                         <div
                           key={horario.id}
-                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4"
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
                         >
                           <p className="font-bold text-[var(--color-primary)]">
                             {horario.diaSemana}
@@ -210,7 +222,7 @@ export default async function ActividadDetallePage({
             </article>
 
             {/* Columna lateral */}
-            <aside className="h-fit rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:p-5 lg:sticky lg:top-6">
+            <aside className="h-fit rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-4 shadow-[0_18px_45px_rgba(12,52,80,0.10)] transition duration-200 ease-out sm:p-5 lg:sticky lg:top-8">
               <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
                 Información
               </h2>
@@ -290,3 +302,18 @@ export default async function ActividadDetallePage({
   );
 }
 
+function construirUrlImagenBackend(url?: string | null) {
+  const urlLimpia = url?.trim();
+
+  if (!urlLimpia) {
+    return null;
+  }
+
+  if (urlLimpia.startsWith("http://") || urlLimpia.startsWith("https://")) {
+    return urlLimpia;
+  }
+
+  const separador = urlLimpia.startsWith("/") ? "" : "/";
+
+  return `${API_BASE_URL}${separador}${urlLimpia}`;
+}

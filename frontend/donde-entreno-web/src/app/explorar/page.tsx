@@ -128,12 +128,12 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
       : `${totalElementos} actividades encontradas en DondeEntreno.`;
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
         <div className="py-8 sm:py-10">
-          <div className="mb-8">
+          <div className="mb-10 border-b border-[#DDEAF3] pb-8">
             <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               Explorar actividades
             </p>
@@ -149,7 +149,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
             </p>
 
             {/* Dejamos el buscador visible aunque haya error */}
-            <div className="max-w-2xl">
+            <div className="max-w-2xl transition duration-200 ease-out">
               <SearchBar valorInicial={textoBuscado} />
             </div>
 
@@ -157,7 +157,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               <div className="mt-8">
                 <ErrorState
                   titulo="No pudimos cargar las actividades"
-                  descripcion="Puede que el backend esté apagado o que haya un problema temporal al obtener los filtros y resultados."
+                  descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
                   mostrarBotonInicio
                   mostrarBotonExplorar={false}
                 />

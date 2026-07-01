@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { AdminLoginForm } from "../../../components/admin/AdminLoginForm";
 
 export const metadata: Metadata = {
-  title: "Admin",
-  description: "Acceso local al panel administrador de DondeEntreno.",
+  title: "Panel administrador",
+  description: "Acceso para el equipo de DondeEntreno.",
 };
 
 export default function AdminLoginPage() {

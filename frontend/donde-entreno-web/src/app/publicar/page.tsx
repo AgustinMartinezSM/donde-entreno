@@ -46,9 +46,9 @@ export default function PublicarPage() {
             </h1>
 
             <p className="mt-4 text-base leading-7 text-[var(--color-muted)]">
-              Completa los datos principales de tu actividad deportiva. Esta
-              primera versión del formulario nos ayuda a preparar el flujo de
-              publicación del MVP.
+              Completá los datos de tu actividad para enviarla a revisión. La
+              solicitud no publica automáticamente la actividad: quedará
+              pendiente de revisión por el equipo de DondeEntreno.
             </p>
           </div>
 

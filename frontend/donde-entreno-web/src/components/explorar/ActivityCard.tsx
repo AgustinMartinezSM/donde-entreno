@@ -36,7 +36,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
   });
 
   return (
-    <article className="group rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] transition hover:-translate-y-1 hover:shadow-lg">
+    <article className="group rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)] active:scale-[0.995]">
       <ActivityImage
         src={imagenUrl}
         alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
@@ -85,7 +85,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
 
         <Link
           href={`/actividades/${actividad.slug}`}
-          className="mt-4 block w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition group-hover:bg-[#0B314D]"
+          className="mt-4 block w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] group-hover:bg-[#0B314D]"
         >
           Ver detalle
         </Link>

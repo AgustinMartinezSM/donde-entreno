@@ -1,9 +1,9 @@
 /*
-  Centralizamos acá las imágenes visuales de actividades.
+  Centralizamos aca las imagenes visuales de actividades.
 
-  La prioridad que vamos a usar es:
+  La prioridad que usamos es:
   1. Imagen propia de la actividad desde backend.
-  2. Imagen default según el deporte.
+  2. Imagen default segun el deporte.
   3. Placeholder general si no conocemos el deporte.
 */
 
@@ -32,22 +32,24 @@ type ObtenerImagenActividadParams = {
   deporteSlug?: string | null;
 };
 
+type ObtenerImagenFallbackActividadParams = {
+  deporteSlug?: string | null;
+};
+
 export function obtenerImagenActividad({
   imagenBackend,
   deporteSlug,
 }: ObtenerImagenActividadParams) {
-  /*
-    Si el backend ya trae una imagen propia válida,
-    usamos esa imagen primero.
-  */
   if (imagenBackend && imagenBackend.trim().length > 0) {
     return imagenBackend;
   }
 
-  /*
-    Si no hay imagen propia, buscamos una imagen default
-    según el slug del deporte.
-  */
+  return obtenerImagenFallbackActividad({ deporteSlug });
+}
+
+export function obtenerImagenFallbackActividad({
+  deporteSlug,
+}: ObtenerImagenFallbackActividadParams) {
   if (deporteSlug) {
     const imagenPorDeporte = imagenesPorDeporteSlug[deporteSlug];
 
@@ -56,9 +58,5 @@ export function obtenerImagenActividad({
     }
   }
 
-  /*
-    Si no conocemos el deporte o no tenemos imagen para ese slug,
-    usamos un placeholder general.
-  */
   return imagenPlaceholderGeneral;
 }

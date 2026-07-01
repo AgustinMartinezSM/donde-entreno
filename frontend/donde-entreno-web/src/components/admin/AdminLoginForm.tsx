@@ -67,7 +67,7 @@ export function AdminLoginForm() {
       if (errorLogin instanceof AuthApiError) {
         setError(errorLogin.message);
       } else {
-        setError("No se pudo iniciar sesión en el panel admin.");
+        setError("No se pudo iniciar sesión en el panel administrador.");
       }
     } finally {
       setCargando(false);
@@ -75,16 +75,16 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)] sm:p-8">
+    <div className="w-full max-w-md rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-6 shadow-[0_22px_55px_rgba(12,52,80,0.12)] sm:p-8">
       <div>
         <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
           DondeEntreno
         </p>
         <h1 className="mt-3 text-3xl font-extrabold text-[var(--color-primary)]">
-          Admin local
+          Panel administrador
         </h1>
         <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-          Acceso local para administradores de DondeEntreno.
+          Acceso para el equipo de DondeEntreno.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export function AdminLoginForm() {
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
             disabled={cargando}
-            className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
           />
         </div>
 
@@ -123,14 +123,14 @@ export function AdminLoginForm() {
             value={password}
             onChange={(evento) => setPassword(evento.target.value)}
             disabled={cargando}
-            className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-base text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
           />
         </div>
 
         {error && (
           <p
             role="alert"
-            className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+            className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 shadow-[0_10px_25px_rgba(127,29,29,0.08)]"
           >
             {error}
           </p>
@@ -148,7 +148,7 @@ export function AdminLoginForm() {
         <button
           type="submit"
           disabled={cargando}
-          className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+          className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
         >
           {cargando ? "Ingresando..." : "Ingresar al panel"}
         </button>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminGuard } from "../../../../components/admin/AdminGuard";
+import { AdminEstadoBadge } from "../../../../components/admin/AdminEstadoBadge";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -98,7 +99,9 @@ function AdminSolicitudDetalle() {
           }
 
           if (error.status === 403) {
-            setErrorDetalle("No tenés permisos para acceder al panel admin.");
+            setErrorDetalle(
+              "No tenés permisos para acceder al panel administrador."
+            );
             return;
           }
 
@@ -289,12 +292,12 @@ function AdminSolicitudDetalle() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-              Panel admin
+              Panel administrador
             </p>
             <h1 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
               Detalle de solicitud
@@ -310,14 +313,14 @@ function AdminSolicitudDetalle() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/admin/solicitudes"
-              className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition hover:border-[var(--color-primary)]"
+              className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-white active:scale-[0.98]"
             >
               Volver al listado
             </Link>
             <button
               type="button"
               onClick={cerrarSesion}
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5"
+              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
             >
               Cerrar sesión
             </button>
@@ -327,7 +330,7 @@ function AdminSolicitudDetalle() {
         {cargandoDetalle && (
           <div
             role="status"
-            className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[var(--shadow-card)]"
+            className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
             <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-[#DDEAF3] border-t-[var(--color-secondary)]" />
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
@@ -339,7 +342,7 @@ function AdminSolicitudDetalle() {
         {!cargandoDetalle && errorDetalle && (
           <div
             role="alert"
-            className="rounded-[var(--radius-xl)] border border-red-200 bg-red-50 p-6 shadow-[var(--shadow-card)]"
+            className="rounded-[var(--radius-xl)] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
           >
             <h2 className="text-xl font-extrabold text-red-700">
               No pudimos cargar la solicitud
@@ -403,7 +406,7 @@ function DetalleSolicitud({
 }) {
   return (
     <div className="grid gap-5">
-      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)]">
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
@@ -413,7 +416,7 @@ function DetalleSolicitud({
               {solicitud.nombreActividad}
             </h2>
           </div>
-          <EstadoBadge estado={solicitud.estado} />
+          <AdminEstadoBadge estado={solicitud.estado} />
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -436,7 +439,10 @@ function DetalleSolicitud({
             etiqueta="Actividad generada"
             valor={solicitud.actividadGeneradaId}
           />
-          <CampoDetalle etiqueta="Estado actual" valor={solicitud.estado} />
+          <CampoDetalleEstado
+            etiqueta="Estado actual"
+            estado={solicitud.estado}
+          />
         </div>
       </section>
 
@@ -504,9 +510,9 @@ function DetalleSolicitud({
             etiqueta="Revisor"
             valor={formatearRevisor(solicitud)}
           />
-          <CampoDetalle
+          <CampoDetalleEstado
             etiqueta="Estado actual"
-            valor={solicitud.estado}
+            estado={solicitud.estado}
           />
         </DetalleCard>
 
@@ -527,7 +533,7 @@ function DetalleSolicitud({
         />
       </section>
 
-      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)]">
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
         <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
           Horarios
         </h2>
@@ -588,13 +594,16 @@ function AccionesRevision({
   const actividadSlugAprobada = respuestaAprobacion?.actividadSlug.trim() ?? "";
 
   return (
-    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)]">
+    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
       <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
         Acciones de revisión
       </h2>
 
       <div className="mt-4">
-        <CampoDetalle etiqueta="Estado actual" valor={solicitud.estado} />
+        <CampoDetalleEstado
+          etiqueta="Estado actual"
+          estado={solicitud.estado}
+        />
       </div>
 
       {estaRechazada && (
@@ -616,7 +625,7 @@ function AccionesRevision({
               type="button"
               onClick={onSolicitarAprobacion}
               disabled={accionEnCurso}
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {accionEnCurso ? "Procesando..." : "Aprobar y publicar actividad"}
             </button>
@@ -633,7 +642,7 @@ function AccionesRevision({
                   type="button"
                   onClick={onCancelarAprobacion}
                   disabled={accionEnCurso}
-                  className="rounded-[var(--radius-md)] border border-[#D9B94E] px-5 py-3 text-sm font-bold text-[#7A5A00] transition hover:border-[#A98300] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-[var(--radius-md)] border border-[#D9B94E] px-5 py-3 text-sm font-bold text-[#7A5A00] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#A98300] hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -641,7 +650,7 @@ function AccionesRevision({
                   type="button"
                   onClick={onConfirmarAprobacion}
                   disabled={accionEnCurso}
-                  className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {accionEnCurso ? "Procesando..." : "Confirmar aprobación"}
                 </button>
@@ -665,7 +674,7 @@ function AccionesRevision({
                 type="button"
                 onClick={onMarcarEnRevision}
                 disabled={accionEnCurso}
-                className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
               >
                 {accionEnCurso ? "Procesando..." : "Marcar en revisión"}
               </button>
@@ -687,7 +696,7 @@ function AccionesRevision({
               }
               disabled={accionEnCurso}
               rows={4}
-              className="mt-2 w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2 w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 
@@ -695,7 +704,7 @@ function AccionesRevision({
             type="button"
             onClick={onRechazarSolicitud}
             disabled={accionEnCurso}
-            className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition hover:border-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-red-300 hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {accionEnCurso ? "Procesando..." : "Rechazar solicitud"}
           </button>
@@ -724,7 +733,7 @@ function AccionesRevision({
           {actividadSlugAprobada && (
             <Link
               href={`/actividades/${actividadSlugAprobada}`}
-              className="mt-3 inline-flex rounded-[var(--radius-md)] bg-[#1D7B4A] px-4 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5"
+              className="mt-3 inline-flex rounded-[var(--radius-md)] bg-[#1D7B4A] px-4 py-2 text-sm font-bold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#16683E] active:scale-[0.98]"
             >
               Ver actividad pública
             </Link>
@@ -752,7 +761,7 @@ function DetalleCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)]">
+    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#DDEAF3]">
       <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
         {titulo}
       </h2>
@@ -780,13 +789,32 @@ function CampoDetalle({
   );
 }
 
+function CampoDetalleEstado({
+  etiqueta,
+  estado,
+}: {
+  etiqueta: string;
+  estado: EstadoSolicitudAdmin;
+}) {
+  return (
+    <div>
+      <dt className="text-sm font-bold text-[var(--color-primary)]">
+        {etiqueta}
+      </dt>
+      <dd className="mt-2">
+        <AdminEstadoBadge estado={estado} size="sm" />
+      </dd>
+    </div>
+  );
+}
+
 function HorarioCard({
   horario,
 }: {
   horario: SolicitudPublicacionAdminHorario;
 }) {
   return (
-    <article className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
+    <article className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]">
       <p className="text-sm font-extrabold text-[var(--color-primary)]">
         {horario.diaSemana}
       </p>
@@ -797,23 +825,6 @@ function HorarioCard({
         <CampoDetalle etiqueta="Observación" valor={horario.observacion} />
       </dl>
     </article>
-  );
-}
-
-function EstadoBadge({ estado }: { estado: EstadoSolicitudAdmin }) {
-  const clasesPorEstado: Record<EstadoSolicitudAdmin, string> = {
-    PENDIENTE: "border-[#F7D87A] bg-[#FFF8E1] text-[#7A5A00]",
-    EN_REVISION: "border-[#A9D8EA] bg-[#EEF8FC] text-[var(--color-primary)]",
-    APROBADA: "border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A]",
-    RECHAZADA: "border-red-200 bg-red-50 text-red-700",
-  };
-
-  return (
-    <span
-      className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${clasesPorEstado[estado]}`}
-    >
-      {estado}
-    </span>
   );
 }
 

@@ -47,18 +47,18 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
-        <div className="py-16">
+        <div className="py-14 sm:py-[4.5rem]">
           <HomeHero />
 
           {huboError ? (
             <div className="mt-12">
               <ErrorState
                 titulo="No pudimos cargar las actividades"
-                descripcion="Puede que el backend esté apagado o que haya un problema temporal con la conexión."
+                descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
                 mostrarBotonInicio={false}
                 mostrarBotonExplorar
               />

@@ -116,6 +116,15 @@ export type CambiarEstadoSolicitudAdminRequest =
 export type CambiarEstadoSolicitudAdminResponse =
   SolicitudPublicacionAdminDetalle;
 
+export type SolicitudPublicacionAprobacionResponse = {
+  solicitudId: number;
+  estado: "APROBADA";
+  actividadId: number;
+  actividadSlug: string;
+  actividadTitulo: string;
+  mensaje: string;
+};
+
 export type AdminErroresPorCampo = Record<string, string>;
 
 export type AdminErrorResponse = {

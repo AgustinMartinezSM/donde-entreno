@@ -9,6 +9,7 @@ import {
   type DiaSemanaSolicitudAdmin,
   type EstadoSolicitudAdmin,
   type OrdenSolicitudesAdmin,
+  type SolicitudPublicacionAprobacionResponse,
   type SolicitudPublicacionAdminDetalle,
   type SolicitudPublicacionAdminHorario,
   type SolicitudPublicacionAdminResumen,
@@ -104,6 +105,26 @@ export async function cambiarEstadoSolicitudAdmin(
       body: JSON.stringify(body),
     },
     esSolicitudPublicacionAdminDetalle
+  );
+}
+
+export async function aprobarSolicitudAdmin(
+  id: number,
+  accessToken: string
+): Promise<SolicitudPublicacionAprobacionResponse> {
+  const authorization = construirAuthorization(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/solicitudes-publicacion/${idSeguro}/aprobar`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+    },
+    esSolicitudPublicacionAprobacionResponse
   );
 }
 
@@ -349,6 +370,20 @@ function esSolicitudPublicacionAdminDetalle(
     esNumberONull(valor.actividadGeneradaId) &&
     Array.isArray(valor.horarios) &&
     valor.horarios.every(esSolicitudPublicacionAdminHorario)
+  );
+}
+
+function esSolicitudPublicacionAprobacionResponse(
+  valor: unknown
+): valor is SolicitudPublicacionAprobacionResponse {
+  return (
+    esObjeto(valor) &&
+    typeof valor.solicitudId === "number" &&
+    valor.estado === "APROBADA" &&
+    typeof valor.actividadId === "number" &&
+    typeof valor.actividadSlug === "string" &&
+    typeof valor.actividadTitulo === "string" &&
+    typeof valor.mensaje === "string"
   );
 }
 

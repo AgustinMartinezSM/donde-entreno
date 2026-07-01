@@ -10,12 +10,14 @@ import {
 } from "../../../../services/authService";
 import {
   AdminApiError,
+  aprobarSolicitudAdmin,
   cambiarEstadoSolicitudAdmin,
   obtenerSolicitudAdmin,
 } from "../../../../services/adminSolicitudesService";
 import type { AdminSesion } from "../../../../types/auth";
 import type {
   EstadoSolicitudAdmin,
+  SolicitudPublicacionAprobacionResponse,
   SolicitudPublicacionAdminDetalle,
   SolicitudPublicacionAdminHorario,
 } from "../../../../types/adminSolicitudes";
@@ -55,6 +57,9 @@ function AdminSolicitudDetalle() {
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [exitoAccion, setExitoAccion] = useState<string | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState("");
+  const [confirmandoAprobacion, setConfirmandoAprobacion] = useState(false);
+  const [respuestaAprobacion, setRespuestaAprobacion] =
+    useState<SolicitudPublicacionAprobacionResponse | null>(null);
 
   useEffect(() => {
     let componenteActivo = true;
@@ -134,6 +139,17 @@ function AdminSolicitudDetalle() {
     setExitoAccion(null);
   }
 
+  function manejarSolicitarAprobacion() {
+    setErrorAccion(null);
+    setExitoAccion(null);
+    setRespuestaAprobacion(null);
+    setConfirmandoAprobacion(true);
+  }
+
+  function manejarCancelarAprobacion() {
+    setConfirmandoAprobacion(false);
+  }
+
   async function manejarMarcarEnRevision() {
     if (!sesion || !solicitud || accionEnCurso) {
       return;
@@ -142,6 +158,8 @@ function AdminSolicitudDetalle() {
     setAccionEnCurso(true);
     setErrorAccion(null);
     setExitoAccion(null);
+    setRespuestaAprobacion(null);
+    setConfirmandoAprobacion(false);
 
     try {
       await cambiarEstadoSolicitudAdmin(
@@ -178,6 +196,8 @@ function AdminSolicitudDetalle() {
     setAccionEnCurso(true);
     setErrorAccion(null);
     setExitoAccion(null);
+    setRespuestaAprobacion(null);
+    setConfirmandoAprobacion(false);
 
     try {
       await cambiarEstadoSolicitudAdmin(
@@ -199,6 +219,35 @@ function AdminSolicitudDetalle() {
     }
   }
 
+  async function manejarConfirmarAprobacion() {
+    if (!sesion || !solicitud || accionEnCurso) {
+      return;
+    }
+
+    setAccionEnCurso(true);
+    setErrorAccion(null);
+    setExitoAccion(null);
+
+    try {
+      const respuesta = await aprobarSolicitudAdmin(
+        solicitud.id,
+        sesion.accessToken
+      );
+
+      setRespuestaAprobacion(respuesta);
+      setConfirmandoAprobacion(false);
+      setExitoAccion(respuesta.mensaje);
+      await recargarDetalleSolicitud(solicitud.id, sesion.accessToken);
+    } catch (error: unknown) {
+      manejarErrorAccion(
+        error,
+        "Ocurrió un problema inesperado al aprobar la solicitud."
+      );
+    } finally {
+      setAccionEnCurso(false);
+    }
+  }
+
   async function recargarDetalleSolicitud(
     solicitudId: number,
     accessToken: string
@@ -211,7 +260,10 @@ function AdminSolicitudDetalle() {
     setSolicitud(solicitudActualizada);
   }
 
-  function manejarErrorAccion(error: unknown) {
+  function manejarErrorAccion(
+    error: unknown,
+    mensajeErrorDesconocido = "Ocurrió un problema inesperado al actualizar la solicitud."
+  ) {
     if (error instanceof AdminApiError) {
       if (error.status === 401) {
         cerrarSesionAdmin();
@@ -233,9 +285,7 @@ function AdminSolicitudDetalle() {
       return;
     }
 
-    setErrorAccion(
-      "Ocurrió un problema inesperado al actualizar la solicitud."
-    );
+    setErrorAccion(mensajeErrorDesconocido);
   }
 
   return (
@@ -307,9 +357,14 @@ function AdminSolicitudDetalle() {
             accionEnCurso={accionEnCurso}
             errorAccion={errorAccion}
             exitoAccion={exitoAccion}
+            confirmandoAprobacion={confirmandoAprobacion}
+            respuestaAprobacion={respuestaAprobacion}
             onMotivoRechazoChange={manejarCambioMotivoRechazo}
             onMarcarEnRevision={manejarMarcarEnRevision}
             onRechazarSolicitud={manejarRechazarSolicitud}
+            onSolicitarAprobacion={manejarSolicitarAprobacion}
+            onCancelarAprobacion={manejarCancelarAprobacion}
+            onConfirmarAprobacion={manejarConfirmarAprobacion}
           />
         )}
       </section>
@@ -323,18 +378,28 @@ function DetalleSolicitud({
   accionEnCurso,
   errorAccion,
   exitoAccion,
+  confirmandoAprobacion,
+  respuestaAprobacion,
   onMotivoRechazoChange,
   onMarcarEnRevision,
   onRechazarSolicitud,
+  onSolicitarAprobacion,
+  onCancelarAprobacion,
+  onConfirmarAprobacion,
 }: {
   solicitud: SolicitudPublicacionAdminDetalle;
   motivoRechazo: string;
   accionEnCurso: boolean;
   errorAccion: string | null;
   exitoAccion: string | null;
+  confirmandoAprobacion: boolean;
+  respuestaAprobacion: SolicitudPublicacionAprobacionResponse | null;
   onMotivoRechazoChange: (motivo: string) => void;
   onMarcarEnRevision: () => void;
   onRechazarSolicitud: () => void;
+  onSolicitarAprobacion: () => void;
+  onCancelarAprobacion: () => void;
+  onConfirmarAprobacion: () => void;
 }) {
   return (
     <div className="grid gap-5">
@@ -451,9 +516,14 @@ function DetalleSolicitud({
           accionEnCurso={accionEnCurso}
           errorAccion={errorAccion}
           exitoAccion={exitoAccion}
+          confirmandoAprobacion={confirmandoAprobacion}
+          respuestaAprobacion={respuestaAprobacion}
           onMotivoRechazoChange={onMotivoRechazoChange}
           onMarcarEnRevision={onMarcarEnRevision}
           onRechazarSolicitud={onRechazarSolicitud}
+          onSolicitarAprobacion={onSolicitarAprobacion}
+          onCancelarAprobacion={onCancelarAprobacion}
+          onConfirmarAprobacion={onConfirmarAprobacion}
         />
       </section>
 
@@ -484,25 +554,38 @@ function AccionesRevision({
   accionEnCurso,
   errorAccion,
   exitoAccion,
+  confirmandoAprobacion,
+  respuestaAprobacion,
   onMotivoRechazoChange,
   onMarcarEnRevision,
   onRechazarSolicitud,
+  onSolicitarAprobacion,
+  onCancelarAprobacion,
+  onConfirmarAprobacion,
 }: {
   solicitud: SolicitudPublicacionAdminDetalle;
   motivoRechazo: string;
   accionEnCurso: boolean;
   errorAccion: string | null;
   exitoAccion: string | null;
+  confirmandoAprobacion: boolean;
+  respuestaAprobacion: SolicitudPublicacionAprobacionResponse | null;
   onMotivoRechazoChange: (motivo: string) => void;
   onMarcarEnRevision: () => void;
   onRechazarSolicitud: () => void;
+  onSolicitarAprobacion: () => void;
+  onCancelarAprobacion: () => void;
+  onConfirmarAprobacion: () => void;
 }) {
   const estaRechazada = solicitud.estado === "RECHAZADA";
   const estaAprobada = solicitud.estado === "APROBADA";
   const estaEnRevision = solicitud.estado === "EN_REVISION";
   const puedeMarcarEnRevision = solicitud.estado === "PENDIENTE";
+  const puedeAprobar =
+    solicitud.estado === "PENDIENTE" || solicitud.estado === "EN_REVISION";
   const puedeRechazar =
     solicitud.estado === "PENDIENTE" || solicitud.estado === "EN_REVISION";
+  const actividadSlugAprobada = respuestaAprobacion?.actividadSlug.trim() ?? "";
 
   return (
     <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)]">
@@ -524,6 +607,48 @@ function AccionesRevision({
         <p className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]">
           Esta solicitud ya fue aprobada.
         </p>
+      )}
+
+      {puedeAprobar && (
+        <div className="mt-5 grid gap-4">
+          {!confirmandoAprobacion && (
+            <button
+              type="button"
+              onClick={onSolicitarAprobacion}
+              disabled={accionEnCurso}
+              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            >
+              {accionEnCurso ? "Procesando..." : "Aprobar y publicar actividad"}
+            </button>
+          )}
+
+          {confirmandoAprobacion && (
+            <div className="rounded-[var(--radius-md)] border border-[#F7D87A] bg-[#FFF8E1] px-4 py-4">
+              <p className="text-sm font-bold leading-6 text-[#7A5A00]">
+                Esta acción creará una actividad pública visible en
+                DondeEntreno. ¿Querés continuar?
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={onCancelarAprobacion}
+                  disabled={accionEnCurso}
+                  className="rounded-[var(--radius-md)] border border-[#D9B94E] px-5 py-3 text-sm font-bold text-[#7A5A00] transition hover:border-[#A98300] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={onConfirmarAprobacion}
+                  disabled={accionEnCurso}
+                  className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  {accionEnCurso ? "Procesando..." : "Confirmar aprobación"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {puedeRechazar && (
@@ -586,7 +711,28 @@ function AccionesRevision({
         </p>
       )}
 
-      {exitoAccion && (
+      {respuestaAprobacion && (
+        <div
+          role="status"
+          className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-4 text-sm font-bold text-[#1D7B4A]"
+        >
+          <p>{respuestaAprobacion.mensaje}</p>
+          <p className="mt-2">
+            Actividad creada: {respuestaAprobacion.actividadTitulo}
+          </p>
+          <p className="mt-1">ID actividad: {respuestaAprobacion.actividadId}</p>
+          {actividadSlugAprobada && (
+            <Link
+              href={`/actividades/${actividadSlugAprobada}`}
+              className="mt-3 inline-flex rounded-[var(--radius-md)] bg-[#1D7B4A] px-4 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5"
+            >
+              Ver actividad pública
+            </Link>
+          )}
+        </div>
+      )}
+
+      {exitoAccion && !respuestaAprobacion && (
         <p
           role="status"
           className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]"

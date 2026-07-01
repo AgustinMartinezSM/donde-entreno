@@ -32,6 +32,7 @@ Archivos disponibles:
 06_test_solicitud_publicacion_queries.sql
 07_prepare_auth_security.sql
 08_test_auth_security_queries.sql
+09_test_approval_traceability_queries.sql
 ```
 
 ## Orden de uso local
@@ -52,6 +53,7 @@ Los scripts de validación se ejecutan después de tener la estructura y los dat
 6. 04_test_queries.sql
 7. 06_test_solicitud_publicacion_queries.sql
 8. 08_test_auth_security_queries.sql
+9. 09_test_approval_traceability_queries.sql
 ```
 
 `04_test_queries.sql` contiene consultas de control del MVP inicial.
@@ -59,6 +61,8 @@ Los scripts de validación se ejecutan después de tener la estructura y los dat
 `06_test_solicitud_publicacion_queries.sql` valida localmente la migración `05`. Comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos de prueba persistidos.
 
 `08_test_auth_security_queries.sql` valida localmente la migración `07`. Comienza con `BEGIN`, termina con `ROLLBACK` y no conserva usuarios temporales.
+
+`09_test_approval_traceability_queries.sql` valida localmente que la trazabilidad entre una solicitud aprobada y la actividad creada pueda representarse con el modelo actual. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste datos.
 
 ## Descripción de cada script
 
@@ -186,6 +190,27 @@ Valida:
 * confirmación de que la unicidad también contempla usuarios con `deleted_at`.
 
 El script comienza con `BEGIN`, termina con `ROLLBACK` y no conserva usuarios temporales.
+
+### 09_test_approval_traceability_queries.sql
+
+Es un script de validación local para revisar el flujo de aprobación de solicitudes sin crear una migración estructural nueva.
+
+Valida que el modelo actual permite representar:
+
+* una solicitud aprobada;
+* la actividad creada a partir de esa solicitud;
+* el usuario administrador que revisó;
+* la fecha de finalización de la revisión;
+* los horarios copiados a `horario_actividad`.
+
+También incluye pruebas negativas para confirmar que:
+
+* una misma `actividad_generada_id` no pueda vincularse a dos solicitudes;
+* `RECHAZADA` requiera `motivo_rechazo`;
+* `APROBADA` no permita `motivo_rechazo`;
+* `revision_finalizada_at` no pueda ser anterior a `revision_iniciada_at`.
+
+El script comienza con `BEGIN`, termina con `ROLLBACK`, no contiene confirmación de transacción y no deja datos persistidos.
 
 ## Modelo actual de tablas
 
@@ -358,6 +383,29 @@ El backend deberá encargarse de:
 * crear de forma controlada la actividad aprobada;
 * aplicar medidas contra spam y duplicados.
 
+### Aprobación de solicitudes y trazabilidad
+
+No hizo falta una migración estructural nueva para representar la aprobación de solicitudes, porque `solicitud_publicacion` ya tiene los campos necesarios:
+
+* `actividad_generada_id`;
+* `revisado_por_usuario_id`;
+* `revision_finalizada_at`;
+* `estado`;
+* `motivo_rechazo`;
+* `observaciones_revision`.
+
+`actividad_generada_id` vincula la solicitud con la actividad creada finalmente en `actividad`.
+
+`revisado_por_usuario_id` representa al usuario administrador que tomó, aprobó o rechazó la solicitud.
+
+`revision_finalizada_at` representa la fecha de cierre de la revisión. Según el valor de `estado`, esa fecha puede interpretarse como fecha de aprobación o de rechazo.
+
+`motivo_rechazo` aplica solamente cuando `estado = 'RECHAZADA'`. Para estados como `PENDIENTE`, `EN_REVISION` o `APROBADA`, debe permanecer vacío.
+
+La aprobación real debe hacerla el backend dentro de una transacción controlada. PostgreSQL no crea actividades automáticamente, no copia horarios por su cuenta y no cambia estados mediante triggers.
+
+No se agregaron campos como `aprobada_en`, `aprobada_por_usuario_id`, `rechazada_en` ni `rechazada_por_usuario_id` porque serían redundantes con `estado`, `revisado_por_usuario_id` y `revision_finalizada_at`.
+
 ## Crear la base de datos local
 
 Desde PostgreSQL, crear una base de datos para el proyecto.
@@ -392,6 +440,7 @@ Pasos sugeridos:
 10. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
 11. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
 12. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
+13. Ejecutar `09_test_approval_traceability_queries.sql` para validar trazabilidad de aprobación.
 
 ## Ejecución desde terminal
 
@@ -413,6 +462,7 @@ Ejemplo para validaciones locales:
 psql -U postgres -d donde_entreno_db -f database/scripts/04_test_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/06_test_solicitud_publicacion_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/08_test_auth_security_queries.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/09_test_approval_traceability_queries.sql
 ```
 
 El usuario `postgres` puede cambiar según la configuración local de cada máquina.
@@ -467,6 +517,8 @@ Después de ejecutar los scripts, se recomienda verificar:
 * Que exista el rol `USUARIO`.
 * Que exista el índice `idx_usuario_email_normalizado_unico`.
 * Que `08_test_auth_security_queries.sql` termine con `ROLLBACK` y no conserve usuarios temporales.
+* Que `09_test_approval_traceability_queries.sql` termine con `ROLLBACK` y no conserve datos temporales.
+* Que una solicitud aprobada pueda vincularse con una actividad mediante `actividad_generada_id`.
 * Que los endpoints del backend respondan correctamente.
 
 Endpoint útil para probar:
@@ -479,7 +531,7 @@ Si devuelve actividades, la base de datos está correctamente conectada con el b
 
 ## Estado actual
 
-La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación y una migración aditiva de preparación de Auth y Seguridad.
+La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación, una migración aditiva de preparación de Auth y Seguridad y scripts de validación local para trazabilidad de aprobación.
 
 Después de aplicar `05_create_solicitud_publicacion.sql`, el modelo local pasa de 11 a 13 tablas.
 

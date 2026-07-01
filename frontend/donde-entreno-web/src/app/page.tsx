@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { Actividad } from "../types/actividad";
 import { Header } from "../components/layout/Header";
 import { HomeHero } from "../components/home/HomeHero";
+import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
+import { HomePopularSports } from "../components/home/HomePopularSports";
+import { HomePublishCta } from "../components/home/HomePublishCta";
 import { ActivityList } from "../components/explorar/ActivityList";
 import { ErrorState } from "../components/feedback/ErrorState";
 import { buscarActividades } from "../services/actividadService";
@@ -9,12 +13,6 @@ import { buscarActividades } from "../services/actividadService";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  /*
-    Metadata específica de la Home.
-    Como en layout.tsx usamos template "%s | DondeEntreno",
-    este title queda como:
-    "Guía deportiva local | DondeEntreno"
-  */
   title: "Guía deportiva local",
   description:
     "Encontrá dónde entrenar cerca tuyo: deportes, clubes, profesores, gimnasios y actividades deportivas en tu ciudad.",
@@ -30,7 +28,6 @@ export default async function Home() {
   let huboError = false;
 
   try {
-    // Pedimos las primeras 6 actividades al backend.
     const respuesta = await buscarActividades({
       page: 0,
       size: 6,
@@ -38,10 +35,6 @@ export default async function Home() {
 
     actividades = respuesta.contenido;
   } catch (error) {
-    /*
-      Si el backend está apagado o falla la petición,
-      marcamos que hubo error para mostrar un mensaje prolijo.
-    */
     huboError = true;
     console.error("Error al cargar actividades:", error);
   }
@@ -51,21 +44,40 @@ export default async function Home() {
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
-        <div className="py-14 sm:py-[4.5rem]">
+        <div className="py-10 sm:py-14">
           <HomeHero />
+          <HomePopularSports />
 
-          {huboError ? (
-            <div className="mt-12">
-              <ErrorState
-                titulo="No pudimos cargar las actividades"
-                descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
-                mostrarBotonInicio={false}
-                mostrarBotonExplorar
+          <section className="mt-14 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:mt-16 sm:p-7">
+            {huboError ? (
+              <div className="mt-6">
+                <ErrorState
+                  titulo="No pudimos cargar las actividades"
+                  descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
+                  mostrarBotonInicio={false}
+                  mostrarBotonExplorar
+                />
+              </div>
+            ) : (
+              <ActivityList
+                actividades={actividades}
+                titulo="Actividades destacadas"
+                descripcion="Opciones disponibles para empezar a moverte en tu ciudad."
               />
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <Link
+                href="/explorar"
+                className="rounded-[var(--radius-md)] border border-[#BFDDEA] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+              >
+                Ver todas
+              </Link>
             </div>
-          ) : (
-            <ActivityList actividades={actividades} />
-          )}
+          </section>
+
+          <HomeHowItWorks />
+          <HomePublishCta />
         </div>
       </section>
     </main>

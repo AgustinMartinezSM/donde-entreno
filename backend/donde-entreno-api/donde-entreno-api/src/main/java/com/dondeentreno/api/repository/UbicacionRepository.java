@@ -4,6 +4,7 @@ import com.dondeentreno.api.entity.Ubicacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository de Ubicacion.
@@ -39,4 +40,12 @@ public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
      * Busca ubicaciones activas filtradas por barrio.
      */
     List<Ubicacion> findByActivaTrueAndBarrio_IdOrderByNombreAsc(Long barrioId);
+
+    Optional<Ubicacion> findFirstByPerfilPublicador_IdAndCiudad_IdAndBarrio_IdAndNombreIgnoreCaseAndDireccionIgnoreCaseAndActivaTrueAndDeletedAtIsNull(
+            Long perfilPublicadorId,
+            Long ciudadId,
+            Long barrioId,
+            String nombre,
+            String direccion
+    );
 }

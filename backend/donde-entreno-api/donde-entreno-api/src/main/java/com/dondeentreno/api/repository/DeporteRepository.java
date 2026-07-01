@@ -33,6 +33,8 @@ public interface DeporteRepository extends JpaRepository<Deporte, Long> {
      */
     List<Deporte> findByActivoTrueOrderByOrdenAsc();
 
+    Optional<Deporte> findByIdAndActivoTrue(Long id);
+
     /**
      * Busca un deporte por su slug.
      *

@@ -3,6 +3,7 @@ package com.dondeentreno.api.controller;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionAdminDetalleDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionAdminResumenDTO;
+import com.dondeentreno.api.dto.SolicitudPublicacionAprobacionResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionCambiarEstadoRequestDTO;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.service.SolicitudPublicacionAdminService;
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,6 +57,15 @@ public class SolicitudPublicacionAdminController {
     ) {
         Long usuarioAutenticadoId = extraerUserId(jwt);
         return solicitudPublicacionAdminService.cambiarEstado(id, request, usuarioAutenticadoId);
+    }
+
+    @PostMapping("/{id}/aprobar")
+    public SolicitudPublicacionAprobacionResponseDTO aprobarSolicitud(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long usuarioAutenticadoId = extraerUserId(jwt);
+        return solicitudPublicacionAdminService.aprobarSolicitud(id, usuarioAutenticadoId);
     }
 
     private Long extraerUserId(Jwt jwt) {

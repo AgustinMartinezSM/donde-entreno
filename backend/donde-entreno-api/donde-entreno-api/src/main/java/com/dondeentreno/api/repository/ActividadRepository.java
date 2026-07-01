@@ -22,6 +22,8 @@ import java.util.Optional;
  */
 public interface ActividadRepository extends JpaRepository<Actividad, Long> {
 
+    boolean existsBySlug(String slug);
+
     /**
      * Busca actividades activas y publicadas.
      *

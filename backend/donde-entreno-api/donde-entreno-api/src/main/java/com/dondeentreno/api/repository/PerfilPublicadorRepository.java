@@ -43,4 +43,10 @@ public interface PerfilPublicadorRepository extends JpaRepository<PerfilPublicad
      * Lo vamos a usar más adelante para ver detalle de un perfil.
      */
     Optional<PerfilPublicador> findByIdAndActivoTrue(Long id);
+
+    Optional<PerfilPublicador> findFirstByUsuario_IdAndTipoPublicadorIgnoreCaseAndNombreIgnoreCaseAndActivoTrueAndDeletedAtIsNull(
+            Long usuarioId,
+            String tipoPublicador,
+            String nombre
+    );
 }

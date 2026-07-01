@@ -4,6 +4,7 @@ import com.dondeentreno.api.entity.Ciudad;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository de Ciudad.
@@ -21,4 +22,6 @@ public interface CiudadRepository extends JpaRepository<Ciudad, Long> {
      * ORDER BY nombre ASC
      */
     List<Ciudad> findByActivaTrueOrderByNombreAsc();
+
+    Optional<Ciudad> findByIdAndActivaTrue(Long id);
 }

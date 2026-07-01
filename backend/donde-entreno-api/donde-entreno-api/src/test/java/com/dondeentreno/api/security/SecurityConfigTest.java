@@ -53,7 +53,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestAccessDeniedHandler.class,
         GlobalExceptionHandler.class
 })
-@TestPropertySource(properties = "dondeentreno.auth.jwt.secret=clave-ficticia-de-test-con-longitud-suficiente-123456")
+@TestPropertySource(properties = {
+        "dondeentreno.auth.jwt.secret=clave-ficticia-de-test-con-longitud-suficiente-123456",
+        "dondeentreno.auth.jwt.issuer=dondeentreno-api"
+})
 class SecurityConfigTest {
 
     private static final String JWT_SECRET_TEST = "clave-ficticia-de-test-con-longitud-suficiente-123456";

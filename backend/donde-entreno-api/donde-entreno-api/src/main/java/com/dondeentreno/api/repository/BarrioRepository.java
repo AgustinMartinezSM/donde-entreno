@@ -4,6 +4,7 @@ import com.dondeentreno.api.entity.Barrio;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository de Barrio.
@@ -33,4 +34,6 @@ public interface BarrioRepository extends JpaRepository<Barrio, Long> {
      * "entrar a la relación ciudad y filtrar por su id".
      */
     List<Barrio> findByActivoTrueAndCiudad_IdOrderByNombreAsc(Long ciudadId);
+
+    Optional<Barrio> findByIdAndActivoTrueAndCiudad_Id(Long id, Long ciudadId);
 }

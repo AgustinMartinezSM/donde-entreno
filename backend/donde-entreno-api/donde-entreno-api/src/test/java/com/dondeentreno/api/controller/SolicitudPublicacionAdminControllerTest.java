@@ -4,6 +4,7 @@ import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionAdminDetalleDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionAdminHorarioDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionAdminResumenDTO;
+import com.dondeentreno.api.dto.SolicitudPublicacionAprobacionResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionCambiarEstadoRequestDTO;
 import com.dondeentreno.api.exception.GlobalExceptionHandler;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -247,6 +249,76 @@ class SolicitudPublicacionAdminControllerTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void postAprobarSinTokenDevuelveUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/10/aprobar"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
+    }
+
+    @Test
+    void postAprobarConRolUsuarioDevuelveForbidden() throws Exception {
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/10/aprobar")
+                        .with(jwtConRol("USUARIO", 123L)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+    }
+
+    @Test
+    void postAprobarConSuperAdminDevuelveResponseYEnviaUserIdAlService() throws Exception {
+        when(solicitudPublicacionAdminService.aprobarSolicitud(10L, 123L))
+                .thenReturn(aprobacionResponse());
+
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/10/aprobar")
+                        .with(jwtConRol("SUPER_ADMIN", 123L)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.solicitudId").value(10))
+                .andExpect(jsonPath("$.estado").value("APROBADA"))
+                .andExpect(jsonPath("$.actividadId").value(25))
+                .andExpect(jsonPath("$.actividadSlug").value("boxeo-recreativo"))
+                .andExpect(jsonPath("$.actividadTitulo").value("Boxeo recreativo"))
+                .andExpect(jsonPath("$.mensaje").value("La solicitud fue aprobada correctamente y se creo la actividad."));
+
+        verify(solicitudPublicacionAdminService).aprobarSolicitud(10L, 123L);
+    }
+
+    @Test
+    void postAprobarConAdminDevuelveOk() throws Exception {
+        when(solicitudPublicacionAdminService.aprobarSolicitud(10L, 456L))
+                .thenReturn(aprobacionResponse());
+
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/10/aprobar")
+                        .with(jwtConRol("ADMIN", 456L)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("APROBADA"));
+
+        verify(solicitudPublicacionAdminService).aprobarSolicitud(10L, 456L);
+    }
+
+    @Test
+    void postAprobarInexistenteDevuelveNotFound() throws Exception {
+        when(solicitudPublicacionAdminService.aprobarSolicitud(99L, 123L))
+                .thenThrow(new RecursoNoEncontradoException("Solicitud de publicacion no encontrada."));
+
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/99/aprobar")
+                        .with(jwtConRol("SUPER_ADMIN", 123L)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.mensaje").value("Solicitud de publicacion no encontrada."));
+    }
+
+    @Test
+    void postAprobarConReglaInvalidaDevuelveBadRequest() throws Exception {
+        when(solicitudPublicacionAdminService.aprobarSolicitud(10L, 123L))
+                .thenThrow(new SolicitudPublicacionInvalidaException("La solicitud ya fue aprobada."));
+
+        mockMvc.perform(post("/api/admin/solicitudes-publicacion/10/aprobar")
+                        .with(jwtConRol("SUPER_ADMIN", 123L)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.mensaje").value("La solicitud ya fue aprobada."));
+    }
+
     private org.springframework.test.web.servlet.request.RequestPostProcessor jwtConRol(String rol, Long userId) {
         return jwt()
                 .jwt(jwt -> jwt
@@ -256,6 +328,17 @@ class SolicitudPublicacionAdminControllerTest {
                         .claim("roles", List.of(rol))
                 )
                 .authorities(new SimpleGrantedAuthority("ROLE_" + rol));
+    }
+
+    private SolicitudPublicacionAprobacionResponseDTO aprobacionResponse() {
+        return new SolicitudPublicacionAprobacionResponseDTO(
+                10L,
+                "APROBADA",
+                25L,
+                "boxeo-recreativo",
+                "Boxeo recreativo",
+                "La solicitud fue aprobada correctamente y se creo la actividad."
+        );
     }
 
     private SolicitudPublicacionAdminResumenDTO resumen() {

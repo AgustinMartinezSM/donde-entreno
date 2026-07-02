@@ -11,6 +11,9 @@ import { SortSelect } from "../../components/explorar/SortSelect";
 import { FiltersPanel } from "../../components/explorar/FiltersPanel";
 import { obtenerOpcionesFiltros } from "../../services/filtrosService";
 import { ErrorState } from "../../components/feedback/ErrorState";
+import { SectionHeader } from "../../components/ui/SectionHeader";
+import { StatusMessage } from "../../components/ui/StatusMessage";
+import { SurfaceCard } from "../../components/ui/SurfaceCard";
 
 export const metadata: Metadata = {
   /*
@@ -123,7 +126,11 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
         <Header />
 
         <div className="py-8 sm:py-10">
-          <section className="overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-6">
+          <SurfaceCard
+            as="section"
+            variant="info"
+            className="overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:p-6"
+          >
             <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               EXPLORAR
             </p>
@@ -147,7 +154,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
             <div className="max-w-3xl transition duration-200 ease-out">
               <SearchBar valorInicial={textoBuscado} />
             </div>
-          </section>
+          </SurfaceCard>
 
           <div className="mt-6">
             {huboError ? (
@@ -177,41 +184,40 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
           {!huboError && (
             <>
-              <section className="mt-8 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/70 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
-                <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-                      ACTIVIDADES
-                    </p>
-                    <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-                      Todas las actividades
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-                      Opciones disponibles según tu búsqueda y filtros.
-                    </p>
-                  </div>
-
-                  <SortSelect
-                    textoBuscado={textoBuscado}
-                    ordenActual={ordenActual}
-                    ciudadIdActual={ciudadIdActual}
-                    barrioIdActual={barrioIdActual}
-                    deporteSlugActual={deporteSlugActual}
-                    nivelActual={nivelActual}
-                    modalidadActual={modalidadActual}
-                  />
-                </div>
+              <SurfaceCard
+                as="section"
+                variant="soft"
+                className="mt-8 p-4 sm:p-6"
+              >
+                <SectionHeader
+                  eyebrow="ACTIVIDADES"
+                  title="Todas las actividades"
+                  description="Opciones disponibles según tu búsqueda y filtros."
+                  action={
+                    <SortSelect
+                      textoBuscado={textoBuscado}
+                      ordenActual={ordenActual}
+                      ciudadIdActual={ciudadIdActual}
+                      barrioIdActual={barrioIdActual}
+                      deporteSlugActual={deporteSlugActual}
+                      nivelActual={nivelActual}
+                      modalidadActual={modalidadActual}
+                    />
+                  }
+                  className="mb-6"
+                />
 
                 {actividades.length === 0 ? (
-                  <div className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-7 text-center shadow-[0_18px_45px_rgba(12,52,80,0.09)]">
-                    <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
-                      No encontramos actividades con esos filtros
-                    </h2>
-                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)]">
+                  <StatusMessage
+                    variant="info"
+                    title="No encontramos actividades con esos filtros"
+                    className="p-7 text-center"
+                  >
+                    <p className="mx-auto max-w-xl">
                       Probá con otra búsqueda, cambiá la zona o revisá los
                       filtros aplicados.
                     </p>
-                  </div>
+                  </StatusMessage>
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {actividades.map((actividad) => (
@@ -219,7 +225,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                     ))}
                   </div>
                 )}
-              </section>
+              </SurfaceCard>
 
               <Pagination
                 paginaActual={paginaActual}

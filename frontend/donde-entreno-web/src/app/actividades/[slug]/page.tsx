@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import type { ActividadDetalle } from "../../../types/actividad";
 import { Header } from "../../../components/layout/Header";
@@ -12,6 +11,9 @@ import {
   obtenerImagenActividad,
   obtenerImagenFallbackActividad,
 } from "../../../lib/activityImages";
+import { AppLinkButton } from "../../../components/ui/AppLinkButton";
+import { SectionHeader } from "../../../components/ui/SectionHeader";
+import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 
 type ActividadDetallePageProps = {
   params: Promise<{
@@ -126,16 +128,21 @@ export default async function ActividadDetallePage({
         <Header />
 
         <div className="py-8 sm:py-10">
-          <Link
+          <AppLinkButton
             href="/explorar"
-            className="inline-flex rounded-full border border-[#BFDDEA] bg-white/90 px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+            variant="secondary"
+            size="sm"
+            className="w-fit rounded-full"
           >
             ← Volver a explorar
-          </Link>
+          </AppLinkButton>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.45fr_0.75fr] lg:gap-7">
             {/* Columna principal */}
-            <article className="overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-3 shadow-[0_24px_60px_rgba(12,52,80,0.12)] transition duration-200 ease-out sm:p-4">
+            <SurfaceCard
+              as="article"
+              className="overflow-hidden p-3 transition duration-200 ease-out sm:p-4"
+            >
               <ActivityImage
                 src={imagenUrl}
                 fallbackSrc={imagenFallbackUrl}
@@ -185,22 +192,18 @@ export default async function ActividadDetallePage({
                   )}
                 </div>
 
-                <div className="mt-7 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_12px_30px_rgba(12,52,80,0.06)] sm:mt-8">
-                  <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-                    Sobre la actividad
-                  </h2>
+                <SurfaceCard className="mt-7 p-5 sm:mt-8">
+                  <SectionHeader title="Sobre la actividad" />
 
                   <p className="mt-3 text-sm leading-7 text-[var(--color-muted)] sm:text-base">
                     {actividad.descripcion ||
                       "Esta actividad todavía no tiene una descripción cargada."}
                   </p>
-                </div>
+                </SurfaceCard>
 
                 {actividad.horarios && actividad.horarios.length > 0 && (
-                  <div className="mt-7 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_12px_30px_rgba(12,52,80,0.06)] sm:mt-8">
-                    <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-                      Horarios
-                    </h2>
+                  <SurfaceCard className="mt-7 p-5 sm:mt-8">
+                    <SectionHeader title="Horarios" />
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {actividad.horarios.map((horario) => (
@@ -224,87 +227,87 @@ export default async function ActividadDetallePage({
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </SurfaceCard>
                 )}
               </div>
-            </article>
+            </SurfaceCard>
 
             {/* Columna lateral */}
-            <aside className="h-fit rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/95 p-5 shadow-[0_22px_55px_rgba(12,52,80,0.12)] transition duration-200 ease-out sm:p-6 lg:sticky lg:top-8">
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-                Información clave
-              </p>
-              <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
-                Datos para entrenar
-              </h2>
+            <aside className="h-fit lg:sticky lg:top-8">
+              <SurfaceCard className="bg-white/95 p-5 transition duration-200 ease-out sm:p-6">
+                <SectionHeader
+                  eyebrow="Información clave"
+                  title="Datos para entrenar"
+                />
 
-              <div className="mt-5 space-y-3 text-sm">
-                <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
-                  <p className="font-bold text-[var(--color-text)]">Lugar</p>
+                <div className="mt-5 space-y-3 text-sm">
+                  <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                    <p className="font-bold text-[var(--color-text)]">Lugar</p>
 
-                  <p className="mt-1 text-[var(--color-muted)]">
-                    {actividad.ubicacionNombre || "Lugar sin cargar"}
-                  </p>
-                </div>
+                    <p className="mt-1 text-[var(--color-muted)]">
+                      {actividad.ubicacionNombre || "Lugar sin cargar"}
+                    </p>
+                  </div>
 
-                <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
-                  <p className="font-bold text-[var(--color-text)]">
-                    Ubicación
-                  </p>
-
-                  <p className="mt-1 text-[var(--color-muted)]">
-                    {actividad.barrioNombre || "Barrio sin cargar"}
-                    {actividad.ciudadNombre
-                      ? `, ${actividad.ciudadNombre}`
-                      : ""}
-                  </p>
-                </div>
-
-                {actividad.direccion && (
                   <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                     <p className="font-bold text-[var(--color-text)]">
-                      Dirección
+                      Ubicación
                     </p>
 
                     <p className="mt-1 text-[var(--color-muted)]">
-                      {actividad.direccion}
+                      {actividad.barrioNombre || "Barrio sin cargar"}
+                      {actividad.ciudadNombre
+                        ? `, ${actividad.ciudadNombre}`
+                        : ""}
                     </p>
                   </div>
-                )}
 
-                {actividad.precioReferencia !== undefined &&
-                  actividad.precioReferencia !== null &&
-                  actividad.mostrarPrecio && (
+                  {actividad.direccion && (
                     <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                       <p className="font-bold text-[var(--color-text)]">
-                        Precio de referencia
-                      </p>
-
-                      <p className="mt-1 text-lg font-extrabold text-[var(--color-primary)]">
-                        ${actividad.precioReferencia}
-                      </p>
-                    </div>
-                  )}
-
-                {actividad.edadMinima !== undefined &&
-                  actividad.edadMinima !== null && (
-                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
-                      <p className="font-bold text-[var(--color-text)]">
-                        Edad mínima
+                        Dirección
                       </p>
 
                       <p className="mt-1 text-[var(--color-muted)]">
-                        Desde {actividad.edadMinima} años
+                        {actividad.direccion}
                       </p>
                     </div>
                   )}
-              </div>
 
-              <ContactButton
-                whatsapp={actividad.whatsappContacto}
-                instagram={actividad.instagramContacto}
-                email={actividad.emailContacto}
-              />
+                  {actividad.precioReferencia !== undefined &&
+                    actividad.precioReferencia !== null &&
+                    actividad.mostrarPrecio && (
+                      <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                        <p className="font-bold text-[var(--color-text)]">
+                          Precio de referencia
+                        </p>
+
+                        <p className="mt-1 text-lg font-extrabold text-[var(--color-primary)]">
+                          ${actividad.precioReferencia}
+                        </p>
+                      </div>
+                    )}
+
+                  {actividad.edadMinima !== undefined &&
+                    actividad.edadMinima !== null && (
+                      <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                        <p className="font-bold text-[var(--color-text)]">
+                          Edad mínima
+                        </p>
+
+                        <p className="mt-1 text-[var(--color-muted)]">
+                          Desde {actividad.edadMinima} años
+                        </p>
+                      </div>
+                    )}
+                </div>
+
+                <ContactButton
+                  whatsapp={actividad.whatsappContacto}
+                  instagram={actividad.instagramContacto}
+                  email={actividad.emailContacto}
+                />
+              </SurfaceCard>
             </aside>
           </div>
         </div>

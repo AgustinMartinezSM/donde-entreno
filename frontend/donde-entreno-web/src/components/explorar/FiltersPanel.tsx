@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FiltrosOpciones } from "../../types/filtros";
+import { AppButton } from "../ui/AppButton";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 type FiltersPanelProps = {
   filtros: FiltrosOpciones;
@@ -136,7 +138,7 @@ export function FiltersPanel({
   }
 
   return (
-    <div className="mt-5 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_18px_45px_rgba(12,52,80,0.09)] sm:p-6">
+    <SurfaceCard className="mt-5 p-4 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-[var(--color-primary)]">
@@ -275,23 +277,27 @@ export function FiltersPanel({
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
+          <AppButton
             onClick={limpiarFiltros}
-            className="min-h-12 w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] sm:w-auto"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            className="sm:w-auto"
           >
             Limpiar
-          </button>
+          </AppButton>
 
-          <button
-            type="button"
+          <AppButton
             onClick={aplicarFiltros}
-            className="min-h-12 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="sm:w-auto"
           >
             Aplicar filtros
-          </button>
+          </AppButton>
         </div>
       </div>
-    </div>
+    </SurfaceCard>
   );
 }

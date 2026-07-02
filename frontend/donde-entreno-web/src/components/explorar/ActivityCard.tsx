@@ -1,10 +1,11 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import type { Actividad } from "../../types/actividad";
 import { API_BASE_URL } from "../../lib/apiConfig";
 import { ActivityImage } from "../actividad/ActivityImage";
 import { obtenerImagenActividad } from "../../lib/activityImages";
+import { AppLinkButton } from "../ui/AppLinkButton";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 type ActivityCardProps = {
   actividad: Actividad;
@@ -36,7 +37,10 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
   });
 
   return (
-    <article className="group overflow-hidden rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)] active:scale-[0.995]">
+    <SurfaceCard
+      as="article"
+      className="group overflow-hidden p-3 transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)] active:scale-[0.995]"
+    >
       <ActivityImage
         src={imagenUrl}
         alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
@@ -83,13 +87,14 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
           )}
         </div>
 
-        <Link
+        <AppLinkButton
           href={`/actividades/${actividad.slug}`}
-          className="mt-5 block w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] group-hover:bg-[#0B314D]"
+          fullWidth
+          className="mt-5 group-hover:bg-[#0B314D]"
         >
           Ver detalle
-        </Link>
+        </AppLinkButton>
       </div>
-    </article>
+    </SurfaceCard>
   );
 }

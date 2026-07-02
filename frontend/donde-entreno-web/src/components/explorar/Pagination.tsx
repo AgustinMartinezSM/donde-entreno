@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { AppButton } from "../ui/AppButton";
+import { AppLinkButton } from "../ui/AppLinkButton";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 type PaginationProps = {
   paginaActual: number;
@@ -75,21 +77,25 @@ export function Pagination({
   }
 
   return (
-    <div className="mt-8 flex flex-col items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_14px_35px_rgba(12,52,80,0.08)] sm:flex-row">
+    <SurfaceCard className="mt-8 flex flex-col items-center justify-between gap-3 p-4 sm:flex-row">
       {tienePaginaAnterior ? (
-        <Link
+        <AppLinkButton
           href={crearHref(paginaActual - 1)}
-          className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] sm:w-auto"
+          variant="secondary"
+          fullWidth
+          className="sm:w-auto"
         >
           Anterior
-        </Link>
+        </AppLinkButton>
       ) : (
-        <button
+        <AppButton
           disabled
-          className="w-full cursor-not-allowed rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-sm font-bold text-[var(--color-muted)] opacity-60 sm:w-auto"
+          variant="secondary"
+          fullWidth
+          className="sm:w-auto"
         >
           Anterior
-        </button>
+        </AppButton>
       )}
 
       <p className="text-sm font-bold text-[var(--color-muted)]">
@@ -97,20 +103,24 @@ export function Pagination({
       </p>
 
       {tienePaginaSiguiente ? (
-        <Link
+        <AppLinkButton
           href={crearHref(paginaActual + 1)}
-          className="w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
+          variant="primary"
+          fullWidth
+          className="sm:w-auto"
         >
           Siguiente
-        </Link>
+        </AppLinkButton>
       ) : (
-        <button
+        <AppButton
           disabled
-          className="w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white opacity-80 sm:w-auto"
+          variant="primary"
+          fullWidth
+          className="sm:w-auto"
         >
           Siguiente
-        </button>
+        </AppButton>
       )}
-    </div>
+    </SurfaceCard>
   );
 }

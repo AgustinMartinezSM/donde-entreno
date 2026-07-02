@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Header } from "../components/layout/Header";
+import { BrandName } from "../components/brand/BrandName";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -31,10 +32,7 @@ export default function NotFound() {
             <p className="mt-4 text-base leading-7 text-[var(--color-muted)]">
               Puede que el enlace esté mal escrito o que la página todavía no
               esté disponible en{" "}
-              <span className="whitespace-nowrap font-bold">
-                <span className="text-[var(--color-primary)]">Donde</span>
-                <span className="text-[var(--color-secondary)]">Entreno</span>
-              </span>
+              <BrandName className="whitespace-nowrap font-bold" />
               .
             </p>
 

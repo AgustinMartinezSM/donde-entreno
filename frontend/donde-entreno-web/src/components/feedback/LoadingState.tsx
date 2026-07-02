@@ -1,11 +1,13 @@
+import type { ReactNode } from "react";
+
 type LoadingStateProps = {
-  titulo?: string;
-  descripcion?: string;
+  titulo?: ReactNode;
+  descripcion?: ReactNode;
 };
 
 export function LoadingState({
   titulo = "Cargando contenido",
-  descripcion = "Estamos buscando la información disponible en DondeEntreno.",
+  descripcion = "Estamos buscando la información disponible.",
 }: LoadingStateProps) {
   return (
     <div className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[var(--shadow-card)]">

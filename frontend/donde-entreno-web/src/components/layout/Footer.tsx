@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandName } from "../brand/BrandName";
 
 export function Footer() {
   /*
@@ -17,8 +18,7 @@ export function Footer() {
               className="inline-flex items-center text-2xl font-extrabold tracking-tight transition duration-200 ease-out hover:-translate-y-0.5"
               aria-label="Ir al inicio de DondeEntreno"
             >
-              <span className="text-white">Donde</span>
-              <span className="text-[var(--color-secondary)]">Entreno</span>
+              <BrandName onDark />
             </Link>
 
             <p className="mt-4 max-w-md text-sm leading-6 text-[#C9E4EF]">
@@ -103,7 +103,9 @@ export function Footer() {
 
         <div className="mt-8 border-t border-[#2A5B78] pt-5 sm:mt-10">
           <p className="text-xs leading-5 text-[#C9E4EF]">
-            © {anioActual} DondeEntreno. Todos los derechos reservados.
+            © {anioActual}{" "}
+            <BrandName className="inline font-bold" onDark />. Todos los
+            derechos reservados.
           </p>
         </div>
       </div>

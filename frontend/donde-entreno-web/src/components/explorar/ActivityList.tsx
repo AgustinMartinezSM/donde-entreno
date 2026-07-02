@@ -15,7 +15,7 @@ type ActivityListProps = {
 export function ActivityList({
   actividades,
   titulo = "Actividades destacadas",
-  descripcion = "Primeras actividades disponibles en DondeEntreno.",
+  descripcion = "Primeras actividades disponibles para empezar a moverte.",
 }: ActivityListProps) {
   if (actividades.length === 0) {
     return (

@@ -95,7 +95,7 @@ export default async function DeportesPage() {
           {huboError ? (
             <EstadoCatalogo
               titulo="No pudimos cargar los deportes"
-              descripcion="Puede haber un problema temporal de conexión. Intentá nuevamente en unos minutos."
+              descripcion="Puede haber un problema de conexión. Intentá nuevamente en unos minutos."
               linkTexto="Explorar actividades"
             />
           ) : deportes.length === 0 ? (

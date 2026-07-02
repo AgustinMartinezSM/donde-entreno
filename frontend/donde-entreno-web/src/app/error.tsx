@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Header } from "../components/layout/Header";
 import { ErrorState } from "../components/feedback/ErrorState";
+import { BrandName } from "../components/brand/BrandName";
 
 type GlobalErrorProps = {
   error: Error & {
@@ -28,7 +29,13 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
         <div className="py-10">
           <ErrorState
             titulo="Ocurrió un error inesperado"
-            descripcion="Algo falló mientras cargábamos esta parte de DondeEntreno. Podés intentar nuevamente o volver al inicio."
+            descripcion={
+              <>
+                Algo falló mientras cargábamos esta parte de{" "}
+                <BrandName className="inline font-bold" />. Podés intentar
+                nuevamente o volver al inicio.
+              </>
+            }
             mostrarBotonInicio
             mostrarBotonExplorar
           />

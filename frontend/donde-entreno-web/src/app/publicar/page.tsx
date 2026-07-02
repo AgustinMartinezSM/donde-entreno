@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandName } from "../../components/brand/BrandName";
 import { Header } from "../../components/layout/Header";
 import { PublishForm } from "../../components/publicar/PublishForm";
 
@@ -41,10 +42,7 @@ export default function PublicarPage() {
 
                 <h1 className="max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
                   Sumá tu actividad a{" "}
-                  <span className="whitespace-nowrap">
-                    <span className="text-[var(--color-primary)]">Donde</span>
-                    <span className="text-[var(--color-secondary)]">Entreno</span>
-                  </span>
+                  <BrandName className="whitespace-nowrap" />
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">

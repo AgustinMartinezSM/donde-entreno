@@ -18,6 +18,7 @@ import {
   enviarSolicitudPublicacion,
   SolicitudPublicacionApiError,
 } from "../../services/solicitudPublicacionService";
+import { BrandName } from "../brand/BrandName";
 import type {
   BarrioPublicacionOpcion,
   CiudadPublicacionOpcion,
@@ -1111,7 +1112,8 @@ export function PublishForm() {
                 Enviá la solicitud a revisión
               </span>
               <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
-                El equipo de DondeEntreno la revisa antes de publicarla.
+                El equipo de <BrandName className="inline font-bold" /> la
+                revisa antes de publicarla.
               </span>
             </span>
           </li>

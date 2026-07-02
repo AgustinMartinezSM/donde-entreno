@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminGuard } from "../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../components/admin/AdminEstadoBadge";
+import { BrandName } from "../../../components/brand/BrandName";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -176,37 +177,58 @@ function AdminSolicitudesListado() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-              Panel administrador
-            </p>
-            <h1 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-              Solicitudes de publicación
-            </h1>
-            {sesion && (
-              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-                {sesion.usuario.nombre} {sesion.usuario.apellido} ·{" "}
-                {sesion.usuario.email} · {sesion.usuario.rol}
-              </p>
-            )}
-          </div>
+        <div className="mb-6 overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
+          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+                  PANEL ADMINISTRADOR
+                </p>
+                <h1 className="mt-2 text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+                  Solicitudes de publicación
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
+                  Revisá, filtrá y gestioná las actividades enviadas para
+                  publicarse en <BrandName className="inline font-bold" />.
+                </p>
+              </div>
 
-          <button
-            type="button"
-            onClick={cerrarSesion}
-            className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-white active:scale-[0.98]"
-          >
-            Cerrar sesión
-          </button>
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+                {sesion && (
+                  <div className="rounded-[18px] border border-[#DDEAF3] bg-white/85 px-4 py-3 shadow-sm">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
+                      Usuario conectado
+                    </p>
+                    <p className="mt-1 text-sm font-extrabold text-[var(--color-primary)]">
+                      {sesion.usuario.nombre} {sesion.usuario.apellido}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-[var(--color-muted)]">
+                      {sesion.usuario.email}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={cerrarSesion}
+                  className="min-h-12 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mb-5 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+        <div className="mb-5 rounded-[24px] border border-[#DDEAF3] bg-white/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+                Filtros
+              </p>
               <label
                 htmlFor="filtro-estado"
-                className="text-sm font-bold text-[var(--color-primary)]"
+                className="mt-2 block text-sm font-bold text-[var(--color-primary)]"
               >
                 Filtrar por estado
               </label>
@@ -215,7 +237,7 @@ function AdminSolicitudesListado() {
                 value={filtroEstado}
                 onChange={cambiarFiltroEstado}
                 disabled={cargandoSolicitudes}
-                className="mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {FILTROS_ESTADO.map((opcion) => (
                   <option key={opcion.etiqueta} value={opcion.valor}>
@@ -225,7 +247,7 @@ function AdminSolicitudesListado() {
               </select>
             </div>
 
-            <p className="text-sm font-bold text-[var(--color-muted)]">
+            <p className="rounded-full border border-[#DDEAF3] bg-[#F8FCFE] px-4 py-2 text-sm font-bold text-[var(--color-muted)]">
               Orden: recientes
             </p>
           </div>
@@ -234,9 +256,11 @@ function AdminSolicitudesListado() {
         {cargandoSolicitudes && (
           <div
             role="status"
-            className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
-            <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-[#DDEAF3] border-t-[var(--color-secondary)]" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#BFDDEA] border-t-[var(--color-secondary)]" />
+            </div>
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
               Cargando solicitudes...
             </p>
@@ -246,7 +270,7 @@ function AdminSolicitudesListado() {
         {!cargandoSolicitudes && errorSolicitudes && (
           <div
             role="alert"
-            className="rounded-[var(--radius-xl)] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
+            className="rounded-[24px] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
           >
             <h2 className="text-xl font-extrabold text-red-700">
               No pudimos cargar las solicitudes
@@ -254,11 +278,14 @@ function AdminSolicitudesListado() {
             <p className="mt-3 text-sm leading-6 text-red-700">
               {errorSolicitudes}
             </p>
+            <p className="mt-2 text-sm font-bold text-red-700">
+              Intentá nuevamente en unos minutos.
+            </p>
           </div>
         )}
 
         {!cargandoSolicitudes && !errorSolicitudes && solicitudes.length === 0 && (
-          <div className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+          <div className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
             <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
               No hay solicitudes para mostrar.
             </h2>
@@ -273,7 +300,7 @@ function AdminSolicitudesListado() {
           <>
             <ListadoSolicitudes solicitudes={solicitudes} />
 
-            <div className="mt-5 flex flex-col gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_14px_35px_rgba(12,52,80,0.08)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-5 flex flex-col gap-3 rounded-[24px] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_14px_35px_rgba(12,52,80,0.08)] sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-bold text-[var(--color-muted)]">
                 Página {(paginaSolicitudes?.paginaActual ?? paginaActual) + 1}{" "}
                 de {paginaSolicitudes?.totalPaginas ?? 1} ·{" "}
@@ -286,7 +313,7 @@ function AdminSolicitudesListado() {
                   type="button"
                   onClick={irPaginaAnterior}
                   disabled={!puedeIrAnterior}
-                  className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
+                  className="min-h-11 flex-1 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
                 >
                   Anterior
                 </button>
@@ -294,7 +321,7 @@ function AdminSolicitudesListado() {
                   type="button"
                   onClick={irPaginaSiguiente}
                   disabled={!puedeIrSiguiente}
-                  className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
+                  className="min-h-11 flex-1 rounded-[18px] bg-[var(--color-primary)] px-4 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
                 >
                   Siguiente
                 </button>
@@ -313,49 +340,49 @@ function ListadoSolicitudes({
   solicitudes: SolicitudPublicacionAdminResumen[];
 }) {
   return (
-    <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
+    <div className="overflow-hidden rounded-[24px] border border-[#DDEAF3] bg-white shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-[#F8FCFE] text-xs uppercase text-[var(--color-muted)]">
+          <thead className="bg-[#F8FCFE] text-xs uppercase tracking-[0.08em] text-[var(--color-muted)]">
             <tr>
-              <th className="px-4 py-4 font-extrabold">Código</th>
-              <th className="px-4 py-4 font-extrabold">Estado</th>
-              <th className="px-4 py-4 font-extrabold">Actividad</th>
-              <th className="px-4 py-4 font-extrabold">Publicador</th>
-              <th className="px-4 py-4 font-extrabold">Deporte</th>
-              <th className="px-4 py-4 font-extrabold">Ubicación</th>
-              <th className="px-4 py-4 font-extrabold">Creación</th>
-              <th className="px-4 py-4 font-extrabold">Acción</th>
+              <th className="px-5 py-4 font-extrabold">Código</th>
+              <th className="px-5 py-4 font-extrabold">Estado</th>
+              <th className="px-5 py-4 font-extrabold">Actividad</th>
+              <th className="px-5 py-4 font-extrabold">Publicador</th>
+              <th className="px-5 py-4 font-extrabold">Deporte</th>
+              <th className="px-5 py-4 font-extrabold">Ubicación</th>
+              <th className="px-5 py-4 font-extrabold">Creación</th>
+              <th className="px-5 py-4 font-extrabold">Acción</th>
             </tr>
           </thead>
           <tbody>
             {solicitudes.map((solicitud) => (
               <tr
                 key={solicitud.id}
-                className="border-t border-[var(--color-border)] transition duration-200 ease-out hover:bg-[#F8FCFE]"
+                className="border-t border-[#DDEAF3] transition duration-200 ease-out hover:bg-[#F8FCFE]"
               >
-                <td className="px-4 py-4 font-bold text-[var(--color-primary)]">
+                <td className="px-5 py-5 font-extrabold text-[var(--color-primary)]">
                   {solicitud.codigoSeguimiento}
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-5 py-5">
                   <AdminEstadoBadge estado={solicitud.estado} size="sm" />
                 </td>
-                <td className="px-4 py-4 font-bold text-[var(--color-text)]">
+                <td className="px-5 py-5 font-extrabold text-[var(--color-text)]">
                   {solicitud.nombreActividad}
                 </td>
-                <td className="px-4 py-4 text-[var(--color-muted)]">
+                <td className="px-5 py-5 text-[var(--color-muted)]">
                   {solicitud.nombrePublicador}
                 </td>
-                <td className="px-4 py-4 text-[var(--color-muted)]">
+                <td className="px-5 py-5 text-[var(--color-muted)]">
                   {obtenerDeporte(solicitud)}
                 </td>
-                <td className="px-4 py-4 text-[var(--color-muted)]">
+                <td className="px-5 py-5 text-[var(--color-muted)]">
                   {obtenerUbicacion(solicitud)}
                 </td>
-                <td className="px-4 py-4 text-[var(--color-muted)]">
+                <td className="px-5 py-5 text-[var(--color-muted)]">
                   {formatearFecha(solicitud.createdAt)}
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-5 py-5">
                   <BotonDetalleSolicitud id={solicitud.id} />
                 </td>
               </tr>
@@ -364,15 +391,18 @@ function ListadoSolicitudes({
         </table>
       </div>
 
-      <div className="divide-y divide-[var(--color-border)] lg:hidden">
+      <div className="divide-y divide-[#DDEAF3] lg:hidden">
         {solicitudes.map((solicitud) => (
-          <article key={solicitud.id} className="p-5 transition duration-200 ease-out hover:bg-[#F8FCFE]">
+          <article
+            key={solicitud.id}
+            className="p-5 transition duration-200 ease-out hover:bg-[#F8FCFE]"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-muted)]">
                   {solicitud.codigoSeguimiento}
                 </p>
-                <h2 className="mt-2 text-lg font-extrabold text-[var(--color-primary)]">
+                <h2 className="mt-2 text-xl font-extrabold leading-tight text-[var(--color-primary)]">
                   {solicitud.nombreActividad}
                 </h2>
               </div>
@@ -428,7 +458,7 @@ function BotonDetalleSolicitud({ id }: { id: number }) {
   return (
     <Link
       href={`/admin/solicitudes/${id}`}
-      className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-2 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+      className="inline-flex min-h-10 items-center justify-center rounded-[16px] border border-[#BFDDEA] bg-white px-4 py-2 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
     >
       Ver detalle
     </Link>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminGuard } from "../../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../../components/admin/AdminEstadoBadge";
+import { BrandName } from "../../../../components/brand/BrandName";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -294,45 +295,55 @@ function AdminSolicitudDetalle() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-              Panel administrador
-            </p>
-            <h1 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-              Detalle de solicitud
-            </h1>
-            {sesion && (
-              <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-                {sesion.usuario.nombre} {sesion.usuario.apellido} ·{" "}
-                {sesion.usuario.email} · {sesion.usuario.rol}
-              </p>
-            )}
-          </div>
+        <div className="mb-6 overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
+          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+                  PANEL ADMINISTRADOR
+                </p>
+                <h1 className="mt-2 text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+                  Detalle de solicitud
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
+                  Revisá la información enviada y gestioná el estado de la
+                  publicación.
+                </p>
+                {sesion && (
+                  <p className="mt-3 text-sm font-bold text-[var(--color-muted)]">
+                    {sesion.usuario.nombre} {sesion.usuario.apellido} ·{" "}
+                    {sesion.usuario.email}
+                  </p>
+                )}
+              </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/admin/solicitudes"
-              className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-white active:scale-[0.98]"
-            >
-              Volver al listado
-            </Link>
-            <button
-              type="button"
-              onClick={cerrarSesion}
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
-            >
-              Cerrar sesión
-            </button>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/admin/solicitudes"
+                  className="min-h-12 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                >
+                  Volver al listado
+                </Link>
+                <button
+                  type="button"
+                  onClick={cerrarSesion}
+                  className="min-h-12 rounded-[18px] bg-[var(--color-primary)] px-4 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {cargandoDetalle && (
           <div
             role="status"
-            className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
-            <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-[#DDEAF3] border-t-[var(--color-secondary)]" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#BFDDEA] border-t-[var(--color-secondary)]" />
+            </div>
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
               Cargando solicitud...
             </p>
@@ -342,7 +353,7 @@ function AdminSolicitudDetalle() {
         {!cargandoDetalle && errorDetalle && (
           <div
             role="alert"
-            className="rounded-[var(--radius-xl)] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
+            className="rounded-[24px] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
           >
             <h2 className="text-xl font-extrabold text-red-700">
               No pudimos cargar la solicitud
@@ -406,43 +417,51 @@ function DetalleSolicitud({
 }) {
   return (
     <div className="grid gap-5">
-      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
-              {solicitud.codigoSeguimiento}
-            </p>
-            <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
-              {solicitud.nombreActividad}
-            </h2>
+      <section className="overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
+        <div className="bg-gradient-to-br from-[#F8FCFE] to-white p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                {solicitud.codigoSeguimiento}
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-3xl">
+                {solicitud.nombreActividad}
+              </h2>
+              <p className="mt-3 text-sm font-bold text-[var(--color-muted)]">
+                Solicitud recibida para revisión y publicación.
+              </p>
+            </div>
+            <AdminEstadoBadge estado={solicitud.estado} />
           </div>
-          <AdminEstadoBadge estado={solicitud.estado} />
-        </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <CampoDetalle etiqueta="ID interno" valor={solicitud.id} />
-          <CampoDetalle etiqueta="Creación" valor={formatearFecha(solicitud.createdAt)} />
-          <CampoDetalle
-            etiqueta="Actualización"
-            valor={formatearFecha(solicitud.updatedAt)}
-          />
-          <CampoDetalle etiqueta="Origen" valor={solicitud.origen} />
-          <CampoDetalle
-            etiqueta="Revisión iniciada"
-            valor={formatearFechaOpcional(solicitud.revisionIniciadaAt)}
-          />
-          <CampoDetalle
-            etiqueta="Revisión finalizada"
-            valor={formatearFechaOpcional(solicitud.revisionFinalizadaAt)}
-          />
-          <CampoDetalle
-            etiqueta="Actividad generada"
-            valor={solicitud.actividadGeneradaId}
-          />
-          <CampoDetalleEstado
-            etiqueta="Estado actual"
-            estado={solicitud.estado}
-          />
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CampoDetalle etiqueta="ID interno" valor={solicitud.id} />
+            <CampoDetalle
+              etiqueta="Creación"
+              valor={formatearFecha(solicitud.createdAt)}
+            />
+            <CampoDetalle
+              etiqueta="Actualización"
+              valor={formatearFecha(solicitud.updatedAt)}
+            />
+            <CampoDetalle etiqueta="Origen" valor={solicitud.origen} />
+            <CampoDetalle
+              etiqueta="Revisión iniciada"
+              valor={formatearFechaOpcional(solicitud.revisionIniciadaAt)}
+            />
+            <CampoDetalle
+              etiqueta="Revisión finalizada"
+              valor={formatearFechaOpcional(solicitud.revisionFinalizadaAt)}
+            />
+            <CampoDetalle
+              etiqueta="Actividad generada"
+              valor={solicitud.actividadGeneradaId}
+            />
+            <CampoDetalleEstado
+              etiqueta="Estado actual"
+              estado={solicitud.estado}
+            />
+          </div>
         </div>
       </section>
 
@@ -533,7 +552,7 @@ function DetalleSolicitud({
         />
       </section>
 
-      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+      <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
         <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
           Horarios
         </h2>
@@ -594,12 +613,17 @@ function AccionesRevision({
   const actividadSlugAprobada = respuestaAprobacion?.actividadSlug.trim() ?? "";
 
   return (
-    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
-      <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-        Acciones de revisión
-      </h2>
+    <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+      <div className="border-b border-[#DDEAF3] pb-3">
+        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+          Revisión
+        </p>
+        <h2 className="mt-1 text-xl font-extrabold text-[var(--color-primary)]">
+          Acciones de revisión
+        </h2>
+      </div>
 
-      <div className="mt-4">
+      <div className="mt-4 rounded-[18px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
         <CampoDetalleEstado
           etiqueta="Estado actual"
           estado={solicitud.estado}
@@ -607,42 +631,52 @@ function AccionesRevision({
       </div>
 
       {estaRechazada && (
-        <p className="mt-5 rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+        <p className="mt-5 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
           Esta solicitud ya fue rechazada.
         </p>
       )}
 
       {estaAprobada && (
-        <p className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]">
+        <p className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]">
           Esta solicitud ya fue aprobada.
         </p>
       )}
 
       {puedeAprobar && (
-        <div className="mt-5 grid gap-4">
+        <div className="mt-5 grid gap-4 rounded-[20px] border border-[#BDE8D0] bg-[#F6FCF8] p-4">
+          <div>
+            <h3 className="text-base font-extrabold text-[var(--color-primary)]">
+              Aprobar publicación
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
+              Esta acción crea una actividad pública visible en{" "}
+              <BrandName className="inline font-bold" />.
+            </p>
+          </div>
           {!confirmandoAprobacion && (
             <button
               type="button"
               onClick={onSolicitarAprobacion}
               disabled={accionEnCurso}
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="min-h-12 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {accionEnCurso ? "Procesando..." : "Aprobar y publicar actividad"}
             </button>
           )}
 
           {confirmandoAprobacion && (
-            <div className="rounded-[var(--radius-md)] border border-[#F7D87A] bg-[#FFF8E1] px-4 py-4">
+            <div className="rounded-[18px] border border-[#F7D87A] bg-[#FFF8E1] px-4 py-4">
               <p className="text-sm font-bold leading-6 text-[#7A5A00]">
                 Esta acción creará una actividad pública visible en
-                DondeEntreno. ¿Querés continuar?
+                {" "}
+                <BrandName className="inline" />. ¿Querés continuar?
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={onCancelarAprobacion}
                   disabled={accionEnCurso}
-                  className="rounded-[var(--radius-md)] border border-[#D9B94E] px-5 py-3 text-sm font-bold text-[#7A5A00] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#A98300] hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-11 rounded-[18px] border border-[#D9B94E] bg-white/60 px-5 py-3 text-sm font-extrabold text-[#7A5A00] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#A98300] hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -650,7 +684,7 @@ function AccionesRevision({
                   type="button"
                   onClick={onConfirmarAprobacion}
                   disabled={accionEnCurso}
-                  className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="min-h-11 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {accionEnCurso ? "Procesando..." : "Confirmar aprobación"}
                 </button>
@@ -661,33 +695,42 @@ function AccionesRevision({
       )}
 
       {puedeRechazar && (
-        <div className="mt-5 grid gap-5">
+        <div className="mt-5 grid gap-5 rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
           {estaEnRevision && (
-            <p className="rounded-[var(--radius-md)] border border-[#A9D8EA] bg-[#EEF8FC] px-4 py-3 text-sm font-bold text-[var(--color-primary)]">
+            <p className="rounded-[18px] border border-[#A9D8EA] bg-[#EEF8FC] px-4 py-3 text-sm font-bold text-[var(--color-primary)]">
               La solicitud ya está en revisión.
             </p>
           )}
 
           {puedeMarcarEnRevision && (
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="rounded-[18px] border border-[#A9D8EA] bg-white p-4">
+              <h3 className="text-base font-extrabold text-[var(--color-primary)]">
+                Seguimiento de revisión
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
+                Marcá la solicitud cuando empiece el análisis del equipo.
+              </p>
               <button
                 type="button"
                 onClick={onMarcarEnRevision}
                 disabled={accionEnCurso}
-                className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                className="mt-3 min-h-11 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
               >
                 {accionEnCurso ? "Procesando..." : "Marcar en revisión"}
               </button>
             </div>
           )}
 
-          <div>
+          <div className="rounded-[18px] border border-red-100 bg-white p-4">
             <label
               htmlFor="motivo-rechazo"
               className="text-sm font-bold text-[var(--color-primary)]"
             >
               Motivo de rechazo
             </label>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
+              Escribí un motivo claro para dejar registro de la decisión.
+            </p>
             <textarea
               id="motivo-rechazo"
               value={motivoRechazo}
@@ -696,7 +739,7 @@ function AccionesRevision({
               }
               disabled={accionEnCurso}
               rows={4}
-              className="mt-2 w-full resize-y rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-3 w-full resize-y rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 
@@ -704,7 +747,7 @@ function AccionesRevision({
             type="button"
             onClick={onRechazarSolicitud}
             disabled={accionEnCurso}
-            className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-red-300 hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-12 rounded-[18px] border border-red-200 bg-red-50 px-5 py-3 text-sm font-extrabold text-red-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-red-300 hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {accionEnCurso ? "Procesando..." : "Rechazar solicitud"}
           </button>
@@ -714,7 +757,7 @@ function AccionesRevision({
       {errorAccion && (
         <p
           role="alert"
-          className="mt-5 rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+          className="mt-5 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
         >
           {errorAccion}
         </p>
@@ -723,7 +766,7 @@ function AccionesRevision({
       {respuestaAprobacion && (
         <div
           role="status"
-          className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-4 text-sm font-bold text-[#1D7B4A]"
+          className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-4 text-sm font-bold text-[#1D7B4A]"
         >
           <p>{respuestaAprobacion.mensaje}</p>
           <p className="mt-2">
@@ -733,7 +776,7 @@ function AccionesRevision({
           {actividadSlugAprobada && (
             <Link
               href={`/actividades/${actividadSlugAprobada}`}
-              className="mt-3 inline-flex rounded-[var(--radius-md)] bg-[#1D7B4A] px-4 py-2 text-sm font-bold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#16683E] active:scale-[0.98]"
+              className="mt-3 inline-flex min-h-10 items-center rounded-[16px] bg-[#1D7B4A] px-4 py-2 text-sm font-extrabold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#16683E] active:scale-[0.98]"
             >
               Ver actividad pública
             </Link>
@@ -744,7 +787,7 @@ function AccionesRevision({
       {exitoAccion && !respuestaAprobacion && (
         <p
           role="status"
-          className="mt-5 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]"
+          className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]"
         >
           {exitoAccion}
         </p>
@@ -761,11 +804,13 @@ function DetalleCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#DDEAF3]">
-      <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-        {titulo}
-      </h2>
-      <dl className="mt-4 grid gap-4">{children}</dl>
+    <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(12,52,80,0.12)]">
+      <div className="border-b border-[#DDEAF3] pb-3">
+        <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
+          {titulo}
+        </h2>
+      </div>
+      <dl className="mt-4 grid gap-3">{children}</dl>
     </section>
   );
 }
@@ -778,7 +823,7 @@ function CampoDetalle({
   valor: string | number | null;
 }) {
   return (
-    <div>
+    <div className="rounded-[18px] border border-[#EDF4F8] bg-[#F8FCFE] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>
@@ -797,7 +842,7 @@ function CampoDetalleEstado({
   estado: EstadoSolicitudAdmin;
 }) {
   return (
-    <div>
+    <div className="rounded-[18px] border border-[#EDF4F8] bg-[#F8FCFE] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>
@@ -814,8 +859,8 @@ function HorarioCard({
   horario: SolicitudPublicacionAdminHorario;
 }) {
   return (
-    <article className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]">
-      <p className="text-sm font-extrabold text-[var(--color-primary)]">
+    <article className="rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]">
+      <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#167A4A]">
         {horario.diaSemana}
       </p>
       <dl className="mt-3 grid gap-3 text-sm">

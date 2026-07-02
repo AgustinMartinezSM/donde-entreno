@@ -1,8 +1,9 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 type ErrorStateProps = {
-  titulo?: string;
-  descripcion?: string;
+  titulo?: ReactNode;
+  descripcion?: ReactNode;
   mostrarBotonInicio?: boolean;
   mostrarBotonExplorar?: boolean;
 };

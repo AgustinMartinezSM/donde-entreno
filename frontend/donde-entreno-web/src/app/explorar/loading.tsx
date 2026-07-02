@@ -1,5 +1,6 @@
 import { Header } from "../../components/layout/Header";
 import { LoadingState } from "../../components/feedback/LoadingState";
+import { BrandName } from "../../components/brand/BrandName";
 
 export default function ExplorarLoading() {
   return (
@@ -24,7 +25,12 @@ export default function ExplorarLoading() {
 
           <LoadingState
             titulo="Cargando actividades"
-            descripcion="Estamos buscando actividades deportivas, filtros y resultados disponibles en DondeEntreno."
+            descripcion={
+              <>
+                Estamos buscando actividades deportivas, filtros y resultados
+                disponibles en <BrandName className="inline font-bold" />.
+              </>
+            }
           />
         </div>
       </section>

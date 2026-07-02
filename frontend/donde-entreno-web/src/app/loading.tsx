@@ -1,5 +1,6 @@
 import { Header } from "../components/layout/Header";
 import { LoadingState } from "../components/feedback/LoadingState";
+import { BrandName } from "../components/brand/BrandName";
 
 export default function Loading() {
   return (
@@ -9,7 +10,11 @@ export default function Loading() {
 
         <div className="py-16">
           <LoadingState
-            titulo="Cargando DondeEntreno"
+            titulo={
+              <>
+                Cargando <BrandName className="inline" />
+              </>
+            }
             descripcion="Estamos buscando actividades deportivas disponibles cerca tuyo."
           />
         </div>

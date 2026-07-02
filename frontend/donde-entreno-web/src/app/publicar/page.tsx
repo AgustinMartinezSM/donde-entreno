@@ -20,37 +20,51 @@ export const metadata: Metadata = {
 
 export default function PublicarPage() {
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
         <div className="py-8 sm:py-10">
           <Link
             href="/"
-            className="text-sm font-bold text-[var(--color-primary)]"
+            className="inline-flex rounded-full border border-[#BFDDEA] bg-white/90 px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
           >
             ← Volver al inicio
           </Link>
 
-          <div className="mt-6 max-w-3xl">
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-              Publicar actividad
-            </p>
+          <section className="mt-6 overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 shadow-[0_24px_60px_rgba(12,52,80,0.12)] sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+              <div>
+                <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+                  PUBLICAR ACTIVIDAD
+                </p>
 
-            <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
-              Sumá tu actividad a{" "}
-              <span className="whitespace-nowrap">
-                <span className="text-[var(--color-primary)]">Donde</span>
-                <span className="text-[var(--color-secondary)]">Entreno</span>
-              </span>
-            </h1>
+                <h1 className="max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
+                  Sumá tu actividad a{" "}
+                  <span className="whitespace-nowrap">
+                    <span className="text-[var(--color-primary)]">Donde</span>
+                    <span className="text-[var(--color-secondary)]">Entreno</span>
+                  </span>
+                </h1>
 
-            <p className="mt-4 text-base leading-7 text-[var(--color-muted)]">
-              Completá los datos de tu actividad para enviarla a revisión. La
-              solicitud no publica automáticamente la actividad: quedará
-              pendiente de revisión por el equipo de DondeEntreno.
-            </p>
-          </div>
+                <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
+                  Completá los datos de tu club, gimnasio, clase o espacio
+                  deportivo. La solicitud será revisada antes de publicarse.
+                </p>
+              </div>
+
+              <div className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-white/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
+                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#167A4A]">
+                  ¿Qué pasa después?
+                </p>
+                <ul className="mt-4 space-y-3 text-sm font-bold leading-6 text-[var(--color-primary)]">
+                  <li>Llegá a personas que buscan entrenar en tu ciudad.</li>
+                  <li>Mostrá horarios, ubicación y datos de contacto.</li>
+                  <li>La publicación se revisa antes de quedar visible.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
 
           <PublishForm />
         </div>

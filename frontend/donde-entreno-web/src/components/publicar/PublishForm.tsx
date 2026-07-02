@@ -380,12 +380,14 @@ function obtenerMensajesErrores(errores: ErroresSolicitudPublicacionForm) {
 const OPCION_OTRO = "__OTRO__";
 
 const inputClassName =
-  "min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 text-sm outline-none transition focus:border-[var(--color-accent)]";
+  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
 
 const textareaClassName =
-  "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--color-accent)]";
+  "rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]";
 
 const labelClassName = "text-sm font-bold text-[var(--color-primary)]";
+const fieldsetClassName =
+  "rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
 
 function formatearEtiquetaCatalogo(valor: string) {
   return valor
@@ -582,6 +584,34 @@ function construirSolicitudPublicacionRequest(
 
 function CampoObligatorio() {
   return <span className="text-[var(--color-secondary)]">*</span>;
+}
+
+type PublishSectionHeaderProps = {
+  paso: number;
+  titulo: string;
+  descripcion: string;
+};
+
+function PublishSectionHeader({
+  paso,
+  titulo,
+  descripcion,
+}: PublishSectionHeaderProps) {
+  return (
+    <legend className="mb-5 flex w-full flex-col gap-3 sm:flex-row sm:items-start">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+        {paso}
+      </span>
+      <span>
+        <span className="block text-xl font-extrabold text-[var(--color-primary)]">
+          {titulo}
+        </span>
+        <span className="mt-2 block text-sm leading-6 text-[var(--color-muted)]">
+          {descripcion}
+        </span>
+      </span>
+    </legend>
+  );
 }
 
 export function PublishForm() {
@@ -1006,21 +1036,100 @@ export function PublishForm() {
   const formularioTieneErrores = tieneErroresFormulario(erroresFormulario);
 
   return (
-    <form
-      onSubmit={manejarEnvio}
-      className="mt-8 space-y-5 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:p-6"
-    >
-      <p className="text-sm text-[var(--color-muted)]">
-        Los campos marcados con{" "}
-        <span className="font-bold text-[var(--color-secondary)]">*</span> son
-        obligatorios.
-      </p>
+    <div className="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+      <aside className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-5 shadow-[0_18px_45px_rgba(12,52,80,0.08)] lg:sticky lg:top-8">
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+          Antes de enviar
+        </p>
+        <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
+          Publicá tu actividad deportiva en 5 pasos simples
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
+          Te guiamos para cargar la información principal y enviar tu solicitud
+          a revisión.
+        </p>
+
+        <ol className="mt-5 space-y-3">
+          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+              1
+            </span>
+            <span>
+              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                Contanos quién publica
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                Club, gimnasio, profe, escuela o espacio deportivo.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+              2
+            </span>
+            <span>
+              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                Describí la actividad
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                Nombre, deporte, nivel, modalidad y descripción.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+              3
+            </span>
+            <span>
+              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                Indicá dónde se realiza
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                Ciudad, barrio, lugar o dirección de referencia.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+              4
+            </span>
+            <span>
+              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                Sumá contacto y horarios
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                Agregá cómo pueden contactarte y cuándo se dicta.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
+              5
+            </span>
+            <span>
+              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                Enviá la solicitud a revisión
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
+                El equipo de DondeEntreno la revisa antes de publicarla.
+              </span>
+            </span>
+          </li>
+        </ol>
+      </aside>
+
+      <form onSubmit={manejarEnvio} className="space-y-5">
+        <p className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-white px-4 py-3 text-sm font-bold text-[var(--color-muted)]">
+          Los campos marcados con{" "}
+          <span className="font-bold text-[var(--color-secondary)]">*</span> son
+          obligatorios.
+        </p>
 
       {cargandoCatalogosIniciales && (
         <div
           role="status"
           aria-live="polite"
-          className="rounded-[var(--radius-md)] bg-[#E8F6FB] p-4 text-sm font-bold leading-6 text-[#0F6F8F]"
+          className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm font-bold leading-6 text-[#0F6F8F]"
         >
           Cargando deportes y ciudades...
         </div>
@@ -1030,13 +1139,13 @@ export function PublishForm() {
         <div
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-md)] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00]"
         >
           <p className="font-bold">{errorCatalogosIniciales}</p>
           <button
             type="button"
             onClick={() => void cargarCatalogosIniciales()}
-            className="mt-3 min-h-10 rounded-[var(--radius-md)] border border-[#8A4B00] px-4 text-sm font-bold transition hover:bg-white"
+            className="mt-3 min-h-10 rounded-[var(--radius-md)] border border-[#8A4B00] px-4 text-sm font-bold transition duration-200 ease-out hover:bg-white active:scale-[0.98]"
           >
             Reintentar
           </button>
@@ -1049,7 +1158,7 @@ export function PublishForm() {
           tabIndex={-1}
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-md)] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             Revisá los siguientes datos
@@ -1061,15 +1170,12 @@ export function PublishForm() {
           </ul>
         </div>
       )}
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Datos del publicador
-        </legend>
-
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-          Contanos quién quiere publicar la actividad para poder identificar la
-          solicitud durante la revisión.
-        </p>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={1}
+          titulo="Datos del publicador"
+          descripcion="Contanos quién ofrece la actividad para poder identificar la solicitud durante la revisión."
+        />
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
@@ -1122,15 +1228,12 @@ export function PublishForm() {
           </div>
         </div>
       </fieldset>
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Datos de la actividad
-        </legend>
-
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-          Sumá la información principal para que la solicitud tenga contexto
-          claro antes de convertirse en una actividad pública.
-        </p>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={2}
+          titulo="Datos de la actividad"
+          descripcion="Sumá la información principal para que podamos revisar la publicación con contexto claro."
+        />
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2 sm:col-span-2">
@@ -1419,15 +1522,12 @@ export function PublishForm() {
           )}
         </div>
       </fieldset>
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Ubicación
-        </legend>
-
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-          Indicá dónde se realiza la actividad. Completá al menos el nombre del
-          lugar o la dirección.
-        </p>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={3}
+          titulo="Ubicación"
+          descripcion="Indicá dónde se realiza la actividad. Completá al menos el nombre del lugar o la dirección."
+        />
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
@@ -1696,15 +1796,12 @@ export function PublishForm() {
           </div>
         </div>
       </fieldset>
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Contacto
-        </legend>
-
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-          Completá al menos WhatsApp o email para que podamos contactarte si
-          necesitamos confirmar datos.
-        </p>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={4}
+          titulo="Contacto"
+          descripcion="Completá al menos WhatsApp o email para que podamos contactarte si necesitamos confirmar datos."
+        />
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
@@ -1777,13 +1874,15 @@ export function PublishForm() {
         </div>
       </fieldset>
 
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Horarios
-        </legend>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={5}
+          titulo="Horarios"
+          descripcion="Cargá los días y rangos horarios en los que se realiza la actividad."
+        />
 
         <div className="mt-2 space-y-4">
-          <div className="rounded-[var(--radius-md)] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+          <div className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
             <h3 className="font-extrabold text-[var(--color-primary)]">
               Horarios de la actividad
             </h3>
@@ -1824,10 +1923,10 @@ export function PublishForm() {
               return (
                 <div
                   key={horario.idInterno}
-                  className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-4"
+                  className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-4 shadow-[0_10px_26px_rgba(12,52,80,0.06)]"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 className="text-base font-extrabold text-[var(--color-primary)]">
+                    <h3 className="inline-flex w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#167A4A]">
                       Horario {indice + 1}
                     </h3>
 
@@ -1836,7 +1935,7 @@ export function PublishForm() {
                         type="button"
                         aria-label={`Quitar horario ${indice + 1}`}
                         onClick={() => quitarHorario(horario.idInterno)}
-                        className="min-h-10 rounded-[var(--radius-md)] border border-[#C96B6B] px-4 text-sm font-bold text-[#9A3D3D] transition hover:bg-[#FFF4F4]"
+                        className="min-h-10 rounded-[var(--radius-md)] border border-[#C96B6B] bg-white px-4 text-sm font-bold text-[#9A3D3D] transition duration-200 ease-out hover:bg-[#FFF4F4] active:scale-[0.98]"
                       >
                         Quitar
                       </button>
@@ -1998,21 +2097,18 @@ export function PublishForm() {
           <button
             type="button"
             onClick={agregarHorario}
-            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-primary)] px-5 text-sm font-bold text-[var(--color-primary)] transition hover:bg-[#E8F6FB]"
+            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-primary)] bg-white px-5 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#E8F6FB] active:scale-[0.98]"
           >
             Agregar horario
           </button>
         </div>
       </fieldset>
-      <fieldset className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4 sm:p-5">
-        <legend className="px-2 text-lg font-extrabold text-[var(--color-primary)]">
-          Confirmación
-        </legend>
-
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-          Revisá los datos cargados y agregá cualquier aclaración útil para el
-          equipo.
-        </p>
+      <fieldset className={fieldsetClassName}>
+        <PublishSectionHeader
+          paso={6}
+          titulo="Confirmación"
+          descripcion="Revisá los datos cargados y agregá cualquier aclaración útil para el equipo."
+        />
 
         <div className="mt-4 grid gap-4">
           <div className="flex flex-col gap-2">
@@ -2035,7 +2131,7 @@ export function PublishForm() {
             />
           </div>
 
-          <div className="flex items-start gap-3 rounded-[var(--radius-md)] bg-[#E6F7EF] p-4">
+          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4">
             <input
               id="aceptaCondiciones"
               name="aceptaCondiciones"
@@ -2074,10 +2170,14 @@ export function PublishForm() {
         </div>
       </fieldset>
 
-      <div className="rounded-[var(--radius-md)] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
-        La solicitud no publica automáticamente la actividad. Quedará pendiente
-        de revisión y el equipo podrá contactar al solicitante para confirmar
-        información.
+      <div className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+        <p className="font-extrabold text-[var(--color-primary)]">
+          La solicitud quedará pendiente de revisión
+        </p>
+        <p className="mt-2">
+          No publica automáticamente la actividad. El equipo podrá contactar al
+          solicitante para confirmar información.
+        </p>
       </div>
 
       {errorEnvio && (
@@ -2086,7 +2186,7 @@ export function PublishForm() {
           tabIndex={-1}
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-md)] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             No pudimos enviar la solicitud
@@ -2110,14 +2210,14 @@ export function PublishForm() {
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="rounded-[var(--radius-md)] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A] outline-none focus:ring-2 focus:ring-[#167A4A]"
+          className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A] outline-none focus:ring-2 focus:ring-[#167A4A]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             Tu solicitud fue enviada correctamente
           </h2>
           <p className="mt-2">La vamos a revisar antes de publicarla.</p>
           <p className="mt-2 font-bold">{respuestaEnvio.mensaje}</p>
-          <div className="mt-3 rounded-[var(--radius-md)] bg-white p-3">
+          <div className="mt-3 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-white p-3">
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-muted)]">
               Código de seguimiento
             </p>
@@ -2141,7 +2241,7 @@ export function PublishForm() {
         <button
           type="submit"
           disabled={procesandoFormulario || respuestaEnvio !== null}
-          className="min-h-12 rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-14 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-7 text-sm font-extrabold text-white shadow-[0_14px_35px_rgba(15,61,94,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:w-auto"
         >
           {procesandoFormulario
             ? "Enviando..."
@@ -2150,6 +2250,7 @@ export function PublishForm() {
               : "Enviar solicitud"}
         </button>
       </div>
-    </form>
+      </form>
+    </div>
   );
 }

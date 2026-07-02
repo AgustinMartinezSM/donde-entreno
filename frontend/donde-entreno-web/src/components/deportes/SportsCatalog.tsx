@@ -1,6 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  coincideDeporteConBusqueda,
+  normalizarCompacto,
+  obtenerCategoriasBusquedaDeportes,
+  obtenerPuntajeBusquedaDeporte,
+  obtenerSugerenciasBusquedaDeportes,
+  obtenerValorCategoria,
+} from "../../lib/deporteSearch";
+import type {
+  CategoriaBusquedaDeporte,
+  SugerenciaBusquedaDeporte,
+} from "../../lib/deporteSearch";
 import type { Deporte } from "../../types/deporte";
 import { SportCatalogCard } from "./SportCatalogCard";
 import { SportsCategoryGroup } from "./SportsCategoryGroup";
@@ -13,24 +26,6 @@ type GrupoDeportes = {
   clave: string;
   titulo: string;
   deportes: Deporte[];
-};
-
-type CategoriaFiltro = {
-  valor: string;
-  nombre: string;
-};
-
-type BusquedaParaMatch = {
-  textos: string[];
-  compactos: string[];
-  tokens: string[];
-};
-
-type SugerenciaBusqueda = {
-  id: string;
-  tipo: "deporte" | "categoria";
-  label: string;
-  valor: string;
 };
 
 const slugsPopulares = [
@@ -46,310 +41,6 @@ const LIMITE_GENERAL_POR_CATEGORIA = 6;
 const LIMITE_CATEGORIA_FILTRADA = 12;
 const MAXIMO_SUGERENCIAS = 6;
 
-const aliasesPorDeporteSlug: Record<string, string[]> = {
-  boxeo: [
-    "boxeo",
-    "boxing",
-    "box",
-    "clases de boxeo",
-    "entrenar boxeo",
-    "deporte de combate",
-    "pelea",
-  ],
-  "jiu-jitsu": [
-    "bjj",
-    "b j j",
-    "bi jei jei",
-    "jiujitsu",
-    "jiu jitsu",
-    "jiu-jitsu",
-    "jiu jitzu",
-    "jiu jutsu",
-    "ju jitsu",
-    "jujitsu",
-    "brazilian jiu jitsu",
-    "brazilian jiujitsu",
-    "jiu jitsu brasileño",
-    "jiu jitsu brasilero",
-    "grappling",
-    "submission grappling",
-    "arte suave",
-  ],
-  futbol: ["futbol", "fútbol", "football", "soccer", "fulbo", "cancha", "pelota"],
-  gimnasio: [
-    "gimnasio",
-    "gym",
-    "fitness",
-    "entrenamiento",
-    "entrenar",
-    "sala de musculacion",
-  ],
-  natacion: [
-    "natacion",
-    "natación",
-    "pileta",
-    "piscina",
-    "nadar",
-    "swimming",
-    "agua",
-  ],
-  musculacion: [
-    "musculacion",
-    "musculación",
-    "pesas",
-    "fuerza",
-    "hipertrofia",
-    "entrenamiento de fuerza",
-  ],
-  "cross-training": [
-    "cross training",
-    "crossfit",
-    "funcional",
-    "entrenamiento funcional",
-    "wod",
-  ],
-  yoga: ["yoga", "yog", "relajacion", "relajación", "flexibilidad", "movilidad"],
-  pilates: ["pilates", "reformer", "pilate", "postura", "core"],
-  running: ["running", "correr", "trotar", "atletismo", "runner"],
-  tenis: ["tenis", "tennis", "raqueta"],
-  padel: ["padel", "pádel", "paddle", "paleta"],
-  basquet: ["basquet", "básquet", "basket", "basketball"],
-  voley: ["voley", "vóley", "volleyball", "volley"],
-  karate: ["karate", "artes marciales", "defensa personal"],
-  taekwondo: ["taekwondo", "tae kwon do", "artes marciales", "defensa personal"],
-  kickboxing: ["kickboxing", "kick boxing", "k1", "combate"],
-  "muay-thai": [
-    "muay thai",
-    "muay-thai",
-    "thai boxing",
-    "boxeo tailandes",
-    "boxeo tailandés",
-  ],
-  judo: ["judo", "arte marcial", "lucha"],
-  hockey: ["hockey", "palo", "bocha"],
-  stretching: ["stretching", "elongacion", "elongación", "movilidad", "flexibilidad"],
-  calistenia: ["calistenia", "calisthenics", "barras", "peso corporal"],
-  cycling: ["cycling", "ciclismo", "bici", "bicicleta", "indoor bike", "spinning"],
-};
-
-const aliasesPorCategoria: Record<string, string[]> = {
-  "deportes-de-combate": [
-    "deportes de combate",
-    "deportes de contacto",
-    "artes marciales",
-    "pelea",
-    "lucha",
-    "defensa personal",
-    "mma",
-    "grappling",
-    "striking",
-    "combate",
-  ],
-  "actividades-acuaticas": [
-    "actividades acuaticas",
-    "actividades acuáticas",
-    "agua",
-    "pileta",
-    "piscina",
-    "nadar",
-    "natacion",
-    "natación",
-  ],
-  "fitness-y-entrenamiento": [
-    "fitness",
-    "entrenamiento",
-    "gym",
-    "gimnasio",
-    "fuerza",
-    "pesas",
-    "funcional",
-    "crossfit",
-    "musculacion",
-    "musculación",
-  ],
-  "bienestar-y-salud": [
-    "bienestar",
-    "salud",
-    "yoga",
-    "pilates",
-    "movilidad",
-    "elongacion",
-    "elongación",
-    "relajacion",
-    "relajación",
-  ],
-  "deportes-de-equipo": [
-    "deportes de equipo",
-    "equipo",
-    "pelota",
-    "futbol",
-    "voley",
-    "basquet",
-    "hockey",
-  ],
-  "deportes-con-raqueta": ["raqueta", "tenis", "padel", "pádel"],
-  "actividades-al-aire-libre": [
-    "aire libre",
-    "outdoor",
-    "plaza",
-    "running",
-    "correr",
-    "ciclismo",
-    "bici",
-  ],
-};
-
-const palabrasIntencionBusqueda = [
-  "clases",
-  "clase",
-  "aprender",
-  "practicar",
-  "empezar",
-  "principiante",
-  "principiantes",
-  "inicial",
-  "desde cero",
-  "adultos",
-  "niños",
-  "mujeres",
-  "cerca",
-  "cerca mio",
-  "cerca mío",
-  "cerca de mi",
-  "cerca de mí",
-  "en mi ciudad",
-  "en mi barrio",
-  "mar del plata",
-  "mdp",
-  "centro",
-  "horarios",
-  "hoy",
-  "lunes",
-  "martes",
-  "noche",
-  "mañana",
-  "tarde",
-  "profesor",
-  "profe",
-  "instructor",
-  "academia",
-  "escuela",
-  "club",
-  "team",
-  "dojo",
-];
-
-const conectoresBusqueda = [
-  "de",
-  "del",
-  "para",
-  "por",
-  "con",
-  "sin",
-  "una",
-  "un",
-  "el",
-  "la",
-  "los",
-  "las",
-  "y",
-];
-
-function normalizarTexto(valor: string): string {
-  return valor
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/[^a-zA-Z0-9\s]/g, " ")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function normalizarCompacto(valor: string): string {
-  return normalizarTexto(valor).replace(/\s+/g, "");
-}
-
-function obtenerValoresUnicos(valores: string[]): string[] {
-  return Array.from(new Set(valores.filter((valor) => valor.length > 0)));
-}
-
-function escaparRegExp(valor: string): string {
-  return valor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function quitarPalabrasIntencion(textoNormalizado: string): string {
-  const frases = [...palabrasIntencionBusqueda, ...conectoresBusqueda]
-    .map(normalizarTexto)
-    .filter((frase) => frase.length > 0)
-    .sort((a, b) => b.length - a.length);
-  let textoDepurado = ` ${textoNormalizado} `;
-
-  for (const frase of frases) {
-    const patron = new RegExp(`\\b${escaparRegExp(frase)}\\b`, "g");
-    textoDepurado = textoDepurado.replace(patron, " ");
-  }
-
-  return textoDepurado.replace(/\s+/g, " ").trim();
-}
-
-function normalizarBusquedaParaMatch(query: string): BusquedaParaMatch {
-  const busquedaNormalizada = normalizarTexto(query);
-  const busquedaDepurada = quitarPalabrasIntencion(busquedaNormalizada);
-  const textos = obtenerValoresUnicos([
-    busquedaNormalizada,
-    busquedaDepurada,
-  ]);
-  const compactos = obtenerValoresUnicos(textos.map(normalizarCompacto));
-  const textoParaTokens = busquedaDepurada || busquedaNormalizada;
-  const tokens = obtenerValoresUnicos(
-    textoParaTokens.split(" ").filter((token) => token.length > 1)
-  );
-
-  return {
-    textos,
-    compactos,
-    tokens,
-  };
-}
-
-function obtenerClaveAliasCategoria(valor: string): string {
-  return normalizarTexto(valor).replace(/\s+/g, "-");
-}
-
-function obtenerAliasesCategoria(
-  valores: Array<string | null | undefined>
-): string[] {
-  const aliases: string[] = [];
-
-  for (const valor of valores) {
-    if (!valor) {
-      continue;
-    }
-
-    const clavesPosibles = obtenerValoresUnicos([
-      valor,
-      normalizarTexto(valor),
-      obtenerClaveAliasCategoria(valor),
-      normalizarCompacto(valor),
-    ]);
-
-    for (const clave of clavesPosibles) {
-      aliases.push(...(aliasesPorCategoria[clave] || []));
-    }
-  }
-
-  return obtenerValoresUnicos(aliases);
-}
-
-function obtenerValorCategoria(deporte: Deporte): string {
-  if (deporte.categoriaSlug) {
-    return deporte.categoriaSlug;
-  }
-
-  return deporte.categoriaNombre ? normalizarTexto(deporte.categoriaNombre) : "";
-}
-
 function obtenerClaveCategoria(deporte: Deporte, hayCategorias: boolean): string {
   const valorCategoria = obtenerValorCategoria(deporte);
 
@@ -358,29 +49,6 @@ function obtenerClaveCategoria(deporte: Deporte, hayCategorias: boolean): string
   }
 
   return hayCategorias ? "otros-deportes" : "todos-los-deportes";
-}
-
-function obtenerCategorias(deportes: Deporte[]): CategoriaFiltro[] {
-  const categorias = new Map<string, CategoriaFiltro>();
-
-  for (const deporte of deportes) {
-    if (!deporte.categoriaNombre) {
-      continue;
-    }
-
-    const valor = obtenerValorCategoria(deporte);
-
-    if (!valor || categorias.has(valor)) {
-      continue;
-    }
-
-    categorias.set(valor, {
-      valor,
-      nombre: deporte.categoriaNombre,
-    });
-  }
-
-  return Array.from(categorias.values());
 }
 
 function agruparPorCategoria(deportes: Deporte[]): GrupoDeportes[] {
@@ -413,97 +81,20 @@ function esDeporte(valor: Deporte | undefined): valor is Deporte {
   return Boolean(valor);
 }
 
-function textoCoincideConBusqueda(
-  textosComparables: string[],
-  busqueda: BusquedaParaMatch
-): boolean {
-  const textoAgrupado = textosComparables.join(" ");
-  const textos = [...textosComparables, textoAgrupado];
-
-  return textos.some((texto) => {
-    const textoNormalizado = normalizarTexto(texto);
-    const textoCompacto = normalizarCompacto(texto);
-
-    if (!textoNormalizado) {
-      return false;
-    }
-
-    const coincideTexto = busqueda.textos.some(
-      (query) =>
-        textoNormalizado.includes(query) || query.includes(textoNormalizado)
-    );
-    const coincideCompacto = busqueda.compactos.some(
-      (query) => textoCompacto.includes(query) || query.includes(textoCompacto)
-    );
-    const coincideTokens =
-      busqueda.tokens.length > 0 &&
-      busqueda.tokens.every(
-        (token) => textoNormalizado.includes(token) || textoCompacto.includes(token)
-      );
-
-    return coincideTexto || coincideCompacto || coincideTokens;
-  });
-}
-
-function obtenerTextosComparablesDeporte(deporte: Deporte): string[] {
-  const aliasesDeporte = aliasesPorDeporteSlug[deporte.slug] || [];
-  const aliasesCategoria = obtenerAliasesCategoria([
-    deporte.categoriaSlug,
-    deporte.categoriaNombre,
-  ]);
-
-  return [
-    deporte.nombre,
-    deporte.slug,
-    deporte.descripcion || "",
-    deporte.categoriaNombre || "",
-    deporte.categoriaSlug || "",
-    ...aliasesDeporte,
-    ...aliasesCategoria,
-  ];
-}
-
-function coincideConBusqueda(deporte: Deporte, busqueda: string): boolean {
-  const busquedaNormalizada = normalizarBusquedaParaMatch(busqueda);
-
-  if (busquedaNormalizada.textos.length === 0) {
-    return true;
-  }
-
-  return textoCoincideConBusqueda(
-    obtenerTextosComparablesDeporte(deporte),
-    busquedaNormalizada
-  );
-}
-
-function coincideCategoriaConBusqueda(
-  categoria: CategoriaFiltro,
-  busqueda: string
-): boolean {
-  const busquedaNormalizada = normalizarBusquedaParaMatch(busqueda);
-
-  if (busquedaNormalizada.textos.length === 0) {
-    return true;
-  }
-
-  return textoCoincideConBusqueda(
-    [
-      categoria.nombre,
-      categoria.valor,
-      ...obtenerAliasesCategoria([categoria.valor, categoria.nombre]),
-    ],
-    busquedaNormalizada
-  );
-}
-
 function construirIdGrillaCategoria(claveCategoria: string): string {
   return `grilla-deportes-${normalizarCompacto(claveCategoria) || "categoria"}`;
 }
 
 export function SportsCatalog({ deportes }: SportsCatalogProps) {
-  const [busqueda, setBusqueda] = useState("");
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
-  const [deporteSeleccionado, setDeporteSeleccionado] = useState("");
+  const searchParams = useSearchParams();
+  const categoriaInicial = searchParams.get("categoria") || "";
+  const deporteInicial = searchParams.get("deporte") || "";
+  const busquedaInicial = searchParams.get("q") || "";
+  const [busqueda, setBusqueda] = useState(busquedaInicial);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] =
+    useState(categoriaInicial);
+  const [deporteSeleccionado, setDeporteSeleccionado] =
+    useState(deporteInicial);
   const [categoriasExpandidas, setCategoriasExpandidas] = useState<
     Record<string, boolean>
   >({});
@@ -516,36 +107,20 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
     [deportes]
   );
 
-  const categorias = useMemo(() => obtenerCategorias(deportes), [deportes]);
+  const categorias = useMemo<CategoriaBusquedaDeporte[]>(
+    () => obtenerCategoriasBusquedaDeportes(deportes),
+    [deportes]
+  );
   const mostrarSugerenciasBusqueda = normalizarCompacto(busqueda).length >= 2;
 
-  const sugerenciasBusqueda = useMemo<SugerenciaBusqueda[]>(() => {
-    if (!mostrarSugerenciasBusqueda) {
-      return [];
-    }
-
-    const sugerenciasDeporte = deportes
-      .filter((deporte) => coincideConBusqueda(deporte, busqueda))
-      .map((deporte) => ({
-        id: `deporte-${deporte.slug}`,
-        tipo: "deporte" as const,
-        label: deporte.nombre,
-        valor: deporte.slug,
-      }));
-    const sugerenciasCategoria = categorias
-      .filter((categoria) => coincideCategoriaConBusqueda(categoria, busqueda))
-      .map((categoria) => ({
-        id: `categoria-${categoria.valor}`,
-        tipo: "categoria" as const,
-        label: categoria.nombre,
-        valor: categoria.valor,
-      }));
-
-    return [...sugerenciasDeporte, ...sugerenciasCategoria].slice(
-      0,
-      MAXIMO_SUGERENCIAS
-    );
-  }, [busqueda, categorias, deportes, mostrarSugerenciasBusqueda]);
+  const sugerenciasBusqueda = useMemo<SugerenciaBusquedaDeporte[]>(() => {
+    return obtenerSugerenciasBusquedaDeportes({
+      deportes,
+      categorias,
+      busqueda,
+      limite: MAXIMO_SUGERENCIAS,
+    });
+  }, [busqueda, categorias, deportes]);
 
   const deportesFiltrados = useMemo(() => {
     return deportes.filter((deporte) => {
@@ -558,15 +133,10 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
       return (
         coincideCategoria &&
         coincideDeporte &&
-        coincideConBusqueda(deporte, busqueda)
+        coincideDeporteConBusqueda(deporte, busqueda)
       );
     });
   }, [busqueda, categoriaSeleccionada, deporteSeleccionado, deportes]);
-
-  const grupos = useMemo(
-    () => agruparPorCategoria(deportesFiltrados),
-    [deportesFiltrados]
-  );
 
   const hayFiltrosActivos =
     busqueda.trim().length > 0 ||
@@ -577,6 +147,29 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
   const categoriaActiva = categoriaSeleccionada.length > 0;
   const deporteActivo = deporteSeleccionado.length > 0;
 
+  const grupos = useMemo(() => {
+    const gruposBase = agruparPorCategoria(deportesFiltrados);
+
+    if (!busquedaActiva) {
+      return gruposBase;
+    }
+
+    return gruposBase.map((grupo) => ({
+      ...grupo,
+      deportes: [...grupo.deportes].sort((deporteA, deporteB) => {
+        const diferenciaPuntaje =
+          obtenerPuntajeBusquedaDeporte(deporteB, busqueda) -
+          obtenerPuntajeBusquedaDeporte(deporteA, busqueda);
+
+        if (diferenciaPuntaje !== 0) {
+          return diferenciaPuntaje;
+        }
+
+        return deporteA.nombre.localeCompare(deporteB.nombre, "es");
+      }),
+    }));
+  }, [busqueda, busquedaActiva, deportesFiltrados]);
+
   const limitePorCategoria =
     busquedaActiva || deporteActivo
       ? null
@@ -584,8 +177,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
         ? LIMITE_CATEGORIA_FILTRADA
         : LIMITE_GENERAL_POR_CATEGORIA;
 
-  const mostrarPopulares =
-    !hayFiltrosActivos && deportesPopulares.length > 0;
+  const mostrarPopulares = !hayFiltrosActivos && deportesPopulares.length > 0;
 
   function alternarCategoriaExpandida(valorCategoria: string) {
     setCategoriasExpandidas((categoriasActuales) => ({
@@ -601,7 +193,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
     setCategoriasExpandidas({});
   }
 
-  function seleccionarSugerencia(sugerencia: SugerenciaBusqueda) {
+  function seleccionarSugerencia(sugerencia: SugerenciaBusquedaDeporte) {
     if (sugerencia.tipo === "deporte") {
       setDeporteSeleccionado(sugerencia.valor);
       setCategoriaSeleccionada("");

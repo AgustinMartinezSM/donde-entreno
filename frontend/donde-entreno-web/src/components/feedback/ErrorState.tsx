@@ -1,5 +1,6 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { AppLinkButton } from "../ui/AppLinkButton";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 type ErrorStateProps = {
   titulo?: ReactNode;
@@ -15,7 +16,7 @@ export function ErrorState({
   mostrarBotonExplorar = false,
 }: ErrorStateProps) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[var(--shadow-card)]">
+    <SurfaceCard className="p-6 text-center">
       {/* Título principal del error */}
       <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
         {titulo}
@@ -29,23 +30,17 @@ export function ErrorState({
       {/* Acciones opcionales */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
         {mostrarBotonExplorar && (
-          <Link
-            href="/explorar"
-            className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)]"
-          >
+          <AppLinkButton href="/explorar" variant="primary">
             Explorar actividades
-          </Link>
+          </AppLinkButton>
         )}
 
         {mostrarBotonInicio && (
-          <Link
-            href="/"
-            className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-5 py-3 text-sm font-bold text-[var(--color-primary)]"
-          >
+          <AppLinkButton href="/" variant="secondary">
             Volver al inicio
-          </Link>
+          </AppLinkButton>
         )}
       </div>
-    </div>
+    </SurfaceCard>
   );
 }

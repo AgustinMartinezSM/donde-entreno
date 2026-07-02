@@ -40,8 +40,8 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
-      <section className="mx-auto w-full max-w-6xl px-4 py-6">
+    <main className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+      <section className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6">
         <Header />
 
         <div className="py-10 sm:py-14">

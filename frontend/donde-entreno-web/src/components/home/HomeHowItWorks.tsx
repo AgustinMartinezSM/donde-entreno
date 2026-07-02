@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { SectionHeader } from "../ui/SectionHeader";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 const pasos = [
   {
@@ -20,15 +22,15 @@ const pasos = [
 
 export function HomeHowItWorks() {
   return (
-    <section className="mt-16 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:mt-20 sm:p-7">
-      <div className="max-w-2xl">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-          Cómo funciona
-        </p>
-        <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-          Encontrar dónde entrenar es simple
-        </h2>
-      </div>
+    <SurfaceCard
+      as="section"
+      variant="info"
+      className="mt-16 bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:mt-20 sm:p-7"
+    >
+      <SectionHeader
+        eyebrow="Cómo funciona"
+        title="Encontrar dónde entrenar es simple"
+      />
 
       <div className="mt-7 grid gap-4 md:grid-cols-3">
         {pasos.map((paso, indice) => (
@@ -51,6 +53,6 @@ export function HomeHowItWorks() {
           </article>
         ))}
       </div>
-    </section>
+    </SurfaceCard>
   );
 }

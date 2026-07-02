@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AppLinkButton } from "../ui/AppLinkButton";
+import { SectionHeader } from "../ui/SectionHeader";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 const deportesPopulares = [
   {
@@ -42,27 +45,26 @@ const deportesPopulares = [
 
 export function HomePopularSports() {
   return (
-    <section className="relative mt-16 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/75 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:mt-20 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-            Deportes populares
-          </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-            Explorá por deporte
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
-            Encontrá actividades según lo que te gusta hacer.
-          </p>
-        </div>
-
-        <Link
-          href="/deportes"
-          className="w-fit rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 py-3 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
-        >
-          Ver todos
-        </Link>
-      </div>
+    <SurfaceCard
+      as="section"
+      variant="soft"
+      className="relative mt-16 p-4 sm:mt-20 sm:p-6"
+    >
+      <SectionHeader
+        eyebrow="Deportes populares"
+        title="Explorá por deporte"
+        description="Encontrá actividades según lo que te gusta hacer."
+        action={
+          <AppLinkButton
+            href="/deportes"
+            variant="secondary"
+            size="md"
+            className="w-fit"
+          >
+            Ver todos
+          </AppLinkButton>
+        }
+      />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {deportesPopulares.map((deporte) => (
@@ -93,6 +95,6 @@ export function HomePopularSports() {
           </Link>
         ))}
       </div>
-    </section>
+    </SurfaceCard>
   );
 }

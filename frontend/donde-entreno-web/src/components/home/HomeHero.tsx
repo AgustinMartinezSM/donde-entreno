@@ -37,14 +37,14 @@ const beneficios = [
 
 export function HomeHero() {
   return (
-    <section className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 shadow-[0_24px_60px_rgba(12,52,80,0.14)] sm:p-8 lg:p-10">
-      <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-        <div className="relative z-10">
+    <section className="relative w-full min-w-0 overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-4 shadow-[0_24px_60px_rgba(12,52,80,0.14)] sm:p-8 lg:p-10">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+        <div className="relative z-10 min-w-0">
           <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
             Guía deportiva local
           </p>
 
-          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl text-[2.5rem] font-extrabold leading-[1.06] text-[var(--color-primary)] sm:text-5xl sm:leading-tight lg:text-6xl">
             Encontrá dónde entrenar cerca tuyo
           </h1>
 
@@ -55,27 +55,27 @@ export function HomeHero() {
 
           <SearchBar />
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row">
             <Link
               href="/explorar"
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
+              className="w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
             >
               Explorar actividades
             </Link>
             <Link
               href="/publicar"
-              className="rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98]"
+              className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] sm:w-auto"
             >
               Publicar actividad
             </Link>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 flex min-w-0 flex-wrap gap-2">
             {busquedasRapidas.map((busqueda) => (
               <Link
                 key={busqueda.href}
                 href={busqueda.href}
-                className="rounded-full border border-[#DDEAF3] bg-white px-3 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                className="max-w-full rounded-full border border-[#DDEAF3] bg-white px-3 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
               >
                 {busqueda.nombre}
               </Link>
@@ -83,9 +83,9 @@ export function HomeHero() {
           </div>
         </div>
 
-        <aside className="relative z-10 rounded-[var(--radius-xl)] border border-[#BDE8D0] bg-white/85 p-3 shadow-[0_20px_50px_rgba(12,52,80,0.14)] backdrop-blur sm:p-4">
+        <aside className="relative z-10 min-w-0 rounded-[var(--radius-xl)] border border-[#BDE8D0] bg-white/85 p-3 shadow-[0_20px_50px_rgba(12,52,80,0.14)] backdrop-blur sm:p-4">
           <div className="relative overflow-hidden rounded-[22px]">
-            <div className="relative aspect-[4/3] min-h-64">
+            <div className="relative aspect-[16/10] sm:aspect-[4/3] sm:min-h-64">
               <Image
                 src="/sports/sport-boxeo.png"
                 alt=""
@@ -99,14 +99,14 @@ export function HomeHero() {
                 <p className="inline-flex rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-primary)] shadow-sm">
                   Actividades cerca tuyo
                 </p>
-                <p className="mt-2 text-2xl font-extrabold leading-tight">
+                <p className="mt-2 text-xl font-extrabold leading-tight sm:text-2xl">
                   Entrená donde mejor te quede
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-3 hidden grid-cols-2 gap-3 sm:grid">
             <div className="relative overflow-hidden rounded-[18px] border border-[#DDEAF3]">
               <div className="relative h-24">
                 <Image

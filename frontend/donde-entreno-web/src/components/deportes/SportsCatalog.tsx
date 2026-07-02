@@ -15,6 +15,9 @@ import type {
   SugerenciaBusquedaDeporte,
 } from "../../lib/deporteSearch";
 import type { Deporte } from "../../types/deporte";
+import { SectionHeader } from "../ui/SectionHeader";
+import { StatusMessage } from "../ui/StatusMessage";
+import { SurfaceCard } from "../ui/SurfaceCard";
 import { SportCatalogCard } from "./SportCatalogCard";
 import { SportsCategoryGroup } from "./SportsCategoryGroup";
 
@@ -318,14 +321,11 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
 
       {mostrarPopulares ? (
         <section>
-          <div className="mb-4">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-              Deportes populares
-            </p>
-            <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
-              Empezá por los más buscados
-            </h2>
-          </div>
+          <SectionHeader
+            eyebrow="Deportes populares"
+            title="Empezá por los más buscados"
+            className="mb-4"
+          />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {deportesPopulares.map((deporte) => (
@@ -335,26 +335,24 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
         </section>
       ) : null}
 
-      <section className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/70 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
-        <div className="mb-7">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-            Todos los deportes
-          </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-            Elegí una opción para explorar actividades
-          </h2>
-        </div>
+      <SurfaceCard as="section" variant="soft" className="p-4 sm:p-6">
+        <SectionHeader
+          eyebrow="Todos los deportes"
+          title="Elegí una opción para explorar actividades"
+          className="mb-7"
+        />
 
         {deportesFiltrados.length === 0 ? (
-          <div className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-6 text-center">
-            <h3 className="text-xl font-extrabold text-[var(--color-primary)]">
-              No encontramos deportes con esa búsqueda
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+          <StatusMessage
+            variant="info"
+            title="No encontramos deportes con esa búsqueda"
+            className="p-6 text-center"
+          >
+            <p>
               Probá con otro nombre, una categoría o una forma alternativa como
               bjj, gym o pileta.
             </p>
-          </div>
+          </StatusMessage>
         ) : (
           <div className="space-y-10">
             {grupos.map((grupo) => {
@@ -391,7 +389,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
             })}
           </div>
         )}
-      </section>
+      </SurfaceCard>
     </div>
   );
 }

@@ -19,26 +19,30 @@ export function ActivityList({
 }: ActivityListProps) {
   if (actividades.length === 0) {
     return (
-      <div className="mt-10 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center shadow-[var(--shadow-card)]">
-        <h2 className="text-lg font-bold text-[var(--color-primary)]">
-          No encontramos actividades
+      <div className="mt-10 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-7 text-center shadow-[0_18px_45px_rgba(12,52,80,0.09)]">
+        <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
+          No encontramos actividades con esos filtros
         </h2>
 
-        <p className="mt-2 text-sm text-[var(--color-muted)]">
-          Probá con otra búsqueda o revisá los filtros aplicados.
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)]">
+          Probá con otra búsqueda, cambiá la zona o revisá los filtros
+          aplicados.
         </p>
       </div>
     );
   }
 
   return (
-    <section className="mt-10 sm:mt-12">
-      <div className="mb-5">
-        <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
+    <section className="mt-10 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/70 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:mt-12 sm:p-6">
+      <div className="mb-6">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+          Actividades
+        </p>
+        <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
           {titulo}
         </h2>
 
-        <p className="mt-2 text-sm text-[var(--color-muted)]">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
           {descripcion}
         </p>
       </div>

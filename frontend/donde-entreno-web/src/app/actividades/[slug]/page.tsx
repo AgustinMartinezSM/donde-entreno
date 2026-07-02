@@ -128,34 +128,42 @@ export default async function ActividadDetallePage({
         <div className="py-8 sm:py-10">
           <Link
             href="/explorar"
-            className="text-sm font-bold text-[var(--color-primary)] transition hover:text-[#0B314D]"
+            className="inline-flex rounded-full border border-[#BFDDEA] bg-white/90 px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
           >
             ← Volver a explorar
           </Link>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[1.4fr_0.8fr] lg:gap-6">
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1.45fr_0.75fr] lg:gap-7">
             {/* Columna principal */}
-            <article className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_18px_50px_rgba(12,52,80,0.10)] transition duration-200 ease-out sm:p-5">
+            <article className="overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-3 shadow-[0_24px_60px_rgba(12,52,80,0.12)] transition duration-200 ease-out sm:p-4">
               <ActivityImage
                 src={imagenUrl}
                 fallbackSrc={imagenFallbackUrl}
                 alt={imagenPrincipal?.descripcion || actividad.titulo}
                 fallbackText={actividad.deporteNombre || "Actividad"}
-                heightClassName="h-48 sm:h-72"
+                heightClassName="h-56 sm:h-80"
               />
 
-              <div className="mt-6">
+              <div className="p-2 pt-6 sm:p-3 sm:pt-7">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
                   {actividad.categoriaDeportivaNombre || "Deporte"}
                 </p>
 
-                <h1 className="mt-2 text-[1.65rem] font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+                <h1 className="mt-2 max-w-3xl text-[1.9rem] font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
                   {actividad.titulo}
                 </h1>
 
-                <p className="mt-3 text-base text-[var(--color-muted)]">
-                  {actividad.ubicacionNombre || "Ubicación no informada"}
-                </p>
+                <div className="mt-4 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                  <p className="text-sm font-bold text-[var(--color-primary)]">
+                    {actividad.ubicacionNombre || "Ubicación no informada"}
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--color-muted)]">
+                    {actividad.barrioNombre || "Barrio sin cargar"}
+                    {actividad.ciudadNombre
+                      ? `, ${actividad.ciudadNombre}`
+                      : ""}
+                  </p>
+                </div>
 
                 <div className="mt-4 flex flex-wrap gap-2.5">
                   {actividad.nivel && (
@@ -177,9 +185,9 @@ export default async function ActividadDetallePage({
                   )}
                 </div>
 
-                <div className="mt-7 sm:mt-8">
+                <div className="mt-7 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_12px_30px_rgba(12,52,80,0.06)] sm:mt-8">
                   <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-                    Descripción
+                    Sobre la actividad
                   </h2>
 
                   <p className="mt-3 text-sm leading-7 text-[var(--color-muted)] sm:text-base">
@@ -189,7 +197,7 @@ export default async function ActividadDetallePage({
                 </div>
 
                 {actividad.horarios && actividad.horarios.length > 0 && (
-                  <div className="mt-7 sm:mt-8">
+                  <div className="mt-7 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_12px_30px_rgba(12,52,80,0.06)] sm:mt-8">
                     <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
                       Horarios
                     </h2>
@@ -198,13 +206,13 @@ export default async function ActividadDetallePage({
                       {actividad.horarios.map((horario) => (
                         <div
                           key={horario.id}
-                          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
+                          className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-white hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
                         >
                           <p className="font-bold text-[var(--color-primary)]">
                             {horario.diaSemana}
                           </p>
 
-                          <p className="mt-1 text-sm text-[var(--color-muted)]">
+                          <p className="mt-2 text-lg font-extrabold text-[var(--color-primary)]">
                             {horario.horaInicio} a {horario.horaFin}
                           </p>
 
@@ -222,13 +230,16 @@ export default async function ActividadDetallePage({
             </article>
 
             {/* Columna lateral */}
-            <aside className="h-fit rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-4 shadow-[0_18px_45px_rgba(12,52,80,0.10)] transition duration-200 ease-out sm:p-5 lg:sticky lg:top-8">
-              <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-                Información
+            <aside className="h-fit rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/95 p-5 shadow-[0_22px_55px_rgba(12,52,80,0.12)] transition duration-200 ease-out sm:p-6 lg:sticky lg:top-8">
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+                Información clave
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
+                Datos para entrenar
               </h2>
 
-              <div className="mt-5 space-y-4 text-sm">
-                <div>
+              <div className="mt-5 space-y-3 text-sm">
+                <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                   <p className="font-bold text-[var(--color-text)]">Lugar</p>
 
                   <p className="mt-1 text-[var(--color-muted)]">
@@ -236,7 +247,7 @@ export default async function ActividadDetallePage({
                   </p>
                 </div>
 
-                <div>
+                <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                   <p className="font-bold text-[var(--color-text)]">
                     Ubicación
                   </p>
@@ -250,7 +261,7 @@ export default async function ActividadDetallePage({
                 </div>
 
                 {actividad.direccion && (
-                  <div>
+                  <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                     <p className="font-bold text-[var(--color-text)]">
                       Dirección
                     </p>
@@ -264,12 +275,12 @@ export default async function ActividadDetallePage({
                 {actividad.precioReferencia !== undefined &&
                   actividad.precioReferencia !== null &&
                   actividad.mostrarPrecio && (
-                    <div>
+                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                       <p className="font-bold text-[var(--color-text)]">
                         Precio de referencia
                       </p>
 
-                      <p className="mt-1 text-[var(--color-muted)]">
+                      <p className="mt-1 text-lg font-extrabold text-[var(--color-primary)]">
                         ${actividad.precioReferencia}
                       </p>
                     </div>
@@ -277,7 +288,7 @@ export default async function ActividadDetallePage({
 
                 {actividad.edadMinima !== undefined &&
                   actividad.edadMinima !== null && (
-                    <div>
+                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
                       <p className="font-bold text-[var(--color-text)]">
                         Edad mínima
                       </p>

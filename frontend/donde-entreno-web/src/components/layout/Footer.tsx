@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -9,90 +8,92 @@ export function Footer() {
   const anioActual = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-surface)]">
+    <footer className="mt-auto border-t border-[#2A5B78] bg-[#08263B] text-white">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-12">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12">
-          {/* Columna de marca */}
           <div>
             <Link
               href="/"
-              className="inline-flex items-center transition hover:opacity-90"
+              className="inline-flex items-center text-2xl font-extrabold tracking-tight transition duration-200 ease-out hover:-translate-y-0.5"
               aria-label="Ir al inicio de DondeEntreno"
             >
-              <Image
-                src="/brand/logo-horizontal.png"
-                alt="DondeEntreno"
-                width={180}
-                height={48}
-                className="h-auto w-[150px] sm:w-[170px]"
-              />
+              <span className="text-white">Donde</span>
+              <span className="text-[var(--color-secondary)]">Entreno</span>
             </Link>
 
-            <p className="mt-3 max-w-md text-sm leading-6 text-[var(--color-muted)]">
-              Una guía deportiva local para encontrar clubes, profesores,
-              gimnasios y actividades cerca tuyo.
+            <p className="mt-4 max-w-md text-sm leading-6 text-[#C9E4EF]">
+              La guía deportiva local para descubrir clubes, profes, gimnasios
+              y actividades cerca tuyo.
+            </p>
+
+            <p className="mt-4 inline-flex rounded-full border border-[#2A5B78] bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#A7F3CF]">
+              Entrená cerca, elegí mejor
             </p>
           </div>
 
-          {/* Links principales */}
           <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-[0.16em] text-[var(--color-primary)]">
+            <h2 className="text-sm font-extrabold uppercase tracking-[0.16em] text-white">
               Navegación
             </h2>
 
             <nav className="mt-4 flex flex-col gap-3 text-sm font-bold">
               <Link
                 href="/"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
               >
                 Inicio
               </Link>
 
               <Link
+                href="/deportes"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
+              >
+                Deportes
+              </Link>
+
+              <Link
                 href="/explorar"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
               >
                 Explorar
               </Link>
 
               <Link
                 href="/publicar"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
               >
                 Publicar
               </Link>
             </nav>
           </div>
 
-          {/* Contacto provisorio */}
           <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-[0.16em] text-[var(--color-primary)]">
+            <h2 className="text-sm font-extrabold uppercase tracking-[0.16em] text-white">
               Contacto
             </h2>
 
             <div className="mt-4 flex flex-col gap-3 text-sm font-bold">
-              {/* Links falsos/provisorios hasta tener los reales */}
               <a
                 href="https://instagram.com/dondeentreno"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-secondary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-[var(--color-secondary)]"
               >
                 Instagram
               </a>
 
               <a
                 href="mailto:contacto@dondeentreno.com"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-secondary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-[var(--color-secondary)]"
               >
-                Gmail
+                Email
               </a>
 
               <a
                 href="https://wa.me/5492230000000"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--color-muted)] transition hover:text-[var(--color-secondary)]"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-[var(--color-secondary)]"
               >
                 WhatsApp
               </a>
@@ -100,9 +101,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Línea inferior */}
-        <div className="mt-8 border-t border-[var(--color-border)] pt-5 sm:mt-10">
-          <p className="text-xs leading-5 text-[var(--color-muted)]">
+        <div className="mt-8 border-t border-[#2A5B78] pt-5 sm:mt-10">
+          <p className="text-xs leading-5 text-[#C9E4EF]">
             © {anioActual} DondeEntreno. Todos los derechos reservados.
           </p>
         </div>

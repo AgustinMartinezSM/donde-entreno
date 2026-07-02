@@ -136,7 +136,7 @@ export function FiltersPanel({
   }
 
   return (
-    <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:p-5">
+    <div className="mt-5 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_18px_45px_rgba(12,52,80,0.09)] sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-[var(--color-primary)]">
@@ -151,7 +151,7 @@ export function FiltersPanel({
         <button
           type="button"
           onClick={() => setFiltrosAbiertos((valorActual) => !valorActual)}
-          className="rounded-full border border-[var(--color-border)] px-3 py-2 text-xs font-bold text-[var(--color-primary)] sm:hidden"
+          className="rounded-full border border-[#BFDDEA] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out active:scale-[0.98] sm:hidden"
         >
           {filtrosAbiertos ? "Ocultar" : "Mostrar"}
         </button>
@@ -171,7 +171,7 @@ export function FiltersPanel({
                 setCiudadId(evento.target.value);
                 setBarrioId("");
               }}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
             >
               <option value="">Todas</option>
 
@@ -192,7 +192,7 @@ export function FiltersPanel({
             <select
               value={barrioId}
               onChange={(evento) => setBarrioId(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
             >
               <option value="">Todos</option>
 
@@ -219,7 +219,7 @@ export function FiltersPanel({
             <select
               value={deporteSlug}
               onChange={(evento) => setDeporteSlug(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
             >
               <option value="">Todos</option>
 
@@ -240,7 +240,7 @@ export function FiltersPanel({
             <select
               value={nivel}
               onChange={(evento) => setNivel(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
             >
               <option value="">Todos</option>
 
@@ -261,7 +261,7 @@ export function FiltersPanel({
             <select
               value={modalidad}
               onChange={(evento) => setModalidad(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
             >
               <option value="">Todas</option>
 
@@ -278,7 +278,7 @@ export function FiltersPanel({
           <button
             type="button"
             onClick={limpiarFiltros}
-            className="min-h-12 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-5 text-sm font-bold text-[var(--color-primary)] sm:w-auto"
+            className="min-h-12 w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] sm:w-auto"
           >
             Limpiar
           </button>
@@ -286,7 +286,7 @@ export function FiltersPanel({
           <button
             type="button"
             onClick={aplicarFiltros}
-            className="min-h-12 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-bold text-white shadow-[var(--shadow-button)] sm:w-auto"
+            className="min-h-12 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
           >
             Aplicar filtros
           </button>

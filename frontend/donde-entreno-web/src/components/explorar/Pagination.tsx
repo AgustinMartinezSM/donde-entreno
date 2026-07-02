@@ -75,18 +75,18 @@ export function Pagination({
   }
 
   return (
-    <div className="mt-8 flex flex-col items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] sm:flex-row">
+    <div className="mt-8 flex flex-col items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_14px_35px_rgba(12,52,80,0.08)] sm:flex-row">
       {tienePaginaAnterior ? (
         <Link
           href={crearHref(paginaActual - 1)}
-          className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] sm:w-auto"
+          className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] sm:w-auto"
         >
           Anterior
         </Link>
       ) : (
         <button
           disabled
-          className="w-full cursor-not-allowed rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3 text-sm font-bold text-[var(--color-muted)] opacity-60 sm:w-auto"
+          className="w-full cursor-not-allowed rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-sm font-bold text-[var(--color-muted)] opacity-60 sm:w-auto"
         >
           Anterior
         </button>
@@ -99,14 +99,14 @@ export function Pagination({
       {tienePaginaSiguiente ? (
         <Link
           href={crearHref(paginaActual + 1)}
-          className="w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] sm:w-auto"
+          className="w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
         >
           Siguiente
         </Link>
       ) : (
         <button
           disabled
-          className="w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white sm:w-auto"
+          className="w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white opacity-80 sm:w-auto"
         >
           Siguiente
         </button>

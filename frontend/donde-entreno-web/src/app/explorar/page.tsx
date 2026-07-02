@@ -3,7 +3,7 @@ import type { Actividad } from "../../types/actividad";
 import type { FiltrosOpciones } from "../../types/filtros";
 
 import { Header } from "../../components/layout/Header";
-import { ActivityList } from "../../components/explorar/ActivityList";
+import { ActivityCard } from "../../components/explorar/ActivityCard";
 import { buscarActividades } from "../../services/actividadService";
 import { SearchBar } from "../../components/home/SearchBar";
 import { Pagination } from "../../components/explorar/Pagination";
@@ -67,7 +67,6 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   const modalidadActual = params.modalidad || "";
 
   let actividades: Actividad[] = [];
-  let totalElementos = 0;
   let totalPaginas = 0;
   let huboError = false;
 
@@ -107,25 +106,16 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
     ]);
 
     actividades = respuestaActividades.contenido;
-    totalElementos = respuestaActividades.totalElementos;
     totalPaginas = respuestaActividades.totalPaginas;
     filtros = respuestaFiltros;
   } catch (error) {
     /*
-      Si el backend está apagado o falla alguna petición,
+      Si falla alguna petición,
       mostramos un estado de error prolijo.
     */
     huboError = true;
     console.error("Error al cargar actividades o filtros:", error);
   }
-
-  const descripcionResultados = textoBuscado
-    ? totalElementos === 1
-      ? `1 actividad encontrada relacionada con "${textoBuscado}".`
-      : `${totalElementos} actividades encontradas relacionadas con "${textoBuscado}".`
-    : totalElementos === 1
-      ? "1 actividad encontrada en DondeEntreno."
-      : `${totalElementos} actividades encontradas en DondeEntreno.`;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
@@ -133,26 +123,33 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
         <Header />
 
         <div className="py-8 sm:py-10">
-          <div className="mb-10 border-b border-[#DDEAF3] pb-8">
+          <section className="overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-6">
             <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-              Explorar actividades
+              EXPLORAR
             </p>
 
-            <h1 className="text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
-              {textoBuscado
-                ? `Resultados para "${textoBuscado}"`
-                : "Todas las actividades"}
+            <h1 className="max-w-3xl text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+              Explorá <span className="text-[var(--color-secondary)]">actividades</span> cerca tuyo
             </h1>
 
             <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Buscá y compará actividades deportivas disponibles en tu ciudad.
+              Buscá por deporte, zona, nivel o modalidad y descubrí opciones
+              cerca tuyo.
             </p>
 
+            {textoBuscado ? (
+              <p className="mt-4 inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
+                Resultados para &quot;{textoBuscado}&quot;
+              </p>
+            ) : null}
+
             {/* Dejamos el buscador visible aunque haya error */}
-            <div className="max-w-2xl transition duration-200 ease-out">
+            <div className="max-w-3xl transition duration-200 ease-out">
               <SearchBar valorInicial={textoBuscado} />
             </div>
+          </section>
 
+          <div className="mt-6">
             {huboError ? (
               <div className="mt-8">
                 <ErrorState
@@ -164,16 +161,6 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               </div>
             ) : (
               <>
-                <SortSelect
-                  textoBuscado={textoBuscado}
-                  ordenActual={ordenActual}
-                  ciudadIdActual={ciudadIdActual}
-                  barrioIdActual={barrioIdActual}
-                  deporteSlugActual={deporteSlugActual}
-                  nivelActual={nivelActual}
-                  modalidadActual={modalidadActual}
-                />
-
                 <FiltersPanel
                   filtros={filtros}
                   textoBuscado={textoBuscado}
@@ -190,11 +177,49 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
           {!huboError && (
             <>
-              <ActivityList
-                actividades={actividades}
-                titulo="Resultados encontrados"
-                descripcion={descripcionResultados}
-              />
+              <section className="mt-8 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/70 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
+                <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+                      ACTIVIDADES
+                    </p>
+                    <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
+                      Todas las actividades
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
+                      Opciones disponibles según tu búsqueda y filtros.
+                    </p>
+                  </div>
+
+                  <SortSelect
+                    textoBuscado={textoBuscado}
+                    ordenActual={ordenActual}
+                    ciudadIdActual={ciudadIdActual}
+                    barrioIdActual={barrioIdActual}
+                    deporteSlugActual={deporteSlugActual}
+                    nivelActual={nivelActual}
+                    modalidadActual={modalidadActual}
+                  />
+                </div>
+
+                {actividades.length === 0 ? (
+                  <div className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-7 text-center shadow-[0_18px_45px_rgba(12,52,80,0.09)]">
+                    <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
+                      No encontramos actividades con esos filtros
+                    </h2>
+                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)]">
+                      Probá con otra búsqueda, cambiá la zona o revisá los
+                      filtros aplicados.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {actividades.map((actividad) => (
+                      <ActivityCard key={actividad.id} actividad={actividad} />
+                    ))}
+                  </div>
+                )}
+              </section>
 
               <Pagination
                 paginaActual={paginaActual}

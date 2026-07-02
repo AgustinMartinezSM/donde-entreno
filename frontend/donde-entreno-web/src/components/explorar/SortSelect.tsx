@@ -67,7 +67,7 @@ export function SortSelect({
   }
 
   return (
-    <div className="mt-6 flex w-full flex-col gap-2 sm:max-w-xs">
+    <div className="flex w-full flex-col gap-2 sm:max-w-xs lg:w-72">
       <label
         htmlFor="orden"
         className="text-sm font-bold text-[var(--color-primary)]"
@@ -79,7 +79,8 @@ export function SortSelect({
         id="orden"
         value={ordenActual}
         onChange={manejarCambioOrden}
-        className="min-h-12 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-bold text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"      >
+        className="min-h-12 w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 text-sm font-bold text-[var(--color-text)] shadow-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+      >
         <option value="">Más relevantes</option>
         <option value="precio_asc">Menor precio</option>
         <option value="precio_desc">Mayor precio</option>

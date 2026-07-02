@@ -19,7 +19,7 @@ export function ContactButton({
         href={`https://wa.me/${whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white"
+        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_35px_rgba(46,184,114,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#249B60] active:scale-[0.98]"
       >
         Contactar por WhatsApp
       </a>
@@ -40,7 +40,7 @@ export function ContactButton({
         href={instagramUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white"
+        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_35px_rgba(46,184,114,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#249B60] active:scale-[0.98]"
       >
         Contactar por Instagram
       </a>
@@ -55,7 +55,7 @@ export function ContactButton({
     return (
       <a
         href={`mailto:${email}`}
-        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white"
+        className="mt-6 block w-full rounded-[var(--radius-md)] bg-[var(--color-secondary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[0_14px_35px_rgba(46,184,114,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#249B60] active:scale-[0.98]"
       >
         Contactar por email
       </a>
@@ -68,7 +68,7 @@ export function ContactButton({
   return (
     <button
       disabled
-      className="mt-6 w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white"
+      className="mt-6 w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white opacity-80"
     >
       Contacto no disponible
     </button>

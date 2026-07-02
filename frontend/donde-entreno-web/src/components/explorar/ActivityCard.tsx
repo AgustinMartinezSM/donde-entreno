@@ -36,24 +36,24 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
   });
 
   return (
-    <article className="group rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)] active:scale-[0.995]">
+    <article className="group overflow-hidden rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)] active:scale-[0.995]">
       <ActivityImage
         src={imagenUrl}
         alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
         fallbackText={actividad.deporteNombre || "Actividad"}
-        heightClassName="h-36"
+        heightClassName="h-44"
       />
 
-      <div className="mt-4 space-y-2">
+      <div className="p-2 pt-4">
         <h3 className="line-clamp-2 text-lg font-extrabold text-[var(--color-primary)]">
           {actividad.titulo}
         </h3>
 
-        <p className="text-sm text-[var(--color-muted)]">
+        <p className="mt-2 text-sm font-bold text-[var(--color-muted)]">
           {actividad.perfilPublicadorNombre || "Publicador no informado"}
         </p>
 
-        <div className="flex items-start gap-2 text-sm font-medium text-[var(--color-text)]">
+        <div className="mt-3 flex items-start gap-2 rounded-[var(--radius-md)] bg-[#F8FAFC] px-3 py-2 text-sm font-medium text-[var(--color-text)]">
           <Image
             src="/icons/icon-location.png"
             alt=""
@@ -69,7 +69,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {actividad.nivel && (
             <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#167A4A]">
               {actividad.nivel}
@@ -85,7 +85,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
 
         <Link
           href={`/actividades/${actividad.slug}`}
-          className="mt-4 block w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] group-hover:bg-[#0B314D]"
+          className="mt-5 block w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] group-hover:bg-[#0B314D]"
         >
           Ver detalle
         </Link>

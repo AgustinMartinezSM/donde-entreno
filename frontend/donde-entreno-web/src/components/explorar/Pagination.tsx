@@ -9,6 +9,7 @@ type PaginationProps = {
   ordenActual?: string;
 
   ciudadIdActual?: string;
+  ciudadSlugActual?: string;
   barrioIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
@@ -21,6 +22,7 @@ export function Pagination({
   textoBuscado = "",
   ordenActual = "",
   ciudadIdActual = "",
+  ciudadSlugActual = "",
   barrioIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
@@ -51,7 +53,9 @@ export function Pagination({
       params.set("orden", ordenActual);
     }
 
-    if (ciudadIdActual) {
+    if (ciudadSlugActual) {
+      params.set("ciudadSlug", ciudadSlugActual);
+    } else if (ciudadIdActual) {
       params.set("ciudadId", ciudadIdActual);
     }
 

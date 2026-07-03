@@ -7,6 +7,7 @@ type SortSelectProps = {
   ordenActual?: string;
 
   ciudadIdActual?: string;
+  ciudadSlugActual?: string;
   barrioIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
@@ -17,6 +18,7 @@ export function SortSelect({
   textoBuscado = "",
   ordenActual = "",
   ciudadIdActual = "",
+  ciudadSlugActual = "",
   barrioIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
@@ -35,7 +37,9 @@ export function SortSelect({
     }
 
     // Conservamos filtros activos
-    if (ciudadIdActual) {
+    if (ciudadSlugActual) {
+      params.set("ciudadSlug", ciudadSlugActual);
+    } else if (ciudadIdActual) {
       params.set("ciudadId", ciudadIdActual);
     }
 

@@ -5,11 +5,13 @@ import type { FiltrosOpciones } from "../../types/filtros";
 import { Header } from "../../components/layout/Header";
 import { ActivityCard } from "../../components/explorar/ActivityCard";
 import { buscarActividades } from "../../services/actividadService";
+import { obtenerCiudadPorSlug } from "../../services/ciudadService";
 import { SearchBar } from "../../components/home/SearchBar";
 import { Pagination } from "../../components/explorar/Pagination";
 import { SortSelect } from "../../components/explorar/SortSelect";
 import { FiltersPanel } from "../../components/explorar/FiltersPanel";
 import { obtenerOpcionesFiltros } from "../../services/filtrosService";
+import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { ErrorState } from "../../components/feedback/ErrorState";
 import { SectionHeader } from "../../components/ui/SectionHeader";
 import { StatusMessage } from "../../components/ui/StatusMessage";
@@ -38,6 +40,7 @@ type ExplorarPageProps = {
     orden?: string;
 
     ciudadId?: string;
+    ciudadSlug?: string;
     barrioId?: string;
     deporteSlug?: string;
     nivel?: string;
@@ -64,14 +67,31 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   const ordenActual = params.orden || "";
 
   const ciudadIdActual = params.ciudadId || "";
+  const ciudadSlugActual = params.ciudadSlug?.trim() || "";
   const barrioIdActual = params.barrioId || "";
   const deporteSlugActual = params.deporteSlug || "";
   const nivelActual = params.nivel || "";
   const modalidadActual = params.modalidad || "";
+  const ciudadIdParaBusqueda = ciudadSlugActual
+    ? undefined
+    : ciudadIdActual
+      ? Number(ciudadIdActual)
+      : undefined;
 
   let actividades: Actividad[] = [];
   let totalPaginas = 0;
   let huboError = false;
+  let huboErrorCiudad = false;
+  let nombreCiudadActiva: string | null = null;
+
+  if (ciudadSlugActual) {
+    try {
+      const ciudadActiva = await obtenerCiudadPorSlug(ciudadSlugActual);
+      nombreCiudadActiva = ciudadActiva.nombre;
+    } catch {
+      huboErrorCiudad = true;
+    }
+  }
 
   /*
     Opciones iniciales vacías para evitar que la página explote
@@ -92,25 +112,28 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
       Pedimos actividades y opciones de filtros al backend al mismo tiempo.
       Si textoBuscado está vacío, trae actividades sin filtrar.
     */
-    const [respuestaActividades, respuestaFiltros] = await Promise.all([
-      buscarActividades({
-        texto: textoBuscado,
-        page: paginaActual,
-        size: 6,
-        orden: ordenActual,
+    if (!huboErrorCiudad) {
+      const [respuestaActividades, respuestaFiltros] = await Promise.all([
+        buscarActividades({
+          texto: textoBuscado,
+          page: paginaActual,
+          size: 6,
+          orden: ordenActual,
 
-        ciudadId: ciudadIdActual ? Number(ciudadIdActual) : undefined,
-        barrioId: barrioIdActual ? Number(barrioIdActual) : undefined,
-        deporteSlug: deporteSlugActual || undefined,
-        nivel: nivelActual || undefined,
-        modalidad: modalidadActual || undefined,
-      }),
-      obtenerOpcionesFiltros(),
-    ]);
+          ciudadId: ciudadIdParaBusqueda,
+          ciudadSlug: ciudadSlugActual || undefined,
+          barrioId: barrioIdActual ? Number(barrioIdActual) : undefined,
+          deporteSlug: deporteSlugActual || undefined,
+          nivel: nivelActual || undefined,
+          modalidad: modalidadActual || undefined,
+        }),
+        obtenerOpcionesFiltros(),
+      ]);
 
-    actividades = respuestaActividades.contenido;
-    totalPaginas = respuestaActividades.totalPaginas;
-    filtros = respuestaFiltros;
+      actividades = respuestaActividades.contenido;
+      totalPaginas = respuestaActividades.totalPaginas;
+      filtros = respuestaFiltros;
+    }
   } catch (error) {
     /*
       Si falla alguna petición,
@@ -136,28 +159,104 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
             </p>
 
             <h1 className="max-w-3xl text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
-              Explorá <span className="text-[var(--color-secondary)]">actividades</span> cerca tuyo
+              Explorá{" "}
+              <span className="text-[var(--color-secondary)]">
+                actividades
+              </span>
+              {nombreCiudadActiva
+                ? ` en ${nombreCiudadActiva}`
+                : " cerca tuyo"}
             </h1>
 
             <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Buscá por deporte, zona, nivel o modalidad y descubrí opciones
-              cerca tuyo.
+              {nombreCiudadActiva
+                ? `Opciones disponibles para entrenar en ${nombreCiudadActiva}. Podés combinar deporte, barrio, nivel y modalidad.`
+                : "Buscá por deporte, zona, nivel o modalidad y descubrí opciones cerca tuyo."}
             </p>
 
-            {textoBuscado ? (
-              <p className="mt-4 inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
-                Resultados para &quot;{textoBuscado}&quot;
-              </p>
-            ) : null}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {nombreCiudadActiva ? (
+                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
+                  Explorando actividades en {nombreCiudadActiva}
+                </p>
+              ) : null}
+
+              {textoBuscado ? (
+                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
+                  Resultados para &quot;{textoBuscado}&quot;
+                </p>
+              ) : null}
+
+              {ciudadSlugActual ? (
+                <AppLinkButton
+                  href="/ciudades"
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Cambiar ciudad
+                </AppLinkButton>
+              ) : null}
+            </div>
 
             {/* Dejamos el buscador visible aunque haya error */}
             <div className="max-w-3xl transition duration-200 ease-out">
-              <SearchBar valorInicial={textoBuscado} />
+              {ciudadSlugActual ? (
+                <form
+                  action="/explorar"
+                  method="get"
+                  className="mt-8 w-full min-w-0 rounded-[24px] border border-[#BFDDEA] bg-white/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#DDEAF3] sm:p-3"
+                >
+                  <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+                    <input
+                      type="text"
+                      name="texto"
+                      defaultValue={textoBuscado}
+                      placeholder="Buscar deporte, actividad o club"
+                      className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] sm:min-h-14"
+                    />
+                    <input
+                      type="hidden"
+                      name="ciudadSlug"
+                      value={ciudadSlugActual}
+                    />
+                    <input type="hidden" name="page" value="0" />
+
+                    <button
+                      type="submit"
+                      className="min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
+                    >
+                      Buscar
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <SearchBar valorInicial={textoBuscado} />
+              )}
             </div>
           </SurfaceCard>
 
           <div className="mt-6">
-            {huboError ? (
+            {huboErrorCiudad ? (
+              <StatusMessage
+                variant="warning"
+                title="No pudimos cargar la ciudad seleccionada"
+                className="mt-8 p-5"
+              >
+                <p>
+                  Revisá la ciudad elegida o volvé al listado de ciudades para
+                  explorar opciones disponibles.
+                </p>
+                <AppLinkButton
+                  href="/ciudades"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4 w-fit"
+                >
+                  Ver ciudades
+                </AppLinkButton>
+              </StatusMessage>
+            ) : huboError ? (
               <div className="mt-8">
                 <ErrorState
                   titulo="No pudimos cargar las actividades"
@@ -172,6 +271,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                   filtros={filtros}
                   textoBuscado={textoBuscado}
                   ciudadIdActual={ciudadIdActual}
+                  ciudadSlugActual={ciudadSlugActual}
                   barrioIdActual={barrioIdActual}
                   deporteSlugActual={deporteSlugActual}
                   nivelActual={nivelActual}
@@ -182,7 +282,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
             )}
           </div>
 
-          {!huboError && (
+          {!huboError && !huboErrorCiudad && (
             <>
               <SurfaceCard
                 as="section"
@@ -192,12 +292,17 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 <SectionHeader
                   eyebrow="ACTIVIDADES"
                   title="Todas las actividades"
-                  description="Opciones disponibles según tu búsqueda y filtros."
+                  description={
+                    nombreCiudadActiva
+                      ? `Opciones disponibles según tu búsqueda y filtros en ${nombreCiudadActiva}.`
+                      : "Opciones disponibles según tu búsqueda y filtros."
+                  }
                   action={
                     <SortSelect
                       textoBuscado={textoBuscado}
                       ordenActual={ordenActual}
                       ciudadIdActual={ciudadIdActual}
+                      ciudadSlugActual={ciudadSlugActual}
                       barrioIdActual={barrioIdActual}
                       deporteSlugActual={deporteSlugActual}
                       nivelActual={nivelActual}
@@ -233,6 +338,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 textoBuscado={textoBuscado}
                 ordenActual={ordenActual}
                 ciudadIdActual={ciudadIdActual}
+                ciudadSlugActual={ciudadSlugActual}
                 barrioIdActual={barrioIdActual}
                 deporteSlugActual={deporteSlugActual}
                 nivelActual={nivelActual}

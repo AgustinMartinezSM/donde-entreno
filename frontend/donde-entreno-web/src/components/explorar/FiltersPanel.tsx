@@ -11,6 +11,7 @@ type FiltersPanelProps = {
 
   textoBuscado?: string;
   ciudadIdActual?: string;
+  ciudadSlugActual?: string;
   barrioIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
@@ -22,6 +23,7 @@ export function FiltersPanel({
   filtros,
   textoBuscado = "",
   ciudadIdActual = "",
+  ciudadSlugActual = "",
   barrioIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
@@ -34,7 +36,9 @@ export function FiltersPanel({
     Guardamos en estado los filtros seleccionados.
     Arrancan con lo que venga desde la URL.
   */
-  const [ciudadId, setCiudadId] = useState(ciudadIdActual);
+  const [ciudadId, setCiudadId] = useState(
+    ciudadSlugActual ? "" : ciudadIdActual
+  );
   const [barrioId, setBarrioId] = useState(barrioIdActual);
   const [deporteSlug, setDeporteSlug] = useState(deporteSlugActual);
   const [nivel, setNivel] = useState(nivelActual);
@@ -42,6 +46,7 @@ export function FiltersPanel({
 
   const hayFiltrosActivos =
     ciudadIdActual ||
+    ciudadSlugActual ||
     barrioIdActual ||
     deporteSlugActual ||
     nivelActual ||
@@ -79,6 +84,10 @@ export function FiltersPanel({
     /*
       Agregamos solo los filtros que tengan valor.
     */
+    if (ciudadSlugActual && !ciudadId) {
+      params.set("ciudadSlug", ciudadSlugActual);
+    }
+
     if (ciudadId) {
       params.set("ciudadId", ciudadId);
     }
@@ -130,6 +139,10 @@ export function FiltersPanel({
 
     if (ordenActual) {
       params.set("orden", ordenActual);
+    }
+
+    if (ciudadSlugActual) {
+      params.set("ciudadSlug", ciudadSlugActual);
     }
 
     params.set("page", "0");

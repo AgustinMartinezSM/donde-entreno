@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/actividades", "/api/actividades/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/barrios").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categorias-deportivas").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/ciudades").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ciudades", "/api/ciudades/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/deportes").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/filtros/opciones").permitAll()
                         .requestMatchers(

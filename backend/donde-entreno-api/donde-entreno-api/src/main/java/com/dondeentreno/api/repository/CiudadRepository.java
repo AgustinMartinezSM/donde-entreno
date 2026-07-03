@@ -15,13 +15,17 @@ import java.util.Optional;
 public interface CiudadRepository extends JpaRepository<Ciudad, Long> {
 
     /**
-     * Busca todas las ciudades activas ordenadas por nombre.
+     * Busca todas las ciudades activas ordenadas por orden editorial y nombre.
      *
      * Spring interpreta:
      * WHERE activa = true
-     * ORDER BY nombre ASC
+     * ORDER BY orden ASC, nombre ASC
      */
+    List<Ciudad> findByActivaTrueOrderByOrdenAscNombreAsc();
+
     List<Ciudad> findByActivaTrueOrderByNombreAsc();
+
+    Optional<Ciudad> findBySlugAndActivaTrue(String slug);
 
     Optional<Ciudad> findByIdAndActivaTrue(Long id);
 }

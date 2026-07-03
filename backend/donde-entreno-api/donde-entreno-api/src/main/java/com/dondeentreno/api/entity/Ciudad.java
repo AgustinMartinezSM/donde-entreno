@@ -64,6 +64,23 @@ public class Ciudad {
     private String pais;
 
     /**
+     * Slug publico usado para rutas territoriales.
+     *
+     * Ejemplo:
+     * "mar-del-plata"
+     */
+    @Column(name = "slug", nullable = false, unique = true, length = 120)
+    private String slug;
+
+    /**
+     * Orden editorial para listar ciudades activas.
+     *
+     * Los valores mas bajos aparecen primero.
+     */
+    @Column(name = "orden", nullable = false)
+    private Integer orden;
+
+    /**
      * Indica si la ciudad está activa.
      *
      * En la base tiene default true.
@@ -112,6 +129,14 @@ public class Ciudad {
         return pais;
     }
 
+    public String getSlug() {
+        return slug;
+    }
+
+    public Integer getOrden() {
+        return orden;
+    }
+
     public Boolean getActiva() {
         return activa;
     }
@@ -138,6 +163,14 @@ public class Ciudad {
 
     public void setPais(String pais) {
         this.pais = pais;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
     }
 
     public void setActiva(Boolean activa) {

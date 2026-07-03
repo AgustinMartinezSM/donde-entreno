@@ -151,6 +151,7 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
           AND (:deporteId IS NULL OR a.deporte.id = :deporteId)
           AND (:deporteSlug IS NULL OR a.deporte.slug = :deporteSlug)
           AND (:ciudadId IS NULL OR a.ubicacion.ciudad.id = :ciudadId)
+          AND (:ciudadSlug IS NULL OR a.ubicacion.ciudad.slug = :ciudadSlug)
           AND (:barrioId IS NULL OR a.ubicacion.barrio.id = :barrioId)
           AND (:perfilPublicadorId IS NULL OR a.perfilPublicador.id = :perfilPublicadorId)
           AND (:nivel IS NULL OR a.nivel = :nivel)
@@ -171,6 +172,7 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             @Param("deporteId") Long deporteId,
             @Param("deporteSlug") String deporteSlug,
             @Param("ciudadId") Long ciudadId,
+            @Param("ciudadSlug") String ciudadSlug,
             @Param("barrioId") Long barrioId,
             @Param("perfilPublicadorId") Long perfilPublicadorId,
             @Param("nivel") String nivel,
@@ -201,6 +203,7 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
           AND (:deporteId IS NULL OR a.deporte.id = :deporteId)
           AND (:deporteSlug IS NULL OR a.deporte.slug = :deporteSlug)
           AND (:ciudadId IS NULL OR a.ubicacion.ciudad.id = :ciudadId)
+          AND (:ciudadSlug IS NULL OR a.ubicacion.ciudad.slug = :ciudadSlug)
           AND (:barrioId IS NULL OR a.ubicacion.barrio.id = :barrioId)
           AND (:perfilPublicadorId IS NULL OR a.perfilPublicador.id = :perfilPublicadorId)
           AND (:nivel IS NULL OR a.nivel = :nivel)
@@ -220,6 +223,7 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             @Param("deporteId") Long deporteId,
             @Param("deporteSlug") String deporteSlug,
             @Param("ciudadId") Long ciudadId,
+            @Param("ciudadSlug") String ciudadSlug,
             @Param("barrioId") Long barrioId,
             @Param("perfilPublicadorId") Long perfilPublicadorId,
             @Param("nivel") String nivel,

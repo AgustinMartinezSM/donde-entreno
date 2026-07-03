@@ -90,6 +90,7 @@ GET /api/filtros/opciones
 GET /api/categorias-deportivas
 GET /api/deportes
 GET /api/ciudades
+GET /api/ciudades/{slug}
 GET /api/barrios
 GET /api/perfiles-publicadores
 GET /api/ubicaciones
@@ -127,6 +128,7 @@ texto
 deporteId
 deporteSlug
 ciudadId
+ciudadSlug
 barrioId
 perfilPublicadorId
 nivel
@@ -146,6 +148,18 @@ http://localhost:8080/api/actividades?texto=jiu&page=0&size=6
 Ejemplo con filtro por deporte:
 
 http://localhost:8080/api/actividades?deporteSlug=jiu-jitsu&page=0&size=6
+
+Ejemplo con filtro por ciudad:
+
+http://localhost:8080/api/actividades?ciudadSlug=mar-del-plata&page=0&size=6
+
+Endpoint de ciudades
+GET /api/ciudades
+GET /api/ciudades/{slug}
+
+Ejemplo:
+
+http://localhost:8080/api/ciudades/mar-del-plata
 CORS
 
 El backend tiene CORS configurado para permitir conexiones desde el frontend local:

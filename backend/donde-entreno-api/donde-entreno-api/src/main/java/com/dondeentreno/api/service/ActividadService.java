@@ -220,6 +220,7 @@ public class ActividadService {
      * @param deporteId ID del deporte.
      * @param deporteSlug slug del deporte.
      * @param ciudadId ID de la ciudad.
+     * @param ciudadSlug slug de la ciudad.
      * @param barrioId ID del barrio.
      * @param perfilPublicadorId ID del perfil publicador.
      * @param nivel nivel de la actividad.
@@ -231,6 +232,7 @@ public class ActividadService {
             Long deporteId,
             String deporteSlug,
             Long ciudadId,
+            String ciudadSlug,
             Long barrioId,
             Long perfilPublicadorId,
             String nivel,
@@ -243,6 +245,7 @@ public class ActividadService {
                         deporteId,
                         limpiarTexto(deporteSlug),
                         ciudadId,
+                        normalizarSlug(ciudadSlug),
                         barrioId,
                         perfilPublicadorId,
                         limpiarTexto(nivel),
@@ -272,6 +275,14 @@ public class ActividadService {
         }
 
         return texto;
+    }
+
+    private String normalizarSlug(String slug) {
+        if (slug == null || slug.isBlank()) {
+            return null;
+        }
+
+        return slug.trim().toLowerCase();
     }
 
     /**
@@ -331,6 +342,7 @@ public class ActividadService {
      * @param deporteId ID del deporte.
      * @param deporteSlug slug del deporte.
      * @param ciudadId ID de la ciudad.
+     * @param ciudadSlug slug de la ciudad.
      * @param barrioId ID del barrio.
      * @param perfilPublicadorId ID del perfil publicador.
      * @param nivel nivel de la actividad.
@@ -345,6 +357,7 @@ public class ActividadService {
             Long deporteId,
             String deporteSlug,
             Long ciudadId,
+            String ciudadSlug,
             Long barrioId,
             Long perfilPublicadorId,
             String nivel,
@@ -372,6 +385,7 @@ public class ActividadService {
                         deporteId,
                         limpiarTexto(deporteSlug),
                         ciudadId,
+                        normalizarSlug(ciudadSlug),
                         barrioId,
                         perfilPublicadorId,
                         nivelValidado,

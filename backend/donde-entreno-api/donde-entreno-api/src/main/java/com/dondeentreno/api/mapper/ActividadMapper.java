@@ -97,10 +97,12 @@ public class ActividadMapper {
 
         Long ciudadId = null;
         String ciudadNombre = null;
+        String ciudadSlug = null;
 
         if (ciudad != null) {
             ciudadId = ciudad.getId();
             ciudadNombre = ciudad.getNombre();
+            ciudadSlug = ciudad.getSlug();
         }
 
         Long barrioId = null;
@@ -143,6 +145,7 @@ public class ActividadMapper {
                 direccion,
                 ciudadId,
                 ciudadNombre,
+                ciudadSlug,
                 barrioId,
                 barrioNombre
         );

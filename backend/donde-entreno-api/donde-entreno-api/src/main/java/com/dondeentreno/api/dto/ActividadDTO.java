@@ -54,6 +54,7 @@ public class ActividadDTO {
 
     private Long ciudadId;
     private String ciudadNombre;
+    private String ciudadSlug;
 
     private Long barrioId;
     private String barrioNombre;
@@ -93,6 +94,7 @@ public class ActividadDTO {
             String direccion,
             Long ciudadId,
             String ciudadNombre,
+            String ciudadSlug,
             Long barrioId,
             String barrioNombre
     ) {
@@ -127,6 +129,7 @@ public class ActividadDTO {
         this.direccion = direccion;
         this.ciudadId = ciudadId;
         this.ciudadNombre = ciudadNombre;
+        this.ciudadSlug = ciudadSlug;
         this.barrioId = barrioId;
         this.barrioNombre = barrioNombre;
     }
@@ -253,6 +256,10 @@ public class ActividadDTO {
 
     public String getCiudadNombre() {
         return ciudadNombre;
+    }
+
+    public String getCiudadSlug() {
+        return ciudadSlug;
     }
 
     public Long getBarrioId() {
@@ -385,6 +392,10 @@ public class ActividadDTO {
 
     public void setCiudadNombre(String ciudadNombre) {
         this.ciudadNombre = ciudadNombre;
+    }
+
+    public void setCiudadSlug(String ciudadSlug) {
+        this.ciudadSlug = ciudadSlug;
     }
 
     public void setBarrioId(Long barrioId) {

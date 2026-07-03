@@ -26,7 +26,10 @@ public class CiudadMapper {
                 ciudad.getId(),
                 ciudad.getNombre(),
                 ciudad.getProvincia(),
-                ciudad.getPais()
+                ciudad.getPais(),
+                ciudad.getSlug(),
+                ciudad.getOrden(),
+                ciudad.getActiva()
         );
     }
 }

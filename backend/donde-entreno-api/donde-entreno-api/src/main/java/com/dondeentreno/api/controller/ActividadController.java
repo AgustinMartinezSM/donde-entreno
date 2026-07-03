@@ -68,6 +68,7 @@ public class ActividadController {
      * @param deporteId ID opcional del deporte.
      * @param deporteSlug slug opcional del deporte.
      * @param ciudadId ID opcional de la ciudad.
+     * @param ciudadSlug slug opcional de la ciudad.
      * @param barrioId ID opcional del barrio.
      * @param perfilPublicadorId ID opcional del perfil publicador.
      * @param nivel nivel opcional de la actividad.
@@ -82,6 +83,7 @@ public class ActividadController {
             @RequestParam(required = false) Long deporteId,
             @RequestParam(required = false) String deporteSlug,
             @RequestParam(required = false) Long ciudadId,
+            @RequestParam(required = false) String ciudadSlug,
             @RequestParam(required = false) Long barrioId,
             @RequestParam(required = false) Long perfilPublicadorId,
             @RequestParam(required = false) String nivel,
@@ -95,6 +97,7 @@ public class ActividadController {
                 deporteId,
                 deporteSlug,
                 ciudadId,
+                ciudadSlug,
                 barrioId,
                 perfilPublicadorId,
                 nivel,

@@ -15,15 +15,29 @@ public class CiudadDTO {
     private String nombre;
     private String provincia;
     private String pais;
+    private String slug;
+    private Integer orden;
+    private Boolean activa;
 
     public CiudadDTO() {
     }
 
-    public CiudadDTO(Long id, String nombre, String provincia, String pais) {
+    public CiudadDTO(
+            Long id,
+            String nombre,
+            String provincia,
+            String pais,
+            String slug,
+            Integer orden,
+            Boolean activa
+    ) {
         this.id = id;
         this.nombre = nombre;
         this.provincia = provincia;
         this.pais = pais;
+        this.slug = slug;
+        this.orden = orden;
+        this.activa = activa;
     }
 
     public Long getId() {
@@ -42,6 +56,18 @@ public class CiudadDTO {
         return pais;
     }
 
+    public String getSlug() {
+        return slug;
+    }
+
+    public Integer getOrden() {
+        return orden;
+    }
+
+    public Boolean getActiva() {
+        return activa;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -56,5 +82,17 @@ public class CiudadDTO {
 
     public void setPais(String pais) {
         this.pais = pais;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
+    }
+
+    public void setActiva(Boolean activa) {
+        this.activa = activa;
     }
 }

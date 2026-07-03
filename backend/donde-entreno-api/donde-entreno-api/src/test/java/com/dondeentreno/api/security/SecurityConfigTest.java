@@ -188,6 +188,16 @@ class SecurityConfigTest {
                 .andExpect(jsonPath("$.path").value("/api/actividades/ruta-inexistente-publica"));
     }
 
+    @Test
+    void ciudadPorSlugNoQuedaBloqueadaPorSecurity() throws Exception {
+        mockMvc.perform(get("/api/ciudades/mar-del-plata"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.mensaje").value("Recurso no encontrado."))
+                .andExpect(jsonPath("$.path").value("/api/ciudades/mar-del-plata"));
+    }
+
     private String bearerTokenConRol(String rol) {
         SecretKeySpec secretKey = new SecretKeySpec(
                 JWT_SECRET_TEST.getBytes(StandardCharsets.UTF_8),

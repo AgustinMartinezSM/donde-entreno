@@ -19,6 +19,7 @@ export type Actividad = {
   ubicacionNombre?: string;
   ciudadId?: number;
   ciudadNombre?: string;
+  ciudadSlug?: string;
   barrioId?: number;
   barrioNombre?: string;
   direccion?: string;
@@ -107,6 +108,7 @@ export type ActividadDetalle = {
 
   ciudadId?: number;
   ciudadNombre?: string;
+  ciudadSlug?: string;
 
   barrioId?: number;
   barrioNombre?: string;

@@ -14,6 +14,7 @@ export type BuscarActividadesParams = {
   deporteId?: number;
   deporteSlug?: string;
   ciudadId?: number;
+  ciudadSlug?: string;
   barrioId?: number;
   perfilPublicadorId?: number;
   nivel?: string;
@@ -37,6 +38,9 @@ export async function buscarActividades(
   if (params.deporteId) queryParams.append("deporteId", String(params.deporteId));
   if (params.deporteSlug) queryParams.append("deporteSlug", params.deporteSlug);
   if (params.ciudadId) queryParams.append("ciudadId", String(params.ciudadId));
+  if (params.ciudadSlug?.trim()) {
+    queryParams.append("ciudadSlug", params.ciudadSlug.trim());
+  }
   if (params.barrioId) queryParams.append("barrioId", String(params.barrioId));
   if (params.perfilPublicadorId) {
     queryParams.append("perfilPublicadorId", String(params.perfilPublicadorId));

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { BrandName } from "../../components/brand/BrandName";
 import { Header } from "../../components/layout/Header";
 import { PublishForm } from "../../components/publicar/PublishForm";
+import { AppLinkButton } from "../../components/ui/AppLinkButton";
+import { SurfaceCard } from "../../components/ui/SurfaceCard";
 
 export const metadata: Metadata = {
   /*
@@ -26,14 +27,20 @@ export default function PublicarPage() {
         <Header />
 
         <div className="py-8 sm:py-10">
-          <Link
+          <AppLinkButton
             href="/"
-            className="inline-flex rounded-full border border-[#BFDDEA] bg-white/90 px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+            variant="secondary"
+            size="sm"
+            className="w-fit rounded-full"
           >
             ← Volver al inicio
-          </Link>
+          </AppLinkButton>
 
-          <section className="mt-6 overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 shadow-[0_24px_60px_rgba(12,52,80,0.12)] sm:p-8">
+          <SurfaceCard
+            as="section"
+            variant="success"
+            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-8"
+          >
             <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
               <div>
                 <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -62,7 +69,7 @@ export default function PublicarPage() {
                 </ul>
               </div>
             </div>
-          </section>
+          </SurfaceCard>
 
           <PublishForm />
         </div>

@@ -6,6 +6,7 @@ import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
 } from "../../services/authService";
+import { AppButton } from "../ui/AppButton";
 import type { AdminSesion } from "../../types/auth";
 import type { ReactNode } from "react";
 
@@ -92,13 +93,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
             <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
               No tenés permisos para acceder al panel administrador.
             </p>
-            <button
+            <AppButton
               type="button"
               onClick={cerrarSesion}
-              className="mt-6 min-h-12 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[0_16px_38px_rgba(15,61,94,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
+              className="mt-6"
             >
               Cerrar sesión
-            </button>
+            </AppButton>
           </div>
         </section>
       </main>

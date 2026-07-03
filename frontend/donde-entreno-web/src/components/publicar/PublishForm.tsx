@@ -40,6 +40,8 @@ import {
   type SolicitudPublicacionResponse,
   type TipoPublicadorSolicitud,
 } from "../../types/solicitudPublicacion";
+import { AppButton } from "../ui/AppButton";
+import { SurfaceCard } from "../ui/SurfaceCard";
 
 type SolicitudPublicacionFormState = {
   tipoPublicador: "" | TipoPublicadorSolicitud;
@@ -1038,86 +1040,88 @@ export function PublishForm() {
 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-      <aside className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/90 p-5 shadow-[0_18px_45px_rgba(12,52,80,0.08)] lg:sticky lg:top-8">
-        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-          Antes de enviar
-        </p>
-        <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
-          Publicá tu actividad deportiva en 5 pasos simples
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-          Te guiamos para cargar la información principal y enviar tu solicitud
-          a revisión.
-        </p>
+      <aside className="lg:sticky lg:top-8">
+        <SurfaceCard className="bg-white/90 p-5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+            Antes de enviar
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)]">
+            Publicá tu actividad deportiva en 5 pasos simples
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
+            Te guiamos para cargar la información principal y enviar tu solicitud
+            a revisión.
+          </p>
 
-        <ol className="mt-5 space-y-3">
-          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
-              1
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
-                Contanos quién publica
+          <ol className="mt-5 space-y-3">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                1
               </span>
-              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
-                Club, gimnasio, profe, escuela o espacio deportivo.
+              <span>
+                <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                  Contanos quién publica
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                  Club, gimnasio, profe, escuela o espacio deportivo.
+                </span>
               </span>
-            </span>
-          </li>
-          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
-              2
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
-                Describí la actividad
+            </li>
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+                2
               </span>
-              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
-                Nombre, deporte, nivel, modalidad y descripción.
+              <span>
+                <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                  Describí la actividad
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                  Nombre, deporte, nivel, modalidad y descripción.
+                </span>
               </span>
-            </span>
-          </li>
-          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
-              3
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
-                Indicá dónde se realiza
+            </li>
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                3
               </span>
-              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
-                Ciudad, barrio, lugar o dirección de referencia.
+              <span>
+                <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                  Indicá dónde se realiza
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                  Ciudad, barrio, lugar o dirección de referencia.
+                </span>
               </span>
-            </span>
-          </li>
-          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
-              4
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
-                Sumá contacto y horarios
+            </li>
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+                4
               </span>
-              <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
-                Agregá cómo pueden contactarte y cuándo se dicta.
+              <span>
+                <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                  Sumá contacto y horarios
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                  Agregá cómo pueden contactarte y cuándo se dicta.
+                </span>
               </span>
-            </span>
-          </li>
-          <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
-              5
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[var(--color-primary)]">
-                Enviá la solicitud a revisión
+            </li>
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
+                5
               </span>
-              <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
-                El equipo de <BrandName className="inline font-bold" /> la
-                revisa antes de publicarla.
+              <span>
+                <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                  Enviá la solicitud a revisión
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
+                  El equipo de <BrandName className="inline font-bold" /> la
+                  revisa antes de publicarla.
+                </span>
               </span>
-            </span>
-          </li>
-        </ol>
+            </li>
+          </ol>
+        </SurfaceCard>
       </aside>
 
       <form onSubmit={manejarEnvio} className="space-y-5">
@@ -1144,13 +1148,15 @@ export function PublishForm() {
           className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00]"
         >
           <p className="font-bold">{errorCatalogosIniciales}</p>
-          <button
+          <AppButton
             type="button"
             onClick={() => void cargarCatalogosIniciales()}
-            className="mt-3 min-h-10 rounded-[var(--radius-md)] border border-[#8A4B00] px-4 text-sm font-bold transition duration-200 ease-out hover:bg-white active:scale-[0.98]"
+            variant="outline"
+            size="sm"
+            className="mt-3 border-[#8A4B00] text-[#8A4B00]"
           >
             Reintentar
-          </button>
+          </AppButton>
         </div>
       )}
 
@@ -1656,13 +1662,15 @@ export function PublishForm() {
                   className="rounded-[var(--radius-md)] bg-[#FFF4E5] p-3 text-sm leading-6 text-[#8A4B00]"
                 >
                   <p className="font-bold">{errorBarrios}</p>
-                  <button
+                  <AppButton
                     type="button"
                     onClick={manejarReintentarBarrios}
-                    className="mt-2 min-h-10 rounded-[var(--radius-md)] border border-[#8A4B00] px-3 text-sm font-bold transition hover:bg-white"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 border-[#8A4B00] text-[#8A4B00]"
                   >
                     Reintentar barrios
-                  </button>
+                  </AppButton>
                 </div>
               )}
             </div>
@@ -2096,13 +2104,14 @@ export function PublishForm() {
             })}
           </div>
 
-          <button
+          <AppButton
             type="button"
             onClick={agregarHorario}
-            className="min-h-12 rounded-[var(--radius-md)] border border-[var(--color-primary)] bg-white px-5 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#E8F6FB] active:scale-[0.98]"
+            variant="secondary"
+            size="lg"
           >
             Agregar horario
-          </button>
+          </AppButton>
         </div>
       </fieldset>
       <fieldset className={fieldsetClassName}>
@@ -2240,17 +2249,19 @@ export function PublishForm() {
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <button
+        <AppButton
           type="submit"
           disabled={procesandoFormulario || respuestaEnvio !== null}
-          className="min-h-14 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-7 text-sm font-extrabold text-white shadow-[0_14px_35px_rgba(15,61,94,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:w-auto"
+          size="lg"
+          fullWidth
+          className="sm:w-auto"
         >
           {procesandoFormulario
             ? "Enviando..."
             : respuestaEnvio
               ? "Solicitud enviada"
               : "Enviar solicitud"}
-        </button>
+        </AppButton>
       </div>
       </form>
     </div>

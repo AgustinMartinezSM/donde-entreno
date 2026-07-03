@@ -1,11 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminGuard } from "../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../components/admin/AdminEstadoBadge";
 import { BrandName } from "../../../components/brand/BrandName";
+import { AppButton } from "../../../components/ui/AppButton";
+import { AppLinkButton } from "../../../components/ui/AppLinkButton";
+import { StatusMessage } from "../../../components/ui/StatusMessage";
+import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -177,7 +180,7 @@ function AdminSolicitudesListado() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
-        <div className="mb-6 overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
+        <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
           <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -208,19 +211,19 @@ function AdminSolicitudesListado() {
                   </div>
                 )}
 
-                <button
+                <AppButton
                   type="button"
                   onClick={cerrarSesion}
-                  className="min-h-12 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                  variant="secondary"
                 >
                   Cerrar sesión
-                </button>
+                </AppButton>
               </div>
             </div>
           </div>
-        </div>
+        </SurfaceCard>
 
-        <div className="mb-5 rounded-[24px] border border-[#DDEAF3] bg-white/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+        <SurfaceCard className="mb-5 rounded-[24px] bg-white/90 p-5">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -251,7 +254,7 @@ function AdminSolicitudesListado() {
               Orden: recientes
             </p>
           </div>
-        </div>
+        </SurfaceCard>
 
         {cargandoSolicitudes && (
           <div
@@ -268,39 +271,38 @@ function AdminSolicitudesListado() {
         )}
 
         {!cargandoSolicitudes && errorSolicitudes && (
-          <div
-            role="alert"
-            className="rounded-[24px] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
+          <StatusMessage
+            variant="error"
+            title="No pudimos cargar las solicitudes"
+            className="p-6"
           >
-            <h2 className="text-xl font-extrabold text-red-700">
-              No pudimos cargar las solicitudes
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-red-700">
+            <p className="mt-3">
               {errorSolicitudes}
             </p>
-            <p className="mt-2 text-sm font-bold text-red-700">
+            <p className="mt-2 font-bold">
               Intentá nuevamente en unos minutos.
             </p>
-          </div>
+          </StatusMessage>
         )}
 
         {!cargandoSolicitudes && !errorSolicitudes && solicitudes.length === 0 && (
-          <div className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
-            <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-              No hay solicitudes para mostrar.
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)]">
+          <StatusMessage
+            variant="info"
+            title="No hay solicitudes para mostrar."
+            className="p-7 text-center"
+          >
+            <p className="mx-auto max-w-xl">
               Cambiá el filtro de estado o volvé a intentar cuando existan
               solicitudes nuevas.
             </p>
-          </div>
+          </StatusMessage>
         )}
 
         {!cargandoSolicitudes && !errorSolicitudes && solicitudes.length > 0 && (
           <>
             <ListadoSolicitudes solicitudes={solicitudes} />
 
-            <div className="mt-5 flex flex-col gap-3 rounded-[24px] border border-[#DDEAF3] bg-white/90 p-4 shadow-[0_14px_35px_rgba(12,52,80,0.08)] sm:flex-row sm:items-center sm:justify-between">
+            <SurfaceCard className="mt-5 flex flex-col gap-3 rounded-[24px] bg-white/90 p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-bold text-[var(--color-muted)]">
                 Página {(paginaSolicitudes?.paginaActual ?? paginaActual) + 1}{" "}
                 de {paginaSolicitudes?.totalPaginas ?? 1} ·{" "}
@@ -309,24 +311,26 @@ function AdminSolicitudesListado() {
               </p>
 
               <div className="flex gap-3">
-                <button
+                <AppButton
                   type="button"
                   onClick={irPaginaAnterior}
                   disabled={!puedeIrAnterior}
-                  className="min-h-11 flex-1 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
+                  variant="secondary"
+                  className="flex-1 sm:flex-none"
                 >
                   Anterior
-                </button>
-                <button
+                </AppButton>
+                <AppButton
                   type="button"
                   onClick={irPaginaSiguiente}
                   disabled={!puedeIrSiguiente}
-                  className="min-h-11 flex-1 rounded-[18px] bg-[var(--color-primary)] px-4 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-none"
+                  variant="primary"
+                  className="flex-1 sm:flex-none"
                 >
                   Siguiente
-                </button>
+                </AppButton>
               </div>
-            </div>
+            </SurfaceCard>
           </>
         )}
       </section>
@@ -340,7 +344,7 @@ function ListadoSolicitudes({
   solicitudes: SolicitudPublicacionAdminResumen[];
 }) {
   return (
-    <div className="overflow-hidden rounded-[24px] border border-[#DDEAF3] bg-white shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
+    <SurfaceCard className="overflow-hidden rounded-[24px]">
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full border-collapse text-left text-sm">
           <thead className="bg-[#F8FCFE] text-xs uppercase tracking-[0.08em] text-[var(--color-muted)]">
@@ -450,18 +454,20 @@ function ListadoSolicitudes({
           </article>
         ))}
       </div>
-    </div>
+    </SurfaceCard>
   );
 }
 
 function BotonDetalleSolicitud({ id }: { id: number }) {
   return (
-    <Link
+    <AppLinkButton
       href={`/admin/solicitudes/${id}`}
-      className="inline-flex min-h-10 items-center justify-center rounded-[16px] border border-[#BFDDEA] bg-white px-4 py-2 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+      variant="secondary"
+      size="sm"
+      className="rounded-[16px]"
     >
       Ver detalle
-    </Link>
+    </AppLinkButton>
   );
 }
 

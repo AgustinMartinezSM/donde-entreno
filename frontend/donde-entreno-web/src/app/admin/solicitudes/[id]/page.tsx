@@ -1,11 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminGuard } from "../../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../../components/admin/AdminEstadoBadge";
 import { BrandName } from "../../../../components/brand/BrandName";
+import { AppButton } from "../../../../components/ui/AppButton";
+import { AppLinkButton } from "../../../../components/ui/AppLinkButton";
+import { SectionHeader } from "../../../../components/ui/SectionHeader";
+import { StatusMessage } from "../../../../components/ui/StatusMessage";
+import { SurfaceCard } from "../../../../components/ui/SurfaceCard";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -295,7 +299,7 @@ function AdminSolicitudDetalle() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
-        <div className="mb-6 overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
+        <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
           <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -318,23 +322,25 @@ function AdminSolicitudDetalle() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
+                <AppLinkButton
                   href="/admin/solicitudes"
-                  className="min-h-12 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                  variant="secondary"
+                  size="lg"
                 >
                   Volver al listado
-                </Link>
-                <button
+                </AppLinkButton>
+                <AppButton
                   type="button"
                   onClick={cerrarSesion}
-                  className="min-h-12 rounded-[18px] bg-[var(--color-primary)] px-4 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
+                  variant="primary"
+                  size="lg"
                 >
                   Cerrar sesión
-                </button>
+                </AppButton>
               </div>
             </div>
           </div>
-        </div>
+        </SurfaceCard>
 
         {cargandoDetalle && (
           <div
@@ -351,17 +357,15 @@ function AdminSolicitudDetalle() {
         )}
 
         {!cargandoDetalle && errorDetalle && (
-          <div
-            role="alert"
-            className="rounded-[24px] border border-red-200 bg-red-50 p-6 shadow-[0_14px_35px_rgba(127,29,29,0.08)]"
+          <StatusMessage
+            variant="error"
+            title="No pudimos cargar la solicitud"
+            className="p-6"
           >
-            <h2 className="text-xl font-extrabold text-red-700">
-              No pudimos cargar la solicitud
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-red-700">
+            <p className="mt-3">
               {errorDetalle}
             </p>
-          </div>
+          </StatusMessage>
         )}
 
         {!cargandoDetalle && !errorDetalle && solicitud && (
@@ -417,7 +421,10 @@ function DetalleSolicitud({
 }) {
   return (
     <div className="grid gap-5">
-      <section className="overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_18px_45px_rgba(12,52,80,0.10)]">
+      <SurfaceCard
+        as="section"
+        className="overflow-hidden rounded-[28px] shadow-[0_18px_45px_rgba(12,52,80,0.10)]"
+      >
         <div className="bg-gradient-to-br from-[#F8FCFE] to-white p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -463,7 +470,7 @@ function DetalleSolicitud({
             />
           </div>
         </div>
-      </section>
+      </SurfaceCard>
 
       <section className="grid gap-5 lg:grid-cols-2">
         <DetalleCard titulo="Publicador">
@@ -552,10 +559,8 @@ function DetalleSolicitud({
         />
       </section>
 
-      <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
-        <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-          Horarios
-        </h2>
+      <SurfaceCard as="section" className="rounded-[24px] p-5">
+        <SectionHeader title="Horarios" />
 
         {solicitud.horarios.length === 0 ? (
           <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
@@ -568,7 +573,7 @@ function DetalleSolicitud({
             ))}
           </div>
         )}
-      </section>
+      </SurfaceCard>
     </div>
   );
 }
@@ -613,15 +618,12 @@ function AccionesRevision({
   const actividadSlugAprobada = respuestaAprobacion?.actividadSlug.trim() ?? "";
 
   return (
-    <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
-      <div className="border-b border-[#DDEAF3] pb-3">
-        <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
-          Revisión
-        </p>
-        <h2 className="mt-1 text-xl font-extrabold text-[var(--color-primary)]">
-          Acciones de revisión
-        </h2>
-      </div>
+    <SurfaceCard as="section" className="rounded-[24px] p-5">
+      <SectionHeader
+        eyebrow="Revisión"
+        title="Acciones de revisión"
+        className="border-b border-[#DDEAF3] pb-3"
+      />
 
       <div className="mt-4 rounded-[18px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
         <CampoDetalleEstado
@@ -631,15 +633,15 @@ function AccionesRevision({
       </div>
 
       {estaRechazada && (
-        <p className="mt-5 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+        <StatusMessage variant="error" className="mt-5 font-bold">
           Esta solicitud ya fue rechazada.
-        </p>
+        </StatusMessage>
       )}
 
       {estaAprobada && (
-        <p className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]">
+        <StatusMessage variant="success" className="mt-5 font-bold">
           Esta solicitud ya fue aprobada.
-        </p>
+        </StatusMessage>
       )}
 
       {puedeAprobar && (
@@ -654,14 +656,14 @@ function AccionesRevision({
             </p>
           </div>
           {!confirmandoAprobacion && (
-            <button
+            <AppButton
               type="button"
               onClick={onSolicitarAprobacion}
               disabled={accionEnCurso}
-              className="min-h-12 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              size="lg"
             >
               {accionEnCurso ? "Procesando..." : "Aprobar y publicar actividad"}
-            </button>
+            </AppButton>
           )}
 
           {confirmandoAprobacion && (
@@ -672,22 +674,22 @@ function AccionesRevision({
                 <BrandName className="inline" />. ¿Querés continuar?
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <button
+                <AppButton
                   type="button"
                   onClick={onCancelarAprobacion}
                   disabled={accionEnCurso}
-                  className="min-h-11 rounded-[18px] border border-[#D9B94E] bg-white/60 px-5 py-3 text-sm font-extrabold text-[#7A5A00] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#A98300] hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  variant="outline"
+                  className="border-[#D9B94E] text-[#7A5A00] hover:border-[#A98300]"
                 >
                   Cancelar
-                </button>
-                <button
+                </AppButton>
+                <AppButton
                   type="button"
                   onClick={onConfirmarAprobacion}
                   disabled={accionEnCurso}
-                  className="min-h-11 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {accionEnCurso ? "Procesando..." : "Confirmar aprobación"}
-                </button>
+                </AppButton>
               </div>
             </div>
           )}
@@ -697,9 +699,9 @@ function AccionesRevision({
       {puedeRechazar && (
         <div className="mt-5 grid gap-5 rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
           {estaEnRevision && (
-            <p className="rounded-[18px] border border-[#A9D8EA] bg-[#EEF8FC] px-4 py-3 text-sm font-bold text-[var(--color-primary)]">
+            <StatusMessage variant="info" className="font-bold">
               La solicitud ya está en revisión.
-            </p>
+            </StatusMessage>
           )}
 
           {puedeMarcarEnRevision && (
@@ -710,14 +712,14 @@ function AccionesRevision({
               <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
                 Marcá la solicitud cuando empiece el análisis del equipo.
               </p>
-              <button
+              <AppButton
                 type="button"
                 onClick={onMarcarEnRevision}
                 disabled={accionEnCurso}
-                className="mt-3 min-h-11 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                className="mt-3"
               >
                 {accionEnCurso ? "Procesando..." : "Marcar en revisión"}
-              </button>
+              </AppButton>
             </div>
           )}
 
@@ -743,56 +745,50 @@ function AccionesRevision({
             />
           </div>
 
-          <button
+          <AppButton
             type="button"
             onClick={onRechazarSolicitud}
             disabled={accionEnCurso}
-            className="min-h-12 rounded-[18px] border border-red-200 bg-red-50 px-5 py-3 text-sm font-extrabold text-red-700 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-red-300 hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            variant="danger"
+            size="lg"
           >
             {accionEnCurso ? "Procesando..." : "Rechazar solicitud"}
-          </button>
+          </AppButton>
         </div>
       )}
 
       {errorAccion && (
-        <p
-          role="alert"
-          className="mt-5 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
-        >
+        <StatusMessage variant="error" className="mt-5 font-bold">
           {errorAccion}
-        </p>
+        </StatusMessage>
       )}
 
       {respuestaAprobacion && (
-        <div
-          role="status"
-          className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-4 text-sm font-bold text-[#1D7B4A]"
-        >
+        <StatusMessage variant="success" className="mt-5 font-bold">
           <p>{respuestaAprobacion.mensaje}</p>
           <p className="mt-2">
             Actividad creada: {respuestaAprobacion.actividadTitulo}
           </p>
           <p className="mt-1">ID actividad: {respuestaAprobacion.actividadId}</p>
           {actividadSlugAprobada && (
-            <Link
+            <AppLinkButton
               href={`/actividades/${actividadSlugAprobada}`}
-              className="mt-3 inline-flex min-h-10 items-center rounded-[16px] bg-[#1D7B4A] px-4 py-2 text-sm font-extrabold text-white transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#16683E] active:scale-[0.98]"
+              variant="success"
+              size="sm"
+              className="mt-3 rounded-[16px]"
             >
               Ver actividad pública
-            </Link>
+            </AppLinkButton>
           )}
-        </div>
+        </StatusMessage>
       )}
 
       {exitoAccion && !respuestaAprobacion && (
-        <p
-          role="status"
-          className="mt-5 rounded-[18px] border border-[#BDE8D0] bg-[#ECF9F2] px-4 py-3 text-sm font-bold text-[#1D7B4A]"
-        >
+        <StatusMessage variant="success" className="mt-5 font-bold">
           {exitoAccion}
-        </p>
+        </StatusMessage>
       )}
-    </section>
+    </SurfaceCard>
   );
 }
 
@@ -804,14 +800,15 @@ function DetalleCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(12,52,80,0.12)]">
+    <SurfaceCard
+      as="section"
+      className="rounded-[24px] p-5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(12,52,80,0.12)]"
+    >
       <div className="border-b border-[#DDEAF3] pb-3">
-        <h2 className="text-xl font-extrabold text-[var(--color-primary)]">
-          {titulo}
-        </h2>
+        <SectionHeader title={titulo} />
       </div>
       <dl className="mt-4 grid gap-3">{children}</dl>
-    </section>
+    </SurfaceCard>
   );
 }
 
@@ -859,7 +856,11 @@ function HorarioCard({
   horario: SolicitudPublicacionAdminHorario;
 }) {
   return (
-    <article className="rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]">
+    <SurfaceCard
+      as="article"
+      variant="info"
+      className="rounded-[20px] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
+    >
       <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#167A4A]">
         {horario.diaSemana}
       </p>
@@ -869,7 +870,7 @@ function HorarioCard({
         <CampoDetalle etiqueta="Hora fin" valor={horario.horaFin} />
         <CampoDetalle etiqueta="Observación" valor={horario.observacion} />
       </dl>
-    </article>
+    </SurfaceCard>
   );
 }
 

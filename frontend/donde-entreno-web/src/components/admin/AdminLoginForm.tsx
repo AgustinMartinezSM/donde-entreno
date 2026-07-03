@@ -9,6 +9,9 @@ import {
   obtenerSesionAdmin,
 } from "../../services/authService";
 import { BrandName } from "../brand/BrandName";
+import { AppButton } from "../ui/AppButton";
+import { StatusMessage } from "../ui/StatusMessage";
+import { SurfaceCard } from "../ui/SurfaceCard";
 import type { AdminSesion } from "../../types/auth";
 import type { FormEvent } from "react";
 
@@ -76,7 +79,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="grid w-full max-w-5xl overflow-hidden rounded-[28px] border border-[#DDEAF3] bg-white shadow-[0_30px_80px_rgba(12,52,80,0.16)] lg:grid-cols-[0.95fr_1.05fr]">
+    <SurfaceCard className="grid w-full max-w-5xl overflow-hidden rounded-[28px] shadow-[0_30px_80px_rgba(12,52,80,0.16)] lg:grid-cols-[0.95fr_1.05fr]">
       <aside className="bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872] p-6 text-white sm:p-8 lg:p-10">
         <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#BDE8D0]">
           <BrandName className="inline" onDark />
@@ -157,33 +160,26 @@ export function AdminLoginForm() {
           </div>
 
           {error && (
-            <p
-              role="alert"
-              className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold leading-6 text-red-700 shadow-[0_10px_25px_rgba(127,29,29,0.08)]"
-            >
+            <StatusMessage variant="error" className="font-bold">
               {error}
-            </p>
+            </StatusMessage>
           )}
 
           {cargando && (
-            <p
-              role="status"
-              className="rounded-[18px] border border-[#DDEAF3] bg-[#F8FCFE] px-4 py-3 text-sm font-bold text-[var(--color-primary)]"
-            >
+            <StatusMessage variant="info" className="font-bold">
               Verificando credenciales...
-            </p>
+            </StatusMessage>
           )}
 
-          <button
+          <AppButton
             type="submit"
             disabled={cargando}
-            className="min-h-12 rounded-[18px] bg-[var(--color-primary)] px-5 py-3 text-sm font-extrabold text-white shadow-[0_16px_38px_rgba(15,61,94,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
           >
             {cargando ? "Ingresando..." : "Ingresar al panel"}
-          </button>
+          </AppButton>
         </form>
       </section>
-    </div>
+    </SurfaceCard>
   );
 }
 

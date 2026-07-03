@@ -33,6 +33,8 @@ Archivos disponibles:
 07_prepare_auth_security.sql
 08_test_auth_security_queries.sql
 09_test_approval_traceability_queries.sql
+10_prepare_city_navigation.sql
+11_test_city_navigation_queries.sql
 ```
 
 ## Orden de uso local
@@ -45,15 +47,17 @@ Para preparar una base local desde cero, usar este orden:
 3. 03_seed_test_data.sql
 4. 05_create_solicitud_publicacion.sql
 5. 07_prepare_auth_security.sql
+6. 10_prepare_city_navigation.sql
 ```
 
 Los scripts de validación se ejecutan después de tener la estructura y los datos necesarios:
 
 ```text
-6. 04_test_queries.sql
-7. 06_test_solicitud_publicacion_queries.sql
-8. 08_test_auth_security_queries.sql
-9. 09_test_approval_traceability_queries.sql
+7. 04_test_queries.sql
+8. 06_test_solicitud_publicacion_queries.sql
+9. 08_test_auth_security_queries.sql
+10. 09_test_approval_traceability_queries.sql
+11. 11_test_city_navigation_queries.sql
 ```
 
 `04_test_queries.sql` contiene consultas de control del MVP inicial.
@@ -63,6 +67,8 @@ Los scripts de validación se ejecutan después de tener la estructura y los dat
 `08_test_auth_security_queries.sql` valida localmente la migración `07`. Comienza con `BEGIN`, termina con `ROLLBACK` y no conserva usuarios temporales.
 
 `09_test_approval_traceability_queries.sql` valida localmente que la trazabilidad entre una solicitud aprobada y la actividad creada pueda representarse con el modelo actual. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste datos.
+
+`11_test_city_navigation_queries.sql` valida localmente la migración `10`. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste ciudades temporales.
 
 ## Descripción de cada script
 
@@ -212,6 +218,46 @@ También incluye pruebas negativas para confirmar que:
 
 El script comienza con `BEGIN`, termina con `ROLLBACK`, no contiene confirmación de transacción y no deja datos persistidos.
 
+### 10_prepare_city_navigation.sql
+
+Es una migración aditiva y no destructiva para preparar navegación territorial por ciudad.
+
+Agrega a `ciudad`:
+
+* `slug`, usado para rutas públicas como `/ciudades/mar-del-plata`;
+* `orden`, usado para ordenar ciudades de forma editorial.
+
+También completa los datos existentes de forma segura. Mar del Plata queda como ciudad inicial/default con:
+
+* `slug = 'mar-del-plata'`;
+* `orden = 1`;
+* `activa = true`.
+
+Para cualquier otra ciudad ya existente en una base local o futura, el script genera un slug seguro sin usar extensiones de PostgreSQL como `unaccent`. Si hay colisiones, agrega un sufijo con el `id`.
+
+La migración agrega constraints para asegurar slug obligatorio, único, no vacío, con formato válido y orden no negativo. También agrega un índice compuesto para listar ciudades activas ordenadas por `orden` y `nombre`.
+
+No carga ciudades futuras persistentes como Miramar, Balcarce, Necochea, Otamendi o Tandil. Esas ciudades podrán cargarse más adelante cuando exista contenido real o un flujo administrativo específico.
+
+### 11_test_city_navigation_queries.sql
+
+Es un script de validación local para ejecutar después de aplicar correctamente `10_prepare_city_navigation.sql`.
+
+Valida:
+
+* existencia de `ciudad.slug` y `ciudad.orden`;
+* `slug` obligatorio;
+* constraint única `uq_ciudad_slug`;
+* constraints de formato de slug y orden no negativo;
+* índice para ciudades activas ordenadas;
+* datos esperados de Mar del Plata;
+* ausencia de slugs vacíos, duplicados o inválidos;
+* ausencia de orden negativo.
+
+Incluye consultas de diagnóstico para ciudades activas, ciudades con y sin actividades publicadas, actividades por ciudad, barrios por ciudad, búsqueda por slug y navegación territorial hacia actividades de Mar del Plata.
+
+También crea ciudades futuras temporales dentro de la transacción para probar orden y slug. El script comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos persistidos.
+
 ## Modelo actual de tablas
 
 La base de datos local actual contempla estas tablas:
@@ -255,6 +301,60 @@ Relaciones del modelo de solicitudes:
 Las relaciones opcionales desde `solicitud_publicacion` hacia `deporte`, `ciudad`, `barrio`, `usuario` y `actividad` no eliminan solicitudes en cascada.
 
 La relación `solicitud_publicacion 1:N solicitud_publicacion_horario` sí usa borrado en cascada respecto de su solicitud. Si se borra físicamente una solicitud, se eliminan sus horarios asociados.
+
+## Ciudades y navegación territorial
+
+La plataforma soporta múltiples ciudades desde el modelo relacional. Mar del Plata es la ciudad inicial/default de DondeEntreno.
+
+La tabla `ciudad` incluye:
+
+* `nombre`;
+* `slug`;
+* `provincia`;
+* `pais`;
+* `activa`;
+* `orden`;
+* fechas de creación y actualización.
+
+`ciudad.slug` se usa para rutas territoriales públicas como:
+
+```text
+/ciudades
+/ciudades/[slug]
+/ciudades/mar-del-plata
+```
+
+`ciudad.orden` permite ordenar ciudades editorialmente, por ejemplo dejando Mar del Plata primero aunque existan otras ciudades activas.
+
+`ciudad.activa` indica si una ciudad está disponible para uso público o administrativo.
+
+Las actividades no guardan `ciudad_id` directamente. Llegan a ciudad mediante esta relación:
+
+```text
+actividad -> ubicacion -> ciudad
+```
+
+Los barrios pertenecen a una ciudad mediante:
+
+```text
+barrio.ciudad_id -> ciudad.id
+```
+
+La navegación pública debería mostrar preferentemente ciudades activas que tengan actividades publicadas y activas. Esto evita mostrar ciudades sin contenido al visitante.
+
+No se agregaron campos SEO ni de landing avanzada, como `descripcion`, `imagen_url`, `latitud`, `longitud`, `meta_title` o `meta_description`.
+
+No se cargaron ciudades futuras persistentes todavía. Miramar, Balcarce, Necochea, Otamendi y Tandil podrán cargarse más adelante cuando haya contenido real o un flujo administrativo definido.
+
+La ciudad activa elegida por el usuario se recordará desde el frontend en el navegador. PostgreSQL no guarda la preferencia de ciudad del visitante.
+
+### Riesgo conocido de ciudad y barrio
+
+Actualmente no hay una constraint en PostgreSQL que garantice que `ubicacion.barrio_id` pertenezca a la misma ciudad que `ubicacion.ciudad_id`.
+
+Esa coherencia se valida desde el backend en los flujos actuales y se controla con consultas de diagnóstico en `11_test_city_navigation_queries.sql`.
+
+Más adelante puede evaluarse una FK compuesta o una estrategia equivalente si se quiere que PostgreSQL garantice esa regla directamente.
 
 ## Auth y Seguridad
 
@@ -437,10 +537,12 @@ Pasos sugeridos:
 7. Repetir el proceso con `03_seed_test_data.sql`.
 8. Ejecutar `05_create_solicitud_publicacion.sql`.
 9. Ejecutar `07_prepare_auth_security.sql`.
-10. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
-11. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
-12. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
-13. Ejecutar `09_test_approval_traceability_queries.sql` para validar trazabilidad de aprobación.
+10. Ejecutar `10_prepare_city_navigation.sql`.
+11. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
+12. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
+13. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
+14. Ejecutar `09_test_approval_traceability_queries.sql` para validar trazabilidad de aprobación.
+15. Ejecutar `11_test_city_navigation_queries.sql` para validar navegación territorial.
 
 ## Ejecución desde terminal
 
@@ -454,6 +556,7 @@ psql -U postgres -d donde_entreno_db -f database/scripts/02_seed_data.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/03_seed_test_data.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/05_create_solicitud_publicacion.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/07_prepare_auth_security.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/10_prepare_city_navigation.sql
 ```
 
 Ejemplo para validaciones locales:
@@ -463,6 +566,7 @@ psql -U postgres -d donde_entreno_db -f database/scripts/04_test_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/06_test_solicitud_publicacion_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/08_test_auth_security_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/09_test_approval_traceability_queries.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/11_test_city_navigation_queries.sql
 ```
 
 El usuario `postgres` puede cambiar según la configuración local de cada máquina.
@@ -519,6 +623,9 @@ Después de ejecutar los scripts, se recomienda verificar:
 * Que `08_test_auth_security_queries.sql` termine con `ROLLBACK` y no conserve usuarios temporales.
 * Que `09_test_approval_traceability_queries.sql` termine con `ROLLBACK` y no conserve datos temporales.
 * Que una solicitud aprobada pueda vincularse con una actividad mediante `actividad_generada_id`.
+* Que `ciudad.slug` y `ciudad.orden` existan.
+* Que Mar del Plata tenga `slug = 'mar-del-plata'`, `orden = 1` y `activa = true`.
+* Que `11_test_city_navigation_queries.sql` termine con `ROLLBACK` y no conserve ciudades temporales.
 * Que los endpoints del backend respondan correctamente.
 
 Endpoint útil para probar:
@@ -531,8 +638,10 @@ Si devuelve actividades, la base de datos está correctamente conectada con el b
 
 ## Estado actual
 
-La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación, una migración aditiva de preparación de Auth y Seguridad y scripts de validación local para trazabilidad de aprobación.
+La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación, una migración aditiva de preparación de Auth y Seguridad, una migración aditiva para navegación territorial por ciudad y scripts de validación local para trazabilidad de aprobación y navegación territorial.
 
 Después de aplicar `05_create_solicitud_publicacion.sql`, el modelo local pasa de 11 a 13 tablas.
 
 Después de aplicar `07_prepare_auth_security.sql`, no se agregan tablas nuevas. Se endurecen reglas sobre roles, usuarios y unicidad de email normalizado.
+
+Después de aplicar `10_prepare_city_navigation.sql`, no se agregan tablas nuevas. Se agregan `slug` y `orden` a `ciudad`, se deja Mar del Plata como ciudad inicial/default y se prepara el modelo para rutas por ciudad.

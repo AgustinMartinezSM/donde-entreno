@@ -11,7 +11,7 @@ type ErrorStateProps = {
 
 export function ErrorState({
   titulo = "Algo salió mal",
-  descripcion = "No pudimos cargar la información en este momento. Probá nuevamente en unos minutos.",
+  descripcion = "No pudimos cargar esta información. Probá nuevamente en unos segundos o seguí explorando actividades.",
   mostrarBotonInicio = true,
   mostrarBotonExplorar = false,
 }: ErrorStateProps) {

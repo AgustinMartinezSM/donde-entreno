@@ -170,8 +170,8 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
             <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
               {nombreCiudadActiva
-                ? `Opciones disponibles para entrenar en ${nombreCiudadActiva}. Podés combinar deporte, barrio, nivel y modalidad.`
-                : "Buscá por deporte, zona, nivel o modalidad y descubrí opciones cerca tuyo."}
+                ? `Encontrá actividades para entrenar en ${nombreCiudadActiva} y ajustá la búsqueda por deporte, barrio, nivel o modalidad.`
+                : "Buscá por deporte, zona, nivel o modalidad y descubrí opciones para moverte cerca tuyo."}
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -212,6 +212,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                       type="text"
                       name="texto"
                       defaultValue={textoBuscado}
+                      aria-label="Buscar deporte, actividad o club"
                       placeholder="Buscar deporte, actividad o club"
                       className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] sm:min-h-14"
                     />
@@ -260,9 +261,9 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               <div className="mt-8">
                 <ErrorState
                   titulo="No pudimos cargar las actividades"
-                  descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
+                  descripcion="No pudimos cargar esta información. Probá nuevamente en unos segundos o volvé al inicio."
                   mostrarBotonInicio
-                  mostrarBotonExplorar={false}
+                  mostrarBotonExplorar
                 />
               </div>
             ) : (
@@ -319,9 +320,31 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                     className="p-7 text-center"
                   >
                     <p className="mx-auto max-w-xl">
-                      Probá con otra búsqueda, cambiá la zona o revisá los
-                      filtros aplicados.
+                      Probá con otra búsqueda, cambiá la zona o abrí los
+                      filtros para ampliar opciones.
                     </p>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                      <AppLinkButton
+                        href="/ciudades"
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Cambiar ciudad
+                      </AppLinkButton>
+                      <AppLinkButton
+                        href={
+                          ciudadSlugActual
+                            ? `/explorar?ciudadSlug=${encodeURIComponent(
+                                ciudadSlugActual
+                              )}`
+                            : "/explorar"
+                        }
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Limpiar filtros
+                      </AppLinkButton>
+                    </div>
                   </StatusMessage>
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

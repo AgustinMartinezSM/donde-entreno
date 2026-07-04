@@ -11,7 +11,7 @@ import type { Ciudad } from "../../types/ciudad";
 export const metadata: Metadata = {
   title: "Ciudades",
   description:
-    "Elegí tu ciudad para ver actividades, clubes, profes y espacios cerca tuyo.",
+    "Elegí tu ciudad para descubrir actividades, clubes, profes y espacios deportivos cerca tuyo.",
 };
 
 function ordenarCiudades(ciudadA: Ciudad, ciudadB: Ciudad) {
@@ -60,11 +60,11 @@ export default async function CiudadesPage() {
               CIUDADES
             </p>
             <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
-              Explorá actividades por ciudad
+              Elegí ciudad y encontrá dónde entrenar
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
-              Elegí tu ciudad para ver actividades, clubes, profes y espacios
-              cerca tuyo.
+              Cada ciudad reúne opciones para moverte cerca: clubes, clases,
+              profes y espacios deportivos.
             </p>
           </SurfaceCard>
 
@@ -72,7 +72,7 @@ export default async function CiudadesPage() {
             <SectionHeader
               eyebrow="Disponibles"
               title="Ciudades para explorar"
-              description="Cada ciudad reúne actividades y espacios deportivos disponibles para buscar por zona."
+              description="Entrá a tu ciudad o andá directo a las actividades disponibles."
               className="mb-6"
             />
 
@@ -83,9 +83,17 @@ export default async function CiudadesPage() {
                 className="p-5"
               >
                 <p>
-                  Puede haber un problema temporal de conexión. Intentá
-                  nuevamente en unos minutos.
+                  No pudimos traer el listado en este momento. Probá nuevamente
+                  en unos segundos o seguí explorando actividades.
                 </p>
+                <AppLinkButton
+                  href="/explorar"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4 w-fit"
+                >
+                  Explorar actividades
+                </AppLinkButton>
               </StatusMessage>
             ) : ciudades.length === 0 ? (
               <StatusMessage
@@ -94,9 +102,17 @@ export default async function CiudadesPage() {
                 className="p-5"
               >
                 <p>
-                  Muy pronto vas a encontrar nuevas ciudades para explorar
-                  actividades deportivas.
+                  Estamos preparando nuevas ciudades. Mientras tanto, podés ver
+                  las actividades disponibles.
                 </p>
+                <AppLinkButton
+                  href="/explorar"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4 w-fit"
+                >
+                  Explorar actividades
+                </AppLinkButton>
               </StatusMessage>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,8 +130,8 @@ export default async function CiudadesPage() {
                     </h2>
 
                     <p className="mt-2 flex-1 text-sm leading-6 text-[var(--color-muted)]">
-                      Encontrá actividades, clubes, profes y espacios para
-                      entrenar en {ciudad.nombre}.
+                      Mirá actividades, clubes y profes disponibles para
+                      entrenar cerca en {ciudad.nombre}.
                     </p>
 
                     <div className="mt-5 flex flex-col gap-3">
@@ -136,7 +152,7 @@ export default async function CiudadesPage() {
                         size="md"
                         fullWidth
                       >
-                        Ver página de ciudad
+                        Conocer la ciudad
                       </AppLinkButton>
                     </div>
                   </article>

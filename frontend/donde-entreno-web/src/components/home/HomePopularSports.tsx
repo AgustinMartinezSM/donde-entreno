@@ -66,8 +66,8 @@ export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
     >
       <SectionHeader
         eyebrow="Deportes populares"
-        title="Explorá por deporte"
-        description="Encontrá actividades según lo que te gusta hacer."
+        title="Arrancá por lo que te gusta"
+        description="Elegí un deporte y mirá opciones reales para moverte en tu ciudad."
         action={
           <AppLinkButton
             href="/deportes"
@@ -75,7 +75,7 @@ export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
             size="md"
             className="w-fit"
           >
-            Ver todos
+            Ver deportes
           </AppLinkButton>
         }
       />
@@ -103,7 +103,7 @@ export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
                 {deporte.nombre}
               </span>
               <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#167A4A] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
-                Ver opciones
+                Ver actividades
               </span>
             </div>
           </Link>

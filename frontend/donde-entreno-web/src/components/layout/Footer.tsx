@@ -52,17 +52,24 @@ export function Footer() {
               </Link>
 
               <Link
+                href="/ciudades"
+                className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
+              >
+                Ciudades
+              </Link>
+
+              <Link
                 href="/explorar"
                 className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
               >
-                Explorar
+                Explorar actividades
               </Link>
 
               <Link
                 href="/publicar"
                 className="text-[#C9E4EF] transition duration-200 ease-out hover:text-white"
               >
-                Publicar
+                Publicar actividad
               </Link>
             </nav>
           </div>

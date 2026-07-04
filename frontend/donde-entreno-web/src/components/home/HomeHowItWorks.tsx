@@ -4,18 +4,18 @@ import { SurfaceCard } from "../ui/SurfaceCard";
 
 const pasos = [
   {
-    titulo: "Buscá por deporte o zona",
-    texto: "Usá el buscador para encontrar actividades cerca tuyo.",
+    titulo: "Buscá sin vueltas",
+    texto: "Filtrá por deporte, barrio o modalidad y encontrá opciones cerca.",
     icono: "/icons/icon-search.png",
   },
   {
-    titulo: "Compará opciones",
-    texto: "Revisá horarios, ubicación, nivel y modalidad.",
+    titulo: "Elegí con contexto",
+    texto: "Compará horarios, ubicación, nivel y datos clave antes de contactar.",
     icono: "/icons/icon-location.png",
   },
   {
     titulo: "Contactá directo",
-    texto: "Hablá con el club, profe o espacio deportivo.",
+    texto: "Hablá con el club, profe o espacio y coordiná tu próxima clase.",
     icono: "/icons/icon-contact.png",
   },
 ];
@@ -29,7 +29,8 @@ export function HomeHowItWorks() {
     >
       <SectionHeader
         eyebrow="Cómo funciona"
-        title="Encontrar dónde entrenar es simple"
+        title="De elegir a entrenar, sin vueltas"
+        description="Te mostramos lo importante para decidir rápido y empezar con más confianza."
       />
 
       <div className="mt-7 grid gap-4 md:grid-cols-3">

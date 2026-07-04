@@ -26,14 +26,14 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
             Para publicadores
           </p>
           <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-            ¿Tenés una actividad deportiva?
+            ¿Tenés una actividad para sumar?
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-            Sumá tu club, gimnasio o clase para que más personas puedan
-            encontrarte.
+            Si sos club, profe, gimnasio o espacio deportivo, cargá tu propuesta
+            para que más personas puedan encontrarte.
           </p>
           <p className="mt-2 text-sm font-bold text-[#167A4A]">
-            Las solicitudes se revisan antes de publicarse.
+            Revisamos cada solicitud antes de publicarla.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
             href={crearHrefExplorarCiudad(ciudadSlug)}
             variant="secondary"
           >
-            Ver actividades
+            Explorar actividades
           </AppLinkButton>
         </div>
       </div>

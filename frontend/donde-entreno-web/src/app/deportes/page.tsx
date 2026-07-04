@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Header } from "../../components/layout/Header";
 import { SportsCatalog } from "../../components/deportes/SportsCatalog";
+import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { obtenerDeportes } from "../../services/deportesService";
 import type { Deporte } from "../../types/deporte";
 
@@ -37,12 +37,9 @@ function EstadoCatalogo({
       <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
         {descripcion}
       </p>
-      <Link
-        href="/explorar"
-        className="mt-6 inline-flex rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
-      >
+      <AppLinkButton href="/explorar" className="mt-6">
         {linkTexto}
-      </Link>
+      </AppLinkButton>
     </section>
   );
 }
@@ -72,22 +69,16 @@ export default async function DeportesPage() {
                 Elegí qué querés entrenar
               </h1>
               <p className="mt-4 text-base leading-7 text-[var(--color-muted)] sm:text-lg">
-                Explorá deportes disponibles y encontrá actividades, clubes,
-                profes y espacios cerca tuyo.
+                Buscá por deporte y descubrí clases, clubes, profes y espacios
+                para moverte cerca tuyo.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/explorar"
-                  className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98]"
-                >
+                <AppLinkButton href="/explorar">
                   Ver todas las actividades
-                </Link>
-                <Link
-                  href="/"
-                  className="rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98]"
-                >
+                </AppLinkButton>
+                <AppLinkButton href="/" variant="secondary">
                   Volver al inicio
-                </Link>
+                </AppLinkButton>
               </div>
             </div>
           </section>
@@ -95,13 +86,13 @@ export default async function DeportesPage() {
           {huboError ? (
             <EstadoCatalogo
               titulo="No pudimos cargar los deportes"
-              descripcion="Puede haber un problema de conexión. Intentá nuevamente en unos minutos."
+              descripcion="No pudimos traer el listado ahora. Podés volver a intentar en unos segundos o explorar actividades disponibles."
               linkTexto="Explorar actividades"
             />
           ) : deportes.length === 0 ? (
             <EstadoCatalogo
               titulo="Todavía no hay deportes disponibles"
-              descripcion="Muy pronto vas a encontrar nuevas opciones para entrenar."
+              descripcion="Mientras preparamos nuevas opciones, podés revisar las actividades cargadas."
               linkTexto="Explorar actividades"
             />
           ) : (

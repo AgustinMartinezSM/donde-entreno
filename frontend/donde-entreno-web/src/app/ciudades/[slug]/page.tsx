@@ -66,11 +66,11 @@ export default async function CiudadDetallePage({
               CIUDAD
             </p>
             <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
-              Actividades deportivas en {ciudad.nombre}
+              Entrená en {ciudad.nombre}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
-              Encontrá clases, clubes, profes y actividades para entrenar en{" "}
-              {ciudad.nombre}.
+              Descubrí clases, clubes, profes y espacios deportivos para moverte
+              cerca de donde estás.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -81,7 +81,7 @@ export default async function CiudadDetallePage({
                 fullWidth
                 className="sm:w-auto"
               >
-                Explorar actividades en esta ciudad
+                Ver actividades en {ciudad.nombre}
               </AppLinkButton>
 
               <AppLinkButton
@@ -100,7 +100,7 @@ export default async function CiudadDetallePage({
             <SectionHeader
               eyebrow="Actividades"
               title={`Actividades disponibles en ${ciudad.nombre}`}
-              description="Una primera selección para conocer opciones de entrenamiento en esta ciudad."
+              description="Una primera selección para conocer opciones cercanas y seguir explorando."
               action={
                 <AppLinkButton
                   href={`/explorar?ciudadSlug=${encodeURIComponent(
@@ -123,9 +123,19 @@ export default async function CiudadDetallePage({
                 className="p-5"
               >
                 <p>
-                  La página de la ciudad está disponible, pero hubo un problema
-                  al traer sus actividades. Probá desde Explorar.
+                  La ciudad está disponible, pero no pudimos traer sus
+                  actividades ahora. También podés buscar desde Explorar.
                 </p>
+                <AppLinkButton
+                  href={`/explorar?ciudadSlug=${encodeURIComponent(
+                    ciudad.slug
+                  )}`}
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4 w-fit"
+                >
+                  Ir a Explorar
+                </AppLinkButton>
               </StatusMessage>
             ) : actividades.length === 0 ? (
               <StatusMessage
@@ -134,9 +144,17 @@ export default async function CiudadDetallePage({
                 className="p-5"
               >
                 <p>
-                  Cuando haya actividades disponibles en {ciudad.nombre}, las
-                  vas a ver en esta sección.
+                  Todavía no hay propuestas cargadas en {ciudad.nombre}. Podés
+                  volver más tarde o mirar otras ciudades disponibles.
                 </p>
+                <AppLinkButton
+                  href="/ciudades"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4 w-fit"
+                >
+                  Ver otras ciudades
+                </AppLinkButton>
               </StatusMessage>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

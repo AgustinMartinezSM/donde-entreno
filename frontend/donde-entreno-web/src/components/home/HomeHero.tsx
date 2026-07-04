@@ -30,9 +30,9 @@ const busquedasRapidas = [
 ];
 
 const beneficios = [
-  "Clubes, profes y gimnasios",
-  "Búsqueda por deporte o zona",
-  "Contacto directo con cada actividad",
+  "Opciones cerca de tu zona",
+  "Deportes, horarios y barrios en un lugar",
+  "Contacto directo para empezar",
 ];
 
 type HomeHeroProps = {
@@ -65,12 +65,14 @@ export function HomeHero({
           </p>
 
           <h1 className="max-w-3xl text-[2.5rem] font-extrabold leading-[1.06] text-[var(--color-primary)] sm:text-5xl sm:leading-tight lg:text-6xl">
-            Encontrá dónde entrenar en {ciudadNombreInicial}
+            Encontrá dónde{" "}
+            <span className="text-[var(--color-secondary)]">entrenar</span> en{" "}
+            {ciudadNombreInicial}
           </h1>
 
           <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
-            Descubrí clubes, profes, gimnasios y actividades deportivas en tu
-            ciudad activa.
+            Descubrí clases, clubes y profes cerca tuyo sin perder tiempo
+            buscando por todos lados.
           </p>
 
           <SearchBar ciudadSlugActual={ciudadSlugInicial} />
@@ -83,16 +85,16 @@ export function HomeHero({
               Explorar actividades
             </Link>
             <Link
-              href="/ciudades"
-              className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] sm:w-auto"
-            >
-              Cambiar ciudad
-            </Link>
-            <Link
               href="/publicar"
               className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] sm:w-auto"
             >
               Publicar actividad
+            </Link>
+            <Link
+              href="/ciudades"
+              className="w-full rounded-[var(--radius-md)] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/70 active:scale-[0.98] sm:w-auto"
+            >
+              Cambiar ciudad
             </Link>
           </div>
 

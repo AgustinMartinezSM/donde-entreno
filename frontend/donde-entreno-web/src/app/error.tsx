@@ -32,9 +32,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             titulo="Ocurrió un error inesperado"
             descripcion={
               <>
-                Algo falló mientras cargábamos esta parte de{" "}
-                <BrandName className="inline font-bold" />. Podés intentar
-                nuevamente o volver al inicio.
+                No pudimos mostrar esta parte de{" "}
+                <BrandName className="inline font-bold" />. Podés intentar de
+                nuevo o seguir explorando actividades.
               </>
             }
             mostrarBotonInicio

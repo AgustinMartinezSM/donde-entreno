@@ -7,43 +7,57 @@ import { SurfaceCard } from "../ui/SurfaceCard";
 const deportesPopulares = [
   {
     nombre: "Boxeo",
-    href: "/explorar?deporteSlug=boxeo&page=0",
+    deporteSlug: "boxeo",
     imagen: "/sports/sport-boxeo.png",
     encuadre: "center 42%",
   },
   {
     nombre: "Jiu Jitsu",
-    href: "/explorar?deporteSlug=jiu-jitsu&page=0",
+    deporteSlug: "jiu-jitsu",
     imagen: "/sports/sport-jiu-jitsu.png",
     encuadre: "center 46%",
   },
   {
     nombre: "Fútbol",
-    href: "/explorar?deporteSlug=futbol&page=0",
+    deporteSlug: "futbol",
     imagen: "/sports/sport-futbol.png",
     encuadre: "center 50%",
   },
   {
     nombre: "Yoga",
-    href: "/explorar?deporteSlug=yoga&page=0",
+    deporteSlug: "yoga",
     imagen: "/sports/sport-yoga.png",
     encuadre: "center 45%",
   },
   {
     nombre: "Gimnasio",
-    href: "/explorar?deporteSlug=gimnasio&page=0",
+    deporteSlug: "gimnasio",
     imagen: "/sports/sport-gimnasio.png",
     encuadre: "center 44%",
   },
   {
     nombre: "Natación",
-    href: "/explorar?deporteSlug=natacion&page=0",
+    deporteSlug: "natacion",
     imagen: "/sports/sport-natacion.png",
     encuadre: "center 48%",
   },
 ];
 
-export function HomePopularSports() {
+type HomePopularSportsProps = {
+  ciudadSlug: string;
+};
+
+function crearHrefDeporte(ciudadSlug: string, deporteSlug: string) {
+  const params = new URLSearchParams();
+
+  params.set("ciudadSlug", ciudadSlug);
+  params.set("deporteSlug", deporteSlug);
+  params.set("page", "0");
+
+  return `/explorar?${params.toString()}`;
+}
+
+export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
   return (
     <SurfaceCard
       as="section"
@@ -69,8 +83,8 @@ export function HomePopularSports() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {deportesPopulares.map((deporte) => (
           <Link
-            key={deporte.href}
-            href={deporte.href}
+            key={deporte.deporteSlug}
+            href={crearHrefDeporte(ciudadSlug, deporte.deporteSlug)}
             className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.13)] active:scale-[0.98]"
           >
             <div className="relative h-52 overflow-hidden sm:h-56">

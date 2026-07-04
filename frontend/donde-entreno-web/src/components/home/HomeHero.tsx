@@ -5,27 +5,27 @@ import { SearchBar } from "./SearchBar";
 const busquedasRapidas = [
   {
     nombre: "Fútbol",
-    href: "/explorar?texto=futbol",
+    texto: "futbol",
   },
   {
     nombre: "Gimnasio",
-    href: "/explorar?texto=gimnasio",
+    texto: "gimnasio",
   },
   {
     nombre: "Boxeo",
-    href: "/explorar?texto=boxeo",
+    texto: "boxeo",
   },
   {
     nombre: "Yoga",
-    href: "/explorar?texto=yoga",
+    texto: "yoga",
   },
   {
     nombre: "Jiu Jitsu",
-    href: "/explorar?texto=jiu%20jitsu",
+    texto: "jiu jitsu",
   },
   {
     nombre: "Running",
-    href: "/explorar?texto=running",
+    texto: "running",
   },
 ];
 
@@ -35,7 +35,27 @@ const beneficios = [
   "Contacto directo con cada actividad",
 ];
 
-export function HomeHero() {
+type HomeHeroProps = {
+  ciudadNombreInicial: string;
+  ciudadSlugInicial: string;
+};
+
+function crearHrefExplorarCiudad(ciudadSlug: string, texto?: string) {
+  const params = new URLSearchParams();
+
+  params.set("ciudadSlug", ciudadSlug);
+
+  if (texto) {
+    params.set("texto", texto);
+  }
+
+  return `/explorar?${params.toString()}`;
+}
+
+export function HomeHero({
+  ciudadNombreInicial,
+  ciudadSlugInicial,
+}: HomeHeroProps) {
   return (
     <section className="relative w-full min-w-0 overflow-hidden rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-4 shadow-[0_24px_60px_rgba(12,52,80,0.14)] sm:p-8 lg:p-10">
       <div className="grid min-w-0 gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
@@ -45,22 +65,28 @@ export function HomeHero() {
           </p>
 
           <h1 className="max-w-3xl text-[2.5rem] font-extrabold leading-[1.06] text-[var(--color-primary)] sm:text-5xl sm:leading-tight lg:text-6xl">
-            Encontrá dónde entrenar cerca tuyo
+            Encontrá dónde entrenar en {ciudadNombreInicial}
           </h1>
 
           <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
             Descubrí clubes, profes, gimnasios y actividades deportivas en tu
-            ciudad.
+            ciudad activa.
           </p>
 
-          <SearchBar />
+          <SearchBar ciudadSlugActual={ciudadSlugInicial} />
 
           <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row">
             <Link
-              href="/explorar"
+              href={crearHrefExplorarCiudad(ciudadSlugInicial)}
               className="w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-center text-sm font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:w-auto"
             >
               Explorar actividades
+            </Link>
+            <Link
+              href="/ciudades"
+              className="w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-5 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] active:scale-[0.98] sm:w-auto"
+            >
+              Cambiar ciudad
             </Link>
             <Link
               href="/publicar"
@@ -73,8 +99,11 @@ export function HomeHero() {
           <div className="mt-6 flex min-w-0 flex-wrap gap-2">
             {busquedasRapidas.map((busqueda) => (
               <Link
-                key={busqueda.href}
-                href={busqueda.href}
+                key={busqueda.texto}
+                href={crearHrefExplorarCiudad(
+                  ciudadSlugInicial,
+                  busqueda.texto
+                )}
                 className="max-w-full rounded-full border border-[#DDEAF3] bg-white px-3 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
               >
                 {busqueda.nombre}
@@ -97,7 +126,7 @@ export function HomeHero() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0F3D5E]/85 via-[#0F3D5E]/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                 <p className="inline-flex rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-primary)] shadow-sm">
-                  Actividades cerca tuyo
+                  Actividades en {ciudadNombreInicial}
                 </p>
                 <p className="mt-2 text-xl font-extrabold leading-tight sm:text-2xl">
                   Entrená donde mejor te quede

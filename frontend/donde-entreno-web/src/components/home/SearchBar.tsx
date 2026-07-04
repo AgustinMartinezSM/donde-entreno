@@ -13,9 +13,13 @@ import type { Deporte } from "../../types/deporte";
 
 type SearchBarProps = {
   valorInicial?: string;
+  ciudadSlugActual?: string;
 };
 
-export function SearchBar({ valorInicial = "" }: SearchBarProps) {
+export function SearchBar({
+  valorInicial = "",
+  ciudadSlugActual = "",
+}: SearchBarProps) {
   const [texto, setTexto] = useState(valorInicial);
   const [deportes, setDeportes] = useState<Deporte[]>([]);
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false);
@@ -57,11 +61,30 @@ export function SearchBar({ valorInicial = "" }: SearchBarProps) {
 
   const mostrarSugerencias = sugerenciasAbiertas && sugerencias.length > 0;
 
+  function crearHrefExplorar(paramsBusqueda: Record<string, string>) {
+    const params = new URLSearchParams();
+
+    if (ciudadSlugActual) {
+      params.set("ciudadSlug", ciudadSlugActual);
+    }
+
+    for (const [clave, valor] of Object.entries(paramsBusqueda)) {
+      if (valor) {
+        params.set(clave, valor);
+      }
+    }
+
+    const query = params.toString();
+
+    return query ? `/explorar?${query}` : "/explorar";
+  }
+
   function construirHrefSugerencia(sugerencia: SugerenciaBusquedaDeporte) {
     if (sugerencia.tipo === "deporte") {
-      return `/explorar?deporteSlug=${encodeURIComponent(
-        sugerencia.valor
-      )}&page=0`;
+      return crearHrefExplorar({
+        deporteSlug: sugerencia.valor,
+        page: "0",
+      });
     }
 
     return `/deportes?categoria=${encodeURIComponent(sugerencia.valor)}`;
@@ -85,7 +108,7 @@ export function SearchBar({ valorInicial = "" }: SearchBarProps) {
     const textoLimpio = texto.trim();
 
     if (!textoLimpio) {
-      router.push("/explorar");
+      router.push(crearHrefExplorar({}));
       return;
     }
 
@@ -97,7 +120,10 @@ export function SearchBar({ valorInicial = "" }: SearchBarProps) {
 
     if (destino?.tipo === "deporte") {
       router.push(
-        `/explorar?deporteSlug=${encodeURIComponent(destino.valor)}&page=0`
+        crearHrefExplorar({
+          deporteSlug: destino.valor,
+          page: "0",
+        })
       );
       return;
     }
@@ -107,7 +133,7 @@ export function SearchBar({ valorInicial = "" }: SearchBarProps) {
       return;
     }
 
-    router.push(`/explorar?texto=${encodeURIComponent(textoLimpio)}`);
+    router.push(crearHrefExplorar({ texto: textoLimpio }));
   }
 
   return (

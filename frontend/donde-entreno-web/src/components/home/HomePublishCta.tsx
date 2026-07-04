@@ -1,7 +1,19 @@
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
-export function HomePublishCta() {
+type HomePublishCtaProps = {
+  ciudadSlug: string;
+};
+
+function crearHrefExplorarCiudad(ciudadSlug: string) {
+  const params = new URLSearchParams();
+
+  params.set("ciudadSlug", ciudadSlug);
+
+  return `/explorar?${params.toString()}`;
+}
+
+export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
   return (
     <SurfaceCard
       as="section"
@@ -29,7 +41,10 @@ export function HomePublishCta() {
           <AppLinkButton href="/publicar" variant="primary">
             Publicar actividad
           </AppLinkButton>
-          <AppLinkButton href="/explorar" variant="secondary">
+          <AppLinkButton
+            href={crearHrefExplorarCiudad(ciudadSlug)}
+            variant="secondary"
+          >
             Ver actividades
           </AppLinkButton>
         </div>

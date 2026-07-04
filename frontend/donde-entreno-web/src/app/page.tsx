@@ -8,7 +8,9 @@ import { HomePopularSports } from "../components/home/HomePopularSports";
 import { HomePublishCta } from "../components/home/HomePublishCta";
 import { ActivityList } from "../components/explorar/ActivityList";
 import { ErrorState } from "../components/feedback/ErrorState";
+import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { buscarActividades } from "../services/actividadService";
+import { obtenerCiudadPorSlug } from "../services/ciudadService";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +28,19 @@ export const metadata: Metadata = {
 export default async function Home() {
   let actividades: Actividad[] = [];
   let huboError = false;
+  let ciudadNombre = "Mar del Plata";
+  const ciudadSlug = DEFAULT_CITY_SLUG;
+
+  try {
+    const ciudadDefault = await obtenerCiudadPorSlug(ciudadSlug);
+    ciudadNombre = ciudadDefault.nombre;
+  } catch {
+    ciudadNombre = "Mar del Plata";
+  }
 
   try {
     const respuesta = await buscarActividades({
+      ciudadSlug,
       page: 0,
       size: 6,
     });
@@ -45,8 +57,11 @@ export default async function Home() {
         <Header />
 
         <div className="py-10 sm:py-14">
-          <HomeHero />
-          <HomePopularSports />
+          <HomeHero
+            ciudadNombreInicial={ciudadNombre}
+            ciudadSlugInicial={ciudadSlug}
+          />
+          <HomePopularSports ciudadSlug={ciudadSlug} />
 
           <section className="mt-14 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:mt-16 sm:p-7">
             {huboError ? (
@@ -62,13 +77,13 @@ export default async function Home() {
               <ActivityList
                 actividades={actividades}
                 titulo="Actividades destacadas"
-                descripcion="Opciones disponibles para empezar a moverte en tu ciudad."
+                descripcion={`Opciones disponibles para empezar a moverte en ${ciudadNombre}.`}
               />
             )}
 
             <div className="mt-6 flex justify-end">
               <Link
-                href="/explorar"
+                href={`/explorar?ciudadSlug=${encodeURIComponent(ciudadSlug)}`}
                 className="rounded-[var(--radius-md)] border border-[#BFDDEA] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
               >
                 Ver todas
@@ -77,7 +92,7 @@ export default async function Home() {
           </section>
 
           <HomeHowItWorks />
-          <HomePublishCta />
+          <HomePublishCta ciudadSlug={ciudadSlug} />
         </div>
       </section>
     </main>

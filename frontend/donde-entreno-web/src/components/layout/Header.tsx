@@ -1,16 +1,21 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  CitySelector,
+  CitySelectorFallback,
+} from "../ciudades/CitySelector";
 
 export function Header() {
   return (
-    <header className="flex items-center justify-between gap-4 py-4">
+    <header className="flex flex-wrap items-center gap-3 py-4">
       {/*
         Logo real de DondeEntreno.
         Al hacer click vuelve a la home.
       */}
       <Link
         href="/"
-        className="flex items-center transition hover:opacity-90"
+        className="mr-auto flex min-w-0 items-center transition hover:opacity-90"
         aria-label="Ir al inicio de DondeEntreno"
       >
         <Image
@@ -23,9 +28,15 @@ export function Header() {
         />
       </Link>
 
+      <div className="order-3 w-full sm:order-none sm:w-auto">
+        <Suspense fallback={<CitySelectorFallback />}>
+          <CitySelector />
+        </Suspense>
+      </div>
+
       {/*
-        Botón temporal del MVP.
-        Más adelante va a llevar a una pantalla para publicar actividades.
+        Boton temporal del MVP.
+        Mas adelante va a llevar a una pantalla para publicar actividades.
       */}
       <Link
         href="/publicar"

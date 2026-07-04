@@ -46,6 +46,13 @@ export function FiltersPanel({
   const [deporteSlug, setDeporteSlug] = useState(deporteSlugActual);
   const [nivel, setNivel] = useState(nivelActual);
   const [modalidad, setModalidad] = useState(modalidadActual);
+  const nivelesVisibles = filtrarOpcionesNeutrales(filtros.niveles, [
+    "TODOS",
+  ]);
+  const modalidadesVisibles = filtrarOpcionesNeutrales(filtros.modalidades, [
+    "TODAS",
+    "TODOS",
+  ]);
 
   const hayFiltrosActivos =
     ciudadIdActual ||
@@ -284,9 +291,9 @@ export function FiltersPanel({
             >
               <option value="">Todos</option>
 
-              {filtros.niveles.map((nivelOpcion) => (
+              {nivelesVisibles.map((nivelOpcion) => (
                 <option key={nivelOpcion} value={nivelOpcion}>
-                  {nivelOpcion}
+                  {formatearEtiquetaFiltro(nivelOpcion)}
                 </option>
               ))}
             </select>
@@ -309,9 +316,9 @@ export function FiltersPanel({
             >
               <option value="">Todas</option>
 
-              {filtros.modalidades.map((modalidadOpcion) => (
+              {modalidadesVisibles.map((modalidadOpcion) => (
                 <option key={modalidadOpcion} value={modalidadOpcion}>
-                  {modalidadOpcion}
+                  {formatearEtiquetaFiltro(modalidadOpcion)}
                 </option>
               ))}
             </select>
@@ -342,4 +349,35 @@ export function FiltersPanel({
       </div>
     </SurfaceCard>
   );
+}
+
+function filtrarOpcionesNeutrales(opciones: string[], neutrales: string[]) {
+  return opciones.filter((opcion) => {
+    const opcionNormalizada = opcion.trim().toUpperCase();
+
+    return opcionNormalizada && !neutrales.includes(opcionNormalizada);
+  });
+}
+
+function formatearEtiquetaFiltro(valor: string) {
+  const etiquetas: Record<string, string> = {
+    PRINCIPIANTE: "Principiante",
+    INTERMEDIO: "Intermedio",
+    AVANZADO: "Avanzado",
+    PRESENCIAL: "Presencial",
+    ONLINE: "Online",
+    HIBRIDA: "Híbrida",
+    "HÍBRIDA": "Híbrida",
+  };
+  const valorNormalizado = valor.trim();
+  const etiqueta = etiquetas[valorNormalizado.toUpperCase()];
+
+  if (etiqueta) {
+    return etiqueta;
+  }
+
+  return valorNormalizado
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\p{L}/gu, (letra) => letra.toUpperCase());
 }

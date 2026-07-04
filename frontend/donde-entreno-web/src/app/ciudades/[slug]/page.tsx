@@ -66,11 +66,11 @@ export default async function CiudadDetallePage({
               CIUDAD
             </p>
             <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
-              Entrená en {ciudad.nombre}
+              Actividades deportivas en {ciudad.nombre}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)] sm:text-lg">
-              Descubrí clases, clubes, profes y espacios deportivos para moverte
-              cerca de donde estás.
+              Encontrá clases, clubes, profes y espacios para entrenar en esta
+              ciudad, con opciones pensadas para moverte cerca.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -99,8 +99,8 @@ export default async function CiudadDetallePage({
           <SurfaceCard as="section" variant="soft" className="mt-8 p-4 sm:p-6">
             <SectionHeader
               eyebrow="Actividades"
-              title={`Actividades disponibles en ${ciudad.nombre}`}
-              description="Una primera selección para conocer opciones cercanas y seguir explorando."
+              title={`Opciones para entrenar en ${ciudad.nombre}`}
+              description="Un punto de partida para descubrir propuestas disponibles y seguir filtrando por deporte, barrio o nivel."
               action={
                 <AppLinkButton
                   href={`/explorar?ciudadSlug=${encodeURIComponent(
@@ -140,21 +140,26 @@ export default async function CiudadDetallePage({
             ) : actividades.length === 0 ? (
               <StatusMessage
                 variant="info"
-                title="Todavía no hay actividades para mostrar"
+                title="Todavía no hay actividades cargadas en esta ciudad"
                 className="p-5"
               >
                 <p>
-                  Todavía no hay propuestas cargadas en {ciudad.nombre}. Podés
-                  volver más tarde o mirar otras ciudades disponibles.
+                  Estamos preparando propuestas en {ciudad.nombre}. Podés volver
+                  más tarde, mirar otras ciudades o enviar una actividad para
+                  revisión.
                 </p>
-                <AppLinkButton
-                  href="/ciudades"
-                  variant="secondary"
-                  size="sm"
-                  className="mt-4 w-fit"
-                >
-                  Ver otras ciudades
-                </AppLinkButton>
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <AppLinkButton href="/publicar" size="sm">
+                    Publicar actividad
+                  </AppLinkButton>
+                  <AppLinkButton
+                    href="/ciudades"
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Ver otras ciudades
+                  </AppLinkButton>
+                </div>
               </StatusMessage>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

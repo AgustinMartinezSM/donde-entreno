@@ -310,8 +310,8 @@ function AdminSolicitudDetalle() {
                   Detalle de solicitud
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
-                  Revisá la información enviada y gestioná el estado de la
-                  publicación.
+                  Revisá los datos enviados, verificá contacto y horarios, y
+                  definí el próximo paso de la solicitud.
                 </p>
                 {sesion && (
                   <p className="mt-3 text-sm font-bold text-[var(--color-muted)]">
@@ -364,6 +364,9 @@ function AdminSolicitudDetalle() {
           >
             <p className="mt-3">
               {errorDetalle}
+            </p>
+            <p className="mt-2 font-bold">
+              Probá volver al listado o intentá nuevamente en unos minutos.
             </p>
           </StatusMessage>
         )}
@@ -442,7 +445,7 @@ function DetalleSolicitud({
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <CampoDetalle etiqueta="ID interno" valor={solicitud.id} />
+            <CampoDetalle etiqueta="Identificador interno" valor={solicitud.id} />
             <CampoDetalle
               etiqueta="Creación"
               valor={formatearFecha(solicitud.createdAt)}
@@ -451,7 +454,7 @@ function DetalleSolicitud({
               etiqueta="Actualización"
               valor={formatearFecha(solicitud.updatedAt)}
             />
-            <CampoDetalle etiqueta="Origen" valor={solicitud.origen} />
+            <CampoDetalle etiqueta="Canal de origen" valor={solicitud.origen} />
             <CampoDetalle
               etiqueta="Revisión iniciada"
               valor={formatearFechaOpcional(solicitud.revisionIniciadaAt)}
@@ -461,7 +464,7 @@ function DetalleSolicitud({
               valor={formatearFechaOpcional(solicitud.revisionFinalizadaAt)}
             />
             <CampoDetalle
-              etiqueta="Actividad generada"
+              etiqueta="Actividad publicada"
               valor={solicitud.actividadGeneradaId}
             />
             <CampoDetalleEstado
@@ -473,7 +476,10 @@ function DetalleSolicitud({
       </SurfaceCard>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <DetalleCard titulo="Publicador">
+        <DetalleCard
+          titulo="Publicador y contacto"
+          descripcion="Datos para identificar a quién envió la solicitud y cómo comunicarse."
+        >
           <CampoDetalle etiqueta="Tipo" valor={solicitud.tipoPublicador} />
           <CampoDetalle etiqueta="Nombre" valor={solicitud.nombrePublicador} />
           <CampoDetalle etiqueta="WhatsApp" valor={solicitud.whatsapp} />
@@ -481,13 +487,16 @@ function DetalleSolicitud({
           <CampoDetalle etiqueta="Email" valor={solicitud.email} />
         </DetalleCard>
 
-        <DetalleCard titulo="Actividad">
+        <DetalleCard
+          titulo="Actividad"
+          descripcion="Información principal que verá la persona interesada en entrenar."
+        >
           <CampoDetalle etiqueta="Nombre" valor={solicitud.nombreActividad} />
           <CampoDetalle
             etiqueta="Deporte existente"
             valor={solicitud.deporteNombre}
           />
-          <CampoDetalle etiqueta="Deporte ID" valor={solicitud.deporteId} />
+          <CampoDetalle etiqueta="ID deporte" valor={solicitud.deporteId} />
           <CampoDetalle etiqueta="Deporte otro" valor={solicitud.deporteOtro} />
           <CampoDetalle etiqueta="Descripción" valor={solicitud.descripcion} />
           <CampoDetalle etiqueta="Nivel" valor={solicitud.nivel} />
@@ -507,12 +516,15 @@ function DetalleSolicitud({
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <DetalleCard titulo="Ubicación">
+        <DetalleCard
+          titulo="Ubicación"
+          descripcion="Ciudad, barrio y referencias para ubicar dónde se realiza."
+        >
           <CampoDetalle etiqueta="Ciudad existente" valor={solicitud.ciudadNombre} />
-          <CampoDetalle etiqueta="Ciudad ID" valor={solicitud.ciudadId} />
+          <CampoDetalle etiqueta="ID ciudad" valor={solicitud.ciudadId} />
           <CampoDetalle etiqueta="Ciudad otra" valor={solicitud.ciudadOtra} />
           <CampoDetalle etiqueta="Barrio existente" valor={solicitud.barrioNombre} />
-          <CampoDetalle etiqueta="Barrio ID" valor={solicitud.barrioId} />
+          <CampoDetalle etiqueta="ID barrio" valor={solicitud.barrioId} />
           <CampoDetalle etiqueta="Barrio otro" valor={solicitud.barrioOtro} />
           <CampoDetalle etiqueta="Nombre del lugar" valor={solicitud.nombreLugar} />
           <CampoDetalle etiqueta="Dirección" valor={solicitud.direccion} />
@@ -522,7 +534,10 @@ function DetalleSolicitud({
           />
         </DetalleCard>
 
-        <DetalleCard titulo="Revisión">
+        <DetalleCard
+          titulo="Revisión"
+          descripcion="Notas y estado interno para tomar una decisión consistente."
+        >
           <CampoDetalle
             etiqueta="Observaciones del solicitante"
             valor={solicitud.observacionesSolicitante}
@@ -560,12 +575,22 @@ function DetalleSolicitud({
       </section>
 
       <SurfaceCard as="section" className="rounded-[24px] p-5">
-        <SectionHeader title="Horarios" />
+        <SectionHeader
+          title="Horarios"
+          description="Días y franjas cargadas por quien envió la solicitud."
+        />
 
         {solicitud.horarios.length === 0 ? (
-          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-            No hay horarios informados.
-          </p>
+          <StatusMessage
+            variant="info"
+            title="Sin horarios informados"
+            className="mt-4"
+          >
+            <p>
+              La solicitud todavía no incluye días u horarios. Podés revisarlo
+              con el publicador antes de aprobar.
+            </p>
+          </StatusMessage>
         ) : (
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {solicitud.horarios.map((horario) => (
@@ -634,13 +659,15 @@ function AccionesRevision({
 
       {estaRechazada && (
         <StatusMessage variant="error" className="mt-5 font-bold">
-          Esta solicitud ya fue rechazada.
+          Esta solicitud ya fue rechazada. El motivo queda registrado en la
+          sección de revisión.
         </StatusMessage>
       )}
 
       {estaAprobada && (
         <StatusMessage variant="success" className="mt-5 font-bold">
-          Esta solicitud ya fue aprobada.
+          Esta solicitud ya fue aprobada y la actividad quedó lista para verse
+          públicamente si el backend generó el enlace.
         </StatusMessage>
       )}
 
@@ -651,7 +678,8 @@ function AccionesRevision({
               Aprobar publicación
             </h3>
             <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
-              Esta acción crea una actividad pública visible en{" "}
+              Usá esta acción cuando la información esté completa. Se creará una
+              actividad pública visible en{" "}
               <BrandName className="inline font-bold" />.
             </p>
           </div>
@@ -661,6 +689,7 @@ function AccionesRevision({
               onClick={onSolicitarAprobacion}
               disabled={accionEnCurso}
               size="lg"
+              fullWidth
             >
               {accionEnCurso ? "Procesando..." : "Aprobar y publicar actividad"}
             </AppButton>
@@ -669,9 +698,9 @@ function AccionesRevision({
           {confirmandoAprobacion && (
             <div className="rounded-[18px] border border-[#F7D87A] bg-[#FFF8E1] px-4 py-4">
               <p className="text-sm font-bold leading-6 text-[#7A5A00]">
-                Esta acción creará una actividad pública visible en
-                {" "}
-                <BrandName className="inline" />. ¿Querés continuar?
+                Esta acción creará una actividad pública visible en{" "}
+                <BrandName className="inline" />. Revisá que los datos estén
+                listos antes de confirmar.
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <AppButton
@@ -679,6 +708,7 @@ function AccionesRevision({
                   onClick={onCancelarAprobacion}
                   disabled={accionEnCurso}
                   variant="outline"
+                  fullWidth
                   className="border-[#D9B94E] text-[#7A5A00] hover:border-[#A98300]"
                 >
                   Cancelar
@@ -687,6 +717,7 @@ function AccionesRevision({
                   type="button"
                   onClick={onConfirmarAprobacion}
                   disabled={accionEnCurso}
+                  fullWidth
                 >
                   {accionEnCurso ? "Procesando..." : "Confirmar aprobación"}
                 </AppButton>
@@ -700,7 +731,8 @@ function AccionesRevision({
         <div className="mt-5 grid gap-5 rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
           {estaEnRevision && (
             <StatusMessage variant="info" className="font-bold">
-              La solicitud ya está en revisión.
+              La solicitud ya está en revisión. Podés rechazarla si detectás
+              información insuficiente o incorrecta.
             </StatusMessage>
           )}
 
@@ -710,12 +742,14 @@ function AccionesRevision({
                 Seguimiento de revisión
               </h3>
               <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
-                Marcá la solicitud cuando empiece el análisis del equipo.
+                Marcá la solicitud cuando empiece el análisis del equipo para
+                que el listado refleje su avance.
               </p>
               <AppButton
                 type="button"
                 onClick={onMarcarEnRevision}
                 disabled={accionEnCurso}
+                fullWidth
                 className="mt-3"
               >
                 {accionEnCurso ? "Procesando..." : "Marcar en revisión"}
@@ -731,7 +765,8 @@ function AccionesRevision({
               Motivo de rechazo
             </label>
             <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
-              Escribí un motivo claro para dejar registro de la decisión.
+              Escribí un motivo claro y breve para dejar registro de la
+              decisión.
             </p>
             <textarea
               id="motivo-rechazo"
@@ -751,6 +786,7 @@ function AccionesRevision({
             disabled={accionEnCurso}
             variant="danger"
             size="lg"
+            fullWidth
           >
             {accionEnCurso ? "Procesando..." : "Rechazar solicitud"}
           </AppButton>
@@ -794,9 +830,11 @@ function AccionesRevision({
 
 function DetalleCard({
   titulo,
+  descripcion,
   children,
 }: {
   titulo: string;
+  descripcion?: string;
   children: ReactNode;
 }) {
   return (
@@ -805,7 +843,7 @@ function DetalleCard({
       className="rounded-[24px] p-5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(12,52,80,0.12)]"
     >
       <div className="border-b border-[#DDEAF3] pb-3">
-        <SectionHeader title={titulo} />
+        <SectionHeader title={titulo} description={descripcion} />
       </div>
       <dl className="mt-4 grid gap-3">{children}</dl>
     </SurfaceCard>
@@ -865,7 +903,7 @@ function HorarioCard({
         {horario.diaSemana}
       </p>
       <dl className="mt-3 grid gap-3 text-sm">
-        <CampoDetalle etiqueta="ID horario" valor={horario.id} />
+        <CampoDetalle etiqueta="Registro interno" valor={horario.id} />
         <CampoDetalle etiqueta="Hora inicio" valor={horario.horaInicio} />
         <CampoDetalle etiqueta="Hora fin" valor={horario.horaFin} />
         <CampoDetalle etiqueta="Observación" valor={horario.observacion} />

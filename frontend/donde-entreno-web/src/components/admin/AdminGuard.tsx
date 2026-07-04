@@ -64,7 +64,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
               Verificando sesión
             </h1>
             <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-              Estamos confirmando tu acceso al panel.
+              Estamos confirmando tu acceso para que puedas continuar con la
+              revisión de solicitudes.
             </p>
           </div>
         </section>
@@ -88,14 +89,16 @@ export function AdminGuard({ children }: AdminGuardProps) {
               Acceso restringido
             </p>
             <h1 className="mt-3 text-2xl font-extrabold text-[var(--color-primary)]">
-              Permisos insuficientes
+              No tenés acceso a esta sección
             </h1>
             <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-              No tenés permisos para acceder al panel administrador.
+              Tu cuenta no tiene permisos suficientes para revisar solicitudes
+              en el panel administrador.
             </p>
             <AppButton
               type="button"
               onClick={cerrarSesion}
+              fullWidth
               className="mt-6"
             >
               Cerrar sesión

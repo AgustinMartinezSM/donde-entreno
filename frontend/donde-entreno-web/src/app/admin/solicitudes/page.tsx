@@ -191,8 +191,9 @@ function AdminSolicitudesListado() {
                   Solicitudes de publicación
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
-                  Revisá, filtrá y gestioná las actividades enviadas para
-                  publicarse en <BrandName className="inline font-bold" />.
+                  Revisá actividades enviadas por clubes, profes y espacios
+                  deportivos antes de publicarlas en{" "}
+                  <BrandName className="inline font-bold" />.
                 </p>
               </div>
 
@@ -223,7 +224,7 @@ function AdminSolicitudesListado() {
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="mb-5 rounded-[24px] bg-white/90 p-5">
+        <SurfaceCard className="mb-5 rounded-[24px] bg-white/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -235,6 +236,10 @@ function AdminSolicitudesListado() {
               >
                 Filtrar por estado
               </label>
+              <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
+                Usá el estado para ordenar tu revisión diaria sin cambiar el
+                flujo de trabajo.
+              </p>
               <select
                 id="filtro-estado"
                 value={filtroEstado}
@@ -267,6 +272,9 @@ function AdminSolicitudesListado() {
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
               Cargando solicitudes...
             </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+              Estamos preparando el listado de revisión.
+            </p>
           </div>
         )}
 
@@ -288,12 +296,12 @@ function AdminSolicitudesListado() {
         {!cargandoSolicitudes && !errorSolicitudes && solicitudes.length === 0 && (
           <StatusMessage
             variant="info"
-            title="No hay solicitudes para mostrar."
+            title="No hay solicitudes para mostrar"
             className="p-7 text-center"
           >
             <p className="mx-auto max-w-xl">
-              Cambiá el filtro de estado o volvé a intentar cuando existan
-              solicitudes nuevas.
+              No hay solicitudes con este estado. Probá con otro filtro o
+              revisá nuevamente cuando ingresen nuevas publicaciones.
             </p>
           </StatusMessage>
         )}
@@ -464,7 +472,7 @@ function BotonDetalleSolicitud({ id }: { id: number }) {
       href={`/admin/solicitudes/${id}`}
       variant="secondary"
       size="sm"
-      className="rounded-[16px]"
+      className="w-full rounded-[16px] sm:w-auto"
     >
       Ver detalle
     </AppLinkButton>

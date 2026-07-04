@@ -13,10 +13,10 @@ const etiquetasPorEstado: Record<EstadoSolicitudAdmin, string> = {
 };
 
 const clasesPorEstado: Record<EstadoSolicitudAdmin, string> = {
-  PENDIENTE: "border-[#F7D87A] bg-[#FFF8E1] text-[#7A5A00]",
-  EN_REVISION: "border-[#A9D8EA] bg-[#EEF8FC] text-[#0F3D5E]",
-  APROBADA: "border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A]",
-  RECHAZADA: "border-red-200 bg-red-50 text-red-700",
+  PENDIENTE: "border-[#F2C94C] bg-[#FFF8E1] text-[#684A00]",
+  EN_REVISION: "border-[#9CCFE4] bg-[#EEF8FC] text-[#0F3D5E]",
+  APROBADA: "border-[#9FDCBC] bg-[#ECF9F2] text-[#176B3F]",
+  RECHAZADA: "border-[#F3B6B6] bg-[#FFF1F1] text-[#A53030]",
 };
 
 const puntoPorEstado: Record<EstadoSolicitudAdmin, string> = {
@@ -40,7 +40,7 @@ export function AdminEstadoBadge({
 }: AdminEstadoBadgeProps) {
   return (
     <span
-      className={`inline-flex w-fit items-center whitespace-nowrap rounded-full border font-extrabold shadow-sm ${clasesPorTamanio[size]} ${clasesPorEstado[estado]}`}
+      className={`inline-flex w-fit shrink-0 items-center whitespace-nowrap rounded-full border font-extrabold shadow-sm ${clasesPorTamanio[size]} ${clasesPorEstado[estado]}`}
     >
       <span className={`h-2 w-2 rounded-full ${puntoPorEstado[estado]}`} />
       {etiquetasPorEstado[estado]}

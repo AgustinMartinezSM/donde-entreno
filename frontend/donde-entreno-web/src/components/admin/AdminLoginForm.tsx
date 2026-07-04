@@ -51,7 +51,7 @@ export function AdminLoginForm() {
     }
 
     if (!password) {
-      setError("Ingresá el password del administrador.");
+      setError("Ingresá la contraseña del administrador.");
       return;
     }
 
@@ -116,7 +116,8 @@ export function AdminLoginForm() {
             Ingresá al panel
           </h2>
           <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-            Usá tus credenciales para revisar y administrar las publicaciones.
+            Ingresá con tu cuenta administradora para revisar solicitudes y
+            cuidar la calidad de las publicaciones.
           </p>
         </div>
 
@@ -145,7 +146,7 @@ export function AdminLoginForm() {
               htmlFor="admin-password"
               className="text-sm font-bold text-[var(--color-primary)]"
             >
-              Password
+              Contraseña
             </label>
             <input
               id="admin-password"
@@ -174,6 +175,7 @@ export function AdminLoginForm() {
           <AppButton
             type="submit"
             disabled={cargando}
+            fullWidth
           >
             {cargando ? "Ingresando..." : "Ingresar al panel"}
           </AppButton>

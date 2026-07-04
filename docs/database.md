@@ -35,6 +35,8 @@ Archivos disponibles:
 09_test_approval_traceability_queries.sql
 10_prepare_city_navigation.sql
 11_test_city_navigation_queries.sql
+12_prepare_publisher_accounts.sql
+13_test_publisher_accounts_queries.sql
 ```
 
 ## Orden de uso local
@@ -48,16 +50,18 @@ Para preparar una base local desde cero, usar este orden:
 4. 05_create_solicitud_publicacion.sql
 5. 07_prepare_auth_security.sql
 6. 10_prepare_city_navigation.sql
+7. 12_prepare_publisher_accounts.sql
 ```
 
 Los scripts de validación se ejecutan después de tener la estructura y los datos necesarios:
 
 ```text
-7. 04_test_queries.sql
-8. 06_test_solicitud_publicacion_queries.sql
-9. 08_test_auth_security_queries.sql
-10. 09_test_approval_traceability_queries.sql
-11. 11_test_city_navigation_queries.sql
+8. 04_test_queries.sql
+9. 06_test_solicitud_publicacion_queries.sql
+10. 08_test_auth_security_queries.sql
+11. 09_test_approval_traceability_queries.sql
+12. 11_test_city_navigation_queries.sql
+13. 13_test_publisher_accounts_queries.sql
 ```
 
 `04_test_queries.sql` contiene consultas de control del MVP inicial.
@@ -69,6 +73,8 @@ Los scripts de validación se ejecutan después de tener la estructura y los dat
 `09_test_approval_traceability_queries.sql` valida localmente que la trazabilidad entre una solicitud aprobada y la actividad creada pueda representarse con el modelo actual. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste datos.
 
 `11_test_city_navigation_queries.sql` valida localmente la migración `10`. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste ciudades temporales.
+
+`13_test_publisher_accounts_queries.sql` valida localmente la migracion `12`. Comienza con `BEGIN`, termina con `ROLLBACK` y no persiste usuarios, perfiles ni solicitudes temporales.
 
 ## Descripción de cada script
 
@@ -258,6 +264,51 @@ Incluye consultas de diagnóstico para ciudades activas, ciudades con y sin acti
 
 También crea ciudades futuras temporales dentro de la transacción para probar orden y slug. El script comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos persistidos.
 
+### 12_prepare_publisher_accounts.sql
+
+Es una migracion aditiva y no destructiva para preparar login unificado, registro y futuro panel publicador V1.
+
+Realiza estos cambios:
+
+* agrega `usuario.telefono_normalizado` y `usuario.telefono_verificado`;
+* normaliza telefonos existentes de `usuario.telefono` sin modificar el valor original;
+* agrega constraint de formato e indice no unico para `usuario.telefono_normalizado`;
+* agrega `perfil_publicador.estado`;
+* agrega `perfil_publicador.ciudad_principal_id`;
+* agrega `perfil_publicador.whatsapp_normalizado` y `perfil_publicador.telefono_contacto_normalizado`;
+* completa `perfil_publicador.estado` para registros existentes segun `activo`, `verificado` y `deleted_at`;
+* normaliza contactos existentes de `perfil_publicador` sin modificar los valores visibles;
+* agrega constraints e indices no unicos para los contactos normalizados;
+* agrega `solicitud_publicacion.usuario_id`;
+* agrega `solicitud_publicacion.perfil_publicador_id`;
+* agrega claves foraneas e indices para listar solicitudes por usuario o perfil publicador;
+* mantiene `usuario_id` y `perfil_publicador_id` como campos opcionales para compatibilidad historica.
+
+No modifica roles existentes, no cambia los valores de `perfil_publicador.tipo_publicador`, no crea usuarios reales, no crea administradores, no toca `actividad` ni horarios y no borra datos.
+
+### 13_test_publisher_accounts_queries.sql
+
+Es un script de validacion local para ejecutar despues de aplicar correctamente `12_prepare_publisher_accounts.sql`.
+
+Valida:
+
+* existencia de columnas nuevas en `usuario`, `perfil_publicador` y `solicitud_publicacion`;
+* existencia de constraints nuevas;
+* existencia de indices nuevos;
+* creacion temporal de un usuario comun;
+* creacion temporal de un usuario `PUBLICADOR`;
+* creacion temporal de un perfil publicador asociado al usuario publicador;
+* creacion temporal de una solicitud asociada a `usuario_id` y `perfil_publicador_id`;
+* compatibilidad de una solicitud historica con `usuario_id` y `perfil_publicador_id` en `NULL`;
+* rechazo de telefonos o WhatsApp normalizados con letras;
+* rechazo de estados invalidos de perfil publicador;
+* rechazo de solicitud con perfil informado y usuario ausente;
+* rechazo de referencias inexistentes a usuario o perfil.
+
+Incluye consultas de diagnostico para usuarios por rol, publicadores activos, perfiles por estado, perfiles sin ciudad principal, solicitudes historicas, solicitudes asociadas a usuarios, solicitudes asociadas a perfiles y contactos normalizados.
+
+El script comienza con `BEGIN`, termina con `ROLLBACK` y no deja datos temporales persistidos.
+
 ## Modelo actual de tablas
 
 La base de datos local actual contempla estas tablas:
@@ -294,11 +345,15 @@ Relaciones del modelo de solicitudes:
 * `solicitud_publicacion` puede relacionarse opcionalmente con `deporte`.
 * `solicitud_publicacion` puede relacionarse opcionalmente con `ciudad`.
 * `solicitud_publicacion` puede relacionarse opcionalmente con `barrio`.
+* `solicitud_publicacion` puede relacionarse opcionalmente con `usuario` como usuario solicitante.
+* `solicitud_publicacion` puede relacionarse opcionalmente con `perfil_publicador` como perfil solicitante.
 * `solicitud_publicacion` puede relacionarse opcionalmente con `usuario` como revisor.
 * `solicitud_publicacion` puede relacionarse opcionalmente con `actividad` como actividad finalmente generada.
 * `solicitud_publicacion` tiene muchos registros en `solicitud_publicacion_horario`.
 
-Las relaciones opcionales desde `solicitud_publicacion` hacia `deporte`, `ciudad`, `barrio`, `usuario` y `actividad` no eliminan solicitudes en cascada.
+Las relaciones opcionales desde `solicitud_publicacion` hacia `deporte`, `ciudad`, `barrio`, `usuario`, `perfil_publicador` y `actividad` no eliminan solicitudes en cascada.
+
+`solicitud_publicacion.usuario_id` y `solicitud_publicacion.perfil_publicador_id` pueden ser `NULL` para conservar compatibilidad con solicitudes historicas o anonimas. Si `perfil_publicador_id` tiene valor, `usuario_id` tambien debe tener valor.
 
 La relación `solicitud_publicacion 1:N solicitud_publicacion_horario` sí usa borrado en cascada respecto de su solicitud. Si se borra físicamente una solicitud, se eliminan sus horarios asociados.
 
@@ -422,6 +477,66 @@ Sus usuarios ficticios se crean con:
 
 Modificar ese seed no cambia bases donde el script ya fue ejecutado. Las bases existentes deben inspeccionarse antes de habilitar Auth real, especialmente si tienen usuarios históricos activos, verificados o con hashes de prueba.
 
+## Login, registro y panel publicador V1
+
+El login sera unificado para estos roles:
+
+* `USUARIO`
+* `PUBLICADOR`
+* `ADMIN`
+* `SUPER_ADMIN`
+
+Cada usuario mantiene un unico rol mediante `usuario.rol_id`. No hay multirol, no existe una tabla `usuario_roles` y no se agrego una tabla intermedia para permisos.
+
+`PUBLICADOR` tendra permisos de usuario comun por logica backend. Es decir, no necesita tener dos roles para poder usar funcionalidades basicas de una cuenta registrada.
+
+### Usuario registrado
+
+`usuario.telefono_normalizado` permite buscar, comparar o validar telefonos usando solo digitos. No es unico y no hace obligatorio informar telefono.
+
+`usuario.telefono_verificado` queda preparado para futuras verificaciones. La migracion no agrega tokens, recuperacion de contrasena, login por telefono ni login con Google.
+
+El email sigue siendo el identificador principal de login. La unicidad normalizada de email se conserva mediante `idx_usuario_email_normalizado_unico`.
+
+### Perfil publicador
+
+`perfil_publicador.estado` representa el estado funcional del publicador para registro, revision y panel publicador. Los valores permitidos son:
+
+* `INCOMPLETO`
+* `PENDIENTE_REVISION`
+* `ACTIVO`
+* `SUSPENDIDO`
+
+El backfill inicial mantiene compatibilidad con los datos existentes:
+
+* perfiles con `deleted_at` o `activo = false` quedan como `SUSPENDIDO`;
+* perfiles activos y verificados quedan como `ACTIVO`;
+* perfiles activos no verificados quedan como `PENDIENTE_REVISION`;
+* nuevos perfiles usan `INCOMPLETO` por defecto.
+
+`perfil_publicador.ciudad_principal_id` permite asociar un perfil a una ciudad principal. Es opcional y usa una clave foranea a `ciudad(id)`.
+
+`perfil_publicador.whatsapp_normalizado` y `perfil_publicador.telefono_contacto_normalizado` permiten validaciones futuras de contacto usando solo digitos. No son unicos y no modifican los campos visibles `whatsapp` ni `telefono_contacto`.
+
+No se cambiaron los valores actuales de `perfil_publicador.tipo_publicador`. Siguen siendo:
+
+* `CLUB`
+* `GIMNASIO`
+* `PROFESOR_INDEPENDIENTE`
+* `INSTITUCION`
+* `ESCUELA_DEPORTIVA`
+* `ESPACIO_ENTRENAMIENTO`
+
+### Solicitudes asociadas a cuentas
+
+`solicitud_publicacion.usuario_id` permite saber que usuario envio la solicitud cuando el flujo sea autenticado.
+
+`solicitud_publicacion.perfil_publicador_id` permite saber desde que perfil publicador se envio la solicitud.
+
+Ambos campos son opcionales para conservar solicitudes historicas o anonimas. El backend V1 debera exigirlos para nuevas solicitudes autenticadas del panel publicador.
+
+PostgreSQL valida una regla minima: si `perfil_publicador_id` tiene valor, `usuario_id` no puede ser `NULL`. La validacion de que el perfil pertenezca al mismo usuario se resolvera desde el backend V1.
+
 ## Solicitudes de publicación
 
 ### Objetivo
@@ -538,11 +653,13 @@ Pasos sugeridos:
 8. Ejecutar `05_create_solicitud_publicacion.sql`.
 9. Ejecutar `07_prepare_auth_security.sql`.
 10. Ejecutar `10_prepare_city_navigation.sql`.
-11. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
-12. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
-13. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
-14. Ejecutar `09_test_approval_traceability_queries.sql` para validar trazabilidad de aprobación.
-15. Ejecutar `11_test_city_navigation_queries.sql` para validar navegación territorial.
+11. Ejecutar `12_prepare_publisher_accounts.sql`.
+12. Ejecutar `04_test_queries.sql` para validar el modelo inicial.
+13. Ejecutar `06_test_solicitud_publicacion_queries.sql` para validar solicitudes de publicación.
+14. Ejecutar `08_test_auth_security_queries.sql` para validar Auth y Seguridad.
+15. Ejecutar `09_test_approval_traceability_queries.sql` para validar trazabilidad de aprobación.
+16. Ejecutar `11_test_city_navigation_queries.sql` para validar navegación territorial.
+17. Ejecutar `13_test_publisher_accounts_queries.sql` para validar cuentas publicador y solicitudes asociadas.
 
 ## Ejecución desde terminal
 
@@ -557,6 +674,7 @@ psql -U postgres -d donde_entreno_db -f database/scripts/03_seed_test_data.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/05_create_solicitud_publicacion.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/07_prepare_auth_security.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/10_prepare_city_navigation.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/12_prepare_publisher_accounts.sql
 ```
 
 Ejemplo para validaciones locales:
@@ -567,6 +685,7 @@ psql -U postgres -d donde_entreno_db -f database/scripts/06_test_solicitud_publi
 psql -U postgres -d donde_entreno_db -f database/scripts/08_test_auth_security_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/09_test_approval_traceability_queries.sql
 psql -U postgres -d donde_entreno_db -f database/scripts/11_test_city_navigation_queries.sql
+psql -U postgres -d donde_entreno_db -f database/scripts/13_test_publisher_accounts_queries.sql
 ```
 
 El usuario `postgres` puede cambiar según la configuración local de cada máquina.
@@ -626,6 +745,10 @@ Después de ejecutar los scripts, se recomienda verificar:
 * Que `ciudad.slug` y `ciudad.orden` existan.
 * Que Mar del Plata tenga `slug = 'mar-del-plata'`, `orden = 1` y `activa = true`.
 * Que `11_test_city_navigation_queries.sql` termine con `ROLLBACK` y no conserve ciudades temporales.
+* Que `usuario.telefono_normalizado` y `usuario.telefono_verificado` existan.
+* Que `perfil_publicador.estado`, `ciudad_principal_id`, `whatsapp_normalizado` y `telefono_contacto_normalizado` existan.
+* Que `solicitud_publicacion.usuario_id` y `solicitud_publicacion.perfil_publicador_id` existan y acepten `NULL`.
+* Que `13_test_publisher_accounts_queries.sql` termine con `ROLLBACK` y no conserve usuarios, perfiles ni solicitudes temporales.
 * Que los endpoints del backend respondan correctamente.
 
 Endpoint útil para probar:
@@ -638,10 +761,12 @@ Si devuelve actividades, la base de datos está correctamente conectada con el b
 
 ## Estado actual
 
-La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación, una migración aditiva de preparación de Auth y Seguridad, una migración aditiva para navegación territorial por ciudad y scripts de validación local para trazabilidad de aprobación y navegación territorial.
+La base de datos local del MVP cuenta con estructura inicial, datos iniciales, datos de prueba, consultas de control, una migración aditiva para solicitudes públicas de publicación, una migración aditiva de preparación de Auth y Seguridad, una migración aditiva para navegación territorial por ciudad, una migracion aditiva para cuentas publicador y scripts de validación local para trazabilidad de aprobación, navegación territorial y solicitudes asociadas a cuentas.
 
 Después de aplicar `05_create_solicitud_publicacion.sql`, el modelo local pasa de 11 a 13 tablas.
 
 Después de aplicar `07_prepare_auth_security.sql`, no se agregan tablas nuevas. Se endurecen reglas sobre roles, usuarios y unicidad de email normalizado.
 
 Después de aplicar `10_prepare_city_navigation.sql`, no se agregan tablas nuevas. Se agregan `slug` y `orden` a `ciudad`, se deja Mar del Plata como ciudad inicial/default y se prepara el modelo para rutas por ciudad.
+
+Después de aplicar `12_prepare_publisher_accounts.sql`, no se agregan tablas nuevas. Se agregan campos, constraints e indices para registro de usuarios, estado funcional de perfiles publicadores, contactos normalizados, ciudad principal del publicador y asociacion opcional de solicitudes con `usuario` y `perfil_publicador`.

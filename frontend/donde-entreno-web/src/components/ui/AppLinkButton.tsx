@@ -12,7 +12,7 @@ type AppLinkButtonProps = {
 };
 
 const baseClassName =
-  "inline-flex items-center justify-center rounded-[18px] font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98]";
+  "inline-flex items-center justify-center rounded-[18px] font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98]";
 
 const variantClassNames: Record<
   NonNullable<AppLinkButtonProps["variant"]>,

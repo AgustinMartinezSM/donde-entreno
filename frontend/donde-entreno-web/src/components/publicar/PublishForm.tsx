@@ -383,10 +383,10 @@ function obtenerMensajesErrores(errores: ErroresSolicitudPublicacionForm) {
 const OPCION_OTRO = "__OTRO__";
 
 const inputClassName =
-  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 disabled:cursor-not-allowed disabled:opacity-70";
 
 const textareaClassName =
-  "rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]";
+  "rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
 
 const labelClassName = "text-sm font-bold text-[var(--color-primary)]";
 const fieldsetClassName =
@@ -1043,7 +1043,7 @@ export function PublishForm() {
       <aside className="lg:sticky lg:top-8">
         <SurfaceCard className="bg-white/90 p-4 lg:hidden">
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[var(--radius-lg)] outline-none transition duration-200 ease-out focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
               <span>
                 <span className="block text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
                   Guía rápida

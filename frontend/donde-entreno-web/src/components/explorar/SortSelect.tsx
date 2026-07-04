@@ -83,7 +83,7 @@ export function SortSelect({
         id="orden"
         value={ordenActual}
         onChange={manejarCambioOrden}
-        className="min-h-12 w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 text-sm font-bold text-[var(--color-text)] shadow-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+        className="min-h-12 w-full rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-4 text-sm font-bold text-[var(--color-text)] shadow-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
       >
         <option value="">Más relevantes</option>
         <option value="precio_asc">Menor precio</option>

@@ -147,13 +147,14 @@ export function SearchBar({
           value={texto}
           onChange={(evento) => manejarCambioTexto(evento.target.value)}
           onFocus={() => setSugerenciasAbiertas(true)}
+          aria-label="Buscar deporte, actividad o club"
           placeholder="Buscar deporte, actividad o club"
-          className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] sm:min-h-14"
+          className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/30 sm:min-h-14"
         />
 
         <button
           type="submit"
-          className="min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
+          className="min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
         >
           Buscar
         </button>

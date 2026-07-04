@@ -18,7 +18,7 @@ import { obtenerCiudades } from "../../services/ciudadService";
 import type { Ciudad } from "../../types/ciudad";
 
 const selectorContenedorClassName =
-  "flex h-11 min-w-0 items-center gap-2 rounded-full border border-[#BFDDEA] bg-white/95 px-3 text-sm font-bold text-[var(--color-primary)] shadow-sm";
+  "flex h-11 min-w-0 items-center gap-2 rounded-full border border-[#BFDDEA] bg-white/95 px-3 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#4FB3D9]/25";
 
 export function CitySelectorFallback() {
   return (
@@ -156,7 +156,7 @@ export function CitySelector() {
           value={slugSeleccionado}
           onChange={manejarCambioCiudad}
           aria-label="Seleccionar ciudad activa"
-          className="min-w-0 max-w-full bg-transparent text-sm font-extrabold text-[var(--color-primary)] outline-none"
+          className="min-w-0 max-w-full bg-transparent text-sm font-extrabold text-[var(--color-primary)] outline-none focus-visible:outline-none"
         >
           {ciudades.map((ciudad) => (
             <option key={ciudad.id} value={ciudad.slug}>

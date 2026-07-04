@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Header } from "../components/layout/Header";
 import { BrandName } from "../components/brand/BrandName";
+import { AppLinkButton } from "../components/ui/AppLinkButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -37,19 +37,13 @@ export default function NotFound() {
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link
-                href="/explorar"
-                className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)]"
-              >
+              <AppLinkButton href="/explorar" variant="primary">
                 Explorar actividades
-              </Link>
+              </AppLinkButton>
 
-              <Link
-                href="/"
-                className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-5 py-3 text-sm font-bold text-[var(--color-primary)]"
-              >
+              <AppLinkButton href="/" variant="secondary">
                 Volver al inicio
-              </Link>
+              </AppLinkButton>
             </div>
           </div>
         </div>

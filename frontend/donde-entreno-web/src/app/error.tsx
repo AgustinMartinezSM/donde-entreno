@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Header } from "../components/layout/Header";
 import { ErrorState } from "../components/feedback/ErrorState";
 import { BrandName } from "../components/brand/BrandName";
+import { AppButton } from "../components/ui/AppButton";
 
 type GlobalErrorProps = {
   error: Error & {
@@ -41,13 +42,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           />
 
           <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)]"
-            >
+            <AppButton type="button" onClick={reset}>
               Intentar nuevamente
-            </button>
+            </AppButton>
           </div>
         </div>
       </section>

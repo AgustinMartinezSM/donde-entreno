@@ -49,3 +49,8 @@ h3,
 .font-display {
   font-family: var(--font-display), var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid rgba(79, 179, 217, 0.75);
+  outline-offset: 3px;
+}

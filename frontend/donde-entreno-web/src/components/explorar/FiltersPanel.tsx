@@ -19,6 +19,9 @@ type FiltersPanelProps = {
   ordenActual?: string;
 };
 
+const selectClassName =
+  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
+
 export function FiltersPanel({
   filtros,
   textoBuscado = "",
@@ -55,6 +58,7 @@ export function FiltersPanel({
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(
     Boolean(hayFiltrosActivos),
   );
+  const filtrosPanelId = "filtros-explorar";
 
   function aplicarFiltros() {
     const params = new URLSearchParams();
@@ -166,27 +170,36 @@ export function FiltersPanel({
         <button
           type="button"
           onClick={() => setFiltrosAbiertos((valorActual) => !valorActual)}
-          className="rounded-full border border-[#BFDDEA] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out active:scale-[0.98] sm:hidden"
+          aria-expanded={filtrosAbiertos}
+          aria-controls={filtrosPanelId}
+          className="rounded-full border border-[#BFDDEA] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:hidden"
         >
           {filtrosAbiertos ? "Ocultar" : "Mostrar"}
         </button>
       </div>
 
-      <div className={`${filtrosAbiertos ? "block" : "hidden"} mt-4 sm:block`}>
+      <div
+        id={filtrosPanelId}
+        className={`${filtrosAbiertos ? "block" : "hidden"} mt-4 sm:block`}
+      >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {/* Filtro por ciudad */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-[var(--color-primary)]">
+            <label
+              htmlFor="filtro-ciudad"
+              className="text-sm font-bold text-[var(--color-primary)]"
+            >
               Ciudad
             </label>
 
             <select
+              id="filtro-ciudad"
               value={ciudadId}
               onChange={(evento) => {
                 setCiudadId(evento.target.value);
                 setBarrioId("");
               }}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+              className={selectClassName}
             >
               <option value="">Todas</option>
 
@@ -200,14 +213,18 @@ export function FiltersPanel({
 
           {/* Filtro por barrio */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-[var(--color-primary)]">
+            <label
+              htmlFor="filtro-barrio"
+              className="text-sm font-bold text-[var(--color-primary)]"
+            >
               Barrio
             </label>
 
             <select
+              id="filtro-barrio"
               value={barrioId}
               onChange={(evento) => setBarrioId(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+              className={selectClassName}
             >
               <option value="">Todos</option>
 
@@ -227,14 +244,18 @@ export function FiltersPanel({
 
           {/* Filtro por deporte */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-[var(--color-primary)]">
+            <label
+              htmlFor="filtro-deporte"
+              className="text-sm font-bold text-[var(--color-primary)]"
+            >
               Deporte
             </label>
 
             <select
+              id="filtro-deporte"
               value={deporteSlug}
               onChange={(evento) => setDeporteSlug(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+              className={selectClassName}
             >
               <option value="">Todos</option>
 
@@ -248,14 +269,18 @@ export function FiltersPanel({
 
           {/* Filtro por nivel */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-[var(--color-primary)]">
+            <label
+              htmlFor="filtro-nivel"
+              className="text-sm font-bold text-[var(--color-primary)]"
+            >
               Nivel
             </label>
 
             <select
+              id="filtro-nivel"
               value={nivel}
               onChange={(evento) => setNivel(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+              className={selectClassName}
             >
               <option value="">Todos</option>
 
@@ -269,14 +294,18 @@ export function FiltersPanel({
 
           {/* Filtro por modalidad */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-[var(--color-primary)]">
+            <label
+              htmlFor="filtro-modalidad"
+              className="text-sm font-bold text-[var(--color-primary)]"
+            >
               Modalidad
             </label>
 
             <select
+              id="filtro-modalidad"
               value={modalidad}
               onChange={(evento) => setModalidad(evento.target.value)}
-              className="min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[#DDEAF3]"
+              className={selectClassName}
             >
               <option value="">Todas</option>
 

@@ -66,11 +66,8 @@ export function ContactButton({
     Si no hay ningún dato de contacto, mostramos el botón desactivado.
   */
   return (
-    <button
-      disabled
-      className="mt-6 w-full cursor-not-allowed rounded-[var(--radius-md)] bg-slate-300 px-4 py-3 text-sm font-bold text-white opacity-80"
-    >
-      Contacto no disponible
-    </button>
+    <div className="mt-6 rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-center text-sm font-bold leading-6 text-[var(--color-muted)]">
+      Esta actividad todavía no cargó un canal de contacto.
+    </div>
   );
 }

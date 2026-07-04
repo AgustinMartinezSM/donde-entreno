@@ -3,7 +3,10 @@ import Image from "next/image";
 import type { Actividad } from "../../types/actividad";
 import { API_BASE_URL } from "../../lib/apiConfig";
 import { ActivityImage } from "../actividad/ActivityImage";
-import { obtenerImagenActividad } from "../../lib/activityImages";
+import {
+  obtenerImagenActividad,
+  obtenerImagenFallbackActividad,
+} from "../../lib/activityImages";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -19,9 +22,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
     Si no trae imagen propia, dejamos null para que después
     obtenerImagenActividad use la imagen default según el deporte.
   */
-  const imagenBackend = actividad.imagenPrincipalUrl
-    ? `${API_BASE_URL}${actividad.imagenPrincipalUrl}`
-    : null;
+  const imagenBackend = construirUrlImagenBackend(actividad.imagenPrincipalUrl);
 
   /*
     Definimos qué imagen mostrar en la card.
@@ -35,6 +36,12 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
     imagenBackend,
     deporteSlug: actividad.deporteSlug,
   });
+  const imagenFallbackUrl = obtenerImagenFallbackActividad({
+    deporteSlug: actividad.deporteSlug,
+  });
+  const tieneContacto = Boolean(
+    actividad.whatsappContacto || actividad.instagramContacto || actividad.emailContacto
+  );
 
   return (
     <SurfaceCard
@@ -43,18 +50,35 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
     >
       <ActivityImage
         src={imagenUrl}
+        fallbackSrc={imagenFallbackUrl}
         alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
         fallbackText={actividad.deporteNombre || "Actividad"}
-        heightClassName="h-44"
+        heightClassName="h-48"
       />
 
       <div className="p-2 pt-4">
+        <div className="mb-3 flex flex-wrap gap-2">
+          {actividad.deporteNombre && (
+            <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#167A4A]">
+              {actividad.deporteNombre}
+            </span>
+          )}
+
+          {actividad.mostrarPrecio &&
+            actividad.precioReferencia !== undefined &&
+            actividad.precioReferencia !== null && (
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[#DDEAF3]">
+              Desde ${actividad.precioReferencia}
+            </span>
+          )}
+        </div>
+
         <h3 className="line-clamp-2 text-lg font-extrabold text-[var(--color-primary)]">
           {actividad.titulo}
         </h3>
 
-        <p className="mt-2 text-sm font-bold text-[var(--color-muted)]">
-          {actividad.perfilPublicadorNombre || "Publicador no informado"}
+        <p className="mt-2 line-clamp-1 text-sm font-bold text-[var(--color-muted)]">
+          {actividad.perfilPublicadorNombre || "Publicado por la comunidad"}
         </p>
 
         <div className="mt-3 flex items-start gap-2 rounded-[var(--radius-md)] bg-[#F8FAFC] px-3 py-2 text-sm font-medium text-[var(--color-text)]">
@@ -68,7 +92,7 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
           />
 
           <p>
-            {actividad.barrioNombre || "Barrio sin cargar"}
+            {actividad.barrioNombre || "Zona a confirmar"}
             {actividad.ciudadNombre ? `, ${actividad.ciudadNombre}` : ""}
           </p>
         </div>
@@ -85,6 +109,10 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
               {actividad.modalidad}
             </span>
           )}
+
+          <span className="rounded-full bg-[#F8FAFC] px-3 py-1 text-xs font-bold text-[var(--color-muted)] ring-1 ring-[#DDEAF3]">
+            {tieneContacto ? "Contacto disponible" : "Contacto a confirmar"}
+          </span>
         </div>
 
         <AppLinkButton
@@ -97,4 +125,20 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
       </div>
     </SurfaceCard>
   );
+}
+
+function construirUrlImagenBackend(url?: string | null) {
+  const urlLimpia = url?.trim();
+
+  if (!urlLimpia) {
+    return null;
+  }
+
+  if (urlLimpia.startsWith("http://") || urlLimpia.startsWith("https://")) {
+    return urlLimpia;
+  }
+
+  const separador = urlLimpia.startsWith("/") ? "" : "/";
+
+  return `${API_BASE_URL}${separador}${urlLimpia}`;
 }

@@ -13,6 +13,7 @@ import {
 } from "../../../lib/activityImages";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
+import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 
 type ActividadDetallePageProps = {
@@ -95,7 +96,7 @@ export default async function ActividadDetallePage({
           <div className="py-10">
             <ErrorState
               titulo="No pudimos cargar esta actividad"
-              descripcion="No encontramos esta actividad o no pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
+              descripcion="No pudimos encontrar esta actividad ahora. Podés volver a explorar opciones disponibles."
               mostrarBotonInicio
               mostrarBotonExplorar
             />
@@ -121,6 +122,9 @@ export default async function ActividadDetallePage({
   const imagenFallbackUrl = obtenerImagenFallbackActividad({
     deporteSlug: actividad.deporteSlug,
   });
+  const volverAExplorarHref = actividad.ciudadSlug
+    ? `/explorar?ciudadSlug=${encodeURIComponent(actividad.ciudadSlug)}`
+    : "/explorar";
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
@@ -129,7 +133,7 @@ export default async function ActividadDetallePage({
 
         <div className="py-8 sm:py-10">
           <AppLinkButton
-            href="/explorar"
+            href={volverAExplorarHref}
             variant="secondary"
             size="sm"
             className="w-fit rounded-full"
@@ -201,10 +205,13 @@ export default async function ActividadDetallePage({
                   </p>
                 </SurfaceCard>
 
-                {actividad.horarios && actividad.horarios.length > 0 && (
-                  <SurfaceCard className="mt-7 p-5 sm:mt-8">
-                    <SectionHeader title="Horarios" />
+                <SurfaceCard className="mt-7 p-5 sm:mt-8">
+                  <SectionHeader
+                    title="Horarios"
+                    description="Revisá cuándo se dicta antes de contactar."
+                  />
 
+                  {actividad.horarios && actividad.horarios.length > 0 ? (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {actividad.horarios.map((horario) => (
                         <div
@@ -227,8 +234,19 @@ export default async function ActividadDetallePage({
                         </div>
                       ))}
                     </div>
-                  </SurfaceCard>
-                )}
+                  ) : (
+                    <StatusMessage
+                      variant="info"
+                      title="Horarios a confirmar"
+                      className="mt-4"
+                    >
+                      <p>
+                        Esta actividad todavía no cargó horarios visibles.
+                        Consultá por el canal de contacto disponible.
+                      </p>
+                    </StatusMessage>
+                  )}
+                </SurfaceCard>
               </div>
             </SurfaceCard>
 

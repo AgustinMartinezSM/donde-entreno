@@ -316,7 +316,11 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 {actividades.length === 0 ? (
                   <StatusMessage
                     variant="info"
-                    title="No encontramos actividades con esos filtros"
+                    title={
+                      nombreCiudadActiva
+                        ? `No encontramos actividades con esos filtros en ${nombreCiudadActiva}`
+                        : "No encontramos actividades con esos filtros"
+                    }
                     className="p-7 text-center"
                   >
                     <p className="mx-auto max-w-xl">
@@ -339,10 +343,12 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                               )}`
                             : "/explorar"
                         }
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                       >
-                        Limpiar filtros
+                        {nombreCiudadActiva
+                          ? `Ver todas en ${nombreCiudadActiva}`
+                          : "Limpiar filtros"}
                       </AppLinkButton>
                     </div>
                   </StatusMessage>

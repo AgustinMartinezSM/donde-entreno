@@ -1041,7 +1041,99 @@ export function PublishForm() {
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
       <aside className="lg:sticky lg:top-8">
-        <SurfaceCard className="bg-white/90 p-5">
+        <SurfaceCard className="bg-white/90 p-4 lg:hidden">
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+              <span>
+                <span className="block text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
+                  Guía rápida
+                </span>
+                <span className="mt-1 block text-lg font-extrabold leading-tight text-[var(--color-primary)]">
+                  Publicá tu actividad en 5 pasos
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                  Revisá la guía cuando necesites orientarte.
+                </span>
+              </span>
+
+              <span className="shrink-0 rounded-full border border-[#BFDDEA] bg-[#F8FCFE] px-3 py-2 text-xs font-extrabold text-[var(--color-primary)]">
+                <span className="group-open:hidden">Ver pasos</span>
+                <span className="hidden group-open:inline">Ocultar</span>
+              </span>
+            </summary>
+
+            <ol className="mt-4 space-y-3">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                  1
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                    Contanos quién publica
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                    Club, gimnasio, profe, escuela o espacio deportivo.
+                  </span>
+                </span>
+              </li>
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+                  2
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                    Describí la actividad
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                    Nombre, deporte, nivel, modalidad y descripción.
+                  </span>
+                </span>
+              </li>
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                  3
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                    Indicá dónde se realiza
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                    Ciudad, barrio, lugar o dirección de referencia.
+                  </span>
+                </span>
+              </li>
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+                  4
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                    Sumá contacto y horarios
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-[var(--color-muted)]">
+                    Agregá cómo pueden contactarte y cuándo se dicta.
+                  </span>
+                </span>
+              </li>
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
+                  5
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold text-[var(--color-primary)]">
+                    Enviá la solicitud a revisión
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
+                    El equipo de <BrandName className="inline font-bold" /> la
+                    revisa antes de publicarla.
+                  </span>
+                </span>
+              </li>
+            </ol>
+          </details>
+        </SurfaceCard>
+
+        <SurfaceCard className="hidden bg-white/90 p-5 lg:block">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
             Antes de enviar
           </p>

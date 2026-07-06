@@ -32,7 +32,7 @@ export default function LoginPage() {
             <div className="mt-8 grid gap-3">
               {[
                 "Seguimiento de solicitudes",
-                "Paneles según tu rol",
+                "Gestioná tu cuenta",
                 "Acceso seguro al ecosistema",
               ].map((item) => (
                 <div
@@ -71,15 +71,25 @@ export default function LoginPage() {
             <div className="mt-7 grid gap-3 border-t border-[#DDEAF3] pt-5 text-sm text-[var(--color-muted)] sm:grid-cols-2">
               <Link
                 href="/registro"
-                className="font-extrabold text-[var(--color-primary)] transition hover:text-[var(--color-secondary)]"
+                className="rounded-[20px] border border-[#BFDDEA] bg-[#F8FCFE] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-white"
               >
-                Crear cuenta
+                <span className="block font-extrabold text-[var(--color-primary)]">
+                  Crear cuenta
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--color-muted)]">
+                  Para usar DondeEntreno como persona que busca actividades.
+                </span>
               </Link>
               <Link
                 href="/registro/publicador"
-                className="font-extrabold text-[var(--color-primary)] transition hover:text-[var(--color-secondary)] sm:text-right"
+                className="rounded-[20px] border border-[#BDE8D0] bg-[#ECF9F2] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] hover:bg-white"
               >
-                Crear cuenta de publicador
+                <span className="block font-extrabold text-[#1D7B4A]">
+                  Crear cuenta de publicador
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--color-muted)]">
+                  Para enviar actividades a revisión y gestionarlas desde tu panel.
+                </span>
               </Link>
             </div>
           </section>

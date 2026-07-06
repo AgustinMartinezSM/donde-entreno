@@ -45,11 +45,48 @@ public interface SolicitudPublicacionRepository extends JpaRepository<SolicitudP
             "deporte",
             "ciudad",
             "barrio",
+            "actividadGenerada"
+    })
+    Page<SolicitudPublicacion> findByUsuario_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+            Long usuarioId,
+            Long perfilPublicadorId,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio",
+            "actividadGenerada"
+    })
+    Page<SolicitudPublicacion> findByUsuario_IdAndPerfilPublicador_IdAndEstadoAndDeletedAtIsNull(
+            Long usuarioId,
+            Long perfilPublicadorId,
+            String estado,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio",
             "revisadoPorUsuario",
             "revisadoPorUsuario.rol",
             "actividadGenerada"
     })
     Optional<SolicitudPublicacion> findByIdAndDeletedAtIsNull(Long id);
+
+    @EntityGraph(attributePaths = {
+            "deporte",
+            "ciudad",
+            "barrio",
+            "actividadGenerada"
+    })
+    Optional<SolicitudPublicacion> findByIdAndUsuario_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+            Long id,
+            Long usuarioId,
+            Long perfilPublicadorId
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = {

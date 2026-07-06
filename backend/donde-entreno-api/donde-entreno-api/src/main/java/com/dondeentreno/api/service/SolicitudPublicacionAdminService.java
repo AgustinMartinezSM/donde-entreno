@@ -50,6 +50,7 @@ public class SolicitudPublicacionAdminService {
     private static final String ESTADO_EN_REVISION = "EN_REVISION";
     private static final String ESTADO_APROBADA = "APROBADA";
     private static final String ESTADO_RECHAZADA = "RECHAZADA";
+    private static final String ESTADO_PERFIL_PENDIENTE_REVISION = "PENDIENTE_REVISION";
     private static final String ESTADO_PUBLICACION_PUBLICADA = "PUBLICADA";
     private static final String MENSAJE_DATOS_INSUFICIENTES =
             "La solicitud no tiene datos suficientes para crear la actividad.";
@@ -171,7 +172,7 @@ public class SolicitudPublicacionAdminService {
         List<SolicitudPublicacionHorario> horariosSolicitud = buscarHorariosValidos(solicitud.getId());
         OffsetDateTime ahora = OffsetDateTime.now();
 
-        PerfilPublicador perfilPublicador = obtenerOCrearPerfilPublicador(solicitud, usuarioAdmin, ahora);
+        PerfilPublicador perfilPublicador = obtenerOCrearPerfilPublicador(solicitud, usuarioAdmin, ciudad, ahora);
         Ubicacion ubicacion = obtenerOCrearUbicacion(solicitud, perfilPublicador, ciudad, barrio, ahora);
         Actividad actividad = crearActividad(solicitud, perfilPublicador, deporte, ubicacion, ahora);
         crearHorariosActividad(actividad, horariosSolicitud, ahora);
@@ -278,6 +279,7 @@ public class SolicitudPublicacionAdminService {
     private PerfilPublicador obtenerOCrearPerfilPublicador(
             SolicitudPublicacion solicitud,
             Usuario usuarioAdmin,
+            Ciudad ciudad,
             OffsetDateTime ahora
     ) {
         String nombre = exigirTexto(solicitud.getNombrePublicador());
@@ -289,12 +291,13 @@ public class SolicitudPublicacionAdminService {
                         tipoPublicador,
                         nombre
                 )
-                .orElseGet(() -> crearPerfilPublicador(solicitud, usuarioAdmin, nombre, tipoPublicador, ahora));
+                .orElseGet(() -> crearPerfilPublicador(solicitud, usuarioAdmin, ciudad, nombre, tipoPublicador, ahora));
     }
 
     private PerfilPublicador crearPerfilPublicador(
             SolicitudPublicacion solicitud,
             Usuario usuarioAdmin,
+            Ciudad ciudad,
             String nombre,
             String tipoPublicador,
             OffsetDateTime ahora
@@ -303,8 +306,11 @@ public class SolicitudPublicacionAdminService {
         perfilPublicador.setUsuario(usuarioAdmin);
         perfilPublicador.setNombre(nombre);
         perfilPublicador.setTipoPublicador(tipoPublicador);
+        perfilPublicador.setEstado(ESTADO_PERFIL_PENDIENTE_REVISION);
+        perfilPublicador.setCiudadPrincipal(ciudad);
         perfilPublicador.setEmailContacto(normalizarTexto(solicitud.getEmail()));
         perfilPublicador.setWhatsapp(obtenerWhatsappContacto(solicitud));
+        perfilPublicador.setWhatsappNormalizado(normalizarSoloDigitos(obtenerWhatsappContacto(solicitud)));
         perfilPublicador.setInstagram(normalizarTexto(solicitud.getInstagram()));
         perfilPublicador.setActivo(true);
         perfilPublicador.setVerificado(false);
@@ -571,6 +577,20 @@ public class SolicitudPublicacionAdminService {
         }
 
         return texto.trim();
+    }
+
+    private String normalizarSoloDigitos(String texto) {
+        String textoNormalizado = normalizarTexto(texto);
+        if (textoNormalizado == null) {
+            return null;
+        }
+
+        String soloDigitos = textoNormalizado.replaceAll("[^0-9]", "");
+        if (soloDigitos.isBlank()) {
+            return null;
+        }
+
+        return soloDigitos;
     }
 
     private String obtenerWhatsappContacto(SolicitudPublicacion solicitud) {

@@ -49,4 +49,8 @@ public interface PerfilPublicadorRepository extends JpaRepository<PerfilPublicad
             String tipoPublicador,
             String nombre
     );
+
+    Optional<PerfilPublicador> findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(Long usuarioId);
+
+    boolean existsByUsuario_IdAndActivoTrueAndDeletedAtIsNull(Long usuarioId);
 }

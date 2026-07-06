@@ -66,6 +66,13 @@ public class PerfilPublicador {
     @Column(name = "tipo_publicador", nullable = false, length = 50)
     private String tipoPublicador;
 
+    @Column(name = "estado", nullable = false, length = 30)
+    private String estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ciudad_principal_id")
+    private Ciudad ciudadPrincipal;
+
     /**
      * Descripción pública del perfil.
      */
@@ -84,11 +91,17 @@ public class PerfilPublicador {
     @Column(name = "telefono_contacto", length = 30)
     private String telefonoContacto;
 
+    @Column(name = "telefono_contacto_normalizado", length = 30)
+    private String telefonoContactoNormalizado;
+
     /**
      * WhatsApp público de contacto.
      */
     @Column(name = "whatsapp", length = 30)
     private String whatsapp;
+
+    @Column(name = "whatsapp_normalizado", length = 30)
+    private String whatsappNormalizado;
 
     /**
      * Instagram del perfil.
@@ -154,6 +167,14 @@ public class PerfilPublicador {
         return tipoPublicador;
     }
 
+    public String getEstado() {
+        return estado;
+    }
+
+    public Ciudad getCiudadPrincipal() {
+        return ciudadPrincipal;
+    }
+
     public String getDescripcion() {
         return descripcion;
     }
@@ -166,8 +187,16 @@ public class PerfilPublicador {
         return telefonoContacto;
     }
 
+    public String getTelefonoContactoNormalizado() {
+        return telefonoContactoNormalizado;
+    }
+
     public String getWhatsapp() {
         return whatsapp;
+    }
+
+    public String getWhatsappNormalizado() {
+        return whatsappNormalizado;
     }
 
     public String getInstagram() {
@@ -214,6 +243,14 @@ public class PerfilPublicador {
         this.tipoPublicador = tipoPublicador;
     }
 
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public void setCiudadPrincipal(Ciudad ciudadPrincipal) {
+        this.ciudadPrincipal = ciudadPrincipal;
+    }
+
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
@@ -226,8 +263,16 @@ public class PerfilPublicador {
         this.telefonoContacto = telefonoContacto;
     }
 
+    public void setTelefonoContactoNormalizado(String telefonoContactoNormalizado) {
+        this.telefonoContactoNormalizado = telefonoContactoNormalizado;
+    }
+
     public void setWhatsapp(String whatsapp) {
         this.whatsapp = whatsapp;
+    }
+
+    public void setWhatsappNormalizado(String whatsappNormalizado) {
+        this.whatsappNormalizado = whatsappNormalizado;
     }
 
     public void setInstagram(String instagram) {

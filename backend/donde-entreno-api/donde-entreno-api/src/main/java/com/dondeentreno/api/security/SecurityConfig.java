@@ -80,7 +80,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/ubicaciones").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/solicitudes-publicacion").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/registro/usuario").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/registro/publicador").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/publicador/**").hasRole("PUBLICADOR")
                         .anyRequest().authenticated()
                 )
                 .build();

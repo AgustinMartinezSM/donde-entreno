@@ -20,5 +20,22 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             """)
     Optional<Usuario> findByEmailNormalizado(@Param("emailNormalizado") String emailNormalizado);
 
+    @Query("""
+            SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END
+            FROM Usuario u
+            WHERE LOWER(TRIM(u.email)) = :emailNormalizado
+            """)
+    boolean existsByEmailNormalizado(@Param("emailNormalizado") String emailNormalizado);
+
+    @Query("""
+            SELECT u
+            FROM Usuario u
+            JOIN FETCH u.rol
+            WHERE u.id = :id
+              AND u.activo = true
+              AND u.deletedAt IS NULL
+            """)
+    Optional<Usuario> findByIdAndActivoTrueAndDeletedAtIsNull(@Param("id") Long id);
+
     boolean existsByRol_NombreAndActivoTrueAndDeletedAtIsNull(String nombreRol);
 }

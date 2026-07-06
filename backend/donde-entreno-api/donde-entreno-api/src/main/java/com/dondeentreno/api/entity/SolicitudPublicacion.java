@@ -211,6 +211,20 @@ public class SolicitudPublicacion {
     private Boolean aceptaCondiciones;
 
     /**
+     * Usuario que envio la solicitud cuando el flujo es autenticado.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
+    /**
+     * Perfil publicador que envio la solicitud cuando el flujo es autenticado.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "perfil_publicador_id")
+    private PerfilPublicador perfilPublicador;
+
+    /**
      * Usuario que revisa o reviso la solicitud.
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -398,6 +412,14 @@ public class SolicitudPublicacion {
         return aceptaCondiciones;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public PerfilPublicador getPerfilPublicador() {
+        return perfilPublicador;
+    }
+
     public Usuario getRevisadoPorUsuario() {
         return revisadoPorUsuario;
     }
@@ -556,6 +578,14 @@ public class SolicitudPublicacion {
 
     public void setAceptaCondiciones(Boolean aceptaCondiciones) {
         this.aceptaCondiciones = aceptaCondiciones;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public void setPerfilPublicador(PerfilPublicador perfilPublicador) {
+        this.perfilPublicador = perfilPublicador;
     }
 
     public void setRevisadoPorUsuario(Usuario revisadoPorUsuario) {

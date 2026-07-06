@@ -62,6 +62,7 @@ class SolicitudPublicacionAprobacionIT {
 
     private static final String ESTADO_APROBADA = "APROBADA";
     private static final String ESTADO_EN_REVISION = "EN_REVISION";
+    private static final String ESTADO_PERFIL_PENDIENTE_REVISION = "PENDIENTE_REVISION";
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
     private static final String ESTADO_RECHAZADA = "RECHAZADA";
     private static final String ESTADO_PUBLICACION_PUBLICADA = "PUBLICADA";
@@ -407,6 +408,7 @@ class SolicitudPublicacionAprobacionIT {
         usuario.setApellido("Aprobacion IT");
         usuario.setEmail("aprobacion-it-" + UUID.randomUUID() + "@dondeentreno.test");
         usuario.setPasswordHash("hash-ficticio-aprobacion-it");
+        usuario.setTelefonoVerificado(false);
         usuario.setActivo(true);
         usuario.setEmailVerificado(true);
         usuario.setCreatedAt(ahora);
@@ -489,6 +491,10 @@ class SolicitudPublicacionAprobacionIT {
         perfil.setUsuario(datos.admin());
         perfil.setNombre("Perfil existente " + datos.marcador());
         perfil.setTipoPublicador(TIPO_PUBLICADOR);
+        perfil.setEstado(ESTADO_PERFIL_PENDIENTE_REVISION);
+        perfil.setCiudadPrincipal(datos.referencias().ciudad());
+        perfil.setWhatsapp("+54 9 223 555-0000");
+        perfil.setWhatsappNormalizado("5492235550000");
         perfil.setActivo(true);
         perfil.setVerificado(false);
         perfil.setCreatedAt(ahora);

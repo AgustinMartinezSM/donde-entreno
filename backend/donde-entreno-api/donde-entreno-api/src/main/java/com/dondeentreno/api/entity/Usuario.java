@@ -77,6 +77,12 @@ public class Usuario {
     @Column(name = "telefono", length = 30)
     private String telefono;
 
+    @Column(name = "telefono_normalizado", length = 30)
+    private String telefonoNormalizado;
+
+    @Column(name = "telefono_verificado", nullable = false)
+    private Boolean telefonoVerificado;
+
     /**
      * Indica si el usuario está activo.
      */
@@ -147,6 +153,14 @@ public class Usuario {
         return telefono;
     }
 
+    public String getTelefonoNormalizado() {
+        return telefonoNormalizado;
+    }
+
+    public Boolean getTelefonoVerificado() {
+        return telefonoVerificado;
+    }
+
     public Boolean getActivo() {
         return activo;
     }
@@ -197,6 +211,14 @@ public class Usuario {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public void setTelefonoNormalizado(String telefonoNormalizado) {
+        this.telefonoNormalizado = telefonoNormalizado;
+    }
+
+    public void setTelefonoVerificado(Boolean telefonoVerificado) {
+        this.telefonoVerificado = telefonoVerificado;
     }
 
     public void setActivo(Boolean activo) {

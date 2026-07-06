@@ -118,6 +118,47 @@ class SecurityConfigTest {
     }
 
     @Test
+    void registroUsuarioSiguePublico() throws Exception {
+        when(authService.registrarUsuario(any()))
+                .thenReturn(new LoginResponseDTO(
+                        "Bearer",
+                        "token-usuario",
+                        3600L,
+                        new AuthUsuarioDTO(10L, "usuario@ejemplo.com", "Usuario", "Prueba", "USUARIO")
+                ));
+
+        mockMvc.perform(post("/api/auth/registro/usuario")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRegistroUsuarioValido()))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void registroPublicadorSiguePublico() throws Exception {
+        when(authService.registrarPublicador(any()))
+                .thenReturn(new LoginResponseDTO(
+                        "Bearer",
+                        "token-publicador",
+                        3600L,
+                        new AuthUsuarioDTO(20L, "publicador@ejemplo.com", "Publicador", "Prueba", "PUBLICADOR")
+                ));
+
+        mockMvc.perform(post("/api/auth/registro/publicador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRegistroPublicadorValido()))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void authMeSinAutenticacionDevuelveUnauthorizedJson() throws Exception {
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.mensaje").value("No autenticado."))
+                .andExpect(jsonPath("$.path").value("/api/auth/me"));
+    }
+
+    @Test
     void optionsNoQuedaBloqueadoPorSecurity() throws Exception {
         mockMvc.perform(options("/api/admin/test"))
                 .andExpect(result -> assertNotEquals(401, result.getResponse().getStatus()))
@@ -176,6 +217,35 @@ class SecurityConfigTest {
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.mensaje").value("Recurso no encontrado."))
                 .andExpect(jsonPath("$.path").value("/api/admin/test"));
+    }
+
+    @Test
+    void publicadorSinAutenticacionDevuelveUnauthorizedJson() throws Exception {
+        mockMvc.perform(get("/api/publicador/test"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.mensaje").value("No autenticado."))
+                .andExpect(jsonPath("$.path").value("/api/publicador/test"));
+    }
+
+    @Test
+    void publicadorConJwtRolUsuarioDevuelveForbiddenJson() throws Exception {
+        mockMvc.perform(get("/api/publicador/test")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenConRol("USUARIO")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.mensaje").value("No tenes permisos para acceder a este recurso."))
+                .andExpect(jsonPath("$.path").value("/api/publicador/test"));
+    }
+
+    @Test
+    void publicadorConJwtRolPublicadorPasaLaCapaDeSecurity() throws Exception {
+        mockMvc.perform(get("/api/publicador/test")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenConRol("PUBLICADOR")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.mensaje").value("Recurso no encontrado."))
+                .andExpect(jsonPath("$.path").value("/api/publicador/test"));
     }
 
     @Test
@@ -259,6 +329,39 @@ class SecurityConfigTest {
                       "observacion": null
                     }
                   ]
+                }
+                """;
+    }
+
+    private String jsonRegistroUsuarioValido() {
+        return """
+                {
+                  "nombre": "Usuario",
+                  "apellido": "Prueba",
+                  "email": "usuario@ejemplo.com",
+                  "password": "Password1",
+                  "confirmarPassword": "Password1",
+                  "telefono": "+54 223 555 1234"
+                }
+                """;
+    }
+
+    private String jsonRegistroPublicadorValido() {
+        return """
+                {
+                  "nombre": "Publicador",
+                  "apellido": "Prueba",
+                  "email": "publicador@ejemplo.com",
+                  "password": "Password1",
+                  "confirmarPassword": "Password1",
+                  "whatsapp": "+54 223 555 9999",
+                  "tipoPublicador": "PROFESOR_INDEPENDIENTE",
+                  "nombrePublico": "Perfil Publicador",
+                  "ciudadPrincipalId": 1,
+                  "descripcion": "Perfil de prueba",
+                  "instagram": "@perfil",
+                  "emailContacto": "contacto@ejemplo.com",
+                  "telefonoContacto": "+54 223 555 8888"
                 }
                 """;
     }

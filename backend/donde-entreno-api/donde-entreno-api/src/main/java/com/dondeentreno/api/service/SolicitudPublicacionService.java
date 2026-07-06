@@ -1,13 +1,16 @@
 package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO;
+import com.dondeentreno.api.dto.SolicitudPublicadorRequestDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionRequestDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
 import com.dondeentreno.api.entity.Barrio;
 import com.dondeentreno.api.entity.Ciudad;
 import com.dondeentreno.api.entity.Deporte;
+import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.SolicitudPublicacionHorario;
+import com.dondeentreno.api.entity.Usuario;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.repository.BarrioRepository;
 import com.dondeentreno.api.repository.CiudadRepository;
@@ -86,32 +89,34 @@ public class SolicitudPublicacionService {
         }
 
         DatosValidados datos = validarRequest(request);
-        OffsetDateTime ahora = OffsetDateTime.now();
-        String codigoSeguimiento = generarCodigoSeguimiento();
+        return guardarSolicitud(request, datos, null, null);
+    }
 
-        SolicitudPublicacion solicitud = crearSolicitudPublicacion(
-                request,
-                datos,
-                codigoSeguimiento,
-                ahora
-        );
+    /**
+     * Crea una solicitud autenticada para el panel publicador.
+     *
+     * @param request datos editables de la solicitud.
+     * @param usuario usuario autenticado.
+     * @param perfilPublicador perfil asociado al usuario.
+     * @return respuesta con el codigo de seguimiento generado.
+     */
+    @Transactional
+    public SolicitudPublicacionResponseDTO crearSolicitudPublicador(
+            SolicitudPublicadorRequestDTO request,
+            Usuario usuario,
+            PerfilPublicador perfilPublicador
+    ) {
+        if (request == null) {
+            throw new SolicitudPublicacionInvalidaException("La solicitud no puede estar vacia.");
+        }
 
-        SolicitudPublicacion solicitudGuardada = solicitudPublicacionRepository.save(solicitud);
-        List<SolicitudPublicacionHorario> horarios = crearHorarios(
-                datos.horarios(),
-                solicitudGuardada,
-                ahora
-        );
+        if (usuario == null || usuario.getId() == null || perfilPublicador == null || perfilPublicador.getId() == null) {
+            throw new SolicitudPublicacionInvalidaException("Perfil publicador no encontrado.");
+        }
 
-        solicitudPublicacionHorarioRepository.saveAll(horarios);
-
-        return new SolicitudPublicacionResponseDTO(
-                solicitudGuardada.getId(),
-                solicitudGuardada.getCodigoSeguimiento(),
-                solicitudGuardada.getEstado(),
-                solicitudGuardada.getCreatedAt(),
-                MENSAJE_SOLICITUD_CREADA
-        );
+        SolicitudPublicacionRequestDTO requestComun = adaptarRequestPublicador(request, usuario, perfilPublicador);
+        DatosValidados datos = validarRequest(requestComun);
+        return guardarSolicitud(requestComun, datos, usuario, perfilPublicador);
     }
 
     private DatosValidados validarRequest(SolicitudPublicacionRequestDTO request) {
@@ -460,7 +465,9 @@ public class SolicitudPublicacionService {
             SolicitudPublicacionRequestDTO request,
             DatosValidados datos,
             String codigoSeguimiento,
-            OffsetDateTime ahora
+            OffsetDateTime ahora,
+            Usuario usuario,
+            PerfilPublicador perfilPublicador
     ) {
         SolicitudPublicacion solicitud = new SolicitudPublicacion();
 
@@ -493,10 +500,83 @@ public class SolicitudPublicacionService {
         solicitud.setEmail(datos.email());
         solicitud.setObservacionesSolicitante(datos.observacionesSolicitante());
         solicitud.setAceptaCondiciones(Boolean.TRUE);
+        solicitud.setUsuario(usuario);
+        solicitud.setPerfilPublicador(perfilPublicador);
         solicitud.setCreatedAt(ahora);
         solicitud.setUpdatedAt(ahora);
 
         return solicitud;
+    }
+
+    private SolicitudPublicacionResponseDTO guardarSolicitud(
+            SolicitudPublicacionRequestDTO request,
+            DatosValidados datos,
+            Usuario usuario,
+            PerfilPublicador perfilPublicador
+    ) {
+        OffsetDateTime ahora = OffsetDateTime.now();
+        String codigoSeguimiento = generarCodigoSeguimiento();
+
+        SolicitudPublicacion solicitud = crearSolicitudPublicacion(
+                request,
+                datos,
+                codigoSeguimiento,
+                ahora,
+                usuario,
+                perfilPublicador
+        );
+
+        SolicitudPublicacion solicitudGuardada = solicitudPublicacionRepository.save(solicitud);
+        List<SolicitudPublicacionHorario> horarios = crearHorarios(
+                datos.horarios(),
+                solicitudGuardada,
+                ahora
+        );
+
+        solicitudPublicacionHorarioRepository.saveAll(horarios);
+
+        return new SolicitudPublicacionResponseDTO(
+                solicitudGuardada.getId(),
+                solicitudGuardada.getCodigoSeguimiento(),
+                solicitudGuardada.getEstado(),
+                solicitudGuardada.getCreatedAt(),
+                MENSAJE_SOLICITUD_CREADA
+        );
+    }
+
+    private SolicitudPublicacionRequestDTO adaptarRequestPublicador(
+            SolicitudPublicadorRequestDTO request,
+            Usuario usuario,
+            PerfilPublicador perfilPublicador
+    ) {
+        return new SolicitudPublicacionRequestDTO(
+                perfilPublicador.getTipoPublicador(),
+                perfilPublicador.getNombre(),
+                request.getNombreActividad(),
+                request.getDeporteId(),
+                request.getDeporteOtro(),
+                request.getDescripcion(),
+                request.getNivel(),
+                request.getEnfoque(),
+                request.getModalidad(),
+                request.getEdadMinima(),
+                request.getEdadMaxima(),
+                request.getPrecioReferencia(),
+                request.getMostrarPrecio(),
+                request.getCiudadId(),
+                request.getCiudadOtra(),
+                request.getBarrioId(),
+                request.getBarrioOtro(),
+                request.getNombreLugar(),
+                request.getDireccion(),
+                request.getReferenciaUbicacion(),
+                primerTexto(request.getWhatsapp(), perfilPublicador.getWhatsapp()),
+                primerTexto(request.getInstagram(), perfilPublicador.getInstagram()),
+                primerTexto(request.getEmail(), perfilPublicador.getEmailContacto(), usuario.getEmail()),
+                request.getObservacionesSolicitante(),
+                request.getAceptaCondiciones(),
+                request.getHorarios()
+        );
     }
 
     private List<SolicitudPublicacionHorario> crearHorarios(
@@ -543,6 +623,17 @@ public class SolicitudPublicacionService {
         }
 
         return textoLimpio;
+    }
+
+    private String primerTexto(String... textos) {
+        for (String texto : textos) {
+            String textoLimpio = limpiarTextoOpcional(texto);
+            if (textoLimpio != null) {
+                return textoLimpio;
+            }
+        }
+
+        return null;
     }
 
     private String normalizarEmail(String email) {

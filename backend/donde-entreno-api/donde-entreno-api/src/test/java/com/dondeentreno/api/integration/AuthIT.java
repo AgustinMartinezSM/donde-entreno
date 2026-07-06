@@ -212,6 +212,7 @@ class AuthIT {
         usuario.setApellido(nombreRol);
         usuario.setEmail(email);
         usuario.setPasswordHash(passwordHash);
+        usuario.setTelefonoVerificado(false);
         usuario.setActivo(activo);
         usuario.setEmailVerificado(emailVerificado);
         usuario.setCreatedAt(ahora);

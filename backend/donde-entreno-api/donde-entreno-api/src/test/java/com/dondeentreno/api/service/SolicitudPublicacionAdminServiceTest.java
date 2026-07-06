@@ -344,8 +344,11 @@ class SolicitudPublicacionAdminServiceTest {
         assertSame(admin, perfilCreado.getUsuario());
         assertEquals("Escuela Norte", perfilCreado.getNombre());
         assertEquals("ESCUELA_DEPORTIVA", perfilCreado.getTipoPublicador());
+        assertEquals("PENDIENTE_REVISION", perfilCreado.getEstado());
+        assertSame(solicitud.getCiudad(), perfilCreado.getCiudadPrincipal());
         assertEquals("contacto@example.com", perfilCreado.getEmailContacto());
         assertEquals("5492235123456", perfilCreado.getWhatsapp());
+        assertEquals("5492235123456", perfilCreado.getWhatsappNormalizado());
         assertEquals("@escuelanorte", perfilCreado.getInstagram());
         assertEquals(true, perfilCreado.getActivo());
         assertFalse(perfilCreado.getVerificado());

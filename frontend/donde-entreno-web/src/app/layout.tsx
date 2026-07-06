@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+import { AuthSessionProvider } from "../components/auth/AuthSessionProvider";
 import { ScrollToTopButton } from "../components/layout/ScrollToTopButton";
 import { Footer } from "../components/layout/Footer";
 
@@ -74,9 +75,11 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Footer />
-        <ScrollToTopButton />
+        <AuthSessionProvider>
+          {children}
+          <Footer />
+          <ScrollToTopButton />
+        </AuthSessionProvider>
       </body>
     </html>
   );

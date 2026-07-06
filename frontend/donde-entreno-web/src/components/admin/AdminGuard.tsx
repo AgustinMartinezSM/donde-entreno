@@ -7,6 +7,7 @@ import {
   obtenerSesionAdmin,
 } from "../../services/authService";
 import { AppButton } from "../ui/AppButton";
+import { esRolAdmin } from "../../lib/authRedirects";
 import type { AdminSesion } from "../../types/auth";
 import type { ReactNode } from "react";
 
@@ -77,7 +78,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return null;
   }
 
-  if (sesion.usuario.rol !== "SUPER_ADMIN") {
+  if (!esRolAdmin(sesion.usuario.rol)) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)]">
         <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">

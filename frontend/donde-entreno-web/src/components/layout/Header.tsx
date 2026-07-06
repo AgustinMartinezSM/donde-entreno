@@ -5,6 +5,7 @@ import {
   CitySelector,
   CitySelectorFallback,
 } from "../ciudades/CitySelector";
+import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
 
 export function Header() {
   return (
@@ -34,16 +35,16 @@ export function Header() {
         </Suspense>
       </div>
 
-      {/*
-        Boton temporal del MVP.
-        Mas adelante va a llevar a una pantalla para publicar actividades.
-      */}
       <Link
         href="/publicar"
         className="rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5"
       >
         Publicar
       </Link>
+
+      <div className="order-4 w-full min-w-0 sm:order-none sm:w-auto">
+        <HeaderSessionMenu />
+      </div>
     </header>
   );
 }

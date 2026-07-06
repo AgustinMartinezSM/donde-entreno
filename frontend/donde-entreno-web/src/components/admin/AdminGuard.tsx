@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   cerrarSesionAdmin,
   obtenerSesionAdmin,
@@ -17,8 +17,12 @@ type AdminGuardProps = {
 
 export function AdminGuard({ children }: AdminGuardProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [verificando, setVerificando] = useState(true);
   const [sesion, setSesion] = useState<AdminSesion | null>(null);
+  const rutaLogin = `/login?returnTo=${encodeURIComponent(
+    pathname ?? "/admin/solicitudes"
+  )}`;
 
   useEffect(() => {
     let componenteActivo = true;
@@ -29,7 +33,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       }
 
       if (!sesionActual) {
-        router.replace("/admin/login");
+        router.replace(rutaLogin);
       }
 
       setSesion(sesionActual);
@@ -39,12 +43,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return () => {
       componenteActivo = false;
     };
-  }, [router]);
+  }, [router, rutaLogin]);
 
   function cerrarSesion() {
     cerrarSesionAdmin();
     setSesion(null);
-    router.replace("/admin/login");
+    router.replace(rutaLogin);
   }
 
   if (verificando) {

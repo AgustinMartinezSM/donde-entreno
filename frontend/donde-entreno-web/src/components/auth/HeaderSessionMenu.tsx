@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
@@ -12,7 +11,6 @@ type AccesoSesion = {
 };
 
 export function HeaderSessionMenu() {
-  const router = useRouter();
   const { status, sesion, usuario, cerrarSesion } = useAuthSession();
 
   if (status === "loading") {
@@ -44,7 +42,7 @@ export function HeaderSessionMenu() {
 
   function manejarCerrarSesion() {
     cerrarSesion();
-    router.replace("/login?logout=1");
+    window.location.replace("/login?logout=1");
   }
 
   return (

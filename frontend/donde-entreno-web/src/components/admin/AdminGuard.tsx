@@ -50,7 +50,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
   function cerrarSesion() {
     cerrarSesionAdmin();
     setSesion(null);
-    router.replace("/login?logout=1");
+    window.location.replace("/login?logout=1");
   }
 
   if (verificando) {

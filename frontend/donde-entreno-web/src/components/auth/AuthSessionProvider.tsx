@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -51,8 +52,10 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
   const [status, setStatus] = useState<AuthSessionStatus>("loading");
   const [sesion, setSesion] = useState<SesionAuth | null>(null);
   const [usuario, setUsuario] = useState<UsuarioActual | null>(null);
+  const versionSesionRef = useRef(0);
 
   const cerrarSesion = useCallback(() => {
+    versionSesionRef.current += 1;
     cerrarSesionAuth();
     setSesion(null);
     setUsuario(null);
@@ -69,6 +72,7 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
   );
 
   const refrescarUsuarioActual = useCallback(async () => {
+    const versionActual = versionSesionRef.current;
     const sesionActual = obtenerSesionAuth();
 
     if (!sesionActual || !esSesionAuthVigente(sesionActual)) {
@@ -78,8 +82,17 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
     try {
       const usuarioActual = await obtenerUsuarioActual(sesionActual.accessToken);
+
+      if (versionActual !== versionSesionRef.current) {
+        return;
+      }
+
       aplicarSesionAutenticada(sesionActual, usuarioActual);
     } catch (error: unknown) {
+      if (versionActual !== versionSesionRef.current) {
+        return;
+      }
+
       if (error instanceof AuthApiError && error.status === 401) {
         cerrarSesion();
         return;
@@ -91,12 +104,23 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
   const iniciarSesionDesdeRespuesta = useCallback(
     async (response: LoginResponse) => {
+      const versionActual = versionSesionRef.current + 1;
+      versionSesionRef.current = versionActual;
       const nuevaSesion = guardarSesionAuth(response);
 
       try {
         const usuarioActual = await obtenerUsuarioActual(nuevaSesion.accessToken);
+
+        if (versionActual !== versionSesionRef.current) {
+          return;
+        }
+
         aplicarSesionAutenticada(nuevaSesion, usuarioActual);
       } catch (error: unknown) {
+        if (versionActual !== versionSesionRef.current) {
+          return;
+        }
+
         if (error instanceof AuthApiError && error.status === 401) {
           cerrarSesion();
           return;
@@ -110,9 +134,10 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
   useEffect(() => {
     let componenteActivo = true;
+    const versionActual = versionSesionRef.current;
 
     void resolverSesionInicial().then((resultado) => {
-      if (!componenteActivo) {
+      if (!componenteActivo || versionActual !== versionSesionRef.current) {
         return;
       }
 

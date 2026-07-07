@@ -41,7 +41,7 @@ export function RoleGuard({
 
   function cerrarSesionYRedirigir() {
     cerrarSesion();
-    router.replace("/login?logout=1");
+    window.location.replace("/login?logout=1");
   }
 
   if (status === "loading") {

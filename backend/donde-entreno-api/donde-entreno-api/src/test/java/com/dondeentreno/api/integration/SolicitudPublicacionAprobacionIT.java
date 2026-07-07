@@ -48,6 +48,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -67,6 +68,7 @@ class SolicitudPublicacionAprobacionIT {
     private static final String ESTADO_RECHAZADA = "RECHAZADA";
     private static final String ESTADO_PUBLICACION_PUBLICADA = "PUBLICADA";
     private static final String TIPO_PUBLICADOR = "ESCUELA_DEPORTIVA";
+    private static final String ROL_PUBLICADOR = "PUBLICADOR";
     private static final String ROL_SUPER_ADMIN = "SUPER_ADMIN";
 
     @Autowired
@@ -157,11 +159,6 @@ class SolicitudPublicacionAprobacionIT {
         }
         ubicacionRepository.flush();
 
-        for (Long perfilPublicadorId : perfilPublicadorIds) {
-            perfilPublicadorRepository.findById(perfilPublicadorId).ifPresent(perfilPublicadorRepository::delete);
-        }
-        perfilPublicadorRepository.flush();
-
         for (Long solicitudHorarioId : solicitudHorarioIds) {
             solicitudPublicacionHorarioRepository.findById(solicitudHorarioId)
                     .ifPresent(solicitudPublicacionHorarioRepository::delete);
@@ -172,6 +169,11 @@ class SolicitudPublicacionAprobacionIT {
             solicitudPublicacionRepository.findById(solicitudId).ifPresent(solicitudPublicacionRepository::delete);
         }
         solicitudPublicacionRepository.flush();
+
+        for (Long perfilPublicadorId : perfilPublicadorIds) {
+            perfilPublicadorRepository.findById(perfilPublicadorId).ifPresent(perfilPublicadorRepository::delete);
+        }
+        perfilPublicadorRepository.flush();
 
         for (Long usuarioId : usuarioIds) {
             usuarioRepository.findById(usuarioId).ifPresent(usuarioRepository::delete);
@@ -223,6 +225,53 @@ class SolicitudPublicacionAprobacionIT {
         assertEquals(ESTADO_PUBLICACION_PUBLICADA, actividad.getEstadoPublicacion());
         assertFalse(horarios.isEmpty());
         assertEquals("LUNES", horarios.get(0).getDiaSemana());
+    }
+
+    @Test
+    void aprobarSolicitudAutenticadaUsaPerfilDelPublicadorYAdminSoloComoRevisor() throws Exception {
+        DatosBase datos = crearDatosBase(ESTADO_PENDIENTE);
+        Usuario publicador = crearPublicador(datos.marcador());
+        PerfilPublicador perfilPublicador = crearPerfilPublicadorPublicador(datos, publicador);
+
+        SolicitudPublicacion solicitud = solicitudPublicacionRepository.findById(datos.solicitud().getId()).orElseThrow();
+        solicitud.setUsuario(publicador);
+        solicitud.setPerfilPublicador(perfilPublicador);
+        solicitudPublicacionRepository.saveAndFlush(solicitud);
+
+        JsonNode response = aprobarYLeerJson(solicitud.getId(), datos.admin());
+
+        Long actividadId = response.get("actividadId").asLong();
+        actividadIds.add(actividadId);
+
+        SolicitudPublicacion solicitudAprobada = solicitudPublicacionRepository.findById(solicitud.getId()).orElseThrow();
+        Actividad actividad = actividadRepository.findById(actividadId).orElseThrow();
+        Long ubicacionId = actividad.getUbicacion().getId();
+        if (!ubicacionIds.contains(ubicacionId)) {
+            ubicacionIds.add(ubicacionId);
+        }
+
+        assertEquals(ESTADO_APROBADA, solicitudAprobada.getEstado());
+        assertNotNull(solicitudAprobada.getActividadGenerada());
+        assertEquals(actividadId, solicitudAprobada.getActividadGenerada().getId());
+        assertNotNull(solicitudAprobada.getRevisadoPorUsuario());
+        assertEquals(datos.admin().getId(), solicitudAprobada.getRevisadoPorUsuario().getId());
+        assertEquals(perfilPublicador.getId(), actividad.getPerfilPublicador().getId());
+        assertEquals(publicador.getId(), perfilPublicador.getUsuario().getId());
+        assertNotEquals(datos.admin().getId(), perfilPublicador.getUsuario().getId());
+        assertTrue(actividadRepository
+                .findByActivaTrueAndEstadoPublicacionAndPerfilPublicador_IdOrderByCreatedAtDesc(
+                        ESTADO_PUBLICACION_PUBLICADA,
+                        perfilPublicador.getId()
+                )
+                .stream()
+                .anyMatch(actividadPublicador -> actividadId.equals(actividadPublicador.getId())));
+        assertTrue(perfilPublicadorRepository
+                .findFirstByUsuario_IdAndTipoPublicadorIgnoreCaseAndNombreIgnoreCaseAndActivoTrueAndDeletedAtIsNull(
+                        datos.admin().getId(),
+                        TIPO_PUBLICADOR,
+                        solicitud.getNombrePublicador()
+                )
+                .isEmpty());
     }
 
     @Test
@@ -419,6 +468,30 @@ class SolicitudPublicacionAprobacionIT {
         return guardado;
     }
 
+    private Usuario crearPublicador(String marcador) {
+        verificarDatasourceLocal();
+
+        Rol rol = rolRepository.findByNombre(ROL_PUBLICADOR)
+                .orElseThrow(() -> new IllegalStateException("No existe el rol PUBLICADOR para integration-local."));
+        OffsetDateTime ahora = OffsetDateTime.now();
+
+        Usuario usuario = new Usuario();
+        usuario.setRol(rol);
+        usuario.setNombre("Publicador " + marcador);
+        usuario.setApellido("Aprobacion IT");
+        usuario.setEmail("publicador-aprobacion-it-" + UUID.randomUUID() + "@dondeentreno.test");
+        usuario.setPasswordHash("hash-ficticio-aprobacion-it");
+        usuario.setTelefonoVerificado(false);
+        usuario.setActivo(true);
+        usuario.setEmailVerificado(true);
+        usuario.setCreatedAt(ahora);
+        usuario.setUpdatedAt(ahora);
+
+        Usuario guardado = usuarioRepository.saveAndFlush(usuario);
+        usuarioIds.add(guardado.getId());
+        return guardado;
+    }
+
     private SolicitudPublicacion crearSolicitud(String marcador, String estado, Referencias referencias) {
         verificarDatasourceLocal();
 
@@ -495,6 +568,29 @@ class SolicitudPublicacionAprobacionIT {
         perfil.setCiudadPrincipal(datos.referencias().ciudad());
         perfil.setWhatsapp("+54 9 223 555-0000");
         perfil.setWhatsappNormalizado("5492235550000");
+        perfil.setActivo(true);
+        perfil.setVerificado(false);
+        perfil.setCreatedAt(ahora);
+        perfil.setUpdatedAt(ahora);
+
+        PerfilPublicador guardado = perfilPublicadorRepository.saveAndFlush(perfil);
+        perfilPublicadorIds.add(guardado.getId());
+        return guardado;
+    }
+
+    private PerfilPublicador crearPerfilPublicadorPublicador(DatosBase datos, Usuario publicador) {
+        verificarDatasourceLocal();
+
+        OffsetDateTime ahora = OffsetDateTime.now();
+        PerfilPublicador perfil = new PerfilPublicador();
+        perfil.setUsuario(publicador);
+        perfil.setNombre("Perfil publicador " + datos.marcador());
+        perfil.setTipoPublicador(TIPO_PUBLICADOR);
+        perfil.setEstado(ESTADO_PERFIL_PENDIENTE_REVISION);
+        perfil.setCiudadPrincipal(datos.referencias().ciudad());
+        perfil.setEmailContacto(publicador.getEmail());
+        perfil.setWhatsapp("+54 9 223 555-0001");
+        perfil.setWhatsappNormalizado("5492235550001");
         perfil.setActivo(true);
         perfil.setVerificado(false);
         perfil.setCreatedAt(ahora);

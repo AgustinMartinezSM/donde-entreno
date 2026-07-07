@@ -70,6 +70,9 @@ public interface SolicitudPublicacionRepository extends JpaRepository<SolicitudP
             "deporte",
             "ciudad",
             "barrio",
+            "usuario",
+            "perfilPublicador",
+            "perfilPublicador.usuario",
             "revisadoPorUsuario",
             "revisadoPorUsuario.rol",
             "actividadGenerada"

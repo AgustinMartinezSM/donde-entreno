@@ -172,7 +172,12 @@ public class SolicitudPublicacionAdminService {
         List<SolicitudPublicacionHorario> horariosSolicitud = buscarHorariosValidos(solicitud.getId());
         OffsetDateTime ahora = OffsetDateTime.now();
 
-        PerfilPublicador perfilPublicador = obtenerOCrearPerfilPublicador(solicitud, usuarioAdmin, ciudad, ahora);
+        PerfilPublicador perfilPublicador = obtenerPerfilPublicadorParaAprobacion(
+                solicitud,
+                usuarioAdmin,
+                ciudad,
+                ahora
+        );
         Ubicacion ubicacion = obtenerOCrearUbicacion(solicitud, perfilPublicador, ciudad, barrio, ahora);
         Actividad actividad = crearActividad(solicitud, perfilPublicador, deporte, ubicacion, ahora);
         crearHorariosActividad(actividad, horariosSolicitud, ahora);
@@ -276,7 +281,20 @@ public class SolicitudPublicacionAdminService {
                 || !horario.getHoraInicio().isBefore(horario.getHoraFin());
     }
 
-    private PerfilPublicador obtenerOCrearPerfilPublicador(
+    private PerfilPublicador obtenerPerfilPublicadorParaAprobacion(
+            SolicitudPublicacion solicitud,
+            Usuario usuarioAdmin,
+            Ciudad ciudad,
+            OffsetDateTime ahora
+    ) {
+        if (solicitud.getPerfilPublicador() != null) {
+            return solicitud.getPerfilPublicador();
+        }
+
+        return obtenerOCrearPerfilPublicadorAnonimoHistorico(solicitud, usuarioAdmin, ciudad, ahora);
+    }
+
+    private PerfilPublicador obtenerOCrearPerfilPublicadorAnonimoHistorico(
             SolicitudPublicacion solicitud,
             Usuario usuarioAdmin,
             Ciudad ciudad,

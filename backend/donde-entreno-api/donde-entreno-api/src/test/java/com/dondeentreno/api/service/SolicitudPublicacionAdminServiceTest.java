@@ -47,6 +47,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,6 +56,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -303,7 +305,60 @@ class SolicitudPublicacionAdminServiceTest {
     }
 
     @Test
-    void aprobarSolicitudPendienteValidaCreaActividadHorariosYActualizaSolicitud() {
+    void aprobarSolicitudAutenticadaUsaPerfilPublicadorDeLaSolicitudYAdminSoloComoRevisor() {
+        SolicitudPublicacion solicitud = solicitudAprobable(29L);
+        Usuario admin = usuarioRevisor(20L);
+        Usuario usuarioPublicador = usuarioPublicador(30L);
+        PerfilPublicador perfilPublicadorReal = perfilPublicador(101L, usuarioPublicador);
+        solicitud.setUsuario(usuarioPublicador);
+        solicitud.setPerfilPublicador(perfilPublicadorReal);
+        prepararAprobacionBasica(solicitud, admin, List.of(horario(1L)));
+        when(ubicacionRepository
+                .findFirstByPerfilPublicador_IdAndCiudad_IdAndBarrio_IdAndNombreIgnoreCaseAndDireccionIgnoreCaseAndActivaTrueAndDeletedAtIsNull(
+                        101L,
+                        3L,
+                        4L,
+                        "Club Norte",
+                        "Av. Independencia 1234"
+                ))
+                .thenReturn(Optional.empty());
+        when(ubicacionRepository.save(any(Ubicacion.class))).thenAnswer(invocation -> {
+            Ubicacion ubicacion = invocation.getArgument(0);
+            ubicacion.setId(201L);
+            return ubicacion;
+        });
+        when(actividadRepository.existsBySlug("boxeo-recreativo")).thenReturn(false);
+
+        SolicitudPublicacionAprobacionResponseDTO response = service.aprobarSolicitud(29L, 20L);
+
+        verifyNoInteractions(perfilPublicadorRepository);
+
+        ArgumentCaptor<Actividad> actividadCaptor = ArgumentCaptor.forClass(Actividad.class);
+        verify(actividadRepository).save(actividadCaptor.capture());
+        Actividad actividadCreada = actividadCaptor.getValue();
+        assertSame(perfilPublicadorReal, actividadCreada.getPerfilPublicador());
+        assertSame(usuarioPublicador, actividadCreada.getPerfilPublicador().getUsuario());
+        assertNotSame(admin, actividadCreada.getPerfilPublicador().getUsuario());
+
+        ArgumentCaptor<Ubicacion> ubicacionCaptor = ArgumentCaptor.forClass(Ubicacion.class);
+        verify(ubicacionRepository).save(ubicacionCaptor.capture());
+        assertSame(perfilPublicadorReal, ubicacionCaptor.getValue().getPerfilPublicador());
+
+        ArgumentCaptor<SolicitudPublicacion> solicitudCaptor = ArgumentCaptor.forClass(SolicitudPublicacion.class);
+        verify(solicitudPublicacionRepository).save(solicitudCaptor.capture());
+        SolicitudPublicacion solicitudGuardada = solicitudCaptor.getValue();
+        assertEquals("APROBADA", solicitudGuardada.getEstado());
+        assertSame(actividadCreada, solicitudGuardada.getActividadGenerada());
+        assertSame(admin, solicitudGuardada.getRevisadoPorUsuario());
+        assertNotNull(solicitudGuardada.getRevisionFinalizadaAt());
+
+        assertEquals(29L, response.getSolicitudId());
+        assertEquals("APROBADA", response.getEstado());
+        assertEquals("boxeo-recreativo", response.getActividadSlug());
+    }
+
+    @Test
+    void aprobarSolicitudAnonimaHistoricaUsaFallbackDePerfilYActualizaSolicitud() {
         SolicitudPublicacion solicitud = solicitudAprobable(30L);
         Usuario admin = usuarioRevisor(20L);
         List<SolicitudPublicacionHorario> horarios = List.of(horario(1L));
@@ -755,6 +810,23 @@ class SolicitudPublicacionAdminServiceTest {
         usuario.setNombre("Admin");
         usuario.setApellido("Principal");
         usuario.setEmail("admin@example.com");
+        usuario.setPasswordHash("hash-ficticio");
+        usuario.setRol(rol);
+        usuario.setActivo(true);
+        usuario.setEmailVerificado(true);
+        return usuario;
+    }
+
+    private Usuario usuarioPublicador(Long id) {
+        Rol rol = new Rol();
+        rol.setId(2L);
+        rol.setNombre("PUBLICADOR");
+
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setNombre("Publicador");
+        usuario.setApellido("Real");
+        usuario.setEmail("publicador@example.com");
         usuario.setPasswordHash("hash-ficticio");
         usuario.setRol(rol);
         usuario.setActivo(true);

@@ -14,7 +14,7 @@ import type {
   RegistroPublicadorRequest,
 } from "../../types/auth";
 import type { Ciudad } from "../../types/ciudad";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent, FormEvent, ReactNode } from "react";
 
 type RegistroPublicadorFormState = {
   nombre: string;
@@ -89,6 +89,9 @@ const TIPOS_PUBLICADOR: OpcionTipoPublicador[] = [
 
 const inputClassName =
   "mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+
+const TEXTO_AYUDA_PASSWORD =
+  "Mínimo 8 caracteres, con al menos una letra y un número.";
 
 export function RegisterPublisherForm() {
   const router = useRouter();
@@ -234,6 +237,11 @@ export function RegisterPublisherForm() {
 
   return (
     <form className="mt-8 flex flex-col gap-6" onSubmit={manejarEnvio}>
+      <StatusMessage variant="info" className="text-sm leading-6">
+        Creá una cuenta para publicar actividades desde tu panel. El perfil
+        publicador es la información que ayuda al equipo a revisar tus envíos.
+      </StatusMessage>
+
       <fieldset className="grid gap-5 sm:grid-cols-2">
         <legend className="sr-only">Datos de usuario</legend>
         <CampoTexto
@@ -244,6 +252,8 @@ export function RegisterPublisherForm() {
           error={erroresPorCampo?.nombre}
           disabled={cargando}
           autoComplete="given-name"
+          placeholder="Ej: Agustín"
+          helpText="Datos de la persona que va a administrar la cuenta."
         />
         <CampoTexto
           id="registro-publicador-apellido"
@@ -253,6 +263,8 @@ export function RegisterPublisherForm() {
           error={erroresPorCampo?.apellido}
           disabled={cargando}
           autoComplete="family-name"
+          placeholder="Ej: Pérez"
+          helpText="Completá tu apellido para identificar al responsable."
         />
       </fieldset>
 
@@ -265,6 +277,8 @@ export function RegisterPublisherForm() {
         error={erroresPorCampo?.email}
         disabled={cargando}
         autoComplete="email"
+        placeholder="Ej: responsable@email.com"
+        helpText="Este email se usa para iniciar sesión en el panel publicador."
       />
 
       <fieldset className="grid gap-5 sm:grid-cols-2">
@@ -278,6 +292,8 @@ export function RegisterPublisherForm() {
           error={erroresPorCampo?.password}
           disabled={cargando}
           autoComplete="new-password"
+          placeholder="Ej: Entreno2026"
+          helpText={TEXTO_AYUDA_PASSWORD}
         />
         <CampoTexto
           id="registro-publicador-confirmar-password"
@@ -288,6 +304,8 @@ export function RegisterPublisherForm() {
           error={erroresPorCampo?.confirmarPassword}
           disabled={cargando}
           autoComplete="new-password"
+          placeholder="Repetí la contraseña"
+          helpText="Escribí la misma contraseña para confirmar que está bien cargada."
         />
       </fieldset>
 
@@ -304,6 +322,8 @@ export function RegisterPublisherForm() {
             onChange={(evento) => manejarCambio("nombrePublico", evento)}
             error={erroresPorCampo?.nombrePublico}
             disabled={cargando}
+            placeholder="Ej: Club Atlético Norte"
+            helpText="Es el nombre que la gente verá públicamente en tus actividades."
           />
 
           <CampoTexto
@@ -315,6 +335,8 @@ export function RegisterPublisherForm() {
             error={erroresPorCampo?.whatsapp}
             disabled={cargando}
             autoComplete="tel"
+            placeholder="Ej: +54 9 223 555 1234"
+            helpText="Debe ser un número donde podamos contactarte por la publicación."
           />
         </div>
 
@@ -333,9 +355,17 @@ export function RegisterPublisherForm() {
               disabled={cargando}
               aria-invalid={Boolean(erroresPorCampo?.tipoPublicador)}
               aria-describedby={
-                erroresPorCampo?.tipoPublicador
-                  ? "registro-publicador-tipo-error"
-                  : undefined
+                [
+                  "registro-publicador-tipo-help",
+                  formulario.tipoPublicador
+                    ? "registro-publicador-tipo-descripcion"
+                    : undefined,
+                  erroresPorCampo?.tipoPublicador
+                    ? "registro-publicador-tipo-error"
+                    : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
               }
               className={inputClassName}
             >
@@ -354,8 +384,17 @@ export function RegisterPublisherForm() {
                 {erroresPorCampo.tipoPublicador}
               </p>
             ) : null}
+            <p
+              id="registro-publicador-tipo-help"
+              className="mt-2 text-xs leading-5 text-[var(--color-muted)]"
+            >
+              Elegí la opción que mejor describe desde dónde vas a publicar.
+            </p>
             {formulario.tipoPublicador ? (
-              <p className="mt-2 text-xs font-bold text-[var(--color-muted)]">
+              <p
+                id="registro-publicador-tipo-descripcion"
+                className="mt-2 text-xs font-bold text-[var(--color-muted)]"
+              >
                 {
                   TIPOS_PUBLICADOR.find(
                     (tipo) => tipo.valor === formulario.tipoPublicador
@@ -379,7 +418,15 @@ export function RegisterPublisherForm() {
               disabled={cargando || cargandoCiudades || Boolean(errorCiudades)}
               aria-invalid={Boolean(ciudadError)}
               aria-describedby={
-                ciudadError ? "registro-publicador-ciudad-error" : undefined
+                [
+                  "registro-publicador-ciudad-help",
+                  ciudadError ? "registro-publicador-ciudad-error" : undefined,
+                  errorCiudades
+                    ? "registro-publicador-ciudad-carga-error"
+                    : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
               }
               className={inputClassName}
             >
@@ -400,8 +447,17 @@ export function RegisterPublisherForm() {
                 {ciudadError}
               </p>
             ) : null}
+            <p
+              id="registro-publicador-ciudad-help"
+              className="mt-2 text-xs leading-5 text-[var(--color-muted)]"
+            >
+              Usala como ciudad base para tus actividades y tu perfil.
+            </p>
             {errorCiudades ? (
-              <p className="mt-2 text-sm font-bold text-red-700">
+              <p
+                id="registro-publicador-ciudad-carga-error"
+                className="mt-2 text-sm font-bold text-red-700"
+              >
                 {errorCiudades}
               </p>
             ) : null}
@@ -421,8 +477,17 @@ export function RegisterPublisherForm() {
             onChange={(evento) => manejarCambio("descripcion", evento)}
             disabled={cargando}
             rows={4}
+            placeholder="Ej: Entrenamientos personalizados, clases grupales y propuestas para principiantes."
+            aria-describedby="registro-publicador-descripcion-help"
             className={`${inputClassName} resize-y py-3`}
           />
+          <p
+            id="registro-publicador-descripcion-help"
+            className="mt-2 text-xs leading-5 text-[var(--color-muted)]"
+          >
+            Opcional. Contá brevemente qué ofrecés o qué tipo de actividades
+            publicás.
+          </p>
         </div>
 
         <div className="mt-5 grid gap-5 sm:grid-cols-3">
@@ -433,6 +498,8 @@ export function RegisterPublisherForm() {
             onChange={(evento) => manejarCambio("instagram", evento)}
             error={erroresPorCampo?.instagram}
             disabled={cargando}
+            placeholder="Ej: @tuactividad"
+            helpText="Opcional. Agregalo si querés que puedan encontrarte en Instagram."
           />
           <CampoTexto
             id="registro-publicador-email-contacto"
@@ -442,6 +509,8 @@ export function RegisterPublisherForm() {
             onChange={(evento) => manejarCambio("emailContacto", evento)}
             error={erroresPorCampo?.emailContacto}
             disabled={cargando}
+            placeholder="Ej: contacto@tuactividad.com"
+            helpText="Opcional. Puede ser distinto al email con el que iniciás sesión."
           />
           <CampoTexto
             id="registro-publicador-telefono-contacto"
@@ -451,6 +520,8 @@ export function RegisterPublisherForm() {
             onChange={(evento) => manejarCambio("telefonoContacto", evento)}
             error={erroresPorCampo?.telefonoContacto}
             disabled={cargando}
+            placeholder="Ej: 223 555 1234"
+            helpText="Opcional. Sumá otro teléfono si preferís recibir consultas ahí."
           />
         </div>
       </div>
@@ -490,6 +561,8 @@ function CampoTexto({
   disabled,
   type = "text",
   autoComplete,
+  placeholder,
+  helpText,
 }: {
   id: string;
   label: string;
@@ -499,8 +572,12 @@ function CampoTexto({
   disabled: boolean;
   type?: string;
   autoComplete?: string;
+  placeholder?: string;
+  helpText?: ReactNode;
 }) {
+  const helpId = helpText ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
+  const descripcionIds = [helpId, errorId].filter(Boolean).join(" ");
 
   return (
     <div>
@@ -514,10 +591,16 @@ function CampoTexto({
         onChange={onChange}
         disabled={disabled}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         aria-invalid={Boolean(error)}
-        aria-describedby={errorId}
+        aria-describedby={descripcionIds || undefined}
         className={inputClassName}
       />
+      {helpText ? (
+        <p id={helpId} className="mt-2 text-xs leading-5 text-[var(--color-muted)]">
+          {helpText}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} className="mt-2 text-sm font-bold text-red-700">
           {error}
@@ -551,8 +634,8 @@ function validarFormularioPublicador(
 
   if (!formulario.password) {
     errores.password = "Ingresá una contraseña.";
-  } else if (formulario.password.length < 8) {
-    errores.password = "La contraseña debe tener al menos 8 caracteres.";
+  } else if (!cumpleRequisitosPassword(formulario.password)) {
+    errores.password = `La contraseña debe tener ${TEXTO_AYUDA_PASSWORD.toLowerCase()}`;
   }
 
   if (!formulario.confirmarPassword) {
@@ -601,6 +684,14 @@ function ordenarCiudadesRegistro(ciudades: Ciudad[]): Ciudad[] {
 
 function esEmailValido(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function cumpleRequisitosPassword(password: string): boolean {
+  const tieneLongitudMinima = password.length >= 8;
+  const tieneLetra = /\p{L}/u.test(password);
+  const tieneNumero = /\d/.test(password);
+
+  return tieneLongitudMinima && tieneLetra && tieneNumero;
 }
 
 function normalizarTextoOpcional(valor: string): string | null {

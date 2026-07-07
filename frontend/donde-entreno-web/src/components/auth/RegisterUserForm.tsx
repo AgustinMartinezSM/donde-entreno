@@ -9,7 +9,7 @@ import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { StatusMessage } from "../ui/StatusMessage";
 import type { AuthErroresPorCampo, RegistroUsuarioRequest } from "../../types/auth";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent, FormEvent, ReactNode } from "react";
 
 type RegistroUsuarioFormState = {
   nombre: string;
@@ -31,6 +31,9 @@ const ESTADO_INICIAL: RegistroUsuarioFormState = {
 
 const inputClassName =
   "mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+
+const TEXTO_AYUDA_PASSWORD =
+  "Mínimo 8 caracteres, con al menos una letra y un número.";
 
 export function RegisterUserForm() {
   const router = useRouter();
@@ -117,6 +120,12 @@ export function RegisterUserForm() {
 
   return (
     <form className="mt-8 flex flex-col gap-5" onSubmit={manejarEnvio}>
+      <StatusMessage variant="info" className="text-sm leading-6">
+        Creá una cuenta personal para identificarte en la plataforma. Más
+        adelante podrás usarla para guardar información y personalizar tu
+        experiencia.
+      </StatusMessage>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <CampoTexto
           id="registro-usuario-nombre"
@@ -126,6 +135,8 @@ export function RegisterUserForm() {
           error={erroresPorCampo?.nombre}
           disabled={cargando}
           autoComplete="given-name"
+          placeholder="Ej: Agustín"
+          helpText="Usá tu nombre real para que tu cuenta quede identificada."
         />
         <CampoTexto
           id="registro-usuario-apellido"
@@ -135,6 +146,8 @@ export function RegisterUserForm() {
           error={erroresPorCampo?.apellido}
           disabled={cargando}
           autoComplete="family-name"
+          placeholder="Ej: Pérez"
+          helpText="Completá tu apellido como querés verlo asociado a tu cuenta."
         />
       </div>
 
@@ -147,6 +160,8 @@ export function RegisterUserForm() {
         error={erroresPorCampo?.email}
         disabled={cargando}
         autoComplete="email"
+        placeholder="Ej: agus@email.com"
+        helpText="Usalo para iniciar sesión y recibir información de tu cuenta."
       />
 
       <CampoTexto
@@ -158,6 +173,8 @@ export function RegisterUserForm() {
         error={erroresPorCampo?.telefono}
         disabled={cargando}
         autoComplete="tel"
+        placeholder="Ej: 223 555 1234"
+        helpText="Opcional. Podés dejarlo vacío si no querés cargarlo ahora."
       />
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -170,6 +187,8 @@ export function RegisterUserForm() {
           error={erroresPorCampo?.password}
           disabled={cargando}
           autoComplete="new-password"
+          placeholder="Ej: Entreno2026"
+          helpText={TEXTO_AYUDA_PASSWORD}
         />
         <CampoTexto
           id="registro-usuario-confirmar-password"
@@ -180,6 +199,8 @@ export function RegisterUserForm() {
           error={erroresPorCampo?.confirmarPassword}
           disabled={cargando}
           autoComplete="new-password"
+          placeholder="Repetí la contraseña"
+          helpText="Escribí la misma contraseña para evitar errores de tipeo."
         />
       </div>
 
@@ -214,6 +235,8 @@ function CampoTexto({
   disabled,
   type = "text",
   autoComplete,
+  placeholder,
+  helpText,
 }: {
   id: string;
   label: string;
@@ -223,8 +246,12 @@ function CampoTexto({
   disabled: boolean;
   type?: string;
   autoComplete?: string;
+  placeholder?: string;
+  helpText?: ReactNode;
 }) {
+  const helpId = helpText ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
+  const descripcionIds = [helpId, errorId].filter(Boolean).join(" ");
 
   return (
     <div>
@@ -238,10 +265,16 @@ function CampoTexto({
         onChange={onChange}
         disabled={disabled}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         aria-invalid={Boolean(error)}
-        aria-describedby={errorId}
+        aria-describedby={descripcionIds || undefined}
         className={inputClassName}
       />
+      {helpText ? (
+        <p id={helpId} className="mt-2 text-xs leading-5 text-[var(--color-muted)]">
+          {helpText}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} className="mt-2 text-sm font-bold text-red-700">
           {error}
@@ -273,8 +306,8 @@ function validarFormularioUsuario(
 
   if (!formulario.password) {
     errores.password = "Ingresá una contraseña.";
-  } else if (formulario.password.length < 8) {
-    errores.password = "La contraseña debe tener al menos 8 caracteres.";
+  } else if (!cumpleRequisitosPassword(formulario.password)) {
+    errores.password = `La contraseña debe tener ${TEXTO_AYUDA_PASSWORD.toLowerCase()}`;
   }
 
   if (!formulario.confirmarPassword) {
@@ -288,6 +321,14 @@ function validarFormularioUsuario(
 
 function esEmailValido(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function cumpleRequisitosPassword(password: string): boolean {
+  const tieneLongitudMinima = password.length >= 8;
+  const tieneLetra = /\p{L}/u.test(password);
+  const tieneNumero = /\d/.test(password);
+
+  return tieneLongitudMinima && tieneLetra && tieneNumero;
 }
 
 function normalizarTextoOpcional(valor: string): string | null {

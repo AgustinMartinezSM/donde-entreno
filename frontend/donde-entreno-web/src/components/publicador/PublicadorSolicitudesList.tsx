@@ -145,9 +145,14 @@ export function PublicadorSolicitudesList() {
           title="Tus solicitudes"
           description="Seguí el estado de revisión de cada actividad que enviaste."
           action={
-            <AppLinkButton href="/publicador" variant="secondary" fullWidth>
-              Volver al panel
-            </AppLinkButton>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
+                Nueva solicitud
+              </AppLinkButton>
+              <AppLinkButton href="/publicador" variant="secondary" fullWidth>
+                Volver al panel
+              </AppLinkButton>
+            </div>
           }
         />
 
@@ -195,9 +200,22 @@ export function PublicadorSolicitudesList() {
           ) : null}
 
           {!cargando && !error && solicitudes.length === 0 ? (
-            <StatusMessage variant="info" className="mt-6">
-              No hay solicitudes para mostrar.
-            </StatusMessage>
+            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+              <p className="font-extrabold text-[var(--color-primary)]">
+                No hay solicitudes para mostrar.
+              </p>
+              <p className="mt-2">
+                Cuando cargues una actividad desde tu panel, vas a poder seguir
+                el estado de revisión desde acá.
+              </p>
+              <AppLinkButton
+                href="/publicador/solicitudes/nueva"
+                size="sm"
+                className="mt-4"
+              >
+                Crear nueva solicitud
+              </AppLinkButton>
+            </div>
           ) : null}
 
           {solicitudes.length > 0 ? (

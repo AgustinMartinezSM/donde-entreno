@@ -18,7 +18,12 @@ import {
   enviarSolicitudPublicacion,
   SolicitudPublicacionApiError,
 } from "../../services/solicitudPublicacionService";
+import {
+  crearSolicitudPublicador,
+  PublicadorApiError,
+} from "../../services/publicadorService";
 import { BrandName } from "../brand/BrandName";
+import type { CrearSolicitudPublicadorRequest } from "../../types/publicador";
 import type {
   BarrioPublicacionOpcion,
   CiudadPublicacionOpcion,
@@ -69,6 +74,14 @@ type SolicitudPublicacionFormState = {
   email: string;
   observacionesSolicitante: string;
   aceptaCondiciones: boolean;
+};
+
+type PublishFormModo = "publico" | "publicador";
+
+type PublishFormProps = {
+  modo?: PublishFormModo;
+  accessToken?: string | null;
+  tituloExitoPersonalizado?: string;
 };
 
 type HorarioPublicacionFormState = {
@@ -459,24 +472,20 @@ function normalizarNumeroOpcional(valor: string): number | null {
   return Number.isFinite(numero) ? numero : null;
 }
 
-function construirSolicitudPublicacionRequest(
+function construirSolicitudPublicadorRequest(
   formulario: SolicitudPublicacionFormState,
   horarios: HorarioPublicacionFormState[]
-): SolicitudPublicacionRequest | null {
-  const tipoPublicador = formulario.tipoPublicador;
+): CrearSolicitudPublicadorRequest | null {
   const nivel = formulario.nivel;
   const enfoque = formulario.enfoque;
   const modalidad = formulario.modalidad;
-  const nombrePublicador = formulario.nombrePublicador.trim();
   const nombreActividad = formulario.nombreActividad.trim();
   const descripcion = formulario.descripcion.trim();
 
   if (
-    !tipoPublicador ||
     !nivel ||
     !enfoque ||
     !modalidad ||
-    nombrePublicador.length === 0 ||
     nombreActividad.length === 0 ||
     descripcion.length === 0 ||
     horarios.length === 0 ||
@@ -554,8 +563,6 @@ function construirSolicitudPublicacionRequest(
   }
 
   return {
-    tipoPublicador,
-    nombrePublicador,
     nombreActividad,
     deporteId,
     deporteOtro,
@@ -582,6 +589,33 @@ function construirSolicitudPublicacionRequest(
     ),
     aceptaCondiciones: formulario.aceptaCondiciones,
     horarios: horariosSolicitud,
+  };
+}
+
+function construirSolicitudPublicacionRequest(
+  formulario: SolicitudPublicacionFormState,
+  horarios: HorarioPublicacionFormState[]
+): SolicitudPublicacionRequest | null {
+  const tipoPublicador = formulario.tipoPublicador;
+  const nombrePublicador = formulario.nombrePublicador.trim();
+
+  if (!tipoPublicador || nombrePublicador.length === 0) {
+    return null;
+  }
+
+  const datosSolicitud = construirSolicitudPublicadorRequest(
+    formulario,
+    horarios
+  );
+
+  if (datosSolicitud === null) {
+    return null;
+  }
+
+  return {
+    tipoPublicador,
+    nombrePublicador,
+    ...datosSolicitud,
   };
 }
 
@@ -617,7 +651,11 @@ function PublishSectionHeader({
   );
 }
 
-export function PublishForm() {
+export function PublishForm({
+  modo = "publico",
+  accessToken = null,
+  tituloExitoPersonalizado,
+}: PublishFormProps = {}) {
   const [formulario, setFormulario] = useState<SolicitudPublicacionFormState>(
     ESTADO_INICIAL_FORMULARIO
   );
@@ -654,6 +692,9 @@ export function PublishForm() {
   const cargaBarriosActualRef = useRef(0);
   const cargaCatalogosActualRef = useRef(0);
   const formularioMontadoRef = useRef(true);
+  const esModoPublicador = modo === "publicador";
+  const obtenerNumeroPaso = (pasoPublico: number) =>
+    esModoPublicador ? pasoPublico - 1 : pasoPublico;
 
   const cargarCatalogosIniciales = useCallback(async () => {
     const cargaActual = cargaCatalogosActualRef.current + 1;
@@ -975,28 +1016,49 @@ export function PublishForm() {
       return;
     }
 
-    const solicitud = construirSolicitudPublicacionRequest(formulario, horarios);
-
-    if (solicitud === null) {
-      setErrorEnvio(
-        "No pudimos preparar la solicitud. Revisá los datos ingresados."
-      );
-      setTimeout(() => {
-        resultadoEnvioRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        resultadoEnvioRef.current?.focus();
-      }, 100);
-      return;
-    }
-
     envioEnCursoRef.current = true;
     setProcesandoFormulario(true);
 
     try {
-      const respuesta = await enviarSolicitudPublicacion(solicitud);
-      setRespuestaEnvio(respuesta);
+      if (esModoPublicador) {
+        const solicitud = construirSolicitudPublicadorRequest(
+          formulario,
+          horarios
+        );
+
+        if (solicitud === null) {
+          throw new Error(
+            "No pudimos preparar la solicitud. Revisá los datos ingresados."
+          );
+        }
+
+        if (!accessToken) {
+          throw new PublicadorApiError(
+            "Necesitás iniciar sesión como publicador para enviar la solicitud."
+          );
+        }
+
+        const respuesta = await crearSolicitudPublicador(
+          solicitud,
+          accessToken
+        );
+        setRespuestaEnvio(respuesta);
+      } else {
+        const solicitud = construirSolicitudPublicacionRequest(
+          formulario,
+          horarios
+        );
+
+        if (solicitud === null) {
+          throw new Error(
+            "No pudimos preparar la solicitud. Revisá los datos ingresados."
+          );
+        }
+
+        const respuesta = await enviarSolicitudPublicacion(solicitud);
+        setRespuestaEnvio(respuesta);
+      }
+
       setErrorEnvio(null);
       setErroresBackend(null);
       setTimeout(() => {
@@ -1007,9 +1069,15 @@ export function PublishForm() {
         resultadoEnvioRef.current?.focus();
       }, 100);
     } catch (error: unknown) {
-      if (error instanceof SolicitudPublicacionApiError) {
+      if (
+        error instanceof SolicitudPublicacionApiError ||
+        error instanceof PublicadorApiError
+      ) {
         setErrorEnvio(error.message);
         setErroresBackend(error.erroresPorCampo);
+      } else if (error instanceof Error && error.message) {
+        setErrorEnvio(error.message);
+        setErroresBackend(null);
       } else {
         setErrorEnvio(
           "Ocurrió un problema inesperado al enviar la solicitud."
@@ -1270,67 +1338,69 @@ export function PublishForm() {
           </ul>
         </div>
       )}
+      {!esModoPublicador && (
+        <fieldset className={fieldsetClassName}>
+          <PublishSectionHeader
+            paso={1}
+            titulo="Datos del publicador"
+            descripcion="Contanos quién ofrece la actividad para poder identificar la solicitud durante la revisión."
+          />
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="tipoPublicador" className={labelClassName}>
+                Tipo de publicador <CampoObligatorio />
+              </label>
+
+              <select
+                id="tipoPublicador"
+                name="tipoPublicador"
+                required
+                value={formulario.tipoPublicador}
+                onChange={(evento) =>
+                  actualizarCampo(
+                    "tipoPublicador",
+                    evento.target
+                      .value as SolicitudPublicacionFormState["tipoPublicador"]
+                  )
+                }
+                className={inputClassName}
+              >
+                <option value="">Seleccionar tipo</option>
+                {TIPOS_PUBLICADOR_SOLICITUD.map((tipoPublicador) => (
+                  <option key={tipoPublicador} value={tipoPublicador}>
+                    {formatearEtiquetaCatalogo(tipoPublicador)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="nombrePublicador" className={labelClassName}>
+                Nombre del club, gimnasio, institución o profesor{" "}
+                <CampoObligatorio />
+              </label>
+
+              <input
+                id="nombrePublicador"
+                name="nombrePublicador"
+                type="text"
+                required
+                maxLength={150}
+                autoComplete="organization"
+                value={formulario.nombrePublicador}
+                onChange={(evento) =>
+                  manejarCambioTexto("nombrePublicador", evento)
+                }
+                className={inputClassName}
+              />
+            </div>
+          </div>
+        </fieldset>
+      )}
       <fieldset className={fieldsetClassName}>
         <PublishSectionHeader
-          paso={1}
-          titulo="Datos del publicador"
-          descripcion="Contanos quién ofrece la actividad para poder identificar la solicitud durante la revisión."
-        />
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="tipoPublicador" className={labelClassName}>
-              Tipo de publicador <CampoObligatorio />
-            </label>
-
-            <select
-              id="tipoPublicador"
-              name="tipoPublicador"
-              required
-              value={formulario.tipoPublicador}
-              onChange={(evento) =>
-                actualizarCampo(
-                  "tipoPublicador",
-                  evento.target
-                    .value as SolicitudPublicacionFormState["tipoPublicador"]
-                )
-              }
-              className={inputClassName}
-            >
-              <option value="">Seleccionar tipo</option>
-              {TIPOS_PUBLICADOR_SOLICITUD.map((tipoPublicador) => (
-                <option key={tipoPublicador} value={tipoPublicador}>
-                  {formatearEtiquetaCatalogo(tipoPublicador)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="nombrePublicador" className={labelClassName}>
-              Nombre del club, gimnasio, institución o profesor{" "}
-              <CampoObligatorio />
-            </label>
-
-            <input
-              id="nombrePublicador"
-              name="nombrePublicador"
-              type="text"
-              required
-              maxLength={150}
-              autoComplete="organization"
-              value={formulario.nombrePublicador}
-              onChange={(evento) =>
-                manejarCambioTexto("nombrePublicador", evento)
-              }
-              className={inputClassName}
-            />
-          </div>
-        </div>
-      </fieldset>
-      <fieldset className={fieldsetClassName}>
-        <PublishSectionHeader
-          paso={2}
+          paso={obtenerNumeroPaso(2)}
           titulo="Datos de la actividad"
           descripcion="Sumá la información principal para que podamos revisar la publicación con contexto claro."
         />
@@ -1624,7 +1694,7 @@ export function PublishForm() {
       </fieldset>
       <fieldset className={fieldsetClassName}>
         <PublishSectionHeader
-          paso={3}
+          paso={obtenerNumeroPaso(3)}
           titulo="Ubicación"
           descripcion="Indicá dónde se realiza la actividad. Completá al menos el nombre del lugar o la dirección."
         />
@@ -1900,7 +1970,7 @@ export function PublishForm() {
       </fieldset>
       <fieldset className={fieldsetClassName}>
         <PublishSectionHeader
-          paso={4}
+          paso={obtenerNumeroPaso(4)}
           titulo="Contacto"
           descripcion="Completá al menos WhatsApp o email para que podamos contactarte si necesitamos confirmar datos."
         />
@@ -1978,7 +2048,7 @@ export function PublishForm() {
 
       <fieldset className={fieldsetClassName}>
         <PublishSectionHeader
-          paso={5}
+          paso={obtenerNumeroPaso(5)}
           titulo="Horarios"
           descripcion="Cargá los días y rangos horarios en los que se realiza la actividad."
         />
@@ -2208,7 +2278,7 @@ export function PublishForm() {
       </fieldset>
       <fieldset className={fieldsetClassName}>
         <PublishSectionHeader
-          paso={6}
+          paso={obtenerNumeroPaso(6)}
           titulo="Confirmación"
           descripcion="Revisá los datos cargados y agregá cualquier aclaración útil para el equipo."
         />
@@ -2316,7 +2386,7 @@ export function PublishForm() {
           className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A] outline-none focus:ring-2 focus:ring-[#167A4A]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
-            Tu solicitud fue enviada correctamente
+            {tituloExitoPersonalizado ?? "Tu solicitud fue enviada correctamente"}
           </h2>
           <p className="mt-2">La vamos a revisar antes de publicarla.</p>
           <p className="mt-2 font-bold">{respuestaEnvio.mensaje}</p>

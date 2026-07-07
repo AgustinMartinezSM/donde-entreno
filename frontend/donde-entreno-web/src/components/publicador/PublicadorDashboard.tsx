@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "../auth/AuthSessionProvider";
-import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
@@ -86,9 +85,18 @@ export function PublicadorDashboard() {
           title="Panel publicador"
           description="Desde este panel podés seguir el estado de tus solicitudes y cuidar la información de tu perfil."
           action={
-            <AppLinkButton href="/publicador/solicitudes" fullWidth>
-              Mis solicitudes
-            </AppLinkButton>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
+                Nueva solicitud
+              </AppLinkButton>
+              <AppLinkButton
+                href="/publicador/solicitudes"
+                variant="secondary"
+                fullWidth
+              >
+                Mis solicitudes
+              </AppLinkButton>
+            </div>
           }
         />
 
@@ -147,12 +155,16 @@ export function PublicadorDashboard() {
                 <AppLinkButton href="/publicador/solicitudes" fullWidth>
                   Mis solicitudes
                 </AppLinkButton>
-                <AppButton type="button" variant="secondary" disabled fullWidth>
+                <AppLinkButton
+                  href="/publicador/solicitudes/nueva"
+                  variant="success"
+                  fullWidth
+                >
                   Nueva solicitud
-                </AppButton>
+                </AppLinkButton>
                 <StatusMessage variant="info">
-                  La creación de nuevas solicitudes desde tu panel se suma en el
-                  próximo paso. Mientras tanto, podés seguir tus envíos actuales.
+                  Cargá una actividad desde tu panel para que quede vinculada a
+                  tu perfil publicador.
                 </StatusMessage>
               </div>
             </SurfaceCard>

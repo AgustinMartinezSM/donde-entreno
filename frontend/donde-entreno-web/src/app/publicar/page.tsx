@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BrandName } from "../../components/brand/BrandName";
 import { Header } from "../../components/layout/Header";
-import { PublishForm } from "../../components/publicar/PublishForm";
+import { PublishAccessGate } from "../../components/publicar/PublishAccessGate";
 import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { SurfaceCard } from "../../components/ui/SurfaceCard";
 
@@ -71,7 +71,7 @@ export default function PublicarPage() {
             </div>
           </SurfaceCard>
 
-          <PublishForm />
+          <PublishAccessGate />
         </div>
       </section>
     </main>

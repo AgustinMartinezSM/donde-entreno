@@ -14,8 +14,8 @@ const etiquetasPorEstado: Record<EstadoSolicitudPublicacion, string> = {
 
 const clasesPorEstado: Record<EstadoSolicitudPublicacion, string> = {
   PENDIENTE: "border-[#F2C94C] bg-[#FFF8E1] text-[#684A00]",
-  EN_REVISION: "border-[#9CCFE4] bg-[#EEF8FC] text-[#0F3D5E]",
-  APROBADA: "border-[#9FDCBC] bg-[#ECF9F2] text-[#176B3F]",
+  EN_REVISION: "border-[#8CCCE6] bg-[#E8F6FB] text-[#0F3D5E]",
+  APROBADA: "border-[#7FD4A7] bg-[#E6F7EF] text-[#167A4A]",
   RECHAZADA: "border-[#F3B6B6] bg-[#FFF1F1] text-[#A53030]",
 };
 

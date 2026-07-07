@@ -142,8 +142,8 @@ export function PublicadorSolicitudesList() {
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
-          title="Tus solicitudes"
-          description="Seguí el estado de revisión de cada actividad que enviaste."
+          title="Seguimiento de solicitudes"
+          description="Revisá en qué estado está cada actividad que enviaste y volvé al detalle cuando necesites consultar datos."
           action={
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
@@ -156,12 +156,12 @@ export function PublicadorSolicitudesList() {
           }
         />
 
-        <SurfaceCard className="mt-6 p-5 sm:p-6">
+        <SurfaceCard className="mt-6 border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-5 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
               eyebrow="Solicitudes"
-              title="Seguimiento de publicación"
-              description="Opciones disponibles según el estado de revisión."
+              title="Actividades enviadas"
+              description="Filtrá por estado y abrí cada solicitud para ver su información completa."
             />
 
             <div className="w-full lg:w-64">
@@ -200,7 +200,7 @@ export function PublicadorSolicitudesList() {
           ) : null}
 
           {!cargando && !error && solicitudes.length === 0 ? (
-            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A]">
               <p className="font-extrabold text-[var(--color-primary)]">
                 No hay solicitudes para mostrar.
               </p>
@@ -264,7 +264,7 @@ function SolicitudCard({
   solicitud: SolicitudPublicadorResumen;
 }) {
   return (
-    <article className="rounded-[22px] border border-[#DDEAF3] bg-white p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
+    <article className="rounded-[22px] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BDE8D0] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -292,7 +292,7 @@ function SolicitudCard({
         </p>
         <Link
           href={`/publicador/solicitudes/${solicitud.id}`}
-          className="inline-flex items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-2 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+          className="inline-flex items-center justify-center rounded-[18px] border border-[#BDE8D0] bg-[#E6F7EF] px-4 py-2 text-sm font-extrabold text-[#167A4A] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#2EB872] hover:bg-white"
         >
           Ver detalle
         </Link>

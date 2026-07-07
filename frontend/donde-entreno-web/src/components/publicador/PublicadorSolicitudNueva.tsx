@@ -14,7 +14,7 @@ export function PublicadorSolicitudNueva() {
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Nueva solicitud"
-          description="Cargá los datos de la actividad que querés publicar. Quedará pendiente de revisión."
+          description="Cargá la información principal de la actividad. Cuanto más clara sea la solicitud, más fácil será revisarla."
           action={
             <AppLinkButton
               href="/publicador/solicitudes"
@@ -31,11 +31,17 @@ export function PublicadorSolicitudNueva() {
             Necesitás iniciar sesión como publicador para crear una solicitud.
           </StatusMessage>
         ) : (
-          <PublishForm
-            modo="publicador"
-            accessToken={accessToken}
-            tituloExitoPersonalizado="Tu solicitud fue enviada desde tu panel"
-          />
+          <>
+            <StatusMessage variant="success" className="mt-6">
+              Tené a mano nombre, ubicación, contacto y horarios reales. La
+              actividad queda pendiente de revisión antes de publicarse.
+            </StatusMessage>
+            <PublishForm
+              modo="publicador"
+              accessToken={accessToken}
+              tituloExitoPersonalizado="Tu solicitud fue enviada desde tu panel"
+            />
+          </>
         )}
       </section>
     </main>

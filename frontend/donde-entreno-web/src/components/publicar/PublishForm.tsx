@@ -402,8 +402,9 @@ const textareaClassName =
   "rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
 
 const labelClassName = "text-sm font-bold text-[var(--color-primary)]";
+const helpTextClassName = "text-xs leading-5 text-[var(--color-muted)]";
 const fieldsetClassName =
-  "rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
+  "rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
 
 function formatearEtiquetaCatalogo(valor: string) {
   return valor
@@ -1373,6 +1374,9 @@ export function PublishForm({
                   </option>
                 ))}
               </select>
+              <p className={helpTextClassName}>
+                Elegí la opción que mejor describa quién publica la actividad.
+              </p>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -1389,11 +1393,16 @@ export function PublishForm({
                 maxLength={150}
                 autoComplete="organization"
                 value={formulario.nombrePublicador}
+                placeholder="Ej: Club Atlético Norte"
                 onChange={(evento) =>
                   manejarCambioTexto("nombrePublicador", evento)
                 }
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Es el nombre que usaremos para identificar quién ofrece la
+                actividad.
+              </p>
             </div>
           </div>
         </fieldset>
@@ -1418,11 +1427,16 @@ export function PublishForm({
               required
               maxLength={150}
               value={formulario.nombreActividad}
+              placeholder="Ej: Boxeo recreativo para principiantes"
               onChange={(evento) =>
                 manejarCambioTexto("nombreActividad", evento)
               }
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Usá un nombre claro para que las personas entiendan qué ofrecés.
+              También puede ser “Yoga integral para adultos”.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1451,6 +1465,9 @@ export function PublishForm({
               ))}
               <option value={OPCION_OTRO}>Otro deporte</option>
             </select>
+            <p className={helpTextClassName}>
+              Elegí el deporte principal. Si no aparece, podés indicar otro.
+            </p>
           </div>
 
           {deportePersonalizadoSeleccionado && (
@@ -1466,6 +1483,7 @@ export function PublishForm({
                 required
                 maxLength={100}
                 value={formulario.deporteOtro}
+                placeholder="Ej: Calistenia"
                 aria-invalid={Boolean(erroresFormulario.deporte)}
                 aria-describedby={
                   erroresFormulario.deporte ? "error-deporte" : undefined
@@ -1475,6 +1493,10 @@ export function PublishForm({
                 }
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Escribí el nombre del deporte o disciplina como lo conocen tus
+                alumnos.
+              </p>
             </div>
           )}
 
@@ -1513,6 +1535,9 @@ export function PublishForm({
                 </option>
               ))}
             </select>
+            <p className={helpTextClassName}>
+              Elegí el nivel que mejor represente la actividad.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1541,6 +1566,10 @@ export function PublishForm({
                 </option>
               ))}
             </select>
+            <p className={helpTextClassName}>
+              Marcá si la propuesta es recreativa, competitiva, formativa u
+              otra opción disponible.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1569,6 +1598,9 @@ export function PublishForm({
                 </option>
               ))}
             </select>
+            <p className={helpTextClassName}>
+              Presencial, online o mixta, según cómo se dicta la actividad.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
@@ -1582,9 +1614,14 @@ export function PublishForm({
               rows={5}
               required
               value={formulario.descripcion}
+              placeholder="Ej: Clase recreativa para personas sin experiencia. Se trabaja técnica básica, movilidad y acondicionamiento."
               onChange={(evento) => manejarCambioTexto("descripcion", evento)}
               className={textareaClassName}
             />
+            <p className={helpTextClassName}>
+              Contá brevemente cómo es la actividad, a quién está dirigida y
+              qué puede esperar una persona que se suma.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1597,6 +1634,7 @@ export function PublishForm({
               name="edadMinima"
               type="number"
               min="0"
+              placeholder="Ej: 16"
               value={formulario.edadMinima}
               aria-invalid={Boolean(erroresFormulario.edades)}
               aria-describedby={
@@ -1605,6 +1643,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("edadMinima", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Si no hay edad mínima, podés dejar este campo vacío.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1617,6 +1658,7 @@ export function PublishForm({
               name="edadMaxima"
               type="number"
               min="0"
+              placeholder="Ej: 60"
               value={formulario.edadMaxima}
               aria-invalid={Boolean(erroresFormulario.edades)}
               aria-describedby={
@@ -1625,6 +1667,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("edadMaxima", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Si la actividad es para todas las edades, podés dejarlo vacío.
+            </p>
           </div>
 
           {erroresFormulario.edades && (
@@ -1652,6 +1697,10 @@ export function PublishForm({
               className="text-sm font-bold leading-6 text-[var(--color-primary)]"
             >
               Mostrar precio de referencia
+              <span className="mt-1 block text-xs font-medium leading-5 text-[var(--color-muted)]">
+                Podés cargar un valor orientativo. Si preferís informar el
+                precio por contacto, no lo marques.
+              </span>
             </label>
           </div>
 
@@ -1667,6 +1716,7 @@ export function PublishForm({
                 type="number"
                 min="0"
                 step="0.01"
+                placeholder="Ej: 15000"
                 value={formulario.precioReferencia}
                 aria-invalid={Boolean(erroresFormulario.precioReferencia)}
                 aria-describedby={
@@ -1679,6 +1729,10 @@ export function PublishForm({
                 }
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Ingresá solo números. El valor es orientativo y se revisa antes
+                de publicarse.
+              </p>
               {erroresFormulario.precioReferencia && (
                 <p
                   id="error-precioReferencia"
@@ -1726,6 +1780,9 @@ export function PublishForm({
               ))}
               <option value={OPCION_OTRO}>Otra ciudad</option>
             </select>
+            <p className={helpTextClassName}>
+              Indicá dónde se realiza principalmente la actividad.
+            </p>
           </div>
 
           {ciudadPersonalizadaSeleccionada && (
@@ -1741,6 +1798,7 @@ export function PublishForm({
                 required
                 maxLength={100}
                 value={formulario.ciudadOtra}
+                placeholder="Ej: Miramar"
                 aria-invalid={Boolean(erroresFormulario.ciudad)}
                 aria-describedby={
                   erroresFormulario.ciudad ? "error-ciudad" : undefined
@@ -1748,6 +1806,9 @@ export function PublishForm({
                 onChange={(evento) => manejarCambioTexto("ciudadOtra", evento)}
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Usá el nombre de la ciudad o localidad donde se dicta.
+              </p>
             </div>
           )}
 
@@ -1776,6 +1837,9 @@ export function PublishForm({
               >
                 <option value="">Primero seleccioná una ciudad</option>
               </select>
+              <p className={helpTextClassName}>
+                Primero elegí ciudad para ver los barrios disponibles.
+              </p>
             </div>
           )}
 
@@ -1806,6 +1870,9 @@ export function PublishForm({
                 ))}
                 <option value={OPCION_OTRO}>Otro barrio</option>
               </select>
+              <p className={helpTextClassName}>
+                Seleccioná el barrio donde se dicta o cargá otro si no aparece.
+              </p>
 
               {cargandoBarrios && (
                 <p
@@ -1855,6 +1922,7 @@ export function PublishForm({
                 required
                 maxLength={100}
                 value={formulario.barrioOtro}
+                placeholder="Ej: Centro"
                 aria-invalid={Boolean(erroresFormulario.barrio)}
                 aria-describedby={
                   erroresFormulario.barrio ? "error-barrio" : undefined
@@ -1862,6 +1930,10 @@ export function PublishForm({
                 onChange={(evento) => manejarCambioTexto("barrioOtro", evento)}
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Escribí el barrio o zona de referencia para ubicar mejor la
+                actividad.
+              </p>
             </div>
           )}
 
@@ -1878,6 +1950,7 @@ export function PublishForm({
                 required
                 maxLength={100}
                 value={formulario.barrioOtro}
+                placeholder="Ej: Playa Grande"
                 aria-invalid={Boolean(erroresFormulario.barrio)}
                 aria-describedby={
                   erroresFormulario.barrio ? "error-barrio" : undefined
@@ -1885,6 +1958,9 @@ export function PublishForm({
                 onChange={(evento) => manejarCambioTexto("barrioOtro", evento)}
                 className={inputClassName}
               />
+              <p className={helpTextClassName}>
+                Si el barrio no está en la lista, cargalo como texto.
+              </p>
             </div>
           )}
 
@@ -1909,6 +1985,7 @@ export function PublishForm({
               type="text"
               maxLength={150}
               value={formulario.nombreLugar}
+              placeholder="Ej: Club Atlético Norte"
               aria-invalid={Boolean(erroresFormulario.ubicacion)}
               aria-describedby={
                 erroresFormulario.ubicacion ? "error-ubicacion" : undefined
@@ -1916,6 +1993,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("nombreLugar", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              También puede ser “Gimnasio Centro” o “Plaza Mitre”.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1930,6 +2010,7 @@ export function PublishForm({
               maxLength={255}
               autoComplete="street-address"
               value={formulario.direccion}
+              placeholder="Ej: Av. Colón 1234"
               aria-invalid={Boolean(erroresFormulario.ubicacion)}
               aria-describedby={
                 erroresFormulario.ubicacion ? "error-ubicacion" : undefined
@@ -1937,6 +2018,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("direccion", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Cargá una dirección o referencia para que puedan ubicarte.
+            </p>
           </div>
 
           {erroresFormulario.ubicacion && (
@@ -1960,11 +2044,15 @@ export function PublishForm({
               type="text"
               maxLength={255}
               value={formulario.referenciaUbicacion}
+              placeholder="Ej: Entrada por el portón verde"
               onChange={(evento) =>
                 manejarCambioTexto("referenciaUbicacion", evento)
               }
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Opcional. Sumá una aclaración si ayuda a encontrar el lugar.
+            </p>
           </div>
         </div>
       </fieldset>
@@ -1989,6 +2077,7 @@ export function PublishForm({
               autoComplete="tel"
               maxLength={40}
               value={formulario.whatsapp}
+              placeholder="Ej: +54 9 223 555 1234"
               aria-invalid={Boolean(erroresFormulario.contacto)}
               aria-describedby={
                 erroresFormulario.contacto ? "error-contacto" : undefined
@@ -1996,6 +2085,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("whatsapp", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Usá un número donde puedan contactarte por la actividad.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -2009,9 +2101,13 @@ export function PublishForm({
               type="text"
               maxLength={150}
               value={formulario.instagram}
+              placeholder="Ej: @clubnorte"
               onChange={(evento) => manejarCambioTexto("instagram", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Opcional. Podés cargar tu usuario de Instagram.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
@@ -2026,6 +2122,7 @@ export function PublishForm({
               autoComplete="email"
               maxLength={150}
               value={formulario.email}
+              placeholder="Ej: contacto@clubnorte.com"
               aria-invalid={Boolean(erroresFormulario.contacto)}
               aria-describedby={
                 erroresFormulario.contacto ? "error-contacto" : undefined
@@ -2033,6 +2130,9 @@ export function PublishForm({
               onChange={(evento) => manejarCambioTexto("email", evento)}
               className={inputClassName}
             />
+            <p className={helpTextClassName}>
+              Podés usar un email de contacto distinto al de tu cuenta.
+            </p>
           </div>
           {erroresFormulario.contacto && (
             <p
@@ -2061,6 +2161,9 @@ export function PublishForm({
             <p className="mt-2">
               Agregá al menos un día y un rango horario. Podés agregar tantos
               horarios como necesites.
+            </p>
+            <p className="mt-2">
+              Ejemplo: lunes de 18:00 a 19:30.
             </p>
             <p role="status" aria-live="polite" className="mt-2 font-bold">
               {horarios.length === 1
@@ -2250,6 +2353,7 @@ export function PublishForm({
                         rows={2}
                         maxLength={255}
                         value={horario.observacion}
+                        placeholder="Ej: Traer guantes o llegar 10 minutos antes."
                         onChange={(evento) =>
                           actualizarHorario(
                             horario.idInterno,
@@ -2259,6 +2363,10 @@ export function PublishForm({
                         }
                         className={textareaClassName}
                       />
+                      <p className={helpTextClassName}>
+                        Opcional. Sumá una aclaración específica para este
+                        horario.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -2297,11 +2405,15 @@ export function PublishForm({
               name="observacionesSolicitante"
               rows={4}
               value={formulario.observacionesSolicitante}
+              placeholder="Ej: La actividad empieza el mes próximo o está pensada para grupos reducidos."
               onChange={(evento) =>
                 manejarCambioTexto("observacionesSolicitante", evento)
               }
               className={textareaClassName}
             />
+            <p className={helpTextClassName}>
+              Sumá cualquier dato adicional que ayude a revisar tu solicitud.
+            </p>
           </div>
 
           <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4">

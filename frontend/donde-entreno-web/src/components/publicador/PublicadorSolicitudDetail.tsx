@@ -106,7 +106,7 @@ export function PublicadorSolicitudDetail() {
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Detalle de solicitud"
-          description="Revisá la información enviada y el estado actual de revisión."
+          description="Revisá la información enviada, el estado de revisión y los próximos pasos de tu publicación."
           action={
             <AppLinkButton
               href="/publicador/solicitudes"
@@ -145,7 +145,7 @@ export function PublicadorSolicitudDetail() {
 
         {solicitud ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <SurfaceCard className="p-6 sm:p-8">
+            <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-6 sm:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -191,8 +191,8 @@ export function PublicadorSolicitudDetail() {
               <SurfaceCard variant="info" className="p-6 sm:p-8">
                 <SectionHeader
                   eyebrow="Revisión"
-                  title="Estado de revisión"
-                  description="Fechas y observaciones vinculadas al proceso."
+                  title="Seguimiento de revisión"
+                  description="Fechas, observaciones y señales útiles para entender cómo avanza tu solicitud."
                 />
                 <dl className="mt-6 grid gap-4">
                   <CampoDetalle etiqueta="Creada" valor={formatearFechaHora(solicitud.createdAt)} />
@@ -226,7 +226,7 @@ export function PublicadorSolicitudDetail() {
                     {solicitud.horarios.map((horario) => (
                       <div
                         key={horario.id}
-                        className="rounded-[18px] border border-[#DDEAF3] bg-white p-4"
+                        className="rounded-[18px] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-4 transition duration-200 ease-out hover:border-[#BDE8D0]"
                       >
                         <p className="text-sm font-extrabold text-[var(--color-primary)]">
                           {formatearCatalogo(horario.diaSemana)}
@@ -301,7 +301,7 @@ function SeccionDetalle({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[22px] border border-[#DDEAF3] bg-white/75 p-4">
+    <section className="rounded-[22px] border border-[#DDEAF3] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
       <h3 className="text-lg font-extrabold text-[var(--color-primary)]">
         {titulo}
       </h3>

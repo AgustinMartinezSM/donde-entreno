@@ -82,8 +82,8 @@ export function PublicadorDashboard() {
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
-          title="Panel publicador"
-          description="Desde este panel podés seguir el estado de tus solicitudes y cuidar la información de tu perfil."
+          title="Tu espacio para publicar y seguir actividades"
+          description="Desde acá podés enviar nuevas actividades y revisar el estado de tus solicitudes con el perfil asociado a tu cuenta."
           action={
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
@@ -114,11 +114,11 @@ export function PublicadorDashboard() {
 
         {perfil ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <SurfaceCard className="p-6 sm:p-8">
+            <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-6 sm:p-8">
               <SectionHeader
                 eyebrow="Perfil"
                 title={`Hola, ${perfil.nombre}`}
-                description="Estos son los datos visibles para gestionar tus publicaciones."
+                description="Estos datos ayudan a identificar tus solicitudes y mantener claro quién publica cada actividad."
               />
 
               <dl className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -133,7 +133,7 @@ export function PublicadorDashboard() {
               </dl>
 
               {perfil.descripcion ? (
-                <div className="mt-6 rounded-[20px] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                <div className="mt-6 rounded-[20px] border border-[#BDE8D0] bg-[#E6F7EF]/55 p-4">
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
                     Descripción
                   </p>
@@ -147,8 +147,8 @@ export function PublicadorDashboard() {
             <SurfaceCard variant="success" className="p-6 sm:p-8">
               <SectionHeader
                 eyebrow="Accesos rápidos"
-                title="Seguimiento de publicación"
-                description="Revisá el avance de cada solicitud enviada."
+                title="Publicá con seguimiento"
+                description="Cargá una actividad y seguí su revisión desde el mismo panel."
               />
 
               <div className="mt-8 grid gap-3">
@@ -163,8 +163,8 @@ export function PublicadorDashboard() {
                   Nueva solicitud
                 </AppLinkButton>
                 <StatusMessage variant="info">
-                  Cargá una actividad desde tu panel para que quede vinculada a
-                  tu perfil publicador.
+                  Cuanto más clara sea la información, más simple será revisar
+                  la publicación y dejarla lista para aparecer en la plataforma.
                 </StatusMessage>
               </div>
             </SurfaceCard>
@@ -183,7 +183,7 @@ function DatoPerfil({
   valor: string | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#DDEAF3] bg-white/75 p-4">
+    <div className="rounded-[18px] border border-[#DDEAF3] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
       <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
         {etiqueta}
       </dt>

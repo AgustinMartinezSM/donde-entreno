@@ -67,6 +67,10 @@ export default function PublicarPage() {
                   <li>Mostrá horarios, ubicación y datos de contacto.</li>
                   <li>La publicación se revisa antes de quedar visible.</li>
                 </ul>
+                <p className="mt-4 rounded-[18px] bg-[#E6F7EF] px-4 py-3 text-sm font-bold leading-6 text-[#167A4A]">
+                  Te guiamos paso a paso para que la solicitud llegue clara y
+                  lista para revisión.
+                </p>
               </div>
             </div>
           </SurfaceCard>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { hayLogoutRecienteAuth } from "../../services/authService";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
@@ -36,7 +37,7 @@ export function RoleGuard({
     }
 
     redireccionEnCursoRef.current = true;
-    router.replace(`/login?returnTo=${encodeURIComponent(rutaRetorno)}`);
+    router.replace(obtenerRutaLoginProtegida(rutaRetorno));
   }, [router, rutaRetorno, status]);
 
   function cerrarSesionYRedirigir() {
@@ -92,6 +93,14 @@ export function RoleGuard({
   }
 
   return <>{children}</>;
+}
+
+function obtenerRutaLoginProtegida(rutaRetorno: string): string {
+  if (hayLogoutRecienteAuth()) {
+    return "/login?logout=1";
+  }
+
+  return `/login?returnTo=${encodeURIComponent(rutaRetorno)}`;
 }
 
 function RoleGuardShell({ children }: { children: ReactNode }) {

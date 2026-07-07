@@ -16,6 +16,8 @@ import type {
 
 const AUTH_SESSION_STORAGE_KEY = "donde_entreno_auth_session";
 const ADMIN_SESSION_STORAGE_LEGACY_KEY = "donde_entreno_admin_session";
+const LOGOUT_MARKER_STORAGE_KEY = "donde_entreno_logout_at";
+const LOGOUT_RECIENTE_MS = 15_000;
 
 type AuthApiErrorOpciones = {
   status?: number | null;
@@ -129,6 +131,7 @@ export function guardarSesionAuth(respuesta: LoginResponse): SesionAuth {
       JSON.stringify(sesion)
     );
     window.sessionStorage.removeItem(ADMIN_SESSION_STORAGE_LEGACY_KEY);
+    window.sessionStorage.removeItem(LOGOUT_MARKER_STORAGE_KEY);
   }
 
   return sesion;
@@ -171,6 +174,29 @@ export function cerrarSesionAuth(): void {
 
   window.sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
   window.sessionStorage.removeItem(ADMIN_SESSION_STORAGE_LEGACY_KEY);
+  window.sessionStorage.setItem(LOGOUT_MARKER_STORAGE_KEY, String(Date.now()));
+}
+
+export function hayLogoutRecienteAuth(): boolean {
+  if (!puedeUsarSessionStorage()) {
+    return false;
+  }
+
+  const logoutAt = Number(
+    window.sessionStorage.getItem(LOGOUT_MARKER_STORAGE_KEY)
+  );
+
+  if (!Number.isFinite(logoutAt) || logoutAt <= 0) {
+    window.sessionStorage.removeItem(LOGOUT_MARKER_STORAGE_KEY);
+    return false;
+  }
+
+  if (Date.now() - logoutAt > LOGOUT_RECIENTE_MS) {
+    window.sessionStorage.removeItem(LOGOUT_MARKER_STORAGE_KEY);
+    return false;
+  }
+
+  return true;
 }
 
 export function esSesionAuthVigente(sesion: SesionAuth | null): boolean {

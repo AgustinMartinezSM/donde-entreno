@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminGuard } from "../../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../../components/admin/AdminEstadoBadge";
+import { useAuthSession } from "../../../../components/auth/AuthSessionProvider";
 import { BrandName } from "../../../../components/brand/BrandName";
 import { AppButton } from "../../../../components/ui/AppButton";
 import { AppLinkButton } from "../../../../components/ui/AppLinkButton";
@@ -11,7 +12,7 @@ import { SectionHeader } from "../../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../../components/ui/SurfaceCard";
 import {
-  cerrarSesionAdmin,
+  hayLogoutRecienteAuth,
   obtenerSesionAdmin,
 } from "../../../../services/authService";
 import {
@@ -53,6 +54,7 @@ export default function AdminSolicitudDetallePage() {
 function AdminSolicitudDetalle() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { cerrarSesion: cerrarSesionAuthContext } = useAuthSession();
   const idParametro = params.id;
   const [sesion, setSesion] = useState<AdminSesion | null>(null);
   const [solicitud, setSolicitud] =
@@ -77,8 +79,9 @@ function AdminSolicitudDetalle() {
         }
 
         if (resultado.tipo === "sinSesion") {
-          cerrarSesionAdmin();
-          router.replace("/admin/login");
+          router.replace(
+            obtenerRutaLoginAdmin(`/admin/solicitudes/${idParametro}`)
+          );
           return;
         }
 
@@ -98,8 +101,8 @@ function AdminSolicitudDetalle() {
 
         if (error instanceof AdminApiError) {
           if (error.status === 401) {
-            cerrarSesionAdmin();
-            router.replace("/admin/login");
+            cerrarSesionAuthContext();
+            router.replace("/login?logout=1");
             return;
           }
 
@@ -134,11 +137,12 @@ function AdminSolicitudDetalle() {
     return () => {
       componenteActivo = false;
     };
-  }, [idParametro, router]);
+  }, [cerrarSesionAuthContext, idParametro, router]);
 
   function cerrarSesion() {
-    cerrarSesionAdmin();
-    router.replace("/admin/login");
+    cerrarSesionAuthContext();
+    setSesion(null);
+    window.location.replace("/login?logout=1");
   }
 
   function manejarCambioMotivoRechazo(valor: string) {
@@ -274,8 +278,8 @@ function AdminSolicitudDetalle() {
   ) {
     if (error instanceof AdminApiError) {
       if (error.status === 401) {
-        cerrarSesionAdmin();
-        router.replace("/admin/login");
+        cerrarSesionAuthContext();
+        router.replace("/login?logout=1");
         return;
       }
 
@@ -991,4 +995,12 @@ async function cargarDetalleDesdeSesion(
     sesion,
     solicitud,
   };
+}
+
+function obtenerRutaLoginAdmin(rutaRetorno: string): string {
+  if (hayLogoutRecienteAuth()) {
+    return "/login?logout=1";
+  }
+
+  return `/login?returnTo=${encodeURIComponent(rutaRetorno)}`;
 }

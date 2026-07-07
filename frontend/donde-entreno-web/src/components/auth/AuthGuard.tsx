@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { hayLogoutRecienteAuth } from "../../services/authService";
 import { useAuthSession } from "./AuthSessionProvider";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { StatusMessage } from "../ui/StatusMessage";
@@ -25,7 +26,7 @@ export function AuthGuard({ children, returnTo }: AuthGuardProps) {
     }
 
     redireccionEnCursoRef.current = true;
-    router.replace(`/login?returnTo=${encodeURIComponent(rutaRetorno)}`);
+    router.replace(obtenerRutaLoginProtegida(rutaRetorno));
   }, [router, rutaRetorno, status]);
 
   if (status === "loading") {
@@ -49,6 +50,14 @@ export function AuthGuard({ children, returnTo }: AuthGuardProps) {
   }
 
   return <>{children}</>;
+}
+
+function obtenerRutaLoginProtegida(rutaRetorno: string): string {
+  if (hayLogoutRecienteAuth()) {
+    return "/login?logout=1";
+  }
+
+  return `/login?returnTo=${encodeURIComponent(rutaRetorno)}`;
 }
 
 function AuthGuardShell({ children }: { children: ReactNode }) {

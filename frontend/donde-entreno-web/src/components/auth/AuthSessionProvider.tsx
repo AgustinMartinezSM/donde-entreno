@@ -14,6 +14,7 @@ import {
   cerrarSesionAuth,
   esSesionAuthVigente,
   guardarSesionAuth,
+  hayLogoutRecienteAuth,
   obtenerSesionAuth,
   obtenerUsuarioActual,
 } from "../../services/authService";
@@ -73,6 +74,12 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
   const refrescarUsuarioActual = useCallback(async () => {
     const versionActual = versionSesionRef.current;
+
+    if (hayLogoutRecienteAuth()) {
+      cerrarSesion();
+      return;
+    }
+
     const sesionActual = obtenerSesionAuth();
 
     if (!sesionActual || !esSesionAuthVigente(sesionActual)) {
@@ -198,6 +205,12 @@ export function useAuthSession() {
 }
 
 async function resolverSesionInicial(): Promise<ResultadoSesionInicial> {
+  if (hayLogoutRecienteAuth()) {
+    return {
+      tipo: "guest",
+    };
+  }
+
   const sesionActual = obtenerSesionAuth();
 
   if (!sesionActual || !esSesionAuthVigente(sesionActual)) {

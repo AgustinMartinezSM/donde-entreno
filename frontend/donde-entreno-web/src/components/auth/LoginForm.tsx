@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AuthApiError, login } from "../../services/authService";
+import {
+  AuthApiError,
+  hayLogoutRecienteAuth,
+  login,
+  obtenerSesionAuth,
+} from "../../services/authService";
 import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
@@ -13,12 +18,6 @@ import type { FormEvent } from "react";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const esLogout = searchParams.get("logout") === "1";
-  const returnToSeguro = esLogout
-    ? null
-    : obtenerReturnToSeguro(searchParams.get("returnTo"));
-  const redireccionAutenticadoRef = useRef(false);
-  const limpiezaLogoutRef = useRef(false);
   const {
     status,
     sesion,
@@ -26,6 +25,19 @@ export function LoginForm() {
     iniciarSesionDesdeRespuesta,
     cerrarSesion,
   } = useAuthSession();
+  const esLogout = searchParams.get("logout") === "1";
+  const logoutReciente = hayLogoutRecienteAuth();
+  const sesionPersistida =
+    status === "authenticated" ? obtenerSesionAuth() : null;
+  const estadoAutenticadoStale =
+    status === "authenticated" && sesionPersistida === null;
+  const debeEstabilizarLogout =
+    esLogout || logoutReciente || estadoAutenticadoStale;
+  const returnToSeguro = debeEstabilizarLogout
+    ? null
+    : obtenerReturnToSeguro(searchParams.get("returnTo"));
+  const redireccionAutenticadoRef = useRef(false);
+  const limpiezaLogoutRef = useRef(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -34,24 +46,35 @@ export function LoginForm() {
     useState<AuthErroresPorCampo | null>(null);
 
   useEffect(() => {
-    if (!esLogout || limpiezaLogoutRef.current) {
+    if (!debeEstabilizarLogout || limpiezaLogoutRef.current) {
       return;
     }
 
     limpiezaLogoutRef.current = true;
     cerrarSesion();
-  }, [cerrarSesion, esLogout]);
+  }, [cerrarSesion, debeEstabilizarLogout]);
 
   useEffect(() => {
     if (
-      esLogout ||
+      debeEstabilizarLogout ||
       status !== "authenticated" ||
       redireccionAutenticadoRef.current
     ) {
       return;
     }
 
-    const rolActual = usuario?.rol ?? sesion?.usuario.rol;
+    const sesionActual = obtenerSesionAuth();
+
+    if (!sesionActual) {
+      if (!limpiezaLogoutRef.current) {
+        limpiezaLogoutRef.current = true;
+        cerrarSesion();
+      }
+      return;
+    }
+
+    const rolActual =
+      usuario?.rol ?? sesionActual.usuario.rol ?? sesion?.usuario.rol;
 
     if (!rolActual) {
       return;
@@ -59,7 +82,15 @@ export function LoginForm() {
 
     redireccionAutenticadoRef.current = true;
     router.replace(returnToSeguro ?? obtenerRutaInicialPorRol(rolActual));
-  }, [esLogout, returnToSeguro, router, sesion, status, usuario]);
+  }, [
+    cerrarSesion,
+    debeEstabilizarLogout,
+    returnToSeguro,
+    router,
+    sesion,
+    status,
+    usuario,
+  ]);
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -192,7 +223,8 @@ export function LoginForm() {
         </StatusMessage>
       ) : null}
 
-      {esLogout && !errorGeneral ? (
+      {(esLogout || logoutReciente || estadoAutenticadoStale) &&
+      !errorGeneral ? (
         <StatusMessage variant="success" role="status" className="font-bold">
           Sesión cerrada correctamente.
         </StatusMessage>

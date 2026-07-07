@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  cerrarSesionAdmin,
+  hayLogoutRecienteAuth,
   obtenerSesionAdmin,
 } from "../../services/authService";
+import { useAuthSession } from "../auth/AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
 import { esRolAdmin } from "../../lib/authRedirects";
 import type { AdminSesion } from "../../types/auth";
@@ -18,12 +19,11 @@ type AdminGuardProps = {
 export function AdminGuard({ children }: AdminGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { cerrarSesion: cerrarSesionAuthContext } = useAuthSession();
   const [verificando, setVerificando] = useState(true);
   const [sesion, setSesion] = useState<AdminSesion | null>(null);
   const redireccionEnCursoRef = useRef(false);
-  const rutaLogin = `/login?returnTo=${encodeURIComponent(
-    pathname ?? "/admin/solicitudes"
-  )}`;
+  const rutaRetorno = pathname ?? "/admin/solicitudes";
 
   useEffect(() => {
     let componenteActivo = true;
@@ -35,7 +35,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
       if (!sesionActual && !redireccionEnCursoRef.current) {
         redireccionEnCursoRef.current = true;
-        router.replace(rutaLogin);
+        router.replace(obtenerRutaLoginAdmin(rutaRetorno));
       }
 
       setSesion(sesionActual);
@@ -45,10 +45,10 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return () => {
       componenteActivo = false;
     };
-  }, [router, rutaLogin]);
+  }, [router, rutaRetorno]);
 
   function cerrarSesion() {
-    cerrarSesionAdmin();
+    cerrarSesionAuthContext();
     setSesion(null);
     window.location.replace("/login?logout=1");
   }
@@ -121,4 +121,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
 function obtenerSesionAdminCliente(): Promise<AdminSesion | null> {
   return Promise.resolve(obtenerSesionAdmin());
+}
+
+function obtenerRutaLoginAdmin(rutaRetorno: string): string {
+  if (hayLogoutRecienteAuth()) {
+    return "/login?logout=1";
+  }
+
+  return `/login?returnTo=${encodeURIComponent(rutaRetorno)}`;
 }

@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminGuard } from "../../../components/admin/AdminGuard";
 import { AdminEstadoBadge } from "../../../components/admin/AdminEstadoBadge";
+import { useAuthSession } from "../../../components/auth/AuthSessionProvider";
 import { BrandName } from "../../../components/brand/BrandName";
 import { AppButton } from "../../../components/ui/AppButton";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 import {
-  cerrarSesionAdmin,
+  hayLogoutRecienteAuth,
   obtenerSesionAdmin,
 } from "../../../services/authService";
 import {
@@ -77,6 +78,7 @@ export default function AdminSolicitudesPage() {
 
 function AdminSolicitudesListado() {
   const router = useRouter();
+  const { cerrarSesion: cerrarSesionAuthContext } = useAuthSession();
   const [sesion, setSesion] = useState<AdminSesion | null>(null);
   const [paginaSolicitudes, setPaginaSolicitudes] =
     useState<SolicitudesPublicacionAdminPage | null>(null);
@@ -95,8 +97,7 @@ function AdminSolicitudesListado() {
         }
 
         if (resultado.tipo === "sinSesion") {
-          cerrarSesionAdmin();
-          router.replace("/admin/login");
+          router.replace(obtenerRutaLoginAdmin("/admin/solicitudes"));
           return;
         }
 
@@ -111,8 +112,8 @@ function AdminSolicitudesListado() {
 
         if (error instanceof AdminApiError) {
           if (error.status === 401) {
-            cerrarSesionAdmin();
-            router.replace("/admin/login");
+            cerrarSesionAuthContext();
+            router.replace("/login?logout=1");
             return;
           }
 
@@ -142,11 +143,12 @@ function AdminSolicitudesListado() {
     return () => {
       componenteActivo = false;
     };
-  }, [filtroEstado, paginaActual, router]);
+  }, [cerrarSesionAuthContext, filtroEstado, paginaActual, router]);
 
   function cerrarSesion() {
-    cerrarSesionAdmin();
-    router.replace("/admin/login");
+    cerrarSesionAuthContext();
+    setSesion(null);
+    window.location.replace("/login?logout=1");
   }
 
   function cambiarFiltroEstado(evento: ChangeEvent<HTMLSelectElement>) {
@@ -539,4 +541,12 @@ async function cargarSolicitudesDesdeSesion(
     sesion,
     paginaSolicitudes,
   };
+}
+
+function obtenerRutaLoginAdmin(rutaRetorno: string): string {
+  if (hayLogoutRecienteAuth()) {
+    return "/login?logout=1";
+  }
+
+  return `/login?returnTo=${encodeURIComponent(rutaRetorno)}`;
 }

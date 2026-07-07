@@ -44,7 +44,7 @@ export function HeaderSessionMenu() {
 
   function manejarCerrarSesion() {
     cerrarSesion();
-    router.replace("/");
+    router.replace("/login?logout=1");
   }
 
   return (

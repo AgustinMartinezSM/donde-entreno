@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthApiError, login } from "../../services/authService";
 import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
@@ -13,12 +13,18 @@ import type { FormEvent } from "react";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnToSeguro = obtenerReturnToSeguro(searchParams.get("returnTo"));
+  const esLogout = searchParams.get("logout") === "1";
+  const returnToSeguro = esLogout
+    ? null
+    : obtenerReturnToSeguro(searchParams.get("returnTo"));
+  const redireccionAutenticadoRef = useRef(false);
+  const limpiezaLogoutRef = useRef(false);
   const {
     status,
     sesion,
     usuario,
     iniciarSesionDesdeRespuesta,
+    cerrarSesion,
   } = useAuthSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +34,20 @@ export function LoginForm() {
     useState<AuthErroresPorCampo | null>(null);
 
   useEffect(() => {
-    if (status !== "authenticated") {
+    if (!esLogout || limpiezaLogoutRef.current) {
+      return;
+    }
+
+    limpiezaLogoutRef.current = true;
+    cerrarSesion();
+  }, [cerrarSesion, esLogout]);
+
+  useEffect(() => {
+    if (
+      esLogout ||
+      status !== "authenticated" ||
+      redireccionAutenticadoRef.current
+    ) {
       return;
     }
 
@@ -38,8 +57,9 @@ export function LoginForm() {
       return;
     }
 
+    redireccionAutenticadoRef.current = true;
     router.replace(returnToSeguro ?? obtenerRutaInicialPorRol(rolActual));
-  }, [returnToSeguro, router, sesion, status, usuario]);
+  }, [esLogout, returnToSeguro, router, sesion, status, usuario]);
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -169,6 +189,12 @@ export function LoginForm() {
       {errorGeneral ? (
         <StatusMessage variant="error" role="alert" className="font-bold">
           {errorGeneral}
+        </StatusMessage>
+      ) : null}
+
+      {esLogout && !errorGeneral ? (
+        <StatusMessage variant="success" role="status" className="font-bold">
+          Sesión cerrada correctamente.
         </StatusMessage>
       ) : null}
 

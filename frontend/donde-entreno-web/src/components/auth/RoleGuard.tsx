@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
@@ -25,21 +25,23 @@ export function RoleGuard({
   const pathname = usePathname();
   const { status, sesion, usuario, cerrarSesion } = useAuthSession();
   const rutaRetorno = returnTo ?? pathname ?? "/";
+  const redireccionEnCursoRef = useRef(false);
   const rolActual = usuario?.rol ?? sesion?.usuario.rol ?? null;
   const tieneRolPermitido =
     rolActual !== null && rolesPermitidos.includes(rolActual);
 
   useEffect(() => {
-    if (status !== "guest") {
+    if (status !== "guest" || redireccionEnCursoRef.current) {
       return;
     }
 
+    redireccionEnCursoRef.current = true;
     router.replace(`/login?returnTo=${encodeURIComponent(rutaRetorno)}`);
   }, [router, rutaRetorno, status]);
 
   function cerrarSesionYRedirigir() {
     cerrarSesion();
-    router.replace("/login");
+    router.replace("/login?logout=1");
   }
 
   if (status === "loading") {

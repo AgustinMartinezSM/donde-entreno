@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthSession } from "./AuthSessionProvider";
 import { SurfaceCard } from "../ui/SurfaceCard";
@@ -17,12 +17,14 @@ export function AuthGuard({ children, returnTo }: AuthGuardProps) {
   const pathname = usePathname();
   const { status } = useAuthSession();
   const rutaRetorno = returnTo ?? pathname ?? "/";
+  const redireccionEnCursoRef = useRef(false);
 
   useEffect(() => {
-    if (status !== "guest") {
+    if (status !== "guest" || redireccionEnCursoRef.current) {
       return;
     }
 
+    redireccionEnCursoRef.current = true;
     router.replace(`/login?returnTo=${encodeURIComponent(rutaRetorno)}`);
   }, [router, rutaRetorno, status]);
 

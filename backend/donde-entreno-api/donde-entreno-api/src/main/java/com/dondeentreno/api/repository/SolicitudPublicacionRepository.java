@@ -91,6 +91,11 @@ public interface SolicitudPublicacionRepository extends JpaRepository<SolicitudP
             Long perfilPublicadorId
     );
 
+    Optional<SolicitudPublicacion> findByActividadGenerada_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+            Long actividadGeneradaId,
+            Long perfilPublicadorId
+    );
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = {
             "deporte",

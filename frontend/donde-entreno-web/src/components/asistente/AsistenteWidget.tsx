@@ -10,9 +10,8 @@ import { AsistenteConversacion } from "./AsistenteConversacion";
 /*
   Widget flotante del Asistente DondeEntreno.
 
-  - Burbuja circular azul en la esquina inferior derecha. Se ubica arriba del
-    ScrollToTopButton (que vive en bottom-5 right-5 con 3rem de alto) usando
-    bottom-20, así los dos conviven sin taparse.
+  - Burbuja circular azul en la esquina inferior derecha. En mobile deja lugar
+    para la navegación inferior y convive con el botón de volver arriba.
   - Al abrir: tarjeta de ~380px anclada abajo a la derecha en desktop, y
     bottom sheet a lo ancho en mobile.
   - El estado vive solo en memoria del componente: no se persiste nada.
@@ -55,6 +54,24 @@ export function AsistenteWidget() {
       if (temporizadorRespuesta.current) {
         clearTimeout(temporizadorRespuesta.current);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    function abrirDesdeLaPagina() {
+      setAbierto(true);
+    }
+
+    window.addEventListener(
+      "donde-entreno:abrir-asistente",
+      abrirDesdeLaPagina
+    );
+
+    return () => {
+      window.removeEventListener(
+        "donde-entreno:abrir-asistente",
+        abrirDesdeLaPagina
+      );
     };
   }, []);
 
@@ -184,7 +201,7 @@ export function AsistenteWidget() {
         onClick={() => setAbierto(true)}
         aria-label="Abrir asistente de DondeEntreno"
         aria-haspopup="dialog"
-        className="fixed bottom-20 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F3D5E] text-white shadow-[0_12px_30px_rgba(0,47,73,0.28)] ring-4 ring-[#4FB3D9]/20 transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:bg-[#0B314D] active:scale-95"
+        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F3D5E] text-white shadow-[0_12px_30px_rgba(0,47,73,0.28)] ring-4 ring-[#4FB3D9]/20 transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:bg-[#0B314D] active:scale-95 md:bottom-20 md:right-5"
       >
         <svg
           viewBox="0 0 24 24"

@@ -5,6 +5,7 @@ import { AsistenteWidget } from "../components/asistente/AsistenteWidget";
 import { AuthSessionProvider } from "../components/auth/AuthSessionProvider";
 import { ScrollToTopButton } from "../components/layout/ScrollToTopButton";
 import { Footer } from "../components/layout/Footer";
+import { MobileNavigation } from "../components/layout/MobileNavigation";
 import { SITE_URL } from "../lib/siteConfig";
 
 const inter = Inter({
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s | DondeEntreno",
   },
   description:
-    "Encontrá deportes, clubes, profesores, gimnasios y actividades deportivas cerca tuyo.",
+    "Descubrí deportes, clubes, profesores y actividades cerca tuyo, guardá tus favoritas y conectate con tu comunidad deportiva local.",
     icons: {
         icon: "/brand/favicon.png",
         shortcut: "/brand/favicon.png",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DondeEntreno",
     description:
-      "Guía deportiva local para encontrar clubes, profesores, gimnasios y actividades deportivas cerca tuyo.",
+      "Tu comunidad deportiva local para descubrir clubes, profesores, espacios y actividades cerca tuyo.",
     type: "website",
     locale: "es_AR",
     siteName: "DondeEntreno",
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "DondeEntreno",
     description:
-      "Encontrá deportes, clubes, profesores, gimnasios y actividades deportivas cerca tuyo.",
+      "Descubrí dónde entrenar y conectate con la comunidad deportiva de tu ciudad.",
   },
 };
 
@@ -81,6 +82,7 @@ export default function RootLayout({
         <AuthSessionProvider>
           {children}
           <Footer />
+          <MobileNavigation />
           <ScrollToTopButton />
           <AsistenteWidget />
         </AuthSessionProvider>

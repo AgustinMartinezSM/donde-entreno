@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { Actividad } from "../types/actividad";
 import { Header } from "../components/layout/Header";
 import { HomeHero } from "../components/home/HomeHero";
+import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
 import { HomePopularSports } from "../components/home/HomePopularSports";
 import { HomePublishCta } from "../components/home/HomePublishCta";
-import { ActivityList } from "../components/explorar/ActivityList";
-import { ErrorState } from "../components/feedback/ErrorState";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { buscarActividades } from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
@@ -16,27 +14,44 @@ import { obtenerCiudadPorSlug } from "../services/ciudadService";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Guía deportiva local",
+  title: "Descubrí dónde entrenar cerca tuyo",
   description:
-    "Encontrá dónde entrenar cerca tuyo: deportes, clubes, profesores, gimnasios y actividades deportivas en tu ciudad.",
+    "Descubrí actividades, clubes, profesores y espacios deportivos cerca tuyo. Guardá lo que te interesa y conectate con tu comunidad deportiva local.",
   openGraph: {
-    title: "DondeEntreno - Guía deportiva local",
+    title: "DondeEntreno - Tu comunidad deportiva local",
     description:
-      "Buscá deportes, clubes, profesores, gimnasios y actividades deportivas cerca tuyo.",
+      "Descubrí dónde entrenar, guardá actividades y seguí a clubes y profesores de tu ciudad.",
   },
 };
 
-export default async function Home() {
+type HomeProps = {
+  searchParams: Promise<{
+    ciudadSlug?: string | string[];
+  }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
   let actividades: Actividad[] = [];
   let huboError = false;
   let ciudadNombre = "Mar del Plata";
-  const ciudadSlug = DEFAULT_CITY_SLUG;
+  const params = await searchParams;
+  const ciudadSlugSolicitada = Array.isArray(params.ciudadSlug)
+    ? params.ciudadSlug[0]
+    : params.ciudadSlug;
+  let ciudadSlug = ciudadSlugSolicitada?.trim() || DEFAULT_CITY_SLUG;
 
   try {
     const ciudadDefault = await obtenerCiudadPorSlug(ciudadSlug);
     ciudadNombre = ciudadDefault.nombre;
   } catch {
-    ciudadNombre = "Mar del Plata";
+    ciudadSlug = DEFAULT_CITY_SLUG;
+
+    try {
+      const ciudadDefault = await obtenerCiudadPorSlug(ciudadSlug);
+      ciudadNombre = ciudadDefault.nombre;
+    } catch {
+      ciudadNombre = "Mar del Plata";
+    }
   }
 
   try {
@@ -53,47 +68,26 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+    <main className="min-h-screen overflow-x-hidden bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6">
         <Header />
 
-        <div className="py-10 sm:py-14">
+        <div className="py-7 sm:py-10">
           <HomeHero
             ciudadNombreInicial={ciudadNombre}
             ciudadSlugInicial={ciudadSlug}
           />
+
+          <HomeDiscoveryFeed
+            actividades={actividades}
+            ciudadNombre={ciudadNombre}
+            ciudadSlug={ciudadSlug}
+            huboError={huboError}
+          />
+
           <HomePopularSports ciudadSlug={ciudadSlug} />
-
-          <section className="mt-14 rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:mt-16 sm:p-7">
-            {huboError ? (
-              <div className="mt-6">
-                <ErrorState
-                  titulo="No pudimos cargar las actividades"
-                  descripcion="No pudimos conectarnos con el servidor. Intentá nuevamente en unos minutos."
-                  mostrarBotonInicio={false}
-                  mostrarBotonExplorar
-                />
-              </div>
-            ) : (
-              <ActivityList
-                actividades={actividades}
-                titulo="Actividades destacadas"
-                descripcion={`Opciones disponibles para empezar a moverte en ${ciudadNombre}.`}
-              />
-            )}
-
-            <div className="mt-6 flex justify-end">
-              <Link
-                href={`/explorar?ciudadSlug=${encodeURIComponent(ciudadSlug)}`}
-                className="rounded-[var(--radius-md)] border border-[#BFDDEA] px-4 py-3 text-center text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
-              >
-                Ver todas
-              </Link>
-            </div>
-          </section>
-
-          <HomeHowItWorks />
           <HomeCrearCuentaCta />
+          <HomeHowItWorks />
           <HomePublishCta ciudadSlug={ciudadSlug} />
         </div>
       </section>

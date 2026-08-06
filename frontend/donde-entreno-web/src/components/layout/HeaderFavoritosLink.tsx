@@ -37,11 +37,11 @@ export function HeaderFavoritosLink() {
     <Link
       href={href}
       aria-label={etiqueta}
-      className="relative inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-3 py-2 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+      className="relative hidden min-h-11 items-center gap-2 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-white px-3 py-2 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] lg:inline-flex"
     >
       <IconoGuardar relleno={cantidad > 0} className="h-4 w-4" />
 
-      <span className="hidden sm:inline">Favoritos</span>
+      <span className="hidden 2xl:inline">Guardados</span>
 
       {cantidad > 0 && (
         <span

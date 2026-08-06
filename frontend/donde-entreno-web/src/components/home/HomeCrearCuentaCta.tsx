@@ -11,13 +11,13 @@ const BENEFICIOS = [
     icono: "guardar",
   },
   {
-    titulo: "Seguí tus deportes",
-    detalle: "Elegí lo que te interesa y tené accesos directos.",
+    titulo: "Seguí clubes y profes",
+    detalle: "Enterate de las actividades de los publicadores que elegís.",
     icono: "corazon",
   },
   {
-    titulo: "Todo en tu cuenta",
-    detalle: "Tu ciudad, tus guardados y tus preferencias, siempre a mano.",
+    titulo: "Elegí tus preferencias",
+    detalle: "Tu ciudad, tus guardados y tus intereses, siempre a mano.",
     icono: "cuenta",
   },
 ] as const;
@@ -77,7 +77,7 @@ export function HomeCrearCuentaCta() {
   return (
     <SurfaceCard
       as="section"
-      className="mt-14 overflow-hidden bg-gradient-to-br from-[#0F3D5E] via-[#0B314D] to-[#0F3D5E] p-6 text-white sm:mt-16 sm:p-9"
+      className="mt-14 overflow-hidden border-[#0F3D5E] bg-[#0F3D5E] p-6 text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)] sm:mt-16 sm:p-9"
     >
       <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div>
@@ -89,8 +89,8 @@ export function HomeCrearCuentaCta() {
           </h2>
           <p className="mt-3 max-w-xl text-base leading-7 text-[#BFDDEA]">
             Explorar es libre. Con una cuenta, además, guardás tus actividades
-            favoritas, seguís tus deportes y tenés todo listo para cuando
-            quieras arrancar.
+            favoritas, seguís clubes y profes, y elegís los deportes que más te
+            interesan.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

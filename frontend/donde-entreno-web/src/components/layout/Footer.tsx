@@ -22,12 +22,12 @@ export function Footer() {
             </Link>
 
             <p className="mt-4 max-w-md text-sm leading-6 text-[#C9E4EF]">
-              La guía deportiva local para descubrir clubes, profes, gimnasios
-              y actividades cerca tuyo.
+              La comunidad deportiva local para descubrir clubes, profes,
+              espacios y actividades cerca tuyo.
             </p>
 
             <p className="mt-4 inline-flex rounded-full border border-[#2A5B78] bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#A7F3CF]">
-              Entrená cerca, elegí mejor
+              Descubrí, guardá y entrená cerca
             </p>
           </div>
 

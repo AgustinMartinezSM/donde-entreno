@@ -98,6 +98,17 @@ export function CitySelector() {
       params.set("ciudadSlug", ciudadResuelta.slug);
       params.set("page", "0");
       router.replace(`/explorar?${params.toString()}`);
+      return;
+    }
+
+    if (
+      pathname === "/" &&
+      !ciudadSlugDesdeUrl &&
+      ciudadResuelta.slug !== DEFAULT_CITY_SLUG
+    ) {
+      const params = new URLSearchParams(searchParamsSerializados);
+      params.set("ciudadSlug", ciudadResuelta.slug);
+      router.replace(`/?${params.toString()}`);
     }
   }, [
     ciudadIdDesdeUrl,
@@ -124,6 +135,13 @@ export function CitySelector() {
       params.set("ciudadSlug", nuevaCiudad.slug);
       params.set("page", "0");
       router.push(`/explorar?${params.toString()}`);
+      return;
+    }
+
+    if (pathname === "/") {
+      const params = new URLSearchParams(searchParamsSerializados);
+      params.set("ciudadSlug", nuevaCiudad.slug);
+      router.push(`/?${params.toString()}`);
       return;
     }
 

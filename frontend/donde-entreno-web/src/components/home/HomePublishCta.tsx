@@ -18,7 +18,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
     <SurfaceCard
       as="section"
       variant="success"
-      className="mt-16 overflow-hidden bg-gradient-to-br from-[#E6F7EF] via-white to-[#E8F6FB] p-5 sm:mt-20 sm:p-8"
+      className="mt-14 overflow-hidden bg-white p-5 sm:mt-16 sm:p-7"
     >
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div>
@@ -26,7 +26,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
             Para publicadores
           </p>
           <h2 className="mt-2 text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl">
-            ¿Tenés una actividad para sumar?
+            Sumá tu club, profe o actividad
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
             Si sos club, profe, gimnasio o espacio deportivo, cargá tu propuesta
@@ -39,7 +39,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
 
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
           <AppLinkButton href="/publicar" variant="primary">
-            Publicar actividad
+            Sumar mi actividad
           </AppLinkButton>
           <AppLinkButton
             href={crearHrefExplorarCiudad(ciudadSlug)}

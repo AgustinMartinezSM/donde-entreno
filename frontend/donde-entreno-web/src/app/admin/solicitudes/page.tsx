@@ -214,6 +214,17 @@ function AdminSolicitudesListado() {
                   </div>
                 )}
 
+                <AppLinkButton
+                  href="/admin/solicitudes-cambio"
+                  variant="outline"
+                >
+                  Solicitudes de cambio
+                </AppLinkButton>
+
+                <AppLinkButton href="/admin/imagenes" variant="outline">
+                  Moderación de imágenes
+                </AppLinkButton>
+
                 <AppButton
                   type="button"
                   onClick={cerrarSesion}

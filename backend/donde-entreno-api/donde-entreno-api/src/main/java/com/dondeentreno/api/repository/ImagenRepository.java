@@ -23,44 +23,85 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     List<Imagen> findByActivaTrueAndActividad_IdOrderByOrdenAsc(Long actividadId);
 
     /**
-     * Busca imágenes activas de una actividad por slug,
-     * ordenadas por el campo orden.
+     * Imágenes visibles en público de una actividad por slug:
+     * activas Y aprobadas por moderación.
      *
-     * Esto nos va a servir para:
      * GET /api/actividades/{slug}/imagenes
      */
-    List<Imagen> findByActivaTrueAndActividad_SlugOrderByOrdenAsc(String actividadSlug);
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndActividad_SlugOrderByOrdenAsc(
+            String estadoModeracion,
+            String actividadSlug
+    );
 
     /**
-     * Busca imágenes activas de una actividad por slug y tipo.
-     *
-     * Ejemplo:
-     * tipoImagen = PRINCIPAL
-     * tipoImagen = GALERIA
+     * Imágenes visibles en público de una actividad por slug y tipo
+     * (PRINCIPAL o GALERIA): activas Y aprobadas por moderación.
      */
-    List<Imagen> findByActivaTrueAndActividad_SlugAndTipoImagenOrderByOrdenAsc(
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndActividad_SlugAndTipoImagenOrderByOrdenAsc(
+            String estadoModeracion,
             String actividadSlug,
             String tipoImagen
     );
 
     /**
-     * Busca imágenes activas de un perfil publicador por ID,
-     * ordenadas por el campo orden.
-     *
-     * Ejemplo:
-     * logo o portada de un club, gimnasio o profesor.
+     * Imágenes visibles en público de un perfil publicador:
+     * activas Y aprobadas por moderación.
      */
-    List<Imagen> findByActivaTrueAndPerfilPublicador_IdOrderByOrdenAsc(Long perfilPublicadorId);
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndPerfilPublicador_IdOrderByOrdenAsc(
+            String estadoModeracion,
+            Long perfilPublicadorId
+    );
 
     /**
-     * Busca imágenes activas de un perfil publicador por ID y tipo.
-     *
-     * Ejemplo:
-     * tipoImagen = LOGO
-     * tipoImagen = PORTADA
+     * Imágenes visibles en público de un perfil publicador por tipo
+     * (LOGO o PORTADA): activas Y aprobadas por moderación.
      */
-    List<Imagen> findByActivaTrueAndPerfilPublicador_IdAndTipoImagenOrderByOrdenAsc(
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndPerfilPublicador_IdAndTipoImagenOrderByOrdenAsc(
+            String estadoModeracion,
             Long perfilPublicadorId,
             String tipoImagen
+    );
+
+    /**
+     * Cola de moderación del admin filtrada por estado
+     * (el orden lo define el Pageable: más antiguas primero).
+     */
+    org.springframework.data.domain.Page<Imagen> findByEstadoModeracion(
+            String estadoModeracion,
+            org.springframework.data.domain.Pageable pageable
+    );
+
+    /**
+     * Imagen PRINCIPAL activa vigente de una actividad: al aprobar una
+     * nueva PRINCIPAL, la anterior se desactiva lógicamente.
+     */
+    List<Imagen> findByActividad_IdAndTipoImagenAndActivaTrue(
+            Long actividadId,
+            String tipoImagen
+    );
+
+    /**
+     * Todas las imágenes de una actividad (incluidas pendientes y
+     * rechazadas): el panel del publicador muestra el estado de cada una.
+     */
+    List<Imagen> findByActividad_IdOrderByCreatedAtDesc(Long actividadId);
+
+    /**
+     * Imagen puntual validando que pertenezca a la actividad
+     * (ownership de la actividad ya validado por el service).
+     */
+    java.util.Optional<Imagen> findByIdAndActividad_Id(Long id, Long actividadId);
+
+    /**
+     * Cuenta las imágenes de las actividades de un perfil publicador en
+     * un estado de moderación dado (métricas del panel: se usa con
+     * PENDIENTE). Las imágenes que sube el publicador cuelgan de la
+     * actividad (perfil_publicador_id queda null por la constraint
+     * chk_imagen_duenio_unico), por eso se cuenta vía actividad. Sin
+     * filtro de activa: nacen PENDIENTE y activa=false hasta aprobarse.
+     */
+    long countByEstadoModeracionAndActividad_PerfilPublicador_Id(
+            String estadoModeracion,
+            Long perfilPublicadorId
     );
 }

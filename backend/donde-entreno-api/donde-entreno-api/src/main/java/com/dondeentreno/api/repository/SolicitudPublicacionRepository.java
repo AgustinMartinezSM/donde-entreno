@@ -27,6 +27,17 @@ public interface SolicitudPublicacionRepository extends JpaRepository<SolicitudP
      */
     boolean existsByCodigoSeguimiento(String codigoSeguimiento);
 
+    /**
+     * Cuenta las solicitudes de publicación propias en un estado dado
+     * (métricas del panel del publicador). Acotada por usuario + perfil,
+     * igual que el listado "mis solicitudes".
+     */
+    long countByUsuario_IdAndPerfilPublicador_IdAndEstadoAndDeletedAtIsNull(
+            Long usuarioId,
+            Long perfilPublicadorId,
+            String estado
+    );
+
     @EntityGraph(attributePaths = {
             "deporte",
             "ciudad",

@@ -8,17 +8,23 @@ import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";
+import { PublicadorMetricasPanel } from "./PublicadorMetricasPanel";
 import {
   PublicadorApiError,
+  obtenerMetricasPublicador,
   obtenerPerfilPublicador,
 } from "../../services/publicadorService";
-import type { PerfilPublicadorActual } from "../../types/publicador";
+import type {
+  MetricasPublicador,
+  PerfilPublicadorActual,
+} from "../../types/publicador";
 import { useState } from "react";
 
 export function PublicadorDashboard() {
   const router = useRouter();
   const { accessToken, cerrarSesion } = useAuthSession();
   const [perfil, setPerfil] = useState<PerfilPublicadorActual | null>(null);
+  const [metricas, setMetricas] = useState<MetricasPublicador | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +36,17 @@ export function PublicadorDashboard() {
         componenteActivo = false;
       };
     }
+
+    obtenerMetricasPublicador(accessToken)
+      .then((metricasActuales) => {
+        if (componenteActivo) {
+          setMetricas(metricasActuales);
+        }
+      })
+      .catch(() => {
+        // Las métricas son un resumen best-effort: si fallan, el panel
+        // sigue funcionando sin ellas (el perfil es lo crítico).
+      });
 
     obtenerPerfilPublicador(accessToken)
       .then((perfilActual) => {
@@ -119,6 +136,10 @@ export function PublicadorDashboard() {
           </StatusMessage>
         ) : null}
 
+        {metricas && !error ? (
+          <PublicadorMetricasPanel metricas={metricas} />
+        ) : null}
+
         {perfil ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-6 sm:p-8">
@@ -178,6 +199,20 @@ export function PublicadorDashboard() {
                   fullWidth
                 >
                   Mis solicitudes
+                </AppLinkButton>
+                <AppLinkButton
+                  href="/publicador/solicitudes-cambio"
+                  variant="outline"
+                  fullWidth
+                >
+                  Solicitudes de cambio
+                </AppLinkButton>
+                <AppLinkButton
+                  href="/publicador/perfil"
+                  variant="outline"
+                  fullWidth
+                >
+                  Editar mi perfil
                 </AppLinkButton>
                 <StatusMessage variant="info">
                   Revisá las actividades que ya fueron aprobadas y publicadas.

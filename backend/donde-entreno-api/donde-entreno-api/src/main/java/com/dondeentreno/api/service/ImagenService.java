@@ -17,6 +17,13 @@ import java.util.List;
 @Service
 public class ImagenService {
 
+    /**
+     * Las vistas públicas solo muestran imágenes aprobadas por
+     * moderación (además de activas). Las PENDIENTE/RECHAZADA solo
+     * se ven en el panel del publicador y en la cola del admin.
+     */
+    private static final String ESTADO_MODERACION_APROBADA = "APROBADA";
+
     private final ImagenRepository imagenRepository;
 
     /**
@@ -30,14 +37,18 @@ public class ImagenService {
     }
 
     /**
-     * Obtiene imágenes activas de una actividad por slug.
+     * Obtiene imágenes visibles en público de una actividad por slug
+     * (activas y aprobadas por moderación).
      *
      * @param actividadSlug slug de la actividad.
-     * @return lista de imágenes activas en formato DTO.
+     * @return lista de imágenes visibles en formato DTO.
      */
     public List<ImagenDTO> obtenerImagenesPorActividadSlug(String actividadSlug) {
-        List<Imagen> imagenes =
-                imagenRepository.findByActivaTrueAndActividad_SlugOrderByOrdenAsc(actividadSlug);
+        List<Imagen> imagenes = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndActividad_SlugOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
+                        actividadSlug
+                );
 
         return imagenes.stream()
                 .map(ImagenMapper::toDTO)
@@ -45,18 +56,20 @@ public class ImagenService {
     }
 
     /**
-     * Obtiene imágenes activas de una actividad por slug y tipo.
+     * Obtiene imágenes visibles en público de una actividad
+     * por slug y tipo (activas y aprobadas por moderación).
      *
      * @param actividadSlug slug de la actividad.
      * @param tipoImagen tipo de imagen.
-     * @return lista de imágenes activas filtradas por tipo.
+     * @return lista de imágenes visibles filtradas por tipo.
      */
     public List<ImagenDTO> obtenerImagenesPorActividadSlugYTipo(
             String actividadSlug,
             String tipoImagen
     ) {
-        List<Imagen> imagenes =
-                imagenRepository.findByActivaTrueAndActividad_SlugAndTipoImagenOrderByOrdenAsc(
+        List<Imagen> imagenes = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndActividad_SlugAndTipoImagenOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
                         actividadSlug,
                         tipoImagen
                 );
@@ -67,14 +80,18 @@ public class ImagenService {
     }
 
     /**
-     * Obtiene imágenes activas de un perfil publicador por ID.
+     * Obtiene imágenes visibles en público de un perfil publicador
+     * (activas y aprobadas por moderación).
      *
      * @param perfilPublicadorId ID del perfil publicador.
-     * @return lista de imágenes activas en formato DTO.
+     * @return lista de imágenes visibles en formato DTO.
      */
     public List<ImagenDTO> obtenerImagenesPorPerfilPublicador(Long perfilPublicadorId) {
-        List<Imagen> imagenes =
-                imagenRepository.findByActivaTrueAndPerfilPublicador_IdOrderByOrdenAsc(perfilPublicadorId);
+        List<Imagen> imagenes = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndPerfilPublicador_IdOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
+                        perfilPublicadorId
+                );
 
         return imagenes.stream()
                 .map(ImagenMapper::toDTO)
@@ -82,18 +99,20 @@ public class ImagenService {
     }
 
     /**
-     * Obtiene imágenes activas de un perfil publicador por ID y tipo.
+     * Obtiene imágenes visibles en público de un perfil publicador
+     * por tipo (activas y aprobadas por moderación).
      *
      * @param perfilPublicadorId ID del perfil publicador.
      * @param tipoImagen tipo de imagen.
-     * @return lista de imágenes activas filtradas por tipo.
+     * @return lista de imágenes visibles filtradas por tipo.
      */
     public List<ImagenDTO> obtenerImagenesPorPerfilPublicadorYTipo(
             Long perfilPublicadorId,
             String tipoImagen
     ) {
-        List<Imagen> imagenes =
-                imagenRepository.findByActivaTrueAndPerfilPublicador_IdAndTipoImagenOrderByOrdenAsc(
+        List<Imagen> imagenes = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndPerfilPublicador_IdAndTipoImagenOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
                         perfilPublicadorId,
                         tipoImagen
                 );

@@ -70,7 +70,6 @@ public class Imagen {
      *
      * Ejemplo:
      * https://...
-     * /uploads/actividades/boxeo.jpg
      */
     @Column(name = "url", nullable = false, length = 500)
     private String url;
@@ -110,6 +109,23 @@ public class Imagen {
      */
     @Column(name = "activa", nullable = false)
     private Boolean activa;
+
+    /**
+     * Estado de moderación: PENDIENTE, APROBADA o RECHAZADA.
+     *
+     * Las vistas públicas solo muestran las APROBADAS; el panel del
+     * publicador cuenta las PENDIENTE. Inicializado en APROBADA para
+     * que cualquier alta programática existente conserve el
+     * comportamiento previo a la moderación.
+     */
+    @Column(name = "estado_moderacion", nullable = false, length = 30)
+    private String estadoModeracion = "APROBADA";
+
+    /**
+     * Motivo del rechazo administrativo (visible para el publicador).
+     */
+    @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
+    private String motivoRechazo;
 
     /**
      * Fecha de creación.
@@ -215,5 +231,21 @@ public class Imagen {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getEstadoModeracion() {
+        return estadoModeracion;
+    }
+
+    public void setEstadoModeracion(String estadoModeracion) {
+        this.estadoModeracion = estadoModeracion;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
     }
 }

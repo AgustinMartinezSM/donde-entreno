@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+import { AsistenteWidget } from "../components/asistente/AsistenteWidget";
 import { AuthSessionProvider } from "../components/auth/AuthSessionProvider";
 import { ScrollToTopButton } from "../components/layout/ScrollToTopButton";
 import { Footer } from "../components/layout/Footer";
+import { SITE_URL } from "../lib/siteConfig";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,6 +27,7 @@ export const metadata: Metadata = {
     Next.js la usa para armar el <title>, la descripción y datos básicos
     que pueden leer buscadores o redes sociales.
   */
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "DondeEntreno",
     template: "%s | DondeEntreno",
@@ -79,6 +82,7 @@ export default function RootLayout({
           {children}
           <Footer />
           <ScrollToTopButton />
+          <AsistenteWidget />
         </AuthSessionProvider>
       </body>
     </html>

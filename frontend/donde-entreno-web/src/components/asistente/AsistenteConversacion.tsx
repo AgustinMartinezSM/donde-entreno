@@ -178,7 +178,7 @@ export function AsistenteConversacion({
 
       <form
         onSubmit={manejarEnvio}
-        className="border-t border-[#DDEAF3] bg-white p-3"
+        className="border-t border-[#DDEAF3] bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3"
       >
         <div className="flex items-center gap-2">
           <input

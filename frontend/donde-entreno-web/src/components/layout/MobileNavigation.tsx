@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
+import {
+  esRolAdmin,
+  esRolPublicador,
+  obtenerRutaInicialPorRol,
+} from "../../lib/authRedirects";
 import { useAuthSession } from "../auth/AuthSessionProvider";
 
 type IconoNavegacion = "inicio" | "explorar" | "guardados" | "cuenta";
@@ -19,6 +23,9 @@ export function MobileNavigation() {
   const { status, sesion, usuario } = useAuthSession();
   const autenticado = status === "authenticated" && Boolean(sesion);
   const rol = usuario?.rol ?? sesion?.usuario.rol;
+  const usaPanel = Boolean(
+    autenticado && rol && (esRolAdmin(rol) || esRolPublicador(rol))
+  );
   const destinoCuenta = autenticado && rol
     ? obtenerRutaInicialPorRol(rol)
     : `/login?returnTo=${encodeURIComponent("/mi-cuenta")}`;
@@ -49,10 +56,14 @@ export function MobileNavigation() {
       activo: (ruta) => ruta === "/favoritos",
     },
     {
-      label: autenticado ? "Mi espacio" : "Ingresar",
+      label: usaPanel ? "Panel" : autenticado ? "Mi espacio" : "Ingresar",
       href: destinoCuenta,
       icono: "cuenta",
       activo: (ruta) =>
+        (!autenticado &&
+          ["/login", "/registro"].some(
+            (prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`)
+          )) ||
         ["/mi-cuenta", "/publicador", "/admin"].some(
           (prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`)
         ),

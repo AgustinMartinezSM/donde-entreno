@@ -82,7 +82,10 @@ export function AsistenteWidget() {
   useEffect(() => {
     if (!abierto && debeDevolverFoco.current) {
       debeDevolverFoco.current = false;
-      botonLauncherRef.current?.focus();
+      const destinoFoco =
+        botonLauncherRef.current ??
+        document.getElementById("asistente-home-trigger");
+      destinoFoco?.focus();
     }
   }, [abierto]);
 
@@ -194,6 +197,10 @@ export function AsistenteWidget() {
   }
 
   if (!abierto) {
+    if (rutaActual === "/") {
+      return null;
+    }
+
     return (
       <button
         ref={botonLauncherRef}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -6,6 +7,7 @@ import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../components/ui/SurfaceCard";
+import { CATALOGO_DEPORTES_ASISTENTE } from "../../../lib/asistente/conocimiento";
 import { buscarActividades } from "../../../services/actividadService";
 import { obtenerCiudadPorSlug } from "../../../services/ciudadService";
 import type { Actividad } from "../../../types/actividad";
@@ -15,6 +17,30 @@ type CiudadDetallePageProps = {
     slug: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: CiudadDetallePageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  const ciudad = await obtenerCiudadPorSlug(slug).catch(() => null);
+
+  if (!ciudad) {
+    return { title: "Ciudad no encontrada" };
+  }
+
+  const descripcion = `Encontrá clubes, profes, gimnasios y actividades deportivas en ${ciudad.nombre}, con horarios, precios y contacto directo.`;
+
+  return {
+    title: `Actividades deportivas en ${ciudad.nombre}`,
+    description: descripcion,
+    openGraph: {
+      title: `Deportes y actividades en ${ciudad.nombre} | DondeEntreno`,
+      description: descripcion,
+      type: "website",
+    },
+  };
+}
 
 export default async function CiudadDetallePage({
   params,
@@ -191,6 +217,30 @@ export default async function CiudadDetallePage({
                 ))}
               </div>
             )}
+          </SurfaceCard>
+
+          <SurfaceCard as="section" className="mt-8 p-5 sm:p-6">
+            <SectionHeader
+              eyebrow="Por deporte"
+              title={`Buscá por deporte en ${ciudad.nombre}`}
+              description="Entrá directo a las actividades del deporte que te interesa en esta ciudad."
+              className="mb-5"
+            />
+            <div className="flex flex-wrap gap-2">
+              {CATALOGO_DEPORTES_ASISTENTE.map((deporte) => (
+                <AppLinkButton
+                  key={deporte.slug}
+                  href={`/ciudades/${encodeURIComponent(
+                    ciudad.slug
+                  )}/${encodeURIComponent(deporte.slug)}`}
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  {deporte.nombre}
+                </AppLinkButton>
+              ))}
+            </div>
           </SurfaceCard>
         </div>
       </section>

@@ -1,5 +1,6 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.dto.ActualizarPerfilPublicadorRequestDTO;
 import com.dondeentreno.api.dto.PerfilPublicadorActualDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
@@ -11,6 +12,7 @@ import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.SolicitudPublicacionHorario;
 import com.dondeentreno.api.entity.Usuario;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.mapper.SolicitudPublicadorMapper;
@@ -73,6 +75,59 @@ public class PublicadorService {
                 ));
 
         return PerfilPublicadorActualDTO.desdePerfil(perfil);
+    }
+
+    /**
+     * Actualiza los campos de edicion directa del perfil del publicador
+     * autenticado: descripcion, instagram y email de contacto.
+     *
+     * Semantica PATCH: un campo null no se toca; un campo vacio o con
+     * solo espacios limpia el valor (queda null). Los campos sensibles
+     * (nombre publico, tipo, ciudad, whatsapp/telefono, estado) se
+     * editaran mas adelante mediante un flujo con revision admin.
+     *
+     * @param userId id del usuario autenticado (claim del JWT).
+     * @param request campos a actualizar.
+     * @return perfil actualizado.
+     */
+    @Transactional
+    public PerfilPublicadorActualDTO actualizarMiPerfil(
+            Long userId,
+            ActualizarPerfilPublicadorRequestDTO request
+    ) {
+        if (userId == null) {
+            throw new CredencialesInvalidasException("No autenticado.");
+        }
+
+        PerfilPublicador perfil = perfilPublicadorRepository
+                .findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontro un perfil publicador para el usuario autenticado."
+                ));
+
+        if (request.getDescripcion() != null) {
+            perfil.setDescripcion(normalizarTextoEditable(request.getDescripcion()));
+        }
+
+        if (request.getInstagram() != null) {
+            perfil.setInstagram(normalizarTextoEditable(request.getInstagram()));
+        }
+
+        if (request.getEmailContacto() != null) {
+            perfil.setEmailContacto(normalizarTextoEditable(request.getEmailContacto()));
+        }
+
+        PerfilPublicador guardado = perfilPublicadorRepository.save(perfil);
+
+        return PerfilPublicadorActualDTO.desdePerfil(guardado);
+    }
+
+    /**
+     * Recorta espacios y convierte el vacio en null (limpiar campo).
+     */
+    private String normalizarTextoEditable(String valor) {
+        String limpio = valor.trim();
+        return limpio.isEmpty() ? null : limpio;
     }
 
     @Transactional(readOnly = true)
@@ -182,6 +237,13 @@ public class PublicadorService {
                 || ESTADO_RECHAZADA.equals(estado);
     }
 
+    /**
+     * Define el criterio de ordenamiento del listado.
+     *
+     * Si viene un valor desconocido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de ordenar por "recientes"
+     * en silencio.
+     */
     private Sort obtenerOrdenamiento(String orden) {
         if (orden == null || orden.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
@@ -192,7 +254,10 @@ public class PublicadorService {
         return switch (ordenNormalizado) {
             case "antiguos" -> Sort.by(Sort.Direction.ASC, "createdAt");
             case "recientes" -> Sort.by(Sort.Direction.DESC, "createdAt");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> throw new FiltroInvalidoException(
+                    "El parametro 'orden' tiene un valor invalido: '" + orden
+                            + "'. Valores permitidos: antiguos, recientes."
+            );
         };
     }
 

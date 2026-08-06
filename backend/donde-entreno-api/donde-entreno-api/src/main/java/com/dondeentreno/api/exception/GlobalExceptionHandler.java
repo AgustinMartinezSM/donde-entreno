@@ -2,6 +2,8 @@ package com.dondeentreno.api.exception;
 
 import com.dondeentreno.api.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * Maneja errores de validacion de campos enviados en el cuerpo de la solicitud.
@@ -169,6 +173,13 @@ public class GlobalExceptionHandler {
             ConfiguracionSistemaInvalidaException exception,
             HttpServletRequest request
     ) {
+        log.error(
+                "Configuracion de sistema invalida al procesar {} {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception
+        );
+
         ErrorResponseDTO error = new ErrorResponseDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
@@ -190,6 +201,82 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SolicitudPublicacionInvalidaException.class)
     public ResponseEntity<ErrorResponseDTO> manejarSolicitudPublicacionInvalida(
             SolicitudPublicacionInvalidaException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Maneja reglas de negocio invalidas del flujo de cambios de actividad.
+     *
+     * @param exception excepcion de negocio controlada.
+     * @param request informacion de la peticion HTTP.
+     * @return respuesta JSON con status 400.
+     */
+    @ExceptionHandler(SolicitudCambioInvalidaException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarSolicitudCambioInvalida(
+            SolicitudCambioInvalidaException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Maneja el conflicto de solicitudes de cambio duplicadas
+     * (la actividad ya tiene una solicitud abierta).
+     *
+     * @param exception excepcion de conflicto controlada.
+     * @param request informacion de la peticion HTTP.
+     * @return respuesta JSON con status 409.
+     */
+    @ExceptionHandler(SolicitudCambioConflictoException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarSolicitudCambioConflicto(
+            SolicitudCambioConflictoException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    /**
+     * Maneja filtros de busqueda con valores invalidos.
+     *
+     * Ejemplo:
+     * GET /api/actividades?nivel=CUALQUIERA
+     *
+     * En vez de descartar el filtro en silencio, devuelve un 400
+     * indicando el parametro invalido y los valores permitidos.
+     *
+     * @param exception excepcion de filtro invalido.
+     * @param request informacion de la peticion HTTP.
+     * @return respuesta JSON con status 400.
+     */
+    @ExceptionHandler(FiltroInvalidoException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarFiltroInvalido(
+            FiltroInvalidoException exception,
             HttpServletRequest request
     ) {
         ErrorResponseDTO error = new ErrorResponseDTO(
@@ -261,8 +348,8 @@ public class GlobalExceptionHandler {
      * Maneja errores generales no controlados.
      *
      * Esto evita que el usuario vea una página Whitelabel.
-     * Más adelante, cuando tengamos logs más profesionales,
-     * podemos mejorar este manejo.
+     * La excepción se loguea con stack trace completo porque es la única
+     * forma de diagnosticar el 500 desde los logs del servidor.
      *
      * @param exception excepción inesperada.
      * @param request información de la petición HTTP.
@@ -273,6 +360,13 @@ public class GlobalExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
+        log.error(
+                "Error no controlado al procesar {} {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception
+        );
+
         ErrorResponseDTO error = new ErrorResponseDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),

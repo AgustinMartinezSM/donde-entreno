@@ -9,6 +9,7 @@ import com.dondeentreno.api.entity.Imagen;
 import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.mapper.PublicadorActividadMapper;
 import com.dondeentreno.api.repository.ActividadRepository;
@@ -147,6 +148,13 @@ public class PublicadorActividadService {
         return Math.min(Math.max(size, 1), 50);
     }
 
+    /**
+     * Define el criterio de ordenamiento del listado.
+     *
+     * Si viene un valor desconocido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de ordenar por "recientes"
+     * en silencio.
+     */
     private Sort obtenerOrdenamiento(String orden) {
         if (orden == null || orden.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
@@ -157,7 +165,10 @@ public class PublicadorActividadService {
             case "antiguos" -> Sort.by(Sort.Direction.ASC, "createdAt");
             case "titulo_asc" -> Sort.by(Sort.Direction.ASC, "titulo");
             case "recientes" -> Sort.by(Sort.Direction.DESC, "createdAt");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> throw new FiltroInvalidoException(
+                    "El parametro 'orden' tiene un valor invalido: '" + orden
+                            + "'. Valores permitidos: antiguos, titulo_asc, recientes."
+            );
         };
     }
 }

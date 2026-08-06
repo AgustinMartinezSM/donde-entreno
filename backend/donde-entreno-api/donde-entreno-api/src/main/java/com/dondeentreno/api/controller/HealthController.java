@@ -3,6 +3,8 @@ package com.dondeentreno.api.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * Controlador simple para verificar que la API esté funcionando.
  *
@@ -14,15 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     /**
-     * Endpoint de prueba.
+     * Endpoint de salud.
      *
-     * Cuando alguien entra a:
      * GET http://localhost:8080/api/health
      *
-     * Spring Boot ejecuta este método y devuelve el texto.
+     * Devuelve JSON para ser coherente con el resto de la API.
      */
     @GetMapping("/api/health")
-    public String health() {
-        return "DondeEntreno API funcionando correctamente";
+    public Map<String, String> health() {
+        return Map.of(
+                "status", "UP",
+                "service", "donde-entreno-api"
+        );
     }
 }

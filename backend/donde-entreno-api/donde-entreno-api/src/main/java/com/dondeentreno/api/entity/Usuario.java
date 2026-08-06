@@ -15,11 +15,8 @@ import java.time.OffsetDateTime;
 /**
  * Entidad que representa la tabla usuario de PostgreSQL.
  *
- * Por ahora la usamos solo para poder relacionar correctamente
- * otras entidades, como PerfilPublicador.
- *
- * Más adelante vamos a volver a esta clase cuando trabajemos
- * login, roles, Spring Security y JWT.
+ * Es la base de la autenticación: login por email normalizado,
+ * roles vía la relación con Rol y emisión de JWT en AuthService.
  */
 @Entity
 @Table(name = "usuario")
@@ -36,10 +33,8 @@ public class Usuario {
      * Rol del usuario.
      *
      * En la tabla usuario existe la columna rol_id.
-     * Esta relación apunta a la tabla rol.
-     *
-     * Todavía no vamos a trabajar permisos ni login,
-     * pero dejamos la relación preparada.
+     * Esta relación apunta a la tabla rol y define los permisos
+     * (USUARIO, PUBLICADOR, ADMIN, SUPER_ADMIN) que viajan en el JWT.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rol_id", nullable = false)

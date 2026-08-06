@@ -11,6 +11,7 @@ import com.dondeentreno.api.dto.PaginaResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,31 @@ public class ActividadService {
      * y con estado_publicacion = PUBLICADA.
      */
     private static final String ESTADO_PUBLICADA = "PUBLICADA";
+
+    /**
+     * Valores permitidos para los filtros que llegan desde la URL.
+     *
+     * Si el cliente manda un valor fuera de estas listas,
+     * respondemos 400 en vez de descartar el filtro en silencio.
+     */
+    private static final List<String> NIVELES_PERMITIDOS =
+            List.of("PRINCIPIANTE", "INTERMEDIO", "AVANZADO", "TODOS");
+
+    private static final List<String> MODALIDADES_PERMITIDAS =
+            List.of("PRESENCIAL", "ONLINE", "MIXTA");
+
+    private static final List<String> ORDENAMIENTOS_PERMITIDOS =
+            List.of("recientes", "precio_asc", "precio_desc", "titulo_asc");
+
+    /**
+     * Tope defensivo para el texto de búsqueda.
+     *
+     * Un texto libre desmedido no aporta a la búsqueda (los campos
+     * indexados no superan este largo) y solo cargaría la query pública.
+     * Se recorta en silencio en vez de rechazar, para no romper el flujo
+     * si el usuario pega un texto largo.
+     */
+    private static final int MAX_LONGITUD_TEXTO_BUSQUEDA = 120;
 
     private final ActividadRepository actividadRepository;
     private final HorarioActividadService horarioActividadService;
@@ -216,6 +242,8 @@ public class ActividadService {
      *
      * Todos los filtros son opcionales.
      * Si un filtro viene en null, no se aplica.
+     * Si nivel o modalidad traen un valor no permitido,
+     * se lanza FiltroInvalidoException (la API responde 400).
      *
      * @param deporteId ID del deporte.
      * @param deporteSlug slug del deporte.
@@ -248,8 +276,8 @@ public class ActividadService {
                         normalizarSlug(ciudadSlug),
                         barrioId,
                         perfilPublicadorId,
-                        limpiarTexto(nivel),
-                        limpiarTexto(modalidad),
+                        validarNivel(limpiarTexto(nivel)),
+                        validarModalidad(limpiarTexto(modalidad)),
                         prepararTextoBusqueda(texto)
                 );
 
@@ -302,7 +330,27 @@ public class ActividadService {
             return "";
         }
 
-        return texto;
+        String acotado = texto.length() > MAX_LONGITUD_TEXTO_BUSQUEDA
+                ? texto.substring(0, MAX_LONGITUD_TEXTO_BUSQUEDA)
+                : texto;
+
+        return escaparComodinesLike(acotado);
+    }
+
+    /**
+     * Escapa los comodines de LIKE en el texto del usuario para que se
+     * busquen de forma literal: "50%" busca "50%", no "50" seguido de
+     * cualquier cosa. Las queries usan ESCAPE '\'.
+     *
+     * Se escapa la barra invertida primero (es el propio carácter de
+     * escape) y luego % y _. Corre DESPUÉS del recorte de longitud para
+     * no cortar una secuencia de escape por la mitad.
+     */
+    private String escaparComodinesLike(String texto) {
+        return texto
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
     }
 
     /**
@@ -336,8 +384,9 @@ public class ActividadService {
      * Busca actividades publicadas usando filtros combinados,
      * búsqueda por texto, paginación y ordenamiento.
      *
-     * También valida parámetros para evitar valores inválidos
-     * recibidos desde la URL.
+     * También valida parámetros recibidos desde la URL:
+     * si nivel, modalidad u orden traen un valor no permitido,
+     * se lanza FiltroInvalidoException (la API responde 400).
      *
      * @param deporteId ID del deporte.
      * @param deporteSlug slug del deporte.
@@ -418,10 +467,13 @@ public class ActividadService {
      * - precio_desc: precio mayor a menor.
      * - titulo_asc: título alfabético.
      *
-     * Si viene un valor desconocido, usamos "recientes".
+     * Si viene un valor desconocido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de ordenar por "recientes"
+     * en silencio.
      *
      * @param orden criterio recibido desde la URL.
      * @return objeto Sort para Spring Data.
+     * @throws FiltroInvalidoException si el criterio no está permitido.
      */
     private Sort obtenerOrdenamiento(String orden) {
         if (orden == null || orden.isBlank()) {
@@ -435,7 +487,11 @@ public class ActividadService {
             case "precio_desc" -> Sort.by(Sort.Direction.DESC, "precioReferencia");
             case "titulo_asc" -> Sort.by(Sort.Direction.ASC, "titulo");
             case "recientes" -> Sort.by(Sort.Direction.DESC, "createdAt");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> throw new FiltroInvalidoException(construirMensajeFiltroInvalido(
+                    "orden",
+                    orden,
+                    ORDENAMIENTOS_PERMITIDOS
+            ));
         };
     }
 
@@ -443,43 +499,82 @@ public class ActividadService {
      * Valida el nivel recibido desde la URL.
      *
      * Si viene null, no aplica filtro.
-     * Si viene un valor inválido, tampoco aplica filtro.
-     *
-     * Más adelante podríamos devolver error 400,
-     * pero por ahora elegimos no romper la búsqueda.
+     * Si viene un valor inválido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de descartar el filtro
+     * en silencio y devolver resultados sin filtrar.
      *
      * @param nivel nivel recibido.
-     * @return nivel válido o null.
+     * @return nivel válido normalizado o null.
+     * @throws FiltroInvalidoException si el nivel no está permitido.
      */
     private String validarNivel(String nivel) {
         if (nivel == null) {
             return null;
         }
 
-        return switch (nivel.toUpperCase()) {
-            case "PRINCIPIANTE", "INTERMEDIO", "AVANZADO", "TODOS" -> nivel.toUpperCase();
-            default -> null;
-        };
+        String nivelNormalizado = nivel.trim().toUpperCase();
+
+        if (!NIVELES_PERMITIDOS.contains(nivelNormalizado)) {
+            throw new FiltroInvalidoException(construirMensajeFiltroInvalido(
+                    "nivel",
+                    nivel,
+                    NIVELES_PERMITIDOS
+            ));
+        }
+
+        return nivelNormalizado;
     }
 
     /**
      * Valida la modalidad recibida desde la URL.
      *
      * Si viene null, no aplica filtro.
-     * Si viene un valor inválido, tampoco aplica filtro.
+     * Si viene un valor inválido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de descartar el filtro
+     * en silencio y devolver resultados sin filtrar.
      *
      * @param modalidad modalidad recibida.
-     * @return modalidad válida o null.
+     * @return modalidad válida normalizada o null.
+     * @throws FiltroInvalidoException si la modalidad no está permitida.
      */
     private String validarModalidad(String modalidad) {
         if (modalidad == null) {
             return null;
         }
 
-        return switch (modalidad.toUpperCase()) {
-            case "PRESENCIAL", "ONLINE", "MIXTA" -> modalidad.toUpperCase();
-            default -> null;
-        };
+        String modalidadNormalizada = modalidad.trim().toUpperCase();
+
+        if (!MODALIDADES_PERMITIDAS.contains(modalidadNormalizada)) {
+            throw new FiltroInvalidoException(construirMensajeFiltroInvalido(
+                    "modalidad",
+                    modalidad,
+                    MODALIDADES_PERMITIDAS
+            ));
+        }
+
+        return modalidadNormalizada;
+    }
+
+    /**
+     * Arma el mensaje de error para un filtro inválido.
+     *
+     * Incluye el nombre del parámetro, el valor recibido
+     * y la lista de valores permitidos, para que el cliente
+     * sepa exactamente qué corregir.
+     *
+     * @param parametro nombre del parámetro de la URL.
+     * @param valorRecibido valor inválido recibido.
+     * @param valoresPermitidos valores aceptados para ese parámetro.
+     * @return mensaje descriptivo del error.
+     */
+    private String construirMensajeFiltroInvalido(
+            String parametro,
+            String valorRecibido,
+            List<String> valoresPermitidos
+    ) {
+        return "El parametro '" + parametro + "' tiene un valor invalido: '"
+                + valorRecibido + "'. Valores permitidos: "
+                + String.join(", ", valoresPermitidos) + ".";
     }
 
     /**

@@ -15,6 +15,7 @@ import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.SolicitudPublicacionHorario;
 import com.dondeentreno.api.entity.Ubicacion;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.mapper.SolicitudPublicacionAdminMapper;
@@ -620,6 +621,13 @@ public class SolicitudPublicacionAdminService {
         return normalizarTexto(solicitud.getWhatsapp());
     }
 
+    /**
+     * Define el criterio de ordenamiento del listado.
+     *
+     * Si viene un valor desconocido, lanzamos FiltroInvalidoException
+     * para que la API responda 400 en vez de ordenar por "recientes"
+     * en silencio.
+     */
     private Sort obtenerOrdenamiento(String orden) {
         if (orden == null || orden.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
@@ -630,7 +638,10 @@ public class SolicitudPublicacionAdminService {
         return switch (ordenNormalizado) {
             case "antiguos" -> Sort.by(Sort.Direction.ASC, "createdAt");
             case "recientes" -> Sort.by(Sort.Direction.DESC, "createdAt");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> throw new FiltroInvalidoException(
+                    "El parametro 'orden' tiene un valor invalido: '" + orden
+                            + "'. Valores permitidos: antiguos, recientes."
+            );
         };
     }
 }

@@ -1,6 +1,7 @@
 package com.dondeentreno.api.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -24,6 +25,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Configuracion base de seguridad para la API.
@@ -87,6 +93,42 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .build();
+    }
+
+    /**
+     * Configuracion unica de CORS para toda la API.
+     *
+     * Este bean es el unico mecanismo CORS de la aplicacion:
+     * Spring Security lo detecta por su nombre (corsConfigurationSource)
+     * a traves de cors(Customizer.withDefaults()) en el filter chain.
+     *
+     * Antes existia ademas un WebMvcConfigurer con addCorsMappings,
+     * lo que duplicaba la configuracion en dos mecanismos distintos.
+     *
+     * Los origenes permitidos se leen de la property
+     * app.cors.allowed-origins (lista separada por comas).
+     *
+     * Ejemplo local:
+     * Frontend Next.js: http://localhost:3000
+     * Backend Spring Boot: http://localhost:8080
+     *
+     * @param allowedOrigins origenes permitidos para consumir la API.
+     * @return configuracion CORS aplicada a las rutas /api/**.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:http://localhost:3000}") String[] allowedOrigins
+    ) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 
     @Bean

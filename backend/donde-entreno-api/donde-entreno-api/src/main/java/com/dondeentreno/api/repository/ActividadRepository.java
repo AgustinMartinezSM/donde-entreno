@@ -25,6 +25,15 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
 
     boolean existsBySlug(String slug);
 
+    /**
+     * Cuenta las actividades activas y publicadas de un perfil
+     * publicador (métricas del panel del publicador).
+     */
+    long countByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+            Long perfilPublicadorId,
+            String estadoPublicacion
+    );
+
     @EntityGraph(attributePaths = {
             "perfilPublicador",
             "deporte",
@@ -63,6 +72,25 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
      * AND estado_publicacion = 'PUBLICADA'
      */
     List<Actividad> findByActivaTrueAndEstadoPublicacionOrderByCreatedAtDesc(String estadoPublicacion);
+
+    /**
+     * Actividades publicadas de un conjunto de perfiles publicadores,
+     * más recientes primero (feed de novedades de la capa social:
+     * el Pageable acota al tope del feed).
+     */
+    @EntityGraph(attributePaths = {
+            "perfilPublicador",
+            "deporte",
+            "deporte.categoriaDeportiva",
+            "ubicacion",
+            "ubicacion.ciudad",
+            "ubicacion.barrio"
+    })
+    List<Actividad> findByActivaTrueAndEstadoPublicacionAndDeletedAtIsNullAndPerfilPublicador_IdInOrderByCreatedAtDesc(
+            String estadoPublicacion,
+            List<Long> perfilPublicadorIds,
+            Pageable pageable
+    );
 
     /**
      * Busca una actividad activa y publicada por su slug.
@@ -171,6 +199,11 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
      * - nombre del perfil publicador
      * - nombre de la ciudad
      * - nombre del barrio
+     *
+     * La comparación es insensible a mayúsculas y a tildes
+     * (unaccent), de modo que "futbol" encuentra "Fútbol".
+     * Requiere la extensión unaccent y su registro en Hibernate
+     * (ver UnaccentFunctionContributor y migración 16).
      */
     @Query("""
         SELECT a
@@ -187,12 +220,12 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
           AND (:modalidad IS NULL OR a.modalidad = :modalidad)
           AND (
                 :texto IS NULL
-                OR LOWER(a.titulo) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.descripcion) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.deporte.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.perfilPublicador.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.ubicacion.ciudad.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.ubicacion.barrio.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR unaccent(LOWER(a.titulo)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.descripcion)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.deporte.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.perfilPublicador.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.ubicacion.ciudad.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.ubicacion.barrio.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
           )
         ORDER BY a.createdAt DESC
         """)
@@ -223,6 +256,11 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
      * - nombre del perfil publicador
      * - nombre de la ciudad
      * - nombre del barrio
+     *
+     * La comparación es insensible a mayúsculas y a tildes
+     * (unaccent), de modo que "futbol" encuentra "Fútbol".
+     * Requiere la extensión unaccent y su registro en Hibernate
+     * (ver UnaccentFunctionContributor y migración 16).
      */
     @Query("""
         SELECT a
@@ -239,12 +277,12 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
           AND (:modalidad IS NULL OR a.modalidad = :modalidad)
           AND (
                 :texto = ''
-                OR LOWER(a.titulo) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.descripcion) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.deporte.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.perfilPublicador.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.ubicacion.ciudad.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-                OR LOWER(a.ubicacion.barrio.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+                OR unaccent(LOWER(a.titulo)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.descripcion)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.deporte.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.perfilPublicador.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.ubicacion.ciudad.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
+                OR unaccent(LOWER(a.ubicacion.barrio.nombre)) LIKE unaccent(LOWER(CONCAT('%', :texto, '%'))) ESCAPE '\\'
           )
         """)
     Page<Actividad> buscarActividadesPublicadasConFiltrosPaginado(

@@ -13,6 +13,8 @@ import { FiltersPanel } from "../../components/explorar/FiltersPanel";
 import { obtenerOpcionesFiltros } from "../../services/filtrosService";
 import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { ErrorState } from "../../components/feedback/ErrorState";
+import { IlustracionSinResultados } from "../../components/illustrations/IlustracionSinResultados";
+import { obtenerSugerenciaDeporte } from "../../lib/sugerenciaDeporte";
 import { SectionHeader } from "../../components/ui/SectionHeader";
 import { StatusMessage } from "../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../components/ui/SurfaceCard";
@@ -42,6 +44,7 @@ type ExplorarPageProps = {
     ciudadId?: string;
     ciudadSlug?: string;
     barrioId?: string;
+    perfilPublicadorId?: string;
     deporteSlug?: string;
     nivel?: string;
     modalidad?: string;
@@ -69,6 +72,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   const ciudadIdActual = params.ciudadId || "";
   const ciudadSlugActual = params.ciudadSlug?.trim() || "";
   const barrioIdActual = params.barrioId || "";
+  const perfilPublicadorIdActual = params.perfilPublicadorId || "";
   const deporteSlugActual = params.deporteSlug || "";
   const nivelActual = params.nivel || "";
   const modalidadActual = params.modalidad || "";
@@ -78,8 +82,29 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
       ? Number(ciudadIdActual)
       : undefined;
 
+  /*
+    Búsqueda inteligente: si el texto libre matchea un deporte real
+    ("jiujitsu", "bjj", "gym"), sugerimos ir directo al filtro por
+    deporte. No se sugiere si ya se está filtrando por ese deporte.
+  */
+  const sugerenciaDeporte =
+    textoBuscado && !deporteSlugActual
+      ? obtenerSugerenciaDeporte(textoBuscado)
+      : null;
+  const paramsSugerencia = new URLSearchParams();
+  if (sugerenciaDeporte) {
+    paramsSugerencia.set("deporteSlug", sugerenciaDeporte.slug);
+    if (ciudadSlugActual) {
+      paramsSugerencia.set("ciudadSlug", ciudadSlugActual);
+    }
+  }
+  const hrefSugerencia = sugerenciaDeporte
+    ? `/explorar?${paramsSugerencia.toString()}`
+    : null;
+
   let actividades: Actividad[] = [];
   let totalPaginas = 0;
+  let totalElementos = 0;
   let huboError = false;
   let huboErrorCiudad = false;
   let nombreCiudadActiva: string | null = null;
@@ -123,6 +148,9 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
           ciudadId: ciudadIdParaBusqueda,
           ciudadSlug: ciudadSlugActual || undefined,
           barrioId: barrioIdActual ? Number(barrioIdActual) : undefined,
+          perfilPublicadorId: perfilPublicadorIdActual
+            ? Number(perfilPublicadorIdActual)
+            : undefined,
           deporteSlug: deporteSlugActual || undefined,
           nivel: nivelActual || undefined,
           modalidad: modalidadActual || undefined,
@@ -132,6 +160,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
       actividades = respuestaActividades.contenido;
       totalPaginas = respuestaActividades.totalPaginas;
+      totalElementos = respuestaActividades.totalElementos;
       filtros = respuestaFiltros;
     }
   } catch (error) {
@@ -185,6 +214,17 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
                   Resultados para &quot;{textoBuscado}&quot;
                 </p>
+              ) : null}
+
+              {sugerenciaDeporte && hrefSugerencia ? (
+                <AppLinkButton
+                  href={hrefSugerencia}
+                  variant="success"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  ¿Buscabas {sugerenciaDeporte.nombre}? Ver todas sus actividades
+                </AppLinkButton>
               ) : null}
 
               {ciudadSlugActual ? (
@@ -294,9 +334,17 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                   eyebrow="ACTIVIDADES"
                   title="Todas las actividades"
                   description={
-                    nombreCiudadActiva
-                      ? `Opciones disponibles según tu búsqueda y filtros en ${nombreCiudadActiva}.`
-                      : "Opciones disponibles según tu búsqueda y filtros."
+                    totalElementos > 0
+                      ? `${totalElementos} ${
+                          totalElementos === 1
+                            ? "actividad encontrada"
+                            : "actividades encontradas"
+                        }${
+                          nombreCiudadActiva ? ` en ${nombreCiudadActiva}` : ""
+                        } según tu búsqueda y filtros.`
+                      : nombreCiudadActiva
+                        ? `Opciones disponibles según tu búsqueda y filtros en ${nombreCiudadActiva}.`
+                        : "Opciones disponibles según tu búsqueda y filtros."
                   }
                   action={
                     <SortSelect
@@ -323,10 +371,52 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                     }
                     className="p-7 text-center"
                   >
+                    <IlustracionSinResultados />
+
                     <p className="mx-auto max-w-xl">
                       Probá con otra búsqueda, cambiá la zona o abrí los
                       filtros para ampliar opciones.
                     </p>
+
+                    {sugerenciaDeporte && hrefSugerencia ? (
+                      <div className="mt-5">
+                        <AppLinkButton href={hrefSugerencia} variant="success">
+                          ¿Buscabas {sugerenciaDeporte.nombre}? Ver sus actividades
+                        </AppLinkButton>
+                      </div>
+                    ) : null}
+
+                    {filtros.deportes.length > 0 && (
+                      <div className="mt-5">
+                        <p className="text-sm font-bold text-[var(--color-primary)]">
+                          O explorá directamente por deporte:
+                        </p>
+                        <div className="mt-3 flex flex-wrap justify-center gap-2">
+                          {filtros.deportes.slice(0, 8).map((deporte) => {
+                            const paramsDeporte = new URLSearchParams();
+                            if (deporte.slug) {
+                              paramsDeporte.set("deporteSlug", deporte.slug);
+                            }
+                            if (ciudadSlugActual) {
+                              paramsDeporte.set("ciudadSlug", ciudadSlugActual);
+                            }
+
+                            return (
+                              <AppLinkButton
+                                key={deporte.id}
+                                href={`/explorar?${paramsDeporte.toString()}`}
+                                variant="secondary"
+                                size="sm"
+                                className="rounded-full"
+                              >
+                                {deporte.nombre}
+                              </AppLinkButton>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
                       <AppLinkButton
                         href="/ciudades"

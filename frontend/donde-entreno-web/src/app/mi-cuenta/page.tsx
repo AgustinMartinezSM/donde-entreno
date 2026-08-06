@@ -9,6 +9,10 @@ import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../components/ui/SectionHeader";
 import { SurfaceCard } from "../../components/ui/SurfaceCard";
 import { StatusMessage } from "../../components/ui/StatusMessage";
+import { FeedNovedades } from "../../components/cuenta/FeedNovedades";
+import { PreferenciasDeportivas } from "../../components/cuenta/PreferenciasDeportivas";
+import { PublicadoresSeguidos } from "../../components/cuenta/PublicadoresSeguidos";
+import { ResumenGuardados } from "../../components/cuenta/ResumenGuardados";
 
 export default function MiCuentaPage() {
   return (
@@ -87,6 +91,16 @@ function MiCuentaContenido() {
             </AppButton>
           </div>
         </SurfaceCard>
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <ResumenGuardados />
+          <PreferenciasDeportivas />
+        </div>
+
+        <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <PublicadoresSeguidos />
+          <FeedNovedades />
+        </div>
       </section>
     </main>
   );

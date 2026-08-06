@@ -32,6 +32,18 @@ export const ORDENES_ACTIVIDADES_PUBLICADOR = [
 export type OrdenActividadesPublicador =
   (typeof ORDENES_ACTIVIDADES_PUBLICADOR)[number];
 
+/*
+  Métricas de resumen del panel del publicador (solo lectura).
+  Reflejan GET /api/publicador/metricas.
+*/
+export type MetricasPublicador = {
+  actividadesPublicadas: number;
+  solicitudesPublicacionPendientes: number;
+  solicitudesCambioPendientes: number;
+  imagenesPendientesModeracion: number;
+  seguidores: number;
+};
+
 export type PerfilPublicadorActual = {
   id: number;
   nombre: string;
@@ -196,4 +208,69 @@ export type ListarActividadesPublicadorParams = {
   page?: number;
   size?: number;
   orden?: OrdenActividadesPublicador;
+};
+
+// ============================================================
+// Solicitudes de cambio sobre actividades publicadas
+// ============================================================
+
+/*
+  Campos que se pueden proponer cambiar (V1). Un campo ausente
+  significa "sin cambio propuesto".
+*/
+export type SolicitudCambioRequest = {
+  titulo?: string;
+  descripcion?: string;
+  precioReferencia?: number;
+  mostrarPrecio?: boolean;
+  whatsappContacto?: string;
+  instagramContacto?: string;
+  emailContacto?: string;
+  nivel?: string;
+  modalidad?: string;
+};
+
+export type CampoCambio = {
+  campo: string;
+  valorActual: string | null;
+  valorPropuesto: string;
+};
+
+export type SolicitudCambioResumen = {
+  id: number;
+  actividadId: number | null;
+  actividadTitulo: string | null;
+  estado: string;
+  camposPropuestos: string[];
+  createdAt: string | null;
+};
+
+export type SolicitudCambioDetalle = {
+  id: number;
+  actividadId: number | null;
+  actividadTitulo: string | null;
+  actividadSlug: string | null;
+  perfilPublicadorId: number | null;
+  perfilPublicadorNombre: string | null;
+  estado: string;
+  motivoRechazo: string | null;
+  resueltoAt: string | null;
+  createdAt: string | null;
+  cambios: CampoCambio[];
+};
+
+export type SolicitudesCambioPage = {
+  contenido: SolicitudCambioResumen[];
+  paginaActual: number;
+  tamanioPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  ultima: boolean;
+};
+
+export type ListarSolicitudesCambioParams = {
+  estado?: string;
+  page?: number;
+  size?: number;
+  orden?: "recientes" | "antiguos";
 };

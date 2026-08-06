@@ -1,4 +1,16 @@
 import { API_BASE_URL } from "../lib/apiConfig";
+import {
+  construirAuthorization,
+  construirQueryListado,
+  ejecutarRequestJson,
+  esBooleanONull,
+  esErrorResponseApi,
+  esNumberONull,
+  esObjeto,
+  esStringONull,
+  esValorDeLista,
+  validarIdPositivo,
+} from "./apiHelpers";
 import type {
   AuthErrorResponse,
   AuthErroresPorCampo,
@@ -20,11 +32,18 @@ import type {
   EstadoPerfilPublicador,
   ListarActividadesPublicadorParams,
   ListarSolicitudesPublicadorParams,
+  MetricasPublicador,
   PerfilPublicadorActual,
   SolicitudPublicadorDetalle,
   SolicitudPublicadorHorario,
   SolicitudPublicadorResumen,
   SolicitudesPublicadorPage,
+  CampoCambio,
+  ListarSolicitudesCambioParams,
+  SolicitudCambioDetalle,
+  SolicitudCambioRequest,
+  SolicitudCambioResumen,
+  SolicitudesCambioPage,
 } from "../types/publicador";
 import { ESTADOS_PERFIL_PUBLICADOR } from "../types/publicador";
 
@@ -59,9 +78,56 @@ export async function obtenerPerfilPublicador(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       cache: "no-store",
+    },
+    esPerfilPublicadorActual
+  );
+}
+
+export async function obtenerMetricasPublicador(
+  accessToken: string
+): Promise<MetricasPublicador> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/metricas`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      cache: "no-store",
+    },
+    esMetricasPublicador
+  );
+}
+
+/*
+  Campos de edición directa del perfil (los sensibles van por revisión).
+  Semántica PATCH del backend: si un campo no viaja no se toca; si viaja
+  vacío, se limpia.
+*/
+export type ActualizarPerfilPublicadorRequest = {
+  descripcion?: string;
+  instagram?: string;
+  emailContacto?: string;
+};
+
+export async function actualizarPerfilPublicador(
+  datos: ActualizarPerfilPublicadorRequest,
+  accessToken: string
+): Promise<PerfilPublicadorActual> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/me`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify(datos),
     },
     esPerfilPublicadorActual
   );
@@ -72,12 +138,12 @@ export async function listarSolicitudesPublicador(
   accessToken: string
 ): Promise<SolicitudesPublicadorPage> {
   return ejecutarPublicadorRequest(
-    construirUrlListado(params),
+    `${API_BASE_URL}/api/publicador/solicitudes${construirQueryListado(params)}`,
     {
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       cache: "no-store",
     },
@@ -99,7 +165,7 @@ export async function obtenerSolicitudPublicador(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       cache: "no-store",
     },
@@ -118,7 +184,7 @@ export async function crearSolicitudPublicador(
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       body: JSON.stringify(request),
     },
@@ -131,12 +197,12 @@ export async function listarActividadesPublicador(
   accessToken: string
 ): Promise<ActividadesPublicadorPage> {
   return ejecutarPublicadorRequest(
-    construirUrlListadoActividades(params),
+    `${API_BASE_URL}/api/publicador/actividades${construirQueryListado(params)}`,
     {
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       cache: "no-store",
     },
@@ -158,11 +224,141 @@ export async function obtenerActividadPublicador(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationPublicador(accessToken),
       },
       cache: "no-store",
     },
     esActividadPublicadorDetalle
+  );
+}
+
+// ============================================================
+// Solicitudes de cambio sobre actividades publicadas
+// ============================================================
+
+/*
+  Crea una solicitud de cambio sobre una actividad publicada propia.
+  El backend valida ownership, dominios y que haya una sola solicitud
+  abierta por actividad (409).
+*/
+export async function crearSolicitudCambio(
+  actividadId: number,
+  datos: SolicitudCambioRequest,
+  accessToken: string
+): Promise<SolicitudCambioDetalle> {
+  const idSeguro = validarIdActividad(actividadId);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/solicitudes-cambio`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify(datos),
+    },
+    esSolicitudCambioDetalle
+  );
+}
+
+export async function listarSolicitudesCambio(
+  params: ListarSolicitudesCambioParams,
+  accessToken: string
+): Promise<SolicitudesCambioPage> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/solicitudes-cambio${construirQueryListado(params)}`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      cache: "no-store",
+    },
+    esSolicitudesCambioPage
+  );
+}
+
+export async function obtenerSolicitudCambio(
+  id: number,
+  accessToken: string
+): Promise<SolicitudCambioDetalle> {
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/solicitudes-cambio/${encodeURIComponent(
+      String(idSeguro)
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      cache: "no-store",
+    },
+    esSolicitudCambioDetalle
+  );
+}
+
+function esCampoCambio(valor: unknown): valor is CampoCambio {
+  return (
+    esObjeto(valor) &&
+    typeof valor.campo === "string" &&
+    esStringONull(valor.valorActual) &&
+    typeof valor.valorPropuesto === "string"
+  );
+}
+
+function esSolicitudCambioResumen(valor: unknown): valor is SolicitudCambioResumen {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    esNumberONull(valor.actividadId) &&
+    esStringONull(valor.actividadTitulo) &&
+    typeof valor.estado === "string" &&
+    Array.isArray(valor.camposPropuestos) &&
+    valor.camposPropuestos.every((campo) => typeof campo === "string") &&
+    esStringONull(valor.createdAt)
+  );
+}
+
+/*
+  Exportados para reutilizarse desde el service del panel admin
+  (mismos DTOs de solicitudes de cambio en ambos flujos).
+*/
+export function esSolicitudCambioDetalle(valor: unknown): valor is SolicitudCambioDetalle {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    esNumberONull(valor.actividadId) &&
+    esStringONull(valor.actividadTitulo) &&
+    esStringONull(valor.actividadSlug) &&
+    esNumberONull(valor.perfilPublicadorId) &&
+    esStringONull(valor.perfilPublicadorNombre) &&
+    typeof valor.estado === "string" &&
+    esStringONull(valor.motivoRechazo) &&
+    esStringONull(valor.resueltoAt) &&
+    esStringONull(valor.createdAt) &&
+    Array.isArray(valor.cambios) &&
+    valor.cambios.every(esCampoCambio)
+  );
+}
+
+export function esSolicitudesCambioPage(valor: unknown): valor is SolicitudesCambioPage {
+  return (
+    esObjeto(valor) &&
+    Array.isArray(valor.contenido) &&
+    valor.contenido.every(esSolicitudCambioResumen) &&
+    typeof valor.paginaActual === "number" &&
+    typeof valor.tamanioPagina === "number" &&
+    typeof valor.totalElementos === "number" &&
+    typeof valor.totalPaginas === "number" &&
+    typeof valor.ultima === "boolean"
   );
 }
 
@@ -171,141 +367,63 @@ async function ejecutarPublicadorRequest<T>(
   opciones: RequestInit,
   validador: ValidadorPublicador<T>
 ): Promise<T> {
-  let respuestaHttp: Response;
+  return ejecutarRequestJson(url, opciones, validador, {
+    crearErrorConexion: (error) =>
+      error instanceof PublicadorApiError
+        ? error
+        : new PublicadorApiError("No fue posible conectar con el servidor."),
+    crearErrorHttp: (status, cuerpo) => {
+      if (esErrorResponseApi(cuerpo)) {
+        return new PublicadorApiError(
+          obtenerMensajeErrorPublicador(status, cuerpo.mensaje),
+          {
+            status,
+            respuesta: cuerpo,
+            erroresPorCampo: cuerpo.errores,
+          }
+        );
+      }
 
-  try {
-    respuestaHttp = await fetch(url, opciones);
-  } catch (error: unknown) {
-    if (error instanceof PublicadorApiError) {
-      throw error;
-    }
-
-    throw new PublicadorApiError("No fue posible conectar con el servidor.");
-  }
-
-  const cuerpo: unknown = await leerJsonSeguro(respuestaHttp);
-
-  if (!respuestaHttp.ok) {
-    if (esAuthErrorResponse(cuerpo)) {
-      throw new PublicadorApiError(
-        obtenerMensajeErrorPublicador(respuestaHttp.status, cuerpo.mensaje),
-        {
-          status: respuestaHttp.status,
-          respuesta: cuerpo,
-          erroresPorCampo: cuerpo.errores,
-        }
+      return new PublicadorApiError(
+        obtenerMensajeErrorPublicador(status, null),
+        { status }
       );
-    }
-
-    throw new PublicadorApiError(
-      obtenerMensajeErrorPublicador(respuestaHttp.status, null),
-      {
-        status: respuestaHttp.status,
-      }
-    );
-  }
-
-  if (!validador(cuerpo)) {
-    throw new PublicadorApiError(
-      "La respuesta del servidor no tiene el formato esperado.",
-      {
-        status: respuestaHttp.status,
-      }
-    );
-  }
-
-  return cuerpo;
+    },
+    crearErrorFormatoInvalido: (status) =>
+      new PublicadorApiError(
+        "La respuesta del servidor no tiene el formato esperado.",
+        { status }
+      ),
+  });
 }
 
-function construirUrlListado(
-  params: ListarSolicitudesPublicadorParams
-): string {
-  const parametros = new URLSearchParams();
-
-  if (params.estado) {
-    parametros.set("estado", params.estado);
-  }
-
-  if (typeof params.page === "number" && Number.isFinite(params.page)) {
-    parametros.set("page", String(params.page));
-  }
-
-  if (typeof params.size === "number" && Number.isFinite(params.size)) {
-    parametros.set("size", String(params.size));
-  }
-
-  if (params.orden) {
-    parametros.set("orden", params.orden);
-  }
-
-  const queryString = parametros.toString();
-
-  return `${API_BASE_URL}/api/publicador/solicitudes${
-    queryString ? `?${queryString}` : ""
-  }`;
-}
-
-function construirUrlListadoActividades(
-  params: ListarActividadesPublicadorParams
-): string {
-  const parametros = new URLSearchParams();
-
-  if (typeof params.page === "number" && Number.isFinite(params.page)) {
-    parametros.set("page", String(params.page));
-  }
-
-  if (typeof params.size === "number" && Number.isFinite(params.size)) {
-    parametros.set("size", String(params.size));
-  }
-
-  if (params.orden) {
-    parametros.set("orden", params.orden);
-  }
-
-  const queryString = parametros.toString();
-
-  return `${API_BASE_URL}/api/publicador/actividades${
-    queryString ? `?${queryString}` : ""
-  }`;
-}
-
-function construirAuthorization(accessToken: string): string {
-  const token = accessToken.trim();
-
-  if (!token) {
-    throw new PublicadorApiError(
-      "Necesitas iniciar sesion para usar el panel publicador."
-    );
-  }
-
-  return `Bearer ${token}`;
+function construirAuthorizationPublicador(accessToken: string): string {
+  return construirAuthorization(
+    accessToken,
+    () =>
+      new PublicadorApiError(
+        "Necesitas iniciar sesion para usar el panel publicador."
+      )
+  );
 }
 
 function validarIdSolicitud(id: number): number {
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new PublicadorApiError("El ID de la solicitud no es valido.");
-  }
-
-  return id;
+  return validarIdPositivo(
+    id,
+    () => new PublicadorApiError("El ID de la solicitud no es valido.")
+  );
 }
 
 function validarIdActividad(id: number): number {
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new PublicadorApiError("El ID de la actividad no es valido.");
-  }
-
-  return id;
+  return validarIdPositivo(
+    id,
+    () => new PublicadorApiError("El ID de la actividad no es valido.")
+  );
 }
 
-async function leerJsonSeguro(respuesta: Response): Promise<unknown> {
-  try {
-    const cuerpo: unknown = await respuesta.json();
-    return cuerpo;
-  } catch {
-    return null;
-  }
-}
-
+// Mensajes propios del panel publicador segun el status HTTP.
+// Se mantiene local (y no en apiHelpers) porque los textos son especificos
+// de este panel.
 function obtenerMensajeErrorPublicador(
   status: number,
   mensajeBackend: string | null
@@ -331,46 +449,32 @@ function obtenerMensajeErrorPublicador(
   return "No se pudo completar la operacion del panel publicador.";
 }
 
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
-
-function esStringONull(valor: unknown): valor is string | null {
-  return typeof valor === "string" || valor === null;
-}
-
-function esNumberONull(valor: unknown): valor is number | null {
-  return typeof valor === "number" || valor === null;
-}
-
-function esBooleanONull(valor: unknown): valor is boolean | null {
-  return typeof valor === "boolean" || valor === null;
-}
-
 function esEstadoPerfilPublicador(
   valor: unknown
 ): valor is EstadoPerfilPublicador {
-  return (
-    typeof valor === "string" &&
-    ESTADOS_PERFIL_PUBLICADOR.some((estado) => estado === valor)
-  );
+  return esValorDeLista(valor, ESTADOS_PERFIL_PUBLICADOR);
 }
 
 function esEstadoSolicitudPublicacion(
   valor: unknown
 ): valor is EstadoSolicitudPublicacion {
-  return (
-    typeof valor === "string" &&
-    ESTADOS_SOLICITUD_PUBLICACION.some((estado) => estado === valor)
-  );
+  return esValorDeLista(valor, ESTADOS_SOLICITUD_PUBLICACION);
 }
 
 function esDiaSemanaSolicitudPublicacion(
   valor: unknown
 ): valor is DiaSemanaSolicitudPublicacion {
+  return esValorDeLista(valor, DIAS_SEMANA_SOLICITUD);
+}
+
+function esMetricasPublicador(valor: unknown): valor is MetricasPublicador {
   return (
-    typeof valor === "string" &&
-    DIAS_SEMANA_SOLICITUD.some((diaSemana) => diaSemana === valor)
+    esObjeto(valor) &&
+    typeof valor.actividadesPublicadas === "number" &&
+    typeof valor.solicitudesPublicacionPendientes === "number" &&
+    typeof valor.solicitudesCambioPendientes === "number" &&
+    typeof valor.imagenesPendientesModeracion === "number" &&
+    typeof valor.seguidores === "number"
   );
 }
 
@@ -592,27 +696,5 @@ function esCrearSolicitudPublicadorResponse(
     esEstadoSolicitudPublicacion(valor.estado) &&
     typeof valor.createdAt === "string" &&
     typeof valor.mensaje === "string"
-  );
-}
-
-function esAuthErroresPorCampo(
-  valor: unknown
-): valor is AuthErroresPorCampo {
-  if (!esObjeto(valor)) {
-    return false;
-  }
-
-  return Object.values(valor).every((mensaje) => typeof mensaje === "string");
-}
-
-function esAuthErrorResponse(valor: unknown): valor is AuthErrorResponse {
-  return (
-    esObjeto(valor) &&
-    typeof valor.status === "number" &&
-    typeof valor.error === "string" &&
-    typeof valor.mensaje === "string" &&
-    (valor.errores === null || esAuthErroresPorCampo(valor.errores)) &&
-    typeof valor.path === "string" &&
-    typeof valor.timestamp === "string"
   );
 }

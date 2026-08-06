@@ -5,8 +5,11 @@ import { Header } from "../../../components/layout/Header";
 import { obtenerDetalleActividad } from "../../../services/actividadService";
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { ActivityImage } from "../../../components/actividad/ActivityImage";
+import { FavoritoButton } from "../../../components/actividad/FavoritoButton";
+import { MeGustaButton } from "../../../components/actividad/MeGustaButton";
+import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
 import { ErrorState } from "../../../components/feedback/ErrorState";
-import { API_BASE_URL } from "../../../lib/apiConfig";
+import { construirUrlImagenBackend } from "../../../lib/backendUrl";
 import {
   obtenerImagenActividad,
   obtenerImagenFallbackActividad,
@@ -196,6 +199,37 @@ export default async function ActividadDetallePage({
                   )}
                 </div>
 
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  <FavoritoButton
+                    variante="detalle"
+                    actividad={{
+                      slug: actividad.slug,
+                      titulo: actividad.titulo,
+                      deporteNombre: actividad.deporteNombre,
+                      deporteSlug: actividad.deporteSlug,
+                      ciudadNombre: actividad.ciudadNombre,
+                      barrioNombre: actividad.barrioNombre,
+                      imagenPrincipalUrl: imagenPrincipal?.url ?? null,
+                      nivel: actividad.nivel,
+                      modalidad: actividad.modalidad,
+                      precioReferencia: actividad.precioReferencia,
+                      mostrarPrecio: actividad.mostrarPrecio,
+                    }}
+                  />
+
+                  <MeGustaButton
+                    slug={actividad.slug}
+                    titulo={actividad.titulo}
+                  />
+
+                  {actividad.perfilPublicadorId ? (
+                    <SeguirPublicadorButton
+                      perfilPublicadorId={actividad.perfilPublicadorId}
+                      perfilPublicadorNombre={actividad.perfilPublicadorNombre}
+                    />
+                  ) : null}
+                </div>
+
                 <SurfaceCard className="mt-7 p-5 sm:mt-8">
                   <SectionHeader title="Sobre la actividad" />
 
@@ -332,20 +366,4 @@ export default async function ActividadDetallePage({
       </section>
     </main>
   );
-}
-
-function construirUrlImagenBackend(url?: string | null) {
-  const urlLimpia = url?.trim();
-
-  if (!urlLimpia) {
-    return null;
-  }
-
-  if (urlLimpia.startsWith("http://") || urlLimpia.startsWith("https://")) {
-    return urlLimpia;
-  }
-
-  const separador = urlLimpia.startsWith("/") ? "" : "/";
-
-  return `${API_BASE_URL}${separador}${urlLimpia}`;
 }

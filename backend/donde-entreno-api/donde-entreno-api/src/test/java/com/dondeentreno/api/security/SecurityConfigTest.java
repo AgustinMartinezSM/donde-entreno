@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -163,6 +164,24 @@ class SecurityConfigTest {
         mockMvc.perform(options("/api/admin/test"))
                 .andExpect(result -> assertNotEquals(401, result.getResponse().getStatus()))
                 .andExpect(result -> assertNotEquals(403, result.getResponse().getStatus()));
+    }
+
+    @Test
+    void preflightDesdeOrigenPermitidoDevuelveCabecerasCorsSinCredenciales() throws Exception {
+        mockMvc.perform(options("/api/actividades")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:3000")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:3000"))
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
+    }
+
+    @Test
+    void preflightDesdeOrigenNoPermitidoEsRechazado() throws Exception {
+        mockMvc.perform(options("/api/actividades")
+                        .header(HttpHeaders.ORIGIN, "https://sitio-no-permitido.example")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

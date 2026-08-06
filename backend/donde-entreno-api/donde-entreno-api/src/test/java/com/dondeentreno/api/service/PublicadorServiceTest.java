@@ -1,6 +1,8 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.dto.ActualizarPerfilPublicadorRequestDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
+import com.dondeentreno.api.dto.PerfilPublicadorActualDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicadorDetalleDTO;
@@ -13,6 +15,8 @@ import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.SolicitudPublicacionHorario;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.CredencialesInvalidasException;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.repository.BarrioRepository;
@@ -40,6 +44,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -161,6 +166,24 @@ class PublicadorServiceTest {
                         any(),
                         any()
                 );
+    }
+
+    @Test
+    void listarMisSolicitudesConOrdenInvalidoLanzaFiltroInvalido() {
+        configurarContexto(usuario(), perfil(usuario()));
+
+        FiltroInvalidoException exception = assertThrows(
+                FiltroInvalidoException.class,
+                () -> service.listarMisSolicitudes(10L, null, 0, 10, "ranking")
+        );
+
+        assertEquals(
+                "El parametro 'orden' tiene un valor invalido: 'ranking'. "
+                        + "Valores permitidos: antiguos, recientes.",
+                exception.getMessage()
+        );
+        verify(solicitudPublicacionRepository, never())
+                .findByUsuario_IdAndPerfilPublicador_IdAndDeletedAtIsNull(any(), any(), any());
     }
 
     @Test
@@ -310,6 +333,69 @@ class PublicadorServiceTest {
                 null
         )));
         return request;
+    }
+
+    @Test
+    void actualizarMiPerfilActualizaSoloLosCamposEnviados() {
+        Usuario usuario = usuario();
+        PerfilPublicador perfil = perfil(usuario);
+        perfil.setDescripcion("Descripcion vieja");
+        perfil.setInstagram("@viejo");
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
+                .thenReturn(Optional.of(perfil));
+        when(perfilPublicadorRepository.save(perfil)).thenReturn(perfil);
+
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+        request.setDescripcion("  Nueva descripcion  ");
+
+        PerfilPublicadorActualDTO resultado = service.actualizarMiPerfil(10L, request);
+
+        assertEquals("Nueva descripcion", resultado.getDescripcion());
+        assertEquals("@viejo", resultado.getInstagram());
+        assertEquals("contacto@perfil.test", resultado.getEmailContacto());
+        verify(perfilPublicadorRepository).save(perfil);
+    }
+
+    @Test
+    void actualizarMiPerfilConVacioLimpiaElCampo() {
+        Usuario usuario = usuario();
+        PerfilPublicador perfil = perfil(usuario);
+        perfil.setInstagram("@viejo");
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
+                .thenReturn(Optional.of(perfil));
+        when(perfilPublicadorRepository.save(perfil)).thenReturn(perfil);
+
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+        request.setInstagram("   ");
+
+        PerfilPublicadorActualDTO resultado = service.actualizarMiPerfil(10L, request);
+
+        assertNull(resultado.getInstagram());
+    }
+
+    @Test
+    void actualizarMiPerfilSinPerfilLanzaNoEncontrado() {
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
+                .thenReturn(Optional.empty());
+
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+        request.setDescripcion("Nueva");
+
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> service.actualizarMiPerfil(10L, request)
+        );
+        verify(perfilPublicadorRepository, never()).save(any(PerfilPublicador.class));
+    }
+
+    @Test
+    void actualizarMiPerfilSinUserIdLanzaCredencialesInvalidas() {
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+
+        assertThrows(
+                CredencialesInvalidasException.class,
+                () -> service.actualizarMiPerfil(null, request)
+        );
     }
 
     private Usuario usuario() {

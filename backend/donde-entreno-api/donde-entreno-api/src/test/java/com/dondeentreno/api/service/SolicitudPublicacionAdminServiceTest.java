@@ -16,6 +16,7 @@ import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.SolicitudPublicacionHorario;
 import com.dondeentreno.api.entity.Ubicacion;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudPublicacionInvalidaException;
 import com.dondeentreno.api.repository.ActividadRepository;
@@ -108,6 +109,21 @@ class SolicitudPublicacionAdminServiceTest {
                 ciudadRepository,
                 barrioRepository
         );
+    }
+
+    @Test
+    void listarConOrdenInvalidoLanzaFiltroInvalido() {
+        FiltroInvalidoException exception = assertThrows(
+                FiltroInvalidoException.class,
+                () -> service.listarSolicitudes(null, 0, 10, "ranking")
+        );
+
+        assertEquals(
+                "El parametro 'orden' tiene un valor invalido: 'ranking'. "
+                        + "Valores permitidos: antiguos, recientes.",
+                exception.getMessage()
+        );
+        verifyNoInteractions(solicitudPublicacionRepository);
     }
 
     @Test

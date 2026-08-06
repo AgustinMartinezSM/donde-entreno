@@ -1,5 +1,6 @@
 package com.dondeentreno.api.controller;
 
+import com.dondeentreno.api.dto.ActualizarPerfilPublicadorRequestDTO;
 import com.dondeentreno.api.dto.PerfilPublicadorActualDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -103,6 +105,54 @@ class PublicadorControllerTest {
                 .andExpect(jsonPath("$.estado").value("PENDIENTE_REVISION"))
                 .andExpect(jsonPath("$.ciudadPrincipalId").value(1))
                 .andExpect(jsonPath("$.verificado").value(false));
+    }
+
+    @Test
+    void actualizarMiPerfilSinTokenDevuelveUnauthorized() throws Exception {
+        mockMvc.perform(patch("/api/publicador/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"descripcion\":\"Nueva\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void actualizarMiPerfilConRolPublicadorDevuelvePerfilActualizado() throws Exception {
+        when(publicadorService.actualizarMiPerfil(eq(20L), any(ActualizarPerfilPublicadorRequestDTO.class)))
+                .thenReturn(new PerfilPublicadorActualDTO(
+                        30L,
+                        "Perfil Publicador",
+                        "PROFESOR_INDEPENDIENTE",
+                        "ACTIVO",
+                        1L,
+                        "Mar del Plata",
+                        "+54 223 555 9999",
+                        "@nuevo",
+                        "contacto@ejemplo.com",
+                        "+54 223 555 8888",
+                        "Descripcion nueva",
+                        true,
+                        false
+                ));
+
+        mockMvc.perform(patch("/api/publicador/me")
+                        .with(jwtConRol("PUBLICADOR", 20L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"descripcion\":\"Descripcion nueva\",\"instagram\":\"@nuevo\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.descripcion").value("Descripcion nueva"))
+                .andExpect(jsonPath("$.instagram").value("@nuevo"));
+
+        verify(publicadorService).actualizarMiPerfil(eq(20L), any(ActualizarPerfilPublicadorRequestDTO.class));
+    }
+
+    @Test
+    void actualizarMiPerfilConEmailInvalidoDevuelveBadRequest() throws Exception {
+        mockMvc.perform(patch("/api/publicador/me")
+                        .with(jwtConRol("PUBLICADOR", 20L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"emailContacto\":\"no-es-un-email\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.emailContacto").exists());
     }
 
     @Test

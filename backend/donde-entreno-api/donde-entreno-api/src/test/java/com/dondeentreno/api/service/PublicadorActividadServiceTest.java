@@ -14,6 +14,7 @@ import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.SolicitudPublicacion;
 import com.dondeentreno.api.entity.Ubicacion;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.repository.ActividadRepository;
 import com.dondeentreno.api.repository.HorarioActividadRepository;
@@ -233,6 +234,23 @@ class PublicadorActividadServiceTest {
         assertTrue(detalle.getImagenes().isEmpty());
         assertNull(detalle.getImagenPrincipalUrl());
         assertNull(detalle.getSolicitudOrigenId());
+    }
+
+    @Test
+    void listarActividadesPropiasConOrdenInvalidoLanzaFiltroInvalido() {
+        configurarPerfil(perfilPublicador());
+
+        FiltroInvalidoException exception = assertThrows(
+                FiltroInvalidoException.class,
+                () -> service.listarMisActividades(10L, 0, 10, "ranking")
+        );
+
+        assertEquals(
+                "El parametro 'orden' tiene un valor invalido: 'ranking'. "
+                        + "Valores permitidos: antiguos, titulo_asc, recientes.",
+                exception.getMessage()
+        );
+        verifyNoInteractions(actividadRepository);
     }
 
     private void configurarPerfil(PerfilPublicador perfil) {

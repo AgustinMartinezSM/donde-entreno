@@ -1,5 +1,6 @@
 package com.dondeentreno.api.controller;
 
+import com.dondeentreno.api.dto.ActualizarPerfilPublicadorRequestDTO;
 import com.dondeentreno.api.dto.PerfilPublicadorActualDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,19 @@ public class PublicadorController {
     @GetMapping("/me")
     public PerfilPublicadorActualDTO obtenerMiPerfil(@AuthenticationPrincipal Jwt jwt) {
         return publicadorService.obtenerMiPerfil(extraerUserId(jwt));
+    }
+
+    /**
+     * Edicion directa del perfil propio (descripcion, instagram y email
+     * de contacto). Los campos sensibles quedan para el flujo con
+     * revision admin.
+     */
+    @PatchMapping("/me")
+    public PerfilPublicadorActualDTO actualizarMiPerfil(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ActualizarPerfilPublicadorRequestDTO request
+    ) {
+        return publicadorService.actualizarMiPerfil(extraerUserId(jwt), request);
     }
 
     @GetMapping("/solicitudes")

@@ -18,6 +18,7 @@ import {
   obtenerSesionAuth,
   obtenerUsuarioActual,
 } from "../../services/authService";
+import { sincronizarCookieSesion } from "../../lib/sesionCookie";
 import type { LoginResponse, SesionAuth, UsuarioActual } from "../../types/auth";
 import type { ReactNode } from "react";
 
@@ -58,6 +59,7 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
   const cerrarSesion = useCallback(() => {
     versionSesionRef.current += 1;
     cerrarSesionAuth();
+    sincronizarCookieSesion(null);
     setSesion(null);
     setUsuario(null);
     setStatus("guest");
@@ -65,6 +67,12 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
   const aplicarSesionAutenticada = useCallback(
     (sesionActual: SesionAuth, usuarioActual: UsuarioActual | null) => {
+      /*
+        Mantenemos la cookie liviana (rol + vencimiento, sin token) en
+        sintonía con la sesión: la usa src/proxy.ts para no servir el
+        HTML de rutas privadas a visitantes sin sesión.
+      */
+      sincronizarCookieSesion(sesionActual);
       setSesion(sesionActual);
       setUsuario(usuarioActual);
       setStatus("authenticated");
@@ -149,12 +157,14 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
       }
 
       if (resultado.tipo === "guest") {
+        sincronizarCookieSesion(null);
         setSesion(null);
         setUsuario(null);
         setStatus("guest");
         return;
       }
 
+      sincronizarCookieSesion(resultado.sesion);
       setSesion(resultado.sesion);
       setUsuario(resultado.usuario);
       setStatus("authenticated");

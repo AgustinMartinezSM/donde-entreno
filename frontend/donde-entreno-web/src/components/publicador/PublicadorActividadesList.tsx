@@ -10,7 +10,7 @@ import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
-import { API_BASE_URL } from "../../lib/apiConfig";
+import { construirUrlImagenBackend } from "../../lib/backendUrl";
 import {
   obtenerImagenActividad,
   obtenerImagenFallbackActividad,
@@ -437,20 +437,4 @@ function formatearFecha(valor: string): string {
     month: "2-digit",
     year: "numeric",
   }).format(fecha);
-}
-
-function construirUrlImagenBackend(url?: string | null) {
-  const urlLimpia = url?.trim();
-
-  if (!urlLimpia) {
-    return null;
-  }
-
-  if (urlLimpia.startsWith("http://") || urlLimpia.startsWith("https://")) {
-    return urlLimpia;
-  }
-
-  const separador = urlLimpia.startsWith("/") ? "" : "/";
-
-  return `${API_BASE_URL}${separador}${urlLimpia}`;
 }

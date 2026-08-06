@@ -1,9 +1,19 @@
 import { API_BASE_URL } from "../lib/apiConfig";
 import {
+  construirAuthorization,
+  construirQueryListado,
+  ejecutarRequestJson,
+  esErrorResponseApi,
+  esNumberONull,
+  esObjeto,
+  esStringONull,
+  esValorDeLista,
+  validarIdPositivo,
+} from "./apiHelpers";
+import {
   DIAS_SEMANA_SOLICITUD_ADMIN,
   ESTADOS_SOLICITUD_ADMIN,
   type AdminErrorResponse,
-  type AdminErroresPorCampo,
   type CambiarEstadoSolicitudAdminRequest,
   type CambiarEstadoSolicitudAdminResponse,
   type DiaSemanaSolicitudAdmin,
@@ -16,6 +26,15 @@ import {
   type SolicitudPublicacionAdminRevisor,
   type SolicitudesPublicacionAdminPage,
 } from "../types/adminSolicitudes";
+import {
+  esSolicitudCambioDetalle,
+  esSolicitudesCambioPage,
+} from "./publicadorService";
+import type {
+  ListarSolicitudesCambioParams,
+  SolicitudCambioDetalle,
+  SolicitudesCambioPage,
+} from "../types/publicador";
 
 export type ListarSolicitudesAdminParams = {
   estado?: EstadoSolicitudAdmin | "";
@@ -47,8 +66,10 @@ export async function listarSolicitudesAdmin(
   params: ListarSolicitudesAdminParams,
   accessToken: string
 ): Promise<SolicitudesPublicacionAdminPage> {
-  const authorization = construirAuthorization(accessToken);
-  const url = construirUrlListado(params);
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const url = `${API_BASE_URL}/api/admin/solicitudes-publicacion${construirQueryListado(
+    params
+  )}`;
 
   return ejecutarAdminRequest(
     url,
@@ -68,7 +89,7 @@ export async function obtenerSolicitudAdmin(
   id: number,
   accessToken: string
 ): Promise<SolicitudPublicacionAdminDetalle> {
-  const authorization = construirAuthorization(accessToken);
+  const authorization = construirAuthorizationAdmin(accessToken);
   const idSeguro = validarIdSolicitud(id);
 
   return ejecutarAdminRequest(
@@ -90,7 +111,7 @@ export async function cambiarEstadoSolicitudAdmin(
   body: CambiarEstadoSolicitudAdminRequest,
   accessToken: string
 ): Promise<CambiarEstadoSolicitudAdminResponse> {
-  const authorization = construirAuthorization(accessToken);
+  const authorization = construirAuthorizationAdmin(accessToken);
   const idSeguro = validarIdSolicitud(id);
 
   return ejecutarAdminRequest(
@@ -112,7 +133,7 @@ export async function aprobarSolicitudAdmin(
   id: number,
   accessToken: string
 ): Promise<SolicitudPublicacionAprobacionResponse> {
-  const authorization = construirAuthorization(accessToken);
+  const authorization = construirAuthorizationAdmin(accessToken);
   const idSeguro = validarIdSolicitud(id);
 
   return ejecutarAdminRequest(
@@ -128,111 +149,280 @@ export async function aprobarSolicitudAdmin(
   );
 }
 
+// ============================================================
+// Solicitudes de cambio sobre actividades publicadas (admin)
+// ============================================================
+
+export type CambiarEstadoSolicitudCambioAdminRequest = {
+  estado: "EN_REVISION" | "RECHAZADA";
+  motivoRechazo?: string;
+};
+
+export async function listarSolicitudesCambioAdmin(
+  params: ListarSolicitudesCambioParams,
+  accessToken: string
+): Promise<SolicitudesCambioPage> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const url = `${API_BASE_URL}/api/admin/solicitudes-cambio${construirQueryListado(
+    params
+  )}`;
+
+  return ejecutarAdminRequest(
+    url,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+      cache: "no-store",
+    },
+    esSolicitudesCambioPage
+  );
+}
+
+export async function obtenerSolicitudCambioAdmin(
+  id: number,
+  accessToken: string
+): Promise<SolicitudCambioDetalle> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/solicitudes-cambio/${idSeguro}`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+      cache: "no-store",
+    },
+    esSolicitudCambioDetalle
+  );
+}
+
+export async function cambiarEstadoSolicitudCambioAdmin(
+  id: number,
+  body: CambiarEstadoSolicitudCambioAdminRequest,
+  accessToken: string
+): Promise<SolicitudCambioDetalle> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/solicitudes-cambio/${idSeguro}/estado`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+      body: JSON.stringify(body),
+    },
+    esSolicitudCambioDetalle
+  );
+}
+
+export async function aprobarSolicitudCambioAdmin(
+  id: number,
+  accessToken: string
+): Promise<SolicitudCambioDetalle> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/solicitudes-cambio/${idSeguro}/aprobar`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+    },
+    esSolicitudCambioDetalle
+  );
+}
+
+// ============================================================
+// Moderación de imágenes (admin)
+// ============================================================
+
+export type ImagenAdmin = {
+  id: number;
+  url: string;
+  tipoImagen: string;
+  estadoModeracion: string;
+  motivoRechazo: string | null;
+  activa: boolean;
+  createdAt: string | null;
+  actividadId: number | null;
+  actividadTitulo: string | null;
+  actividadSlug: string | null;
+};
+
+export type ImagenesAdminPage = {
+  contenido: ImagenAdmin[];
+  paginaActual: number;
+  tamanioPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  ultima: boolean;
+};
+
+export type ListarImagenesAdminParams = {
+  estado?: string;
+  page?: number;
+  size?: number;
+};
+
+export async function listarImagenesAdmin(
+  params: ListarImagenesAdminParams,
+  accessToken: string
+): Promise<ImagenesAdminPage> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const url = `${API_BASE_URL}/api/admin/imagenes${construirQueryListado(params)}`;
+
+  return ejecutarAdminRequest(
+    url,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+      cache: "no-store",
+    },
+    esImagenesAdminPage
+  );
+}
+
+export async function aprobarImagenAdmin(
+  id: number,
+  accessToken: string
+): Promise<ImagenAdmin> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/imagenes/${idSeguro}/aprobar`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+    },
+    esImagenAdmin
+  );
+}
+
+export async function rechazarImagenAdmin(
+  id: number,
+  motivo: string,
+  accessToken: string
+): Promise<ImagenAdmin> {
+  const authorization = construirAuthorizationAdmin(accessToken);
+  const idSeguro = validarIdSolicitud(id);
+
+  return ejecutarAdminRequest(
+    `${API_BASE_URL}/api/admin/imagenes/${idSeguro}/rechazar`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": authorization,
+      },
+      body: JSON.stringify({ motivo }),
+    },
+    esImagenAdmin
+  );
+}
+
+function esImagenAdmin(valor: unknown): valor is ImagenAdmin {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    typeof valor.url === "string" &&
+    typeof valor.tipoImagen === "string" &&
+    typeof valor.estadoModeracion === "string" &&
+    esStringONull(valor.motivoRechazo) &&
+    typeof valor.activa === "boolean" &&
+    esStringONull(valor.createdAt) &&
+    esNumberONull(valor.actividadId) &&
+    esStringONull(valor.actividadTitulo) &&
+    esStringONull(valor.actividadSlug)
+  );
+}
+
+function esImagenesAdminPage(valor: unknown): valor is ImagenesAdminPage {
+  return (
+    esObjeto(valor) &&
+    Array.isArray(valor.contenido) &&
+    valor.contenido.every(esImagenAdmin) &&
+    typeof valor.paginaActual === "number" &&
+    typeof valor.tamanioPagina === "number" &&
+    typeof valor.totalElementos === "number" &&
+    typeof valor.totalPaginas === "number" &&
+    typeof valor.ultima === "boolean"
+  );
+}
+
 async function ejecutarAdminRequest<T>(
   url: string,
   opciones: RequestInit,
   validador: ValidadorAdmin<T>
 ): Promise<T> {
-  let respuestaHttp: Response;
-
-  try {
-    respuestaHttp = await fetch(url, opciones);
-  } catch (error: unknown) {
-    if (error instanceof AdminApiError) {
-      throw error;
-    }
-
-    throw new AdminApiError(
-      "No fue posible conectar con el servidor del panel admin."
-    );
-  }
-
-  const cuerpo: unknown = await leerJsonSeguro(respuestaHttp);
-
-  if (!respuestaHttp.ok) {
-    if (esAdminErrorResponse(cuerpo)) {
-      throw new AdminApiError(
-        obtenerMensajeErrorAdmin(respuestaHttp.status, cuerpo.mensaje),
-        {
-          status: respuestaHttp.status,
-          respuesta: cuerpo,
-        }
-      );
-    }
-
-    throw new AdminApiError(
-      obtenerMensajeErrorAdmin(respuestaHttp.status, null),
-      {
-        status: respuestaHttp.status,
+  return ejecutarRequestJson(url, opciones, validador, {
+    crearErrorConexion: (error) =>
+      error instanceof AdminApiError
+        ? error
+        : new AdminApiError(
+            "No fue posible conectar con el servidor del panel admin."
+          ),
+    crearErrorHttp: (status, cuerpo) => {
+      if (esErrorResponseApi(cuerpo)) {
+        return new AdminApiError(
+          obtenerMensajeErrorAdmin(status, cuerpo.mensaje),
+          {
+            status,
+            respuesta: cuerpo,
+          }
+        );
       }
-    );
-  }
 
-  if (!validador(cuerpo)) {
-    throw new AdminApiError(
-      "La respuesta del servidor no tiene el formato esperado.",
-      {
-        status: respuestaHttp.status,
-      }
-    );
-  }
-
-  return cuerpo;
+      return new AdminApiError(obtenerMensajeErrorAdmin(status, null), {
+        status,
+      });
+    },
+    crearErrorFormatoInvalido: (status) =>
+      new AdminApiError(
+        "La respuesta del servidor no tiene el formato esperado.",
+        { status }
+      ),
+  });
 }
 
-function construirUrlListado(params: ListarSolicitudesAdminParams): string {
-  const parametros = new URLSearchParams();
-
-  if (params.estado) {
-    parametros.set("estado", params.estado);
-  }
-
-  if (typeof params.page === "number" && Number.isFinite(params.page)) {
-    parametros.set("page", String(params.page));
-  }
-
-  if (typeof params.size === "number" && Number.isFinite(params.size)) {
-    parametros.set("size", String(params.size));
-  }
-
-  if (params.orden) {
-    parametros.set("orden", params.orden);
-  }
-
-  const queryString = parametros.toString();
-
-  return `${API_BASE_URL}/api/admin/solicitudes-publicacion${
-    queryString ? `?${queryString}` : ""
-  }`;
-}
-
-function construirAuthorization(accessToken: string): string {
-  const token = accessToken.trim();
-
-  if (!token) {
-    throw new AdminApiError("Necesitas iniciar sesion para usar el panel admin.");
-  }
-
-  return `Bearer ${token}`;
+function construirAuthorizationAdmin(accessToken: string): string {
+  return construirAuthorization(
+    accessToken,
+    () =>
+      new AdminApiError("Necesitas iniciar sesion para usar el panel admin.")
+  );
 }
 
 function validarIdSolicitud(id: number): number {
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new AdminApiError("El ID de la solicitud no es valido.");
-  }
-
-  return id;
+  return validarIdPositivo(
+    id,
+    () => new AdminApiError("El ID de la solicitud no es valido.")
+  );
 }
 
-async function leerJsonSeguro(respuesta: Response): Promise<unknown> {
-  try {
-    const cuerpo: unknown = await respuesta.json();
-    return cuerpo;
-  } catch {
-    return null;
-  }
-}
-
+// Mensajes propios del panel admin segun el status HTTP.
+// Se mantiene local (y no en apiHelpers) porque los textos son especificos
+// de este panel.
 function obtenerMensajeErrorAdmin(
   status: number,
   mensajeBackend: string | null
@@ -258,32 +448,14 @@ function obtenerMensajeErrorAdmin(
   return "No se pudo completar la operacion del panel admin.";
 }
 
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
-
-function esStringONull(valor: unknown): valor is string | null {
-  return typeof valor === "string" || valor === null;
-}
-
-function esNumberONull(valor: unknown): valor is number | null {
-  return typeof valor === "number" || valor === null;
-}
-
 function esDiaSemanaSolicitudAdmin(
   valor: unknown
 ): valor is DiaSemanaSolicitudAdmin {
-  return (
-    typeof valor === "string" &&
-    DIAS_SEMANA_SOLICITUD_ADMIN.some((dia) => dia === valor)
-  );
+  return esValorDeLista(valor, DIAS_SEMANA_SOLICITUD_ADMIN);
 }
 
 function esEstadoSolicitudAdmin(valor: unknown): valor is EstadoSolicitudAdmin {
-  return (
-    typeof valor === "string" &&
-    ESTADOS_SOLICITUD_ADMIN.some((estado) => estado === valor)
-  );
+  return esValorDeLista(valor, ESTADOS_SOLICITUD_ADMIN);
 }
 
 function tieneCamposResumenAdmin(valor: Record<string, unknown>): boolean {
@@ -399,27 +571,5 @@ function esSolicitudesPublicacionAdminPage(
     typeof valor.totalElementos === "number" &&
     typeof valor.totalPaginas === "number" &&
     typeof valor.ultima === "boolean"
-  );
-}
-
-function esAdminErroresPorCampo(
-  valor: unknown
-): valor is AdminErroresPorCampo {
-  if (!esObjeto(valor)) {
-    return false;
-  }
-
-  return Object.values(valor).every((mensaje) => typeof mensaje === "string");
-}
-
-function esAdminErrorResponse(valor: unknown): valor is AdminErrorResponse {
-  return (
-    esObjeto(valor) &&
-    typeof valor.status === "number" &&
-    typeof valor.error === "string" &&
-    typeof valor.mensaje === "string" &&
-    (valor.errores === null || esAdminErroresPorCampo(valor.errores)) &&
-    typeof valor.path === "string" &&
-    typeof valor.timestamp === "string"
   );
 }

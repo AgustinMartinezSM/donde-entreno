@@ -1,4 +1,11 @@
 import { API_BASE_URL } from "../lib/apiConfig";
+import {
+  construirAuthorization,
+  ejecutarRequestJson,
+  esErrorResponseApi,
+  esObjeto,
+  esStringONull,
+} from "./apiHelpers";
 import type {
   AdminLoginRequest,
   AdminLoginResponse,
@@ -108,7 +115,7 @@ export async function obtenerUsuarioActual(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "Authorization": construirAuthorization(accessToken),
+        "Authorization": construirAuthorizationAuth(accessToken),
       },
       cache: "no-store",
     },
@@ -235,69 +242,40 @@ async function ejecutarAuthRequest<T>(
   validador: ValidadorAuth<T>,
   mensajeFallback: string
 ): Promise<T> {
-  let respuestaHttp: Response;
-
-  try {
-    respuestaHttp = await fetch(url, opciones);
-  } catch (error: unknown) {
-    if (error instanceof AuthApiError) {
-      throw error;
-    }
-
-    throw new AuthApiError("No fue posible conectar con el servidor.");
-  }
-
-  const cuerpo: unknown = await leerJsonSeguro(respuestaHttp);
-
-  if (!respuestaHttp.ok) {
-    if (esAuthErrorResponse(cuerpo)) {
-      throw new AuthApiError(
-        obtenerMensajeErrorAuth(respuestaHttp.status, cuerpo.mensaje, mensajeFallback),
-        {
-          status: respuestaHttp.status,
-          respuesta: cuerpo,
-          erroresPorCampo: cuerpo.errores,
-        }
-      );
-    }
-
-    throw new AuthApiError(
-      obtenerMensajeErrorAuth(respuestaHttp.status, null, mensajeFallback),
-      {
-        status: respuestaHttp.status,
+  return ejecutarRequestJson(url, opciones, validador, {
+    crearErrorConexion: (error) =>
+      error instanceof AuthApiError
+        ? error
+        : new AuthApiError("No fue posible conectar con el servidor."),
+    crearErrorHttp: (status, cuerpo) => {
+      if (esErrorResponseApi(cuerpo)) {
+        return new AuthApiError(
+          obtenerMensajeErrorAuth(cuerpo.mensaje, mensajeFallback),
+          {
+            status,
+            respuesta: cuerpo,
+            erroresPorCampo: cuerpo.errores,
+          }
+        );
       }
-    );
-  }
 
-  if (!validador(cuerpo)) {
-    throw new AuthApiError(
-      "La respuesta del servidor no tiene el formato esperado.",
-      {
-        status: respuestaHttp.status,
-      }
-    );
-  }
-
-  return cuerpo;
+      return new AuthApiError(obtenerMensajeErrorAuth(null, mensajeFallback), {
+        status,
+      });
+    },
+    crearErrorFormatoInvalido: (status) =>
+      new AuthApiError(
+        "La respuesta del servidor no tiene el formato esperado.",
+        { status }
+      ),
+  });
 }
 
-function construirAuthorization(accessToken: string): string {
-  const token = accessToken.trim();
-
-  if (!token) {
-    throw new AuthApiError("Necesitas iniciar sesion.");
-  }
-
-  return `Bearer ${token}`;
-}
-
-async function leerJsonSeguro(respuesta: Response): Promise<unknown> {
-  try {
-    const cuerpo: unknown = await respuesta.json();
-    return cuerpo;
-  } catch {
-    return null;
-  }
+function construirAuthorizationAuth(accessToken: string): string {
+  return construirAuthorization(
+    accessToken,
+    () => new AuthApiError("Necesitas iniciar sesion.")
+  );
 }
 
 function leerSesionDesdeStorage(storageKey: string): SesionAuth | null {
@@ -323,33 +301,16 @@ function leerSesionDesdeStorage(storageKey: string): SesionAuth | null {
 }
 
 function obtenerMensajeErrorAuth(
-  status: number,
   mensajeBackend: string | null,
   mensajeFallback: string
 ): string {
   const mensajeLimpio = mensajeBackend?.trim();
 
-  if (mensajeLimpio) {
-    return mensajeLimpio;
-  }
-
-  if (status === 401 || status === 403 || status === 409) {
-    return mensajeFallback;
-  }
-
-  return mensajeFallback;
+  return mensajeLimpio ? mensajeLimpio : mensajeFallback;
 }
 
 function puedeUsarSessionStorage(): boolean {
   return typeof window !== "undefined" && "sessionStorage" in window;
-}
-
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
-
-function esStringONull(valor: unknown): valor is string | null {
-  return typeof valor === "string" || valor === null;
 }
 
 function esAuthUsuario(valor: unknown): valor is AuthUsuario {
@@ -394,27 +355,5 @@ function esSesionAuth(valor: unknown): valor is SesionAuth {
     typeof valor.accessToken === "string" &&
     typeof valor.expiresAt === "number" &&
     esAuthUsuario(valor.usuario)
-  );
-}
-
-function esAuthErroresPorCampo(
-  valor: unknown
-): valor is AuthErroresPorCampo {
-  if (!esObjeto(valor)) {
-    return false;
-  }
-
-  return Object.values(valor).every((mensaje) => typeof mensaje === "string");
-}
-
-function esAuthErrorResponse(valor: unknown): valor is AuthErrorResponse {
-  return (
-    esObjeto(valor) &&
-    typeof valor.status === "number" &&
-    typeof valor.error === "string" &&
-    typeof valor.mensaje === "string" &&
-    (valor.errores === null || esAuthErroresPorCampo(valor.errores)) &&
-    typeof valor.path === "string" &&
-    typeof valor.timestamp === "string"
   );
 }

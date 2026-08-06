@@ -78,3 +78,13 @@ coverage/
 # =========================
 tmp/
 temp/
+
+# =========================
+# WORKTREES DE AGENTES (Claude Code)
+# =========================
+.claude/worktrees/
+
+# =========================
+# DIRECTORIOS GENERADOS EN EJECUCION (nunca se versionan)
+# =========================
+uploads/

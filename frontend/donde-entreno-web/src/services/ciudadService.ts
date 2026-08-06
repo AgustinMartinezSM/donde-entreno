@@ -1,38 +1,15 @@
 import { API_BASE_URL } from "../lib/apiConfig";
+import {
+  esObjeto,
+  leerBooleanoRequerido,
+  leerNumeroOpcional,
+  leerNumeroRequerido,
+  leerTextoRequerido,
+} from "./apiHelpers";
 import type { Ciudad } from "../types/ciudad";
 
 const MENSAJE_ERROR_CIUDADES = "No pudimos cargar las ciudades.";
 const MENSAJE_ERROR_CIUDAD = "No pudimos cargar la ciudad solicitada.";
-
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
-
-function leerTextoRequerido(valor: unknown) {
-  if (typeof valor !== "string") {
-    return null;
-  }
-
-  const textoLimpio = valor.trim();
-
-  return textoLimpio.length > 0 ? textoLimpio : null;
-}
-
-function leerNumeroRequerido(valor: unknown) {
-  return typeof valor === "number" && Number.isFinite(valor) ? valor : null;
-}
-
-function leerNumeroOpcional(valor: unknown) {
-  if (valor === undefined || valor === null) {
-    return null;
-  }
-
-  return typeof valor === "number" && Number.isFinite(valor) ? valor : null;
-}
-
-function leerBooleanoRequerido(valor: unknown) {
-  return typeof valor === "boolean" ? valor : null;
-}
 
 function parsearCiudad(valor: unknown): Ciudad | null {
   if (!esObjeto(valor)) {

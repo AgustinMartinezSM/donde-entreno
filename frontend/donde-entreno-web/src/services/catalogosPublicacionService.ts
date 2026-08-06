@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../lib/apiConfig";
+import { ejecutarRequestJson, esObjeto } from "./apiHelpers";
 import type {
   BarrioPublicacionOpcion,
   CiudadPublicacionOpcion,
@@ -63,52 +64,38 @@ async function obtenerCatalogoPublicacion<TEntrada, TSalida>(
   normalizarItem: NormalizadorCatalogo<TEntrada, TSalida>,
   mensajeErrorHttp: string
 ): Promise<TSalida[]> {
-  let respuestaHttp: Response;
-
-  try {
-    respuestaHttp = await fetch(url, {
+  const items = await ejecutarRequestJson(
+    url,
+    {
       method: "GET",
       headers: {
         "Accept": "application/json",
       },
       cache: "no-store",
-    });
-  } catch (error: unknown) {
-    if (error instanceof CatalogosPublicacionApiError) {
-      throw error;
+    },
+    (valor): valor is TEntrada[] =>
+      Array.isArray(valor) && valor.every(esItemValido),
+    {
+      crearErrorConexion: (error) =>
+        error instanceof CatalogosPublicacionApiError
+          ? error
+          : new CatalogosPublicacionApiError(
+              "No fue posible conectar con el servidor para obtener los catálogos de publicación."
+            ),
+      crearErrorHttp: (status, cuerpo) =>
+        new CatalogosPublicacionApiError(
+          obtenerMensajeBackend(cuerpo) ?? mensajeErrorHttp,
+          status
+        ),
+      crearErrorFormatoInvalido: (status) =>
+        new CatalogosPublicacionApiError(
+          "La respuesta del servidor no tiene el formato esperado.",
+          status
+        ),
     }
+  );
 
-    throw new CatalogosPublicacionApiError(
-      "No fue posible conectar con el servidor para obtener los catálogos de publicación."
-    );
-  }
-
-  const cuerpo: unknown = await leerJsonSeguro(respuestaHttp);
-
-  if (!respuestaHttp.ok) {
-    throw new CatalogosPublicacionApiError(
-      obtenerMensajeBackend(cuerpo) ?? mensajeErrorHttp,
-      respuestaHttp.status
-    );
-  }
-
-  if (!Array.isArray(cuerpo) || !cuerpo.every(esItemValido)) {
-    throw new CatalogosPublicacionApiError(
-      "La respuesta del servidor no tiene el formato esperado.",
-      respuestaHttp.status
-    );
-  }
-
-  return cuerpo.map(normalizarItem);
-}
-
-async function leerJsonSeguro(respuesta: Response): Promise<unknown> {
-  try {
-    const cuerpo: unknown = await respuesta.json();
-    return cuerpo;
-  } catch {
-    return null;
-  }
+  return items.map(normalizarItem);
 }
 
 function obtenerMensajeBackend(cuerpo: unknown): string | null {
@@ -117,10 +104,6 @@ function obtenerMensajeBackend(cuerpo: unknown): string | null {
   }
 
   return cuerpo.mensaje;
-}
-
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
 }
 
 function esDeportePublicacionOpcion(

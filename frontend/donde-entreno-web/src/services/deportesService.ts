@@ -1,47 +1,14 @@
 import { API_BASE_URL } from "../lib/apiConfig";
+import {
+  esObjeto,
+  leerNumeroOpcional,
+  leerNumeroRequerido,
+  leerTextoOpcional,
+  leerTextoRequerido,
+} from "./apiHelpers";
 import type { Deporte } from "../types/deporte";
 
 const MENSAJE_ERROR_DEPORTES = "No pudimos cargar los deportes.";
-
-function esObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
-
-function leerTextoRequerido(valor: unknown) {
-  if (typeof valor !== "string") {
-    return null;
-  }
-
-  const textoLimpio = valor.trim();
-
-  return textoLimpio.length > 0 ? textoLimpio : null;
-}
-
-function leerTextoOpcional(valor: unknown) {
-  if (valor === undefined || valor === null) {
-    return null;
-  }
-
-  if (typeof valor !== "string") {
-    return null;
-  }
-
-  const textoLimpio = valor.trim();
-
-  return textoLimpio.length > 0 ? textoLimpio : null;
-}
-
-function leerNumeroRequerido(valor: unknown) {
-  return typeof valor === "number" && Number.isFinite(valor) ? valor : null;
-}
-
-function leerNumeroOpcional(valor: unknown) {
-  if (valor === undefined || valor === null) {
-    return null;
-  }
-
-  return typeof valor === "number" && Number.isFinite(valor) ? valor : null;
-}
 
 function parsearDeporte(valor: unknown): Deporte | null {
   if (!esObjeto(valor)) {

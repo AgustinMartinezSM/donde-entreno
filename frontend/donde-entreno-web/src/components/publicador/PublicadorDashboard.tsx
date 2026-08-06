@@ -90,8 +90,15 @@ export function PublicadorDashboard() {
                 Nueva solicitud
               </AppLinkButton>
               <AppLinkButton
-                href="/publicador/solicitudes"
+                href="/publicador/actividades"
                 variant="secondary"
+                fullWidth
+              >
+                Mis actividades aprobadas
+              </AppLinkButton>
+              <AppLinkButton
+                href="/publicador/solicitudes"
+                variant="outline"
                 fullWidth
               >
                 Mis solicitudes
@@ -144,27 +151,38 @@ export function PublicadorDashboard() {
               ) : null}
             </SurfaceCard>
 
-            <SurfaceCard variant="success" className="p-6 sm:p-8">
+            <SurfaceCard variant="info" className="p-6 sm:p-8">
               <SectionHeader
                 eyebrow="Accesos rápidos"
                 title="Publicá con seguimiento"
-                description="Cargá una actividad y seguí su revisión desde el mismo panel."
+                description="Cargá nuevas solicitudes, revisá las aprobadas y seguí cada estado desde tu panel."
               />
 
               <div className="mt-8 grid gap-3">
-                <AppLinkButton href="/publicador/solicitudes" fullWidth>
-                  Mis solicitudes
-                </AppLinkButton>
                 <AppLinkButton
                   href="/publicador/solicitudes/nueva"
-                  variant="success"
                   fullWidth
                 >
                   Nueva solicitud
                 </AppLinkButton>
+                <AppLinkButton
+                  href="/publicador/actividades"
+                  variant="secondary"
+                  fullWidth
+                >
+                  Mis actividades aprobadas
+                </AppLinkButton>
+                <AppLinkButton
+                  href="/publicador/solicitudes"
+                  variant="outline"
+                  fullWidth
+                >
+                  Mis solicitudes
+                </AppLinkButton>
                 <StatusMessage variant="info">
-                  Cuanto más clara sea la información, más simple será revisar
-                  la publicación y dejarla lista para aparecer en la plataforma.
+                  Revisá las actividades que ya fueron aprobadas y publicadas.
+                  También podés enviar una nueva solicitud o seguir el estado de
+                  las que están en revisión.
                 </StatusMessage>
               </div>
             </SurfaceCard>

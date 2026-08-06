@@ -10,9 +10,15 @@ import {
   type EstadoSolicitudPublicacion,
 } from "../types/solicitudPublicacion";
 import type {
+  ActividadPublicadorDetalle,
+  ActividadPublicadorHorario,
+  ActividadPublicadorImagen,
+  ActividadPublicadorResumen,
+  ActividadesPublicadorPage,
   CrearSolicitudPublicadorRequest,
   CrearSolicitudPublicadorResponse,
   EstadoPerfilPublicador,
+  ListarActividadesPublicadorParams,
   ListarSolicitudesPublicadorParams,
   PerfilPublicadorActual,
   SolicitudPublicadorDetalle,
@@ -120,6 +126,46 @@ export async function crearSolicitudPublicador(
   );
 }
 
+export async function listarActividadesPublicador(
+  params: ListarActividadesPublicadorParams,
+  accessToken: string
+): Promise<ActividadesPublicadorPage> {
+  return ejecutarPublicadorRequest(
+    construirUrlListadoActividades(params),
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorization(accessToken),
+      },
+      cache: "no-store",
+    },
+    esActividadesPublicadorPage
+  );
+}
+
+export async function obtenerActividadPublicador(
+  id: number,
+  accessToken: string
+): Promise<ActividadPublicadorDetalle> {
+  const idSeguro = validarIdActividad(id);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorization(accessToken),
+      },
+      cache: "no-store",
+    },
+    esActividadPublicadorDetalle
+  );
+}
+
 async function ejecutarPublicadorRequest<T>(
   url: string,
   opciones: RequestInit,
@@ -199,6 +245,30 @@ function construirUrlListado(
   }`;
 }
 
+function construirUrlListadoActividades(
+  params: ListarActividadesPublicadorParams
+): string {
+  const parametros = new URLSearchParams();
+
+  if (typeof params.page === "number" && Number.isFinite(params.page)) {
+    parametros.set("page", String(params.page));
+  }
+
+  if (typeof params.size === "number" && Number.isFinite(params.size)) {
+    parametros.set("size", String(params.size));
+  }
+
+  if (params.orden) {
+    parametros.set("orden", params.orden);
+  }
+
+  const queryString = parametros.toString();
+
+  return `${API_BASE_URL}/api/publicador/actividades${
+    queryString ? `?${queryString}` : ""
+  }`;
+}
+
 function construirAuthorization(accessToken: string): string {
   const token = accessToken.trim();
 
@@ -214,6 +284,14 @@ function construirAuthorization(accessToken: string): string {
 function validarIdSolicitud(id: number): number {
   if (!Number.isInteger(id) || id <= 0) {
     throw new PublicadorApiError("El ID de la solicitud no es valido.");
+  }
+
+  return id;
+}
+
+function validarIdActividad(id: number): number {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new PublicadorApiError("El ID de la actividad no es valido.");
   }
 
   return id;
@@ -263,6 +341,10 @@ function esStringONull(valor: unknown): valor is string | null {
 
 function esNumberONull(valor: unknown): valor is number | null {
   return typeof valor === "number" || valor === null;
+}
+
+function esBooleanONull(valor: unknown): valor is boolean | null {
+  return typeof valor === "boolean" || valor === null;
 }
 
 function esEstadoPerfilPublicador(
@@ -389,6 +471,109 @@ function esSolicitudesPublicadorPage(
     esObjeto(valor) &&
     Array.isArray(valor.contenido) &&
     valor.contenido.every(esSolicitudPublicadorResumen) &&
+    typeof valor.paginaActual === "number" &&
+    typeof valor.tamanioPagina === "number" &&
+    typeof valor.totalElementos === "number" &&
+    typeof valor.totalPaginas === "number" &&
+    typeof valor.ultima === "boolean"
+  );
+}
+
+function tieneCamposResumenActividadPublicador(
+  valor: Record<string, unknown>
+): boolean {
+  return (
+    typeof valor.id === "number" &&
+    typeof valor.titulo === "string" &&
+    typeof valor.slug === "string" &&
+    esStringONull(valor.deporteNombre) &&
+    esStringONull(valor.deporteSlug) &&
+    esStringONull(valor.categoriaDeportivaNombre) &&
+    esStringONull(valor.ciudadNombre) &&
+    esStringONull(valor.ciudadSlug) &&
+    esStringONull(valor.barrioNombre) &&
+    typeof valor.estadoPublicacion === "string" &&
+    typeof valor.activa === "boolean" &&
+    esStringONull(valor.modalidad) &&
+    esStringONull(valor.nivel) &&
+    esNumberONull(valor.edadMinima) &&
+    esNumberONull(valor.edadMaxima) &&
+    esNumberONull(valor.precioReferencia) &&
+    esBooleanONull(valor.mostrarPrecio) &&
+    esStringONull(valor.imagenPrincipalUrl) &&
+    esStringONull(valor.createdAt) &&
+    esStringONull(valor.slugPublico)
+  );
+}
+
+function esActividadPublicadorResumen(
+  valor: unknown
+): valor is ActividadPublicadorResumen {
+  return esObjeto(valor) && tieneCamposResumenActividadPublicador(valor);
+}
+
+function esActividadPublicadorHorario(
+  valor: unknown
+): valor is ActividadPublicadorHorario {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    typeof valor.diaSemana === "string" &&
+    typeof valor.horaInicio === "string" &&
+    typeof valor.horaFin === "string" &&
+    esStringONull(valor.observacion)
+  );
+}
+
+function esActividadPublicadorImagen(
+  valor: unknown
+): valor is ActividadPublicadorImagen {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    typeof valor.url === "string" &&
+    esStringONull(valor.tipoImagen) &&
+    esStringONull(valor.titulo) &&
+    esStringONull(valor.descripcion) &&
+    esNumberONull(valor.orden)
+  );
+}
+
+function esActividadPublicadorDetalle(
+  valor: unknown
+): valor is ActividadPublicadorDetalle {
+  return (
+    esObjeto(valor) &&
+    tieneCamposResumenActividadPublicador(valor) &&
+    esStringONull(valor.descripcion) &&
+    esStringONull(valor.enfoque) &&
+    esBooleanONull(valor.requiereInscripcion) &&
+    esBooleanONull(valor.cuposLimitados) &&
+    esStringONull(valor.nombreLugar) &&
+    esStringONull(valor.direccion) &&
+    esStringONull(valor.referenciaUbicacion) &&
+    esStringONull(valor.whatsapp) &&
+    esStringONull(valor.instagram) &&
+    esStringONull(valor.email) &&
+    esNumberONull(valor.perfilPublicadorId) &&
+    esStringONull(valor.perfilPublicadorNombre) &&
+    esStringONull(valor.perfilPublicadorTipo) &&
+    esNumberONull(valor.solicitudOrigenId) &&
+    esStringONull(valor.solicitudCodigoSeguimiento) &&
+    Array.isArray(valor.horarios) &&
+    valor.horarios.every(esActividadPublicadorHorario) &&
+    Array.isArray(valor.imagenes) &&
+    valor.imagenes.every(esActividadPublicadorImagen)
+  );
+}
+
+function esActividadesPublicadorPage(
+  valor: unknown
+): valor is ActividadesPublicadorPage {
+  return (
+    esObjeto(valor) &&
+    Array.isArray(valor.contenido) &&
+    valor.contenido.every(esActividadPublicadorResumen) &&
     typeof valor.paginaActual === "number" &&
     typeof valor.tamanioPagina === "number" &&
     typeof valor.totalElementos === "number" &&

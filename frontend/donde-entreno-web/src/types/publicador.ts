@@ -23,6 +23,15 @@ export const ORDENES_SOLICITUDES_PUBLICADOR = [
 export type OrdenSolicitudesPublicador =
   (typeof ORDENES_SOLICITUDES_PUBLICADOR)[number];
 
+export const ORDENES_ACTIVIDADES_PUBLICADOR = [
+  "recientes",
+  "antiguos",
+  "titulo_asc",
+] as const;
+
+export type OrdenActividadesPublicador =
+  (typeof ORDENES_ACTIVIDADES_PUBLICADOR)[number];
+
 export type PerfilPublicadorActual = {
   id: number;
   nombre: string;
@@ -113,3 +122,78 @@ export type CrearSolicitudPublicadorRequest = Omit<
 >;
 
 export type CrearSolicitudPublicadorResponse = SolicitudPublicacionResponse;
+
+export type ActividadPublicadorResumen = {
+  id: number;
+  titulo: string;
+  slug: string;
+  deporteNombre: string | null;
+  deporteSlug: string | null;
+  categoriaDeportivaNombre: string | null;
+  ciudadNombre: string | null;
+  ciudadSlug: string | null;
+  barrioNombre: string | null;
+  estadoPublicacion: string;
+  activa: boolean;
+  modalidad: string | null;
+  nivel: string | null;
+  edadMinima: number | null;
+  edadMaxima: number | null;
+  precioReferencia: number | null;
+  mostrarPrecio: boolean | null;
+  imagenPrincipalUrl: string | null;
+  createdAt: string | null;
+  slugPublico: string | null;
+};
+
+export type ActividadPublicadorHorario = {
+  id: number;
+  diaSemana: string;
+  horaInicio: string;
+  horaFin: string;
+  observacion: string | null;
+};
+
+export type ActividadPublicadorImagen = {
+  id: number;
+  url: string;
+  tipoImagen: string | null;
+  titulo: string | null;
+  descripcion: string | null;
+  orden: number | null;
+};
+
+export type ActividadPublicadorDetalle = ActividadPublicadorResumen & {
+  descripcion: string | null;
+  enfoque: string | null;
+  requiereInscripcion: boolean | null;
+  cuposLimitados: boolean | null;
+  nombreLugar: string | null;
+  direccion: string | null;
+  referenciaUbicacion: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  email: string | null;
+  perfilPublicadorId: number | null;
+  perfilPublicadorNombre: string | null;
+  perfilPublicadorTipo: string | null;
+  solicitudOrigenId: number | null;
+  solicitudCodigoSeguimiento: string | null;
+  horarios: ActividadPublicadorHorario[];
+  imagenes: ActividadPublicadorImagen[];
+};
+
+export type ActividadesPublicadorPage = {
+  contenido: ActividadPublicadorResumen[];
+  paginaActual: number;
+  tamanioPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  ultima: boolean;
+};
+
+export type ListarActividadesPublicadorParams = {
+  page?: number;
+  size?: number;
+  orden?: OrdenActividadesPublicador;
+};

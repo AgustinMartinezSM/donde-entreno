@@ -1,8 +1,9 @@
 import Image from "next/image";
 
 import type { Actividad } from "../../types/actividad";
-import { API_BASE_URL } from "../../lib/apiConfig";
+import { construirUrlImagenBackend } from "../../lib/backendUrl";
 import { ActivityImage } from "../actividad/ActivityImage";
+import { FavoritoButton } from "../actividad/FavoritoButton";
 import {
   obtenerImagenActividad,
   obtenerImagenFallbackActividad,
@@ -48,13 +49,31 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
       as="article"
       className="group overflow-hidden p-3 transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)] active:scale-[0.995]"
     >
-      <ActivityImage
-        src={imagenUrl}
-        fallbackSrc={imagenFallbackUrl}
-        alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
-        fallbackText={actividad.deporteNombre || "Actividad"}
-        heightClassName="h-48"
-      />
+      <div className="relative">
+        <ActivityImage
+          src={imagenUrl}
+          fallbackSrc={imagenFallbackUrl}
+          alt={actividad.titulo || actividad.deporteNombre || "Actividad deportiva"}
+          fallbackText={actividad.deporteNombre || "Actividad"}
+          heightClassName="h-48"
+        />
+
+        <FavoritoButton
+          actividad={{
+            slug: actividad.slug,
+            titulo: actividad.titulo,
+            deporteNombre: actividad.deporteNombre,
+            deporteSlug: actividad.deporteSlug,
+            ciudadNombre: actividad.ciudadNombre,
+            barrioNombre: actividad.barrioNombre,
+            imagenPrincipalUrl: actividad.imagenPrincipalUrl,
+            nivel: actividad.nivel,
+            modalidad: actividad.modalidad,
+            precioReferencia: actividad.precioReferencia,
+            mostrarPrecio: actividad.mostrarPrecio,
+          }}
+        />
+      </div>
 
       <div className="p-2 pt-4">
         <div className="mb-3 flex flex-wrap gap-2">
@@ -125,20 +144,4 @@ export function ActivityCard({ actividad }: ActivityCardProps) {
       </div>
     </SurfaceCard>
   );
-}
-
-function construirUrlImagenBackend(url?: string | null) {
-  const urlLimpia = url?.trim();
-
-  if (!urlLimpia) {
-    return null;
-  }
-
-  if (urlLimpia.startsWith("http://") || urlLimpia.startsWith("https://")) {
-    return urlLimpia;
-  }
-
-  const separador = urlLimpia.startsWith("/") ? "" : "/";
-
-  return `${API_BASE_URL}${separador}${urlLimpia}`;
 }

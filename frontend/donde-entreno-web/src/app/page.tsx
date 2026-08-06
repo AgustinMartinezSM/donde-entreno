@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Actividad } from "../types/actividad";
 import { Header } from "../components/layout/Header";
 import { HomeHero } from "../components/home/HomeHero";
+import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
 import { HomePopularSports } from "../components/home/HomePopularSports";
 import { HomePublishCta } from "../components/home/HomePublishCta";
@@ -92,6 +93,7 @@ export default async function Home() {
           </section>
 
           <HomeHowItWorks />
+          <HomeCrearCuentaCta />
           <HomePublishCta ciudadSlug={ciudadSlug} />
         </div>
       </section>

@@ -26,6 +26,7 @@ export function LoginForm() {
     cerrarSesion,
   } = useAuthSession();
   const esLogout = searchParams.get("logout") === "1";
+  const motivoCuenta = searchParams.get("motivo") === "cuenta";
   const logoutReciente = hayLogoutRecienteAuth();
   const sesionPersistida =
     status === "authenticated" ? obtenerSesionAuth() : null;
@@ -154,6 +155,24 @@ export function LoginForm() {
 
   return (
     <form className="mt-8 flex flex-col gap-5" onSubmit={manejarEnvio}>
+      {motivoCuenta && !esLogout ? (
+        <StatusMessage variant="info" role="status">
+          <p className="font-bold">
+            Para guardar favoritos y marcar Me gusta necesitás tu cuenta.
+          </p>
+          <p className="mt-1">
+            Iniciá sesión o{" "}
+            <a
+              href="/registro"
+              className="font-bold text-[var(--color-primary)] underline underline-offset-2"
+            >
+              creá tu cuenta gratis
+            </a>{" "}
+            y seguí donde estabas.
+          </p>
+        </StatusMessage>
+      ) : null}
+
       <div>
         <label
           htmlFor="login-email"

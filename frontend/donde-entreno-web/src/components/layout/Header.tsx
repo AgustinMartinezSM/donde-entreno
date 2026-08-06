@@ -6,6 +6,7 @@ import {
   CitySelectorFallback,
 } from "../ciudades/CitySelector";
 import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
+import { HeaderFavoritosLink } from "./HeaderFavoritosLink";
 
 export function Header() {
   return (
@@ -34,6 +35,8 @@ export function Header() {
           <CitySelector />
         </Suspense>
       </div>
+
+      <HeaderFavoritosLink />
 
       <Link
         href="/publicar"

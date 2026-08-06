@@ -102,8 +102,17 @@ La base de datos de producción debe cargarse ejecutando los scripts en este ord
 
 1. 01_create_tables.sql
 2. 02_seed_data.sql
-3. 03_seed_test_data.sql
-4. 04_test_queries.sql
+3. 03_seed_test_data.sql (solo si se quieren datos de prueba)
+4. 05_create_solicitud_publicacion.sql
+5. 07_prepare_auth_security.sql
+6. 10_prepare_city_navigation.sql
+7. 12_prepare_publisher_accounts.sql
+8. 14_create_solicitud_cambio_actividad.sql
+9. 15_prepare_imagen_moderacion.sql
+10. 16_prepare_busqueda_unaccent.sql
+11. 17_create_seguimiento_publicador.sql
+
+Los scripts 04, 06, 08, 09, 11 y 13 son queries de verificación: no crean schema y son opcionales.
 
 Para una versión real, más adelante se puede separar:
 
@@ -162,7 +171,14 @@ Orden de ejecución:
 01_create_tables.sql
 02_seed_data.sql
 03_seed_test_data.sql
-04_test_queries.sql
+05_create_solicitud_publicacion.sql
+07_prepare_auth_security.sql
+10_prepare_city_navigation.sql
+12_prepare_publisher_accounts.sql
+14_create_solicitud_cambio_actividad.sql
+15_prepare_imagen_moderacion.sql
+16_prepare_busqueda_unaccent.sql
+17_create_seguimiento_publicador.sql
 
 ## Deploy actual del MVP
 

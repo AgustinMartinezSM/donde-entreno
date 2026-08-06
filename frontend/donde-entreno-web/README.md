@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DondeEntreno — Frontend
 
-## Getting Started
+Frontend web de **DondeEntreno**, la plataforma para encontrar deportes, clubes, profesores, gimnasios y actividades deportivas en tu ciudad.
 
-First, run the development server:
+- **Framework:** Next.js (App Router) + React + TypeScript
+- **Estilos:** Tailwind CSS v4
+- **Backend:** API REST Spring Boot (por defecto en `http://localhost:8080`)
+
+## Requisitos
+
+- Node.js 20+
+- El backend corriendo localmente (ver `docs/backend.md` en la raíz del repo)
+
+## Configuración
+
+Copiar el archivo de ejemplo y ajustar si hace falta:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Obligatoria | Descripción |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Sí | URL base del backend (local: `http://localhost:8080`) |
+| `NEXT_PUBLIC_SITE_URL` | No | URL pública del frontend, usada para metadata/robots/sitemap (default: `http://localhost:3000`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Comandos
 
-## Learn More
+```bash
+npm install       # instalar dependencias
+npm run dev       # desarrollo en http://localhost:3000
+npm run build     # build de producción
+npm run lint      # ESLint
+npm run typecheck # verificación de tipos (tsc --noEmit)
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura principal
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+src/
+  app/          # rutas (App Router): home, explorar, actividades, ciudades,
+                # deportes, publicar, login/registro, mi-cuenta, publicador, admin
+  components/   # componentes organizados por dominio
+  services/     # clientes de la API REST (fetch + type guards)
+  types/        # tipos TypeScript de la API
+  lib/          # helpers (apiConfig, siteConfig, imágenes, búsqueda de deportes)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notas
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Todas las llamadas a la API usan `NEXT_PUBLIC_API_URL` como única fuente de la URL base (`src/lib/apiConfig.ts`).
+- Las áreas `/admin` y `/publicador` requieren login con el rol correspondiente.

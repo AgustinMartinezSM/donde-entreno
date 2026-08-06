@@ -26,12 +26,21 @@ Antes de iniciar las pruebas, deben estar funcionando:
 Backend:  http://localhost:8080
 Frontend: http://localhost:3000
 
-También debe estar creada y cargada la base de datos PostgreSQL con los scripts:
+También debe estar creada y cargada la base de datos PostgreSQL con los scripts, en este orden:
 
 01_create_tables.sql
 02_seed_data.sql
 03_seed_test_data.sql
-04_test_queries.sql
+05_create_solicitud_publicacion.sql
+07_prepare_auth_security.sql
+10_prepare_city_navigation.sql
+12_prepare_publisher_accounts.sql
+14_create_solicitud_cambio_actividad.sql
+15_prepare_imagen_moderacion.sql
+16_prepare_busqueda_unaccent.sql
+17_create_seguimiento_publicador.sql
+
+(04, 06, 08, 09, 11 y 13 son queries de verificación, no crean schema.)
 Checklist general
  El repositorio está limpio con git status.
  No hay archivos sensibles versionados.

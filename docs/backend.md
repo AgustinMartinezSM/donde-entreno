@@ -39,11 +39,15 @@ src/main/resources/application-local.properties
 
 Este archivo no debe subirse al repositorio porque puede contener datos sensibles.
 
-Ejemplo de configuración local:
+Ejemplo de configuración local (coincide con el archivo real):
 
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.datasource.url=jdbc:postgresql://localhost:5432/dondeentreno_db
+spring.datasource.username=${DONDEENTRENO_DB_USERNAME:postgres}
+spring.datasource.password=${DONDEENTRENO_DB_PASSWORD:postgres}
+spring.datasource.driver-class-name=org.postgresql.Driver
+dondeentreno.auth.jwt.secret=${DONDEENTRENO_JWT_SECRET:<secret-local-de-al-menos-32-caracteres>}
+dondeentreno.auth.jwt.issuer=donde-entreno-api
+dondeentreno.auth.jwt.expiration-minutes=60
 Seguridad de configuración
 
 No subir al repositorio archivos con contraseñas, tokens o credenciales reales.
@@ -81,6 +85,9 @@ http://localhost:8080/api/actividades
 Si devuelve una respuesta JSON, el backend está funcionando y conectado correctamente con la base de datos.
 
 Endpoints principales
+
+Públicos (sin autenticación):
+GET /api/health
 GET /api/actividades
 GET /api/actividades/{slug}
 GET /api/actividades/{slug}/detalle
@@ -93,8 +100,65 @@ GET /api/ciudades
 GET /api/ciudades/{slug}
 GET /api/barrios
 GET /api/perfiles-publicadores
+GET /api/perfiles-publicadores/{id}/imagenes
 GET /api/ubicaciones
 POST /api/solicitudes-publicacion
+POST /api/auth/login
+POST /api/auth/registro/usuario
+POST /api/auth/registro/publicador
+
+Autenticados (requieren header Authorization: Bearer <token>):
+GET /api/auth/me
+
+Rol PUBLICADOR:
+GET /api/publicador/me
+PATCH /api/publicador/me (edición directa: descripción, instagram, email de contacto)
+GET /api/publicador/solicitudes
+GET /api/publicador/solicitudes/{id}
+POST /api/publicador/solicitudes
+GET /api/publicador/actividades
+GET /api/publicador/actividades/{id}
+POST /api/publicador/actividades/{id}/solicitudes-cambio
+GET /api/publicador/solicitudes-cambio
+GET /api/publicador/solicitudes-cambio/{id}
+GET /api/publicador/metricas
+
+Rol ADMIN o SUPER_ADMIN:
+GET /api/admin/solicitudes-publicacion
+GET /api/admin/solicitudes-publicacion/{id}
+PATCH /api/admin/solicitudes-publicacion/{id}/estado
+POST /api/admin/solicitudes-publicacion/{id}/aprobar
+GET /api/admin/solicitudes-cambio
+GET /api/admin/solicitudes-cambio/{id} (detalle con comparación antes/después)
+PATCH /api/admin/solicitudes-cambio/{id}/estado
+POST /api/admin/solicitudes-cambio/{id}/aprobar (aplica los cambios a la actividad)
+
+Estado de moderación de imágenes (solo dominio):
+la tabla imagen tiene la columna estado_moderacion (PENDIENTE /
+APROBADA / RECHAZADA, con DEFAULT 'APROBADA'), creada por la migración
+15_prepare_imagen_moderacion.sql. Las consultas públicas solo devuelven
+imágenes APROBADAS y el panel del publicador cuenta las PENDIENTES.
+
+No hay carga ni almacenamiento de archivos: el backend no expone
+endpoints de subida ni sirve archivos desde el filesystem. Cuando se
+incorpore un almacenamiento de imágenes, debe ser un servicio externo
+(por ejemplo Supabase Storage), nunca el disco del contenedor, que es
+efímero.
+
+Flujo de solicitudes de cambio (edición con revisión):
+el publicador propone cambios sobre una actividad publicada propia
+(una sola solicitud abierta por actividad); la actividad pública no
+cambia hasta que un admin aprueba. Ver docs/plan-solicitud-cambio-actividad.md.
+Requiere la migración 14_create_solicitud_cambio_actividad.sql.
+
+Seguridad y JWT
+
+La API usa Spring Security en modo stateless con tokens JWT (HS256):
+
+- El login (POST /api/auth/login) devuelve un token con claims userId, rol y roles.
+- Las rutas /api/admin/** exigen rol ADMIN o SUPER_ADMIN; /api/publicador/** exige PUBLICADOR.
+- El secret se configura con dondeentreno.auth.jwt.secret (mínimo 32 caracteres) y la expiración con dondeentreno.auth.jwt.expiration-minutes.
+- El primer SUPER_ADMIN se crea con el bootstrap opcional (dondeentreno.auth.bootstrap.super.admin.enabled=true) y exige password de al menos 12 caracteres.
 
 Endpoint publico de solicitudes de publicacion
 POST /api/solicitudes-publicacion

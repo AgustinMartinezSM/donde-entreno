@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FiltrosOpciones } from "../../types/filtros";
+import { formatearEtiquetaCatalogo } from "../../lib/formatoCatalogo";
 import { AppButton } from "../ui/AppButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -359,25 +360,5 @@ function filtrarOpcionesNeutrales(opciones: string[], neutrales: string[]) {
   });
 }
 
-function formatearEtiquetaFiltro(valor: string) {
-  const etiquetas: Record<string, string> = {
-    PRINCIPIANTE: "Principiante",
-    INTERMEDIO: "Intermedio",
-    AVANZADO: "Avanzado",
-    PRESENCIAL: "Presencial",
-    ONLINE: "Online",
-    HIBRIDA: "Híbrida",
-    "HÍBRIDA": "Híbrida",
-  };
-  const valorNormalizado = valor.trim();
-  const etiqueta = etiquetas[valorNormalizado.toUpperCase()];
-
-  if (etiqueta) {
-    return etiqueta;
-  }
-
-  return valorNormalizado
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(/\b\p{L}/gu, (letra) => letra.toUpperCase());
-}
+/* El formateo vive en lib/formatoCatalogo para que filtros y cards hablen igual. */
+const formatearEtiquetaFiltro = formatearEtiquetaCatalogo;

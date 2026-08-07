@@ -6,7 +6,7 @@ import type { Actividad } from "../../../../types/actividad";
 import type { Ciudad } from "../../../../types/ciudad";
 import type { Deporte } from "../../../../types/deporte";
 import { Header } from "../../../../components/layout/Header";
-import { ActivityCard } from "../../../../components/explorar/ActivityCard";
+import { SocialActivityCard } from "../../../../components/social/SocialActivityCard";
 import { ErrorState } from "../../../../components/feedback/ErrorState";
 import { AppLinkButton } from "../../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../../components/ui/SectionHeader";
@@ -275,7 +275,11 @@ export default async function CiudadDeporteLandingPage({
               <>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {actividades.map((actividad) => (
-                    <ActivityCard key={actividad.id} actividad={actividad} />
+                    <SocialActivityCard
+                      key={actividad.id}
+                      actividad={actividad}
+                      variante="compacta"
+                    />
                   ))}
                 </div>
 

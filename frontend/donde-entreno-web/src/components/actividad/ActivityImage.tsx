@@ -9,6 +9,12 @@ type ActivityImageProps = {
   alt?: string | null;
   fallbackText?: string;
   heightClassName?: string;
+  /*
+    sizes debe reflejar la grilla real donde vive la card: el default asume
+    la grilla de explorar (2-3 columnas); una card a 1 columna hasta lg
+    necesita "(max-width: 1023px) 100vw, 600px" para no bajar borrosa.
+  */
+  sizes?: string;
 };
 
 export function ActivityImage({
@@ -17,6 +23,7 @@ export function ActivityImage({
   alt,
   fallbackText = "Actividad",
   heightClassName = "h-44",
+  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px",
 }: ActivityImageProps) {
   /*
     Guardamos las URLs que fallaron al cargar.
@@ -67,7 +74,7 @@ export function ActivityImage({
         src={imagenActual}
         alt={alt?.trim() || fallbackText}
         fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+        sizes={sizes}
         className="object-cover"
         onError={manejarErrorImagen}
       />

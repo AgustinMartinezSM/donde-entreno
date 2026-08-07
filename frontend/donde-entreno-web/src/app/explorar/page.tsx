@@ -3,7 +3,7 @@ import type { Actividad } from "../../types/actividad";
 import type { FiltrosOpciones } from "../../types/filtros";
 
 import { Header } from "../../components/layout/Header";
-import { ActivityCard } from "../../components/explorar/ActivityCard";
+import { SocialActivityCard } from "../../components/social/SocialActivityCard";
 import { buscarActividades } from "../../services/actividadService";
 import { obtenerCiudadPorSlug } from "../../services/ciudadService";
 import { SearchBar } from "../../components/home/SearchBar";
@@ -445,7 +445,11 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {actividades.map((actividad) => (
-                      <ActivityCard key={actividad.id} actividad={actividad} />
+                      <SocialActivityCard
+                        key={actividad.id}
+                        actividad={actividad}
+                        variante="compacta"
+                      />
                     ))}
                   </div>
                 )}

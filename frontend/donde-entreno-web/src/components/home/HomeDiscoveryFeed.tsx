@@ -1,5 +1,5 @@
 import type { Actividad } from "../../types/actividad";
-import { SocialActivityCard } from "../explorar/SocialActivityCard";
+import { SocialActivityCard } from "../social/SocialActivityCard";
 import { ErrorState } from "../feedback/ErrorState";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { StatusMessage } from "../ui/StatusMessage";

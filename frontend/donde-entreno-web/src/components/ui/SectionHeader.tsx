@@ -7,6 +7,8 @@ type SectionHeaderProps = {
   action?: ReactNode;
   align?: "left" | "center";
   className?: string;
+  /* id del h2, para secciones con aria-labelledby. */
+  titleId?: string;
 };
 
 function unirClases(...clases: Array<string | undefined | false>) {
@@ -20,6 +22,7 @@ export function SectionHeader({
   action,
   align = "left",
   className,
+  titleId,
 }: SectionHeaderProps) {
   const centrado = align === "center";
 
@@ -38,6 +41,7 @@ export function SectionHeader({
           </p>
         ) : null}
         <h2
+          id={titleId}
           className={unirClases(
             "text-2xl font-extrabold text-[var(--color-primary)] sm:text-3xl",
             eyebrow && "mt-2"

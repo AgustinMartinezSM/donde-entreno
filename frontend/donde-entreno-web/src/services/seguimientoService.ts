@@ -155,6 +155,11 @@ function esListaPublicadoresSeguidos(
   return Array.isArray(valor) && valor.every(esPublicadorSeguido);
 }
 
+/*
+  Validamos solo el mínimo estructural (los campos que la UI necesita sí o
+  sí); el resto del ActividadDTO es opcional en el tipo Actividad y las
+  cards ya manejan su ausencia.
+*/
 function esActividadFeed(valor: unknown): valor is ActividadFeed {
   return (
     esObjeto(valor) &&

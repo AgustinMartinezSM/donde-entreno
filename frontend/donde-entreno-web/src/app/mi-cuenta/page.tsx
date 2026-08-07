@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "../../components/auth/AuthGuard";
 import { useAuthSession } from "../../components/auth/AuthSessionProvider";
+import { Header } from "../../components/layout/Header";
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import { AppButton } from "../../components/ui/AppButton";
 import { AppLinkButton } from "../../components/ui/AppLinkButton";
-import { SectionHeader } from "../../components/ui/SectionHeader";
-import { SurfaceCard } from "../../components/ui/SurfaceCard";
 import { StatusMessage } from "../../components/ui/StatusMessage";
+import { SurfaceCard } from "../../components/ui/SurfaceCard";
 import { FeedNovedades } from "../../components/cuenta/FeedNovedades";
 import { PreferenciasDeportivas } from "../../components/cuenta/PreferenciasDeportivas";
 import { PublicadoresSeguidos } from "../../components/cuenta/PublicadoresSeguidos";
@@ -22,11 +22,17 @@ export default function MiCuentaPage() {
   );
 }
 
+/*
+  "Mi espacio deportivo": la página del usuario común prioriza lo vivo
+  (novedades de seguidos, guardados, preferencias) y deja los datos
+  administrativos de la cuenta en una sección secundaria colapsable.
+*/
 function MiCuentaContenido() {
   const router = useRouter();
   const { sesion, usuario, cerrarSesion } = useAuthSession();
   const usuarioVisible = usuario ?? sesion?.usuario ?? null;
   const rolActual = usuarioVisible?.rol ?? null;
+  const nombre = usuarioVisible?.nombre?.trim() || "";
 
   function manejarCerrarSesion() {
     cerrarSesion();
@@ -34,72 +40,97 @@ function MiCuentaContenido() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
-      <section className="mx-auto w-full max-w-5xl">
-        <SurfaceCard className="overflow-hidden border-[#BDE8D0] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-6 shadow-[0_24px_65px_rgba(12,52,80,0.12)] sm:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-start">
-            <div>
-              <SectionHeader
-                eyebrow="Cuenta"
-                title="Mi cuenta"
-                description="Tu espacio personal para revisar los datos principales y moverte rápido por DondeEntreno."
-              />
-            </div>
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+      <section className="mx-auto w-full max-w-6xl px-4 py-6">
+        <Header />
 
-            <div className="rounded-[22px] border border-[#BDE8D0] bg-white/80 p-4 text-sm leading-6 text-[#167A4A]">
-              <p className="font-extrabold text-[var(--color-primary)]">
-                Cuenta activa
-              </p>
-              <p className="mt-2">
-                Desde acá podés explorar actividades, ver ciudades o continuar
-                hacia el espacio que corresponda a tu rol.
-              </p>
+        <div className="py-7 sm:py-9">
+          {/* Saludo + accesos principales */}
+          <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-6 sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+                  Mi espacio deportivo
+                </p>
+                <h1 className="mt-2 text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+                  {nombre ? `Hola, ${nombre}` : "Hola"}
+                </h1>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
+                  Tus guardados, tus deportes y las novedades de quienes seguís,
+                  todo en un solo lugar.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3 sm:shrink-0 sm:flex-col">
+                <AppLinkButton href="/explorar">
+                  Explorar actividades
+                </AppLinkButton>
+                <AppLinkButton href="/favoritos" variant="secondary">
+                  Ver mis favoritos
+                </AppLinkButton>
+              </div>
             </div>
+          </SurfaceCard>
+
+          {/* Lo social primero: novedades de los publicadores seguidos */}
+          <div className="mt-8 sm:mt-10">
+            <FeedNovedades />
           </div>
 
-          {usuarioVisible ? (
-            <dl className="mt-8 grid gap-4 sm:grid-cols-2">
-              <DatoCuenta etiqueta="Nombre" valor={usuarioVisible.nombre} />
-              <DatoCuenta etiqueta="Apellido" valor={usuarioVisible.apellido} />
-              <DatoCuenta etiqueta="Email" valor={usuarioVisible.email} />
-              <DatoCuenta etiqueta="Rol" valor={formatearRol(usuarioVisible.rol)} />
-              <DatoCuenta etiqueta="Estado" valor="Activa" />
-            </dl>
-          ) : (
-            <StatusMessage variant="info" className="mt-8">
-              Estamos preparando los datos de tu cuenta.
-            </StatusMessage>
-          )}
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <AppLinkButton href="/explorar" variant="primary" fullWidth>
-              Explorar actividades
-            </AppLinkButton>
-            <AppLinkButton href="/ciudades" variant="outline" fullWidth>
-              Ver ciudades
-            </AppLinkButton>
-            <AppLinkButton href={obtenerHrefPrincipal(rolActual)} variant="success" fullWidth>
-              {obtenerTextoAccionPrincipal(rolActual)}
-            </AppLinkButton>
-            <AppButton
-              type="button"
-              variant="secondary"
-              fullWidth
-              onClick={manejarCerrarSesion}
-            >
-              Cerrar sesión
-            </AppButton>
+          <div className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <PublicadoresSeguidos />
+            <ResumenGuardados />
           </div>
-        </SurfaceCard>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <ResumenGuardados />
-          <PreferenciasDeportivas />
-        </div>
+          <div className="mt-5">
+            <PreferenciasDeportivas />
+          </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <PublicadoresSeguidos />
-          <FeedNovedades />
+          {/* Datos administrativos, al final y colapsados */}
+          <SurfaceCard className="mt-8" as="section">
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[var(--radius-xl)] p-6 text-lg font-extrabold text-[var(--color-primary)] transition hover:bg-[#F8FCFE] sm:p-7 [&::-webkit-details-marker]:hidden">
+                Datos de mi cuenta
+                <span
+                  aria-hidden="true"
+                  className="text-sm text-[var(--color-muted)] transition group-open:rotate-180"
+                >
+                  ▼
+                </span>
+              </summary>
+
+              <div className="px-6 pb-6 sm:px-7 sm:pb-7">
+                {usuarioVisible ? (
+                  <dl className="grid gap-4 sm:grid-cols-2">
+                    <DatoCuenta etiqueta="Nombre" valor={usuarioVisible.nombre} />
+                    <DatoCuenta etiqueta="Apellido" valor={usuarioVisible.apellido} />
+                    <DatoCuenta etiqueta="Email" valor={usuarioVisible.email} />
+                    <DatoCuenta etiqueta="Rol" valor={formatearRol(usuarioVisible.rol)} />
+                  </dl>
+                ) : (
+                  <StatusMessage variant="info">
+                    Estamos preparando los datos de tu cuenta.
+                  </StatusMessage>
+                )}
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <AppLinkButton
+                    href={obtenerHrefPrincipal(rolActual)}
+                    variant="success"
+                  >
+                    {obtenerTextoAccionPrincipal(rolActual)}
+                  </AppLinkButton>
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    onClick={manejarCerrarSesion}
+                  >
+                    Cerrar sesión
+                  </AppButton>
+                </div>
+              </div>
+            </details>
+          </SurfaceCard>
         </div>
       </section>
     </main>

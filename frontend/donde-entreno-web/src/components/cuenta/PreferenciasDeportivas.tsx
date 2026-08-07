@@ -1,6 +1,9 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 import { CATALOGO_DEPORTES_ASISTENTE } from "../../lib/asistente/conocimiento";
+import { leerSlugCiudadGuardada } from "../../lib/ciudadActiva";
 import {
   alternarDeporteFavorito,
   useDeportesFavoritos,
@@ -17,6 +20,16 @@ import { SurfaceCard } from "../ui/SurfaceCard";
 */
 export function PreferenciasDeportivas() {
   const favoritos = useDeportesFavoritos();
+  /*
+    La ciudad activa vive en localStorage: se lee recién después de
+    hidratar (snapshot de servidor null) para no desincronizar el HTML
+    de SSR con el primer render del cliente.
+  */
+  const ciudadSlugActiva = useSyncExternalStore(
+    suscripcionVacia,
+    leerSlugCiudadGuardadaSinFallar,
+    () => null
+  );
 
   const deportesFavoritos = CATALOGO_DEPORTES_ASISTENTE.filter((deporte) =>
     favoritos.includes(deporte.slug)
@@ -61,7 +74,7 @@ export function PreferenciasDeportivas() {
             {deportesFavoritos.map((deporte) => (
               <AppLinkButton
                 key={deporte.slug}
-                href={`/explorar?deporteSlug=${encodeURIComponent(deporte.slug)}&page=0`}
+                href={crearHrefExplorarDeporte(deporte.slug, ciudadSlugActiva)}
                 variant="secondary"
                 size="sm"
                 className="rounded-full"
@@ -79,4 +92,37 @@ export function PreferenciasDeportivas() {
       )}
     </SurfaceCard>
   );
+}
+
+/*
+  Los accesos rápidos respetan la ciudad activa elegida en el selector:
+  sin esto, el usuario con ciudad definida caía en una exploración sin
+  scope geográfico, inconsistente con la home.
+*/
+function crearHrefExplorarDeporte(
+  deporteSlug: string,
+  ciudadSlug: string | null
+): string {
+  const params = new URLSearchParams();
+  params.set("deporteSlug", deporteSlug);
+
+  if (ciudadSlug) {
+    params.set("ciudadSlug", ciudadSlug);
+  }
+
+  params.set("page", "0");
+
+  return `/explorar?${params.toString()}`;
+}
+
+function suscripcionVacia() {
+  return () => {};
+}
+
+function leerSlugCiudadGuardadaSinFallar(): string | null {
+  try {
+    return leerSlugCiudadGuardada();
+  } catch {
+    return null;
+  }
 }

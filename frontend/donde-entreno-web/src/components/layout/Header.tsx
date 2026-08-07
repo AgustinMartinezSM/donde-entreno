@@ -7,11 +7,16 @@ import {
 } from "../ciudades/CitySelector";
 import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
 import { HeaderFavoritosLink } from "./HeaderFavoritosLink";
+import { HeaderNavLinks } from "./HeaderNavLinks";
 import { MobileAccountShortcut } from "./MobileAccountShortcut";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 -mx-1 border-b border-[#D9E2EC]/80 bg-[#F8FAFC]/95 px-1 py-3 backdrop-blur-xl sm:static sm:mx-0 sm:rounded-[22px] sm:border sm:bg-white/88 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
+    /*
+      -mx-4/px-4 compensa el px-4 de los contenedores de página para que
+      el header pegado en mobile cubra el viewport completo (fondo y borde).
+    */
+    <header className="sticky top-0 z-40 -mx-4 border-b border-[#D9E2EC]/80 bg-[#F8FAFC]/95 px-4 py-3 backdrop-blur-xl sm:static sm:mx-0 sm:rounded-[22px] sm:border sm:bg-white/88 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
       <div className="flex min-w-0 items-center gap-3">
         <Link
           href="/"
@@ -28,24 +33,11 @@ export function Header() {
           />
         </Link>
 
-        <nav
-          aria-label="Navegación principal"
-          className="hidden items-center gap-1 xl:flex"
-        >
-          <Link href="/" className={navLinkClassName}>
-            Inicio
-          </Link>
-          <Link href="/explorar" className={navLinkClassName}>
-            Explorar
-          </Link>
-          <Link href="/deportes" className={navLinkClassName}>
-            Deportes
-          </Link>
-        </nav>
+        <HeaderNavLinks />
 
         <div className="hidden md:block">
           <Suspense fallback={<CitySelectorFallback />}>
-            <CitySelector />
+            <CitySelector idSelector="ciudad-activa-desktop" />
           </Suspense>
         </div>
 
@@ -53,7 +45,7 @@ export function Header() {
 
         <Link
           href="/publicar"
-          className="hidden min-h-11 items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 hover:bg-[#0B314D] lg:inline-flex"
+          className="hidden min-h-11 items-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 hover:bg-[#0B314D] lg:inline-flex"
         >
           Publicar
         </Link>
@@ -69,12 +61,9 @@ export function Header() {
 
       <div className="mt-3 md:hidden">
         <Suspense fallback={<CitySelectorFallback />}>
-          <CitySelector />
+          <CitySelector idSelector="ciudad-activa-mobile" />
         </Suspense>
       </div>
     </header>
   );
 }
-
-const navLinkClassName =
-  "rounded-full px-3 py-2 text-sm font-extrabold text-[var(--color-muted)] transition hover:bg-[#F8FCFE] hover:text-[var(--color-primary)]";

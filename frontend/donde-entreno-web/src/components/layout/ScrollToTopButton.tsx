@@ -40,7 +40,7 @@ export function ScrollToTopButton() {
       type="button"
       onClick={volverArriba}
       aria-label="Volver arriba"
-      className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-[var(--color-secondary)] bg-[var(--color-primary)] text-xl font-extrabold text-[var(--color-secondary)] shadow-[0_12px_30px_rgba(0,47,73,0.28)] ring-4 ring-[#00B86B]/10 transition hover:-translate-y-1 hover:scale-105 active:scale-95 md:bottom-5 md:left-auto md:right-5 md:z-50"
+      className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-[var(--color-secondary)] bg-[var(--color-primary)] text-xl font-extrabold text-[var(--color-secondary)] shadow-[0_12px_30px_rgba(15,61,94,0.28)] ring-4 ring-[#2EB872]/15 transition hover:-translate-y-1 hover:scale-105 active:scale-95 lg:bottom-5 lg:left-auto lg:right-5 lg:z-50"
     >
       ↑
     </button>

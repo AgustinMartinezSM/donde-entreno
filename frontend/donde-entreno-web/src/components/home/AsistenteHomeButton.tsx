@@ -10,7 +10,8 @@ export function AsistenteHomeButton() {
       id="asistente-home-trigger"
       type="button"
       onClick={abrirAsistente}
-      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[16px] border border-[#BFDDEA] bg-white px-4 py-2.5 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+      aria-haspopup="dialog"
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-2.5 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
     >
       <svg
         viewBox="0 0 24 24"

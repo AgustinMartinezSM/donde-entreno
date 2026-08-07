@@ -31,7 +31,29 @@ export function CitySelectorFallback() {
   );
 }
 
-export function CitySelector() {
+/*
+  Las dos instancias del header (desktop y mobile) comparten esta promesa:
+  un solo GET de ciudades por carga de página en lugar de uno por instancia.
+*/
+let promesaCiudadesCompartida: Promise<Ciudad[]> | null = null;
+
+function obtenerCiudadesCompartidas(): Promise<Ciudad[]> {
+  if (!promesaCiudadesCompartida) {
+    promesaCiudadesCompartida = obtenerCiudades().catch((error) => {
+      promesaCiudadesCompartida = null;
+      throw error;
+    });
+  }
+
+  return promesaCiudadesCompartida;
+}
+
+type CitySelectorProps = {
+  /* Cada instancia necesita un id propio: el header monta dos (desktop y mobile). */
+  idSelector?: string;
+};
+
+export function CitySelector({ idSelector = "ciudad-activa" }: CitySelectorProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,7 +83,7 @@ export function CitySelector() {
   useEffect(() => {
     let componenteActivo = true;
 
-    obtenerCiudades()
+    obtenerCiudadesCompartidas()
       .then((ciudadesObtenidas) => {
         if (!componenteActivo) {
           return;
@@ -160,7 +182,7 @@ export function CitySelector() {
 
   return (
     <div className="w-full min-w-0 sm:w-auto">
-      <label htmlFor="ciudad-activa" className="sr-only">
+      <label htmlFor={idSelector} className="sr-only">
         Seleccionar ciudad activa
       </label>
 
@@ -170,7 +192,7 @@ export function CitySelector() {
         </span>
 
         <select
-          id="ciudad-activa"
+          id={idSelector}
           value={slugSeleccionado}
           onChange={manejarCambioCiudad}
           aria-label="Seleccionar ciudad activa"

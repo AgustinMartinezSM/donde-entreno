@@ -21,6 +21,7 @@ type ItemNavegacion = {
 export function MobileNavigation() {
   const pathname = usePathname() ?? "/";
   const { status, sesion, usuario } = useAuthSession();
+  const sesionCargando = status === "loading";
   const autenticado = status === "authenticated" && Boolean(sesion);
   const rol = usuario?.rol ?? sesion?.usuario.rol;
   const usaPanel = Boolean(
@@ -56,7 +57,17 @@ export function MobileNavigation() {
       activo: (ruta) => ruta === "/favoritos",
     },
     {
-      label: usaPanel ? "Panel" : autenticado ? "Mi espacio" : "Ingresar",
+      /*
+        Mientras la sesión se resuelve mostramos "Cuenta" neutro para que un
+        usuario logueado no vea (ni toque) "Ingresar" en cada carga.
+      */
+      label: sesionCargando
+        ? "Cuenta"
+        : usaPanel
+          ? "Panel"
+          : autenticado
+            ? "Mi espacio"
+            : "Ingresar",
       href: destinoCuenta,
       icono: "cuenta",
       activo: (ruta) =>
@@ -73,23 +84,38 @@ export function MobileNavigation() {
   return (
     <nav
       aria-label="Navegación principal mobile"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#D9E2EC] bg-white/95 shadow-[0_-10px_30px_rgba(15,61,94,0.10)] backdrop-blur-lg md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#D9E2EC] bg-white/95 shadow-[0_-10px_30px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto grid min-h-16 max-w-lg grid-cols-4 px-2 pt-1.5">
         {items.map((item) => {
           const seleccionado = item.activo(pathname);
+          const clase = `group flex min-h-14 flex-col items-center justify-center gap-1 rounded-[16px] px-1 text-[11px] font-extrabold transition duration-200 ease-out ${
+            seleccionado
+              ? "bg-[#E6F7EF] text-[#1D7B4A]"
+              : "text-[var(--color-muted)] hover:bg-[#F8FCFE] hover:text-[var(--color-primary)]"
+          }`;
+
+          if (item.icono === "cuenta" && sesionCargando) {
+            return (
+              <span
+                key={item.icono}
+                role="status"
+                aria-label="Cargando cuenta"
+                className={`${clase} animate-pulse`}
+              >
+                <Icono tipo={item.icono} seleccionado={false} />
+                <span>{item.label}</span>
+              </span>
+            );
+          }
 
           return (
             <Link
               key={item.icono}
               href={item.href}
               aria-current={seleccionado ? "page" : undefined}
-              className={`group flex min-h-14 flex-col items-center justify-center gap-1 rounded-[16px] px-1 text-[11px] font-extrabold transition duration-200 ease-out ${
-                seleccionado
-                  ? "bg-[#E6F7EF] text-[#167A4A]"
-                  : "text-[var(--color-muted)] hover:bg-[#F8FCFE] hover:text-[var(--color-primary)]"
-              }`}
+              className={clase}
             >
               <Icono tipo={item.icono} seleccionado={seleccionado} />
               <span>{item.label}</span>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { AsistenteWidget } from "../components/asistente/AsistenteWidget";
@@ -21,6 +21,17 @@ const sora = Sora({
   display: "swap",
   variable: "--font-display",
 });
+
+/*
+  viewport-fit=cover es necesario para que env(safe-area-inset-bottom)
+  tenga valor real en iPhone: sin esto, todos los ajustes de safe area
+  de la navegación inferior y el asistente evalúan a 0.
+*/
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   /*

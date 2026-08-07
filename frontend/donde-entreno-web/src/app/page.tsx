@@ -68,7 +68,8 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[var(--color-bg)] text-[var(--color-text)]">
+    /* overflow-x-clip (y no hidden): hidden crea un scroll container y rompe el sticky del Header. */
+    <main className="min-h-screen overflow-x-clip bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6">
         <Header />
 

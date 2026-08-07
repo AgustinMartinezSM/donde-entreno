@@ -41,7 +41,7 @@ export function HeaderFavoritosLink() {
     >
       <IconoGuardar relleno={cantidad > 0} className="h-4 w-4" />
 
-      <span className="hidden 2xl:inline">Guardados</span>
+      <span className="hidden lg:inline">Guardados</span>
 
       {cantidad > 0 && (
         <span

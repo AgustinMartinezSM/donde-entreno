@@ -87,11 +87,11 @@ export function HomeHero({
 
         <div className="relative hidden overflow-hidden rounded-[24px] border border-[#BFDDEA] bg-[#E8F6FB] p-3 shadow-[0_18px_45px_rgba(15,61,94,0.12)] lg:block">
           <div className="relative h-[390px] overflow-hidden rounded-[19px]">
+            {/* Sin priority: el contenedor es hidden hasta lg y el preload competía con el LCP real en mobile. */}
             <Image
               src="/sports/sport-running.png"
               alt="Ilustración de running y deporte local"
               fill
-              priority
               sizes="360px"
               className="object-cover object-center"
             />

@@ -196,8 +196,24 @@ export function AsistenteWidget() {
     }, RETRASO_RESPUESTA_MS);
   }
 
+  /*
+    Rutas sin launcher flotante:
+    - "/": el Hero tiene su propio CTA del asistente.
+    - /admin, /login y /registro: el asistente de descubrimiento no aporta
+      sobre el backoffice ni sobre los formularios de acceso.
+  */
+  const rutaSinLauncher =
+    rutaActual === "/" ||
+    Boolean(
+      rutaActual &&
+        ["/admin", "/login", "/registro"].some(
+          (prefijo) =>
+            rutaActual === prefijo || rutaActual.startsWith(`${prefijo}/`)
+        )
+    );
+
   if (!abierto) {
-    if (rutaActual === "/") {
+    if (rutaSinLauncher) {
       return null;
     }
 
@@ -208,7 +224,7 @@ export function AsistenteWidget() {
         onClick={() => setAbierto(true)}
         aria-label="Abrir asistente de DondeEntreno"
         aria-haspopup="dialog"
-        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F3D5E] text-white shadow-[0_12px_30px_rgba(0,47,73,0.28)] ring-4 ring-[#4FB3D9]/20 transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:bg-[#0B314D] active:scale-95 md:bottom-20 md:right-5"
+        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F3D5E] text-white shadow-[0_12px_30px_rgba(15,61,94,0.28)] ring-4 ring-[#4FB3D9]/20 transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:bg-[#0B314D] active:scale-95 lg:bottom-20 lg:right-5"
       >
         <svg
           viewBox="0 0 24 24"
@@ -236,7 +252,7 @@ export function AsistenteWidget() {
       aria-modal="true"
       aria-label="Asistente DondeEntreno"
       onKeyDown={manejarTeclaPanel}
-      className="fixed inset-x-0 bottom-0 z-[60] flex h-[min(34rem,85dvh)] w-full animate-[de-entrada_0.2s_ease-out] flex-col overflow-hidden rounded-t-[var(--radius-xl)] border border-[#DDEAF3] bg-white shadow-[0_24px_60px_rgba(12,52,80,0.28)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(34rem,calc(100dvh-6rem))] sm:w-[380px] sm:rounded-[var(--radius-xl)]"
+      className="fixed inset-x-0 bottom-0 z-[60] flex h-[min(34rem,85dvh)] w-full animate-[de-entrada_0.2s_ease-out] flex-col overflow-hidden rounded-t-[var(--radius-xl)] border border-[#DDEAF3] bg-white shadow-[0_24px_60px_rgba(12,52,80,0.28)] lg:inset-x-auto lg:bottom-5 lg:right-5 lg:h-[min(34rem,calc(100dvh-6rem))] lg:w-[380px] lg:rounded-[var(--radius-xl)]"
     >
       <div className="flex items-center justify-between gap-3 bg-[#0F3D5E] px-5 py-4">
         <div className="min-w-0">

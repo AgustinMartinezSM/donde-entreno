@@ -34,6 +34,9 @@ export async function generateMetadata({
   return {
     title: `Actividades deportivas en ${ciudad.nombre}`,
     description: descripcion,
+    alternates: {
+      canonical: `/ciudades/${ciudad.slug}`,
+    },
     openGraph: {
       title: `Deportes y actividades en ${ciudad.nombre} | DondeEntreno`,
       description: descripcion,

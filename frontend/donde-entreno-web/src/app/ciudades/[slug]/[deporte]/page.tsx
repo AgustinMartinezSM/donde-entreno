@@ -69,6 +69,9 @@ export async function generateMetadata({
     return {
       title: titulo,
       description: descripcion,
+      alternates: {
+        canonical: `/ciudades/${datos.ciudad.slug}/${datos.deporte.slug}`,
+      },
       openGraph: {
         title: `${titulo} | DondeEntreno`,
         description: descripcion,

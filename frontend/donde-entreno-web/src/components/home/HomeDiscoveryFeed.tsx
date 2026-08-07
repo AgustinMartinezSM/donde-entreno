@@ -2,6 +2,7 @@ import type { Actividad } from "../../types/actividad";
 import { SocialActivityCard } from "../social/SocialActivityCard";
 import { ErrorState } from "../feedback/ErrorState";
 import { AppLinkButton } from "../ui/AppLinkButton";
+import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 
 type HomeDiscoveryFeedProps = {
@@ -21,27 +22,23 @@ export function HomeDiscoveryFeed({
 
   return (
     <section className="mt-12 sm:mt-16" aria-labelledby="descubrimiento-titulo">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
-            Tu comunidad deportiva local
-          </p>
-          <h2
-            id="descubrimiento-titulo"
-            className="mt-2 text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl"
+      {/* SectionHeader compartido: misma jerarquía tipográfica que el
+          resto de las secciones de la home. */}
+      <SectionHeader
+        eyebrow="Tu comunidad deportiva local"
+        title={`Descubrí actividades en ${ciudadNombre}`}
+        description="Clubes, profes y espacios de tu ciudad, reunidos para que encuentres una actividad que encaje con vos."
+        titleId="descubrimiento-titulo"
+        action={
+          <AppLinkButton
+            href={hrefExplorar}
+            variant="secondary"
+            className="w-fit"
           >
-            Descubrí actividades en {ciudadNombre}
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
-            Clubes, profes y espacios de tu ciudad, reunidos para que encuentres
-            una actividad que encaje con vos.
-          </p>
-        </div>
-
-        <AppLinkButton href={hrefExplorar} variant="secondary">
-          Ver todas
-        </AppLinkButton>
-      </div>
+            Ver todas
+          </AppLinkButton>
+        }
+      />
 
       {huboError ? (
         <div className="mt-7">

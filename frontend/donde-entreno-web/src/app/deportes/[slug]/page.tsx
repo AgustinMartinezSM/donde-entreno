@@ -53,6 +53,9 @@ export async function generateMetadata({
     return {
       title: `${deporte.nombre}: clubes, profes y clases`,
       description: descripcion,
+      alternates: {
+        canonical: `/deportes/${deporte.slug}`,
+      },
       openGraph: {
         title: `${deporte.nombre} en DondeEntreno`,
         description: descripcion,

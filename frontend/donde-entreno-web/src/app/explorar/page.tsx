@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   title: "Explorar actividades",
   description:
     "Buscá y compará actividades deportivas, clubes, gimnasios y profesores disponibles en tu ciudad.",
+  /* Las variantes con query params canonicalizan a /explorar. */
+  alternates: {
+    canonical: "/explorar",
+  },
   openGraph: {
     title: "Explorar actividades - DondeEntreno",
     description:

@@ -29,8 +29,12 @@ const deportesPopulares = [
     encuadre: "center 45%",
   },
   {
-    nombre: "Gimnasio",
-    deporteSlug: "gimnasio",
+    /*
+      El deporte del seed es "musculacion" (no existe slug "gimnasio":
+      la card anterior llevaba a un listado vacío).
+    */
+    nombre: "Musculación",
+    deporteSlug: "musculacion",
     imagen: "/sports/sport-gimnasio.png",
     encuadre: "center 44%",
   },
@@ -46,14 +50,13 @@ type HomePopularSportsProps = {
   ciudadSlug: string;
 };
 
+/*
+  Linkeamos a las landings territoriales (/ciudades/[ciudad]/[deporte]),
+  que son indexables y tienen contenido SEO propio, en lugar de URLs de
+  /explorar con query params.
+*/
 function crearHrefDeporte(ciudadSlug: string, deporteSlug: string) {
-  const params = new URLSearchParams();
-
-  params.set("ciudadSlug", ciudadSlug);
-  params.set("deporteSlug", deporteSlug);
-  params.set("page", "0");
-
-  return `/explorar?${params.toString()}`;
+  return `/ciudades/${encodeURIComponent(ciudadSlug)}/${encodeURIComponent(deporteSlug)}`;
 }
 
 export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
@@ -80,7 +83,7 @@ export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
           <Link
             key={deporte.deporteSlug}
             href={crearHrefDeporte(ciudadSlug, deporte.deporteSlug)}
-            className="group overflow-hidden rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.13)] active:scale-[0.98]"
+            className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.13)] active:scale-[0.98]"
           >
             <div className="relative h-44 overflow-hidden sm:h-48">
               <Image

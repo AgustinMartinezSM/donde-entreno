@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import type { Actividad } from "../types/actividad";
+import type { PerfilPublicadorPublico } from "../types/publicadorPublico";
 import { Header } from "../components/layout/Header";
 import { HomeHero } from "../components/home/HomeHero";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
 import { HomePopularSports } from "../components/home/HomePopularSports";
+import { HomePreferenciasChips } from "../components/home/HomePreferenciasChips";
+import { HomePublicadoresSugeridos } from "../components/home/HomePublicadoresSugeridos";
 import { HomePublishCta } from "../components/home/HomePublishCta";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { buscarActividades } from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
+import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +21,9 @@ export const metadata: Metadata = {
   title: "Descubrí dónde entrenar cerca tuyo",
   description:
     "Descubrí actividades, clubes, profesores y espacios deportivos cerca tuyo. Guardá lo que te interesa y conectate con tu comunidad deportiva local.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "DondeEntreno - Tu comunidad deportiva local",
     description:
@@ -67,6 +74,18 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("Error al cargar actividades:", error);
   }
 
+  /*
+    Publicadores para la sección "Clubes y profes para seguir".
+    Best-effort: si falla, la home sigue completa sin esa sección.
+  */
+  let publicadoresSugeridos: PerfilPublicadorPublico[] = [];
+
+  try {
+    publicadoresSugeridos = (await obtenerPerfilesPublicadores()).slice(0, 3);
+  } catch (error) {
+    console.error("Error al cargar perfiles publicadores:", error);
+  }
+
   return (
     /* overflow-x-clip (y no hidden): hidden crea un scroll container y rompe el sticky del Header. */
     <main className="min-h-screen overflow-x-clip bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -79,6 +98,8 @@ export default async function Home({ searchParams }: HomeProps) {
             ciudadSlugInicial={ciudadSlug}
           />
 
+          <HomePreferenciasChips ciudadSlug={ciudadSlug} />
+
           <HomeDiscoveryFeed
             actividades={actividades}
             ciudadNombre={ciudadNombre}
@@ -86,6 +107,7 @@ export default async function Home({ searchParams }: HomeProps) {
             huboError={huboError}
           />
 
+          <HomePublicadoresSugeridos publicadores={publicadoresSugeridos} />
           <HomePopularSports ciudadSlug={ciudadSlug} />
           <HomeCrearCuentaCta />
           <HomeHowItWorks />

@@ -99,28 +99,16 @@ export function PublicadorDashboard() {
     <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
-          title="Tu espacio para publicar y seguir actividades"
-          description="Desde acá podés enviar nuevas actividades y revisar el estado de tus solicitudes con el perfil asociado a tu cuenta."
+          title={
+            perfil ? `Hola, ${perfil.nombre}` : "Tu espacio para publicar"
+          }
+          description="Gestioná tu presencia deportiva: publicá actividades, seguí el estado de tus solicitudes y mirá cómo crece tu comunidad."
           action={
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
-                Nueva solicitud
-              </AppLinkButton>
-              <AppLinkButton
-                href="/publicador/actividades"
-                variant="secondary"
-                fullWidth
-              >
-                Mis actividades aprobadas
-              </AppLinkButton>
-              <AppLinkButton
-                href="/publicador/solicitudes"
-                variant="outline"
-                fullWidth
-              >
-                Mis solicitudes
-              </AppLinkButton>
-            </div>
+            /* Un solo CTA primario: el resto vive en las tiles de métricas
+               y en los accesos rápidos (antes estaban triplicados). */
+            <AppLinkButton href="/publicador/solicitudes/nueva" fullWidth>
+              Nueva solicitud
+            </AppLinkButton>
           }
         />
 
@@ -145,8 +133,8 @@ export function PublicadorDashboard() {
             <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-6 sm:p-8">
               <SectionHeader
                 eyebrow="Perfil"
-                title={`Hola, ${perfil.nombre}`}
-                description="Estos datos ayudan a identificar tus solicitudes y mantener claro quién publica cada actividad."
+                title="Así te ve la comunidad"
+                description="Estos datos identifican tus publicaciones. Mantenerlos completos mejora tu presencia ante quienes buscan dónde entrenar."
               />
 
               <dl className="mt-8 grid gap-4 sm:grid-cols-2">

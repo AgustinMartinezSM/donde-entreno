@@ -51,11 +51,20 @@ export function SolicitarCambiosForm() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const actividadId = Number(params.id);
+  /*
+    Con un id inválido en la URL no hay nada que cargar: el estado nace
+    resuelto en error para no dejar un "Cargando..." infinito.
+  */
+  const idActividadInvalido = !Number.isFinite(actividadId);
   const { accessToken, cerrarSesion } = useAuthSession();
 
   const [actividad, setActividad] = useState<ActividadPublicadorDetalle | null>(null);
-  const [cargando, setCargando] = useState(true);
-  const [errorCarga, setErrorCarga] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(!idActividadInvalido);
+  const [errorCarga, setErrorCarga] = useState<string | null>(
+    idActividadInvalido
+      ? "No encontramos esta actividad entre tus publicaciones."
+      : null
+  );
 
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");

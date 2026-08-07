@@ -220,8 +220,9 @@ function ActividadDetalleContenido({
           </div>
 
           <StatusMessage variant="info" className="mt-6">
-            Esta actividad ya está publicada. Próximamente vas a poder solicitar
-            cambios desde tu panel.
+            Esta actividad ya está publicada. Podés proponer cambios desde{" "}
+            <strong>Solicitar cambios</strong>: se publican después de la
+            revisión del equipo.
           </StatusMessage>
 
           <div className="mt-8 grid gap-5">
@@ -308,6 +309,19 @@ function ActividadDetalleContenido({
               </AppLinkButton>
             </div>
           ) : null}
+
+          <div className="mt-3">
+            <AppLinkButton
+              href={`/publicador/actividades/${actividad.id}/solicitar-cambios`}
+              variant="secondary"
+              fullWidth
+            >
+              Solicitar cambios
+            </AppLinkButton>
+            <p className="mt-2 text-center text-xs text-[var(--color-muted)]">
+              Los cambios se publican después de la revisión del equipo.
+            </p>
+          </div>
         </SurfaceCard>
 
         <SurfaceCard className="p-6 sm:p-8">

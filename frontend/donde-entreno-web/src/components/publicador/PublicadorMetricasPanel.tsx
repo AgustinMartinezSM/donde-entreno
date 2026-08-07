@@ -46,12 +46,20 @@ export function PublicadorMetricasPanel({
       href: "/publicador/solicitudes-cambio",
       resaltarSiHay: true,
     },
-    {
-      etiqueta: "Imágenes en moderación",
-      valor: metricas.imagenesPendientesModeracion,
-      href: "/publicador/actividades",
-      resaltarSiHay: true,
-    },
+    /*
+      La gestión de imágenes (bloque 4) todavía no existe en producción:
+      la tile solo aparece si hay algo pendiente que reportar, para no
+      mostrar un 0 permanente de una sección inexistente.
+    */
+    ...(metricas.imagenesPendientesModeracion > 0
+      ? [
+          {
+            etiqueta: "Imágenes en moderación",
+            valor: metricas.imagenesPendientesModeracion,
+            resaltarSiHay: true,
+          } satisfies MetricaItem,
+        ]
+      : []),
     {
       etiqueta: "Seguidores",
       valor: metricas.seguidores,
@@ -66,7 +74,11 @@ export function PublicadorMetricasPanel({
         description="Un pantallazo de tus publicaciones, tus seguidores y lo que está esperando revisión."
       />
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div
+        className={`mt-6 grid gap-4 sm:grid-cols-2 ${
+          items.length >= 5 ? "lg:grid-cols-5" : "lg:grid-cols-4"
+        }`}
+      >
         {items.map((item) => (
           <MetricaTile key={item.etiqueta} item={item} />
         ))}

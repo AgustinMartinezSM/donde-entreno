@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthSession } from "../auth/AuthSessionProvider";
@@ -210,7 +211,13 @@ export function PublicadorSolicitudDetail() {
 
                 {solicitud.actividadGeneradaId ? (
                   <StatusMessage variant="success" className="mt-5">
-                    Actividad publicada vinculada: #{solicitud.actividadGeneradaId}
+                    Actividad publicada vinculada:{" "}
+                    <Link
+                      href={`/publicador/actividades/${solicitud.actividadGeneradaId}`}
+                      className="font-extrabold underline underline-offset-2 transition hover:text-[var(--color-primary)]"
+                    >
+                      ver actividad #{solicitud.actividadGeneradaId}
+                    </Link>
                   </StatusMessage>
                 ) : null}
               </SurfaceCard>

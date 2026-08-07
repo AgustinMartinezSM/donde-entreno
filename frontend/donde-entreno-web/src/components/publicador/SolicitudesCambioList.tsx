@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { useAuthSession } from "../auth/AuthSessionProvider";
 import { AppLinkButton } from "../ui/AppLinkButton";
-import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";

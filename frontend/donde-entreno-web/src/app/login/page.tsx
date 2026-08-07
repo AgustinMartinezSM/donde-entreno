@@ -18,9 +18,21 @@ export default function LoginPage() {
       <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
         <SurfaceCard className="grid w-full max-w-5xl overflow-hidden rounded-[28px] shadow-[0_30px_80px_rgba(12,52,80,0.16)] lg:grid-cols-[0.95fr_1.05fr]">
           <aside className="bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872] p-6 text-white sm:p-8 lg:p-10">
-            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#BDE8D0]">
-              <BrandName className="inline" onDark />
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Link
+                href="/"
+                aria-label="Ir al inicio de DondeEntreno"
+                className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#BDE8D0] transition hover:text-white"
+              >
+                <BrandName className="inline" onDark />
+              </Link>
+              <Link
+                href="/"
+                className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:bg-white/20 hover:text-white"
+              >
+                ← Volver al inicio
+              </Link>
+            </div>
             <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">
               Ingresá a <BrandName className="inline" onDark />
             </h1>

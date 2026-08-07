@@ -82,6 +82,18 @@ type ActividadDetalleBackendResponse = {
   imagenes?: ImagenActividad[];
 };
 
+/*
+  Error específico para distinguir "la actividad no existe" (404 real,
+  la página debe responder notFound) de un backend caído (error genérico,
+  la página muestra el estado de error con reintento).
+*/
+export class ActividadNoEncontradaError extends Error {
+  constructor(slug: string) {
+    super(`No existe una actividad con slug "${slug}"`);
+    this.name = "ActividadNoEncontradaError";
+  }
+}
+
 // Función para obtener el detalle completo de una actividad por su slug.
 // Acá normalizamos la respuesta para que la página pueda usar todo junto.
 export async function obtenerDetalleActividad(
@@ -92,6 +104,10 @@ export async function obtenerDetalleActividad(
   const respuesta = await fetch(url, {
     cache: "no-store",
   });
+
+  if (respuesta.status === 404) {
+    throw new ActividadNoEncontradaError(slug);
+  }
 
   if (!respuesta.ok) {
     throw new Error("No se pudo obtener el detalle de la actividad");

@@ -90,9 +90,15 @@ export type ActividadDetalle = {
   instagramContacto?: string | null;
   emailContacto?: string | null;
 
+  /*
+    El detalle envuelve el mismo ActividadDTO público que los listados:
+    los campos reales del publicador son tipoPublicador y perfilVerificado
+    (el viejo perfilPublicadorTipo nunca llegaba en este endpoint).
+  */
   perfilPublicadorId?: number | null;
   perfilPublicadorNombre?: string | null;
-  perfilPublicadorTipo?: string | null;
+  tipoPublicador?: string | null;
+  perfilVerificado?: boolean;
 
   deporteId?: number;
   deporteNombre?: string;

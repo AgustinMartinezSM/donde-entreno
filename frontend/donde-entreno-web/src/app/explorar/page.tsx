@@ -66,7 +66,15 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
     /explorar?orden=precio_asc&page=0
   */
   const textoBuscado = params.texto || "";
-  const paginaActual = params.page ? Number(params.page) : 0;
+  /*
+    Saneamos page: un valor no numérico (?page=abc) mandaba NaN al
+    backend y tiraba toda la página al estado de error.
+  */
+  const paginaParseada = Number(params.page);
+  const paginaActual =
+    Number.isFinite(paginaParseada) && paginaParseada > 0
+      ? Math.floor(paginaParseada)
+      : 0;
   const ordenActual = params.orden || "";
 
   const ciudadIdActual = params.ciudadId || "";
@@ -108,6 +116,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   let huboError = false;
   let huboErrorCiudad = false;
   let nombreCiudadActiva: string | null = null;
+  let nombrePublicadorFiltrado: string | null = null;
 
   if (ciudadSlugActual) {
     try {
@@ -162,6 +171,15 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
       totalPaginas = respuestaActividades.totalPaginas;
       totalElementos = respuestaActividades.totalElementos;
       filtros = respuestaFiltros;
+
+      /*
+        Si se está filtrando por publicador, el nombre sale de los propios
+        resultados (el DTO lo trae) para mostrar el chip de contexto.
+      */
+      if (perfilPublicadorIdActual) {
+        nombrePublicadorFiltrado =
+          actividades[0]?.perfilPublicadorNombre ?? null;
+      }
     }
   } catch (error) {
     /*
@@ -216,6 +234,25 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 </p>
               ) : null}
 
+              {perfilPublicadorIdActual ? (
+                <p className="inline-flex items-center gap-2 rounded-full bg-[#E8F6FB] px-3 py-2 text-sm font-bold text-[#0F6F8F]">
+                  Actividades de{" "}
+                  {nombrePublicadorFiltrado ?? "un publicador que seguís"}
+                  <AppLinkButton
+                    href={
+                      ciudadSlugActual
+                        ? `/explorar?ciudadSlug=${encodeURIComponent(ciudadSlugActual)}`
+                        : "/explorar"
+                    }
+                    variant="secondary"
+                    size="sm"
+                    className="min-h-7 rounded-full !px-2 !py-0.5 text-[11px]"
+                  >
+                    Quitar ✕
+                  </AppLinkButton>
+                </p>
+              ) : null}
+
               {sugerenciaDeporte && hrefSugerencia ? (
                 <AppLinkButton
                   href={hrefSugerencia}
@@ -239,41 +276,14 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               ) : null}
             </div>
 
-            {/* Dejamos el buscador visible aunque haya error */}
+            {/* Dejamos el buscador visible aunque haya error. Es el mismo
+                SearchBar de la home (con sugerencias de deportes) y
+                preserva la ciudad activa por sí solo. */}
             <div className="max-w-3xl transition duration-200 ease-out">
-              {ciudadSlugActual ? (
-                <form
-                  action="/explorar"
-                  method="get"
-                  className="mt-8 w-full min-w-0 rounded-[24px] border border-[#BFDDEA] bg-white/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#DDEAF3] sm:p-3"
-                >
-                  <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
-                    <input
-                      type="text"
-                      name="texto"
-                      defaultValue={textoBuscado}
-                      aria-label="Buscar deporte, actividad o club"
-                      placeholder="Buscar deporte, actividad o club"
-                      className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] sm:min-h-14"
-                    />
-                    <input
-                      type="hidden"
-                      name="ciudadSlug"
-                      value={ciudadSlugActual}
-                    />
-                    <input type="hidden" name="page" value="0" />
-
-                    <button
-                      type="submit"
-                      className="min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
-                    >
-                      Buscar
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <SearchBar valorInicial={textoBuscado} />
-              )}
+              <SearchBar
+                valorInicial={textoBuscado}
+                ciudadSlugActual={ciudadSlugActual}
+              />
             </div>
           </SurfaceCard>
 
@@ -314,6 +324,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                   ciudadIdActual={ciudadIdActual}
                   ciudadSlugActual={ciudadSlugActual}
                   barrioIdActual={barrioIdActual}
+                  perfilPublicadorIdActual={perfilPublicadorIdActual}
                   deporteSlugActual={deporteSlugActual}
                   nivelActual={nivelActual}
                   modalidadActual={modalidadActual}
@@ -353,6 +364,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                       ciudadIdActual={ciudadIdActual}
                       ciudadSlugActual={ciudadSlugActual}
                       barrioIdActual={barrioIdActual}
+                      perfilPublicadorIdActual={perfilPublicadorIdActual}
                       deporteSlugActual={deporteSlugActual}
                       nivelActual={nivelActual}
                       modalidadActual={modalidadActual}
@@ -463,6 +475,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 ciudadIdActual={ciudadIdActual}
                 ciudadSlugActual={ciudadSlugActual}
                 barrioIdActual={barrioIdActual}
+                perfilPublicadorIdActual={perfilPublicadorIdActual}
                 deporteSlugActual={deporteSlugActual}
                 nivelActual={nivelActual}
                 modalidadActual={modalidadActual}

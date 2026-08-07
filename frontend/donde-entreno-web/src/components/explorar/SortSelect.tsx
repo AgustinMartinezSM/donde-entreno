@@ -9,6 +9,7 @@ type SortSelectProps = {
   ciudadIdActual?: string;
   ciudadSlugActual?: string;
   barrioIdActual?: string;
+  perfilPublicadorIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
   modalidadActual?: string;
@@ -20,6 +21,7 @@ export function SortSelect({
   ciudadIdActual = "",
   ciudadSlugActual = "",
   barrioIdActual = "",
+  perfilPublicadorIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
   modalidadActual = "",
@@ -45,6 +47,11 @@ export function SortSelect({
 
     if (barrioIdActual) {
       params.set("barrioId", barrioIdActual);
+    }
+
+    /* Sin esto, reordenar perdía el filtro "actividades de un publicador". */
+    if (perfilPublicadorIdActual) {
+      params.set("perfilPublicadorId", perfilPublicadorIdActual);
     }
 
     if (deporteSlugActual) {

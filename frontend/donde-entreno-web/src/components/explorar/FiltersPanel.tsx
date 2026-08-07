@@ -14,6 +14,7 @@ type FiltersPanelProps = {
   ciudadIdActual?: string;
   ciudadSlugActual?: string;
   barrioIdActual?: string;
+  perfilPublicadorIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
   modalidadActual?: string;
@@ -29,6 +30,7 @@ export function FiltersPanel({
   ciudadIdActual = "",
   ciudadSlugActual = "",
   barrioIdActual = "",
+  perfilPublicadorIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
   modalidadActual = "",
@@ -37,11 +39,22 @@ export function FiltersPanel({
   const router = useRouter();
 
   /*
+    Si la ciudad activa vino por slug, resolvemos su id para que el select
+    muestre la ciudad real en lugar de un "Todas" engañoso.
+  */
+  const ciudadIdResueltaDesdeSlug = ciudadSlugActual
+    ? String(
+        filtros.ciudades.find((ciudad) => ciudad.slug === ciudadSlugActual)
+          ?.id ?? ""
+      )
+    : "";
+
+  /*
     Guardamos en estado los filtros seleccionados.
     Arrancan con lo que venga desde la URL.
   */
   const [ciudadId, setCiudadId] = useState(
-    ciudadSlugActual ? "" : ciudadIdActual
+    ciudadSlugActual ? ciudadIdResueltaDesdeSlug : ciudadIdActual
   );
   const [barrioId, setBarrioId] = useState(barrioIdActual);
   const [deporteSlug, setDeporteSlug] = useState(deporteSlugActual);
@@ -94,18 +107,26 @@ export function FiltersPanel({
     }
 
     /*
-      Agregamos solo los filtros que tengan valor.
+      Agregamos solo los filtros que tengan valor. Si el select quedó en
+      la misma ciudad que vino por slug, conservamos el slug (URL estable);
+      si el usuario eligió otra ciudad, pasamos su id.
     */
-    if (ciudadSlugActual && !ciudadId) {
+    if (
+      ciudadSlugActual &&
+      (!ciudadId || ciudadId === ciudadIdResueltaDesdeSlug)
+    ) {
       params.set("ciudadSlug", ciudadSlugActual);
-    }
-
-    if (ciudadId) {
+    } else if (ciudadId) {
       params.set("ciudadId", ciudadId);
     }
 
     if (barrioId) {
       params.set("barrioId", barrioId);
+    }
+
+    /* El filtro por publicador (llegado desde "seguidos") se conserva. */
+    if (perfilPublicadorIdActual) {
+      params.set("perfilPublicadorId", perfilPublicadorIdActual);
     }
 
     if (deporteSlug) {
@@ -132,8 +153,9 @@ export function FiltersPanel({
     /*
       Primero limpiamos el estado visual de los selects.
       Esto hace que vuelvan a mostrarse como "Todas" / "Todos".
+      (La ciudad activa se conserva: se cambia desde el selector de ciudad.)
     */
-    setCiudadId("");
+    setCiudadId(ciudadIdResueltaDesdeSlug);
     setBarrioId("");
     setDeporteSlug("");
     setNivel("");

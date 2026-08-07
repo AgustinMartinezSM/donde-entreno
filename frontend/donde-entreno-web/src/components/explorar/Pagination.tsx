@@ -11,6 +11,7 @@ type PaginationProps = {
   ciudadIdActual?: string;
   ciudadSlugActual?: string;
   barrioIdActual?: string;
+  perfilPublicadorIdActual?: string;
   deporteSlugActual?: string;
   nivelActual?: string;
   modalidadActual?: string;
@@ -24,6 +25,7 @@ export function Pagination({
   ciudadIdActual = "",
   ciudadSlugActual = "",
   barrioIdActual = "",
+  perfilPublicadorIdActual = "",
   deporteSlugActual = "",
   nivelActual = "",
   modalidadActual = "",
@@ -61,6 +63,11 @@ export function Pagination({
 
     if (barrioIdActual) {
       params.set("barrioId", barrioIdActual);
+    }
+
+    /* Sin esto, paginar perdía el filtro "actividades de un publicador". */
+    if (perfilPublicadorIdActual) {
+      params.set("perfilPublicadorId", perfilPublicadorIdActual);
     }
 
     if (deporteSlugActual) {

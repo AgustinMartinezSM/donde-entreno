@@ -22,6 +22,15 @@ public class PerfilPublicadorDTO {
     private String sitioWeb;
     private Boolean verificado;
 
+    /**
+     * Cantidad de usuarios que siguen al perfil.
+     *
+     * Campo aditivo: lo completa el service (con un query agrupado en
+     * los listados, para no caer en N+1). Se deja fuera del constructor
+     * con todos los campos para no romper a los llamadores existentes.
+     */
+    private Long cantidadSeguidores;
+
     public PerfilPublicadorDTO() {
     }
 
@@ -127,5 +136,13 @@ public class PerfilPublicadorDTO {
 
     public void setVerificado(Boolean verificado) {
         this.verificado = verificado;
+    }
+
+    public Long getCantidadSeguidores() {
+        return cantidadSeguidores;
+    }
+
+    public void setCantidadSeguidores(Long cantidadSeguidores) {
+        this.cantidadSeguidores = cantidadSeguidores;
     }
 }

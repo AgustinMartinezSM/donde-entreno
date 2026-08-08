@@ -10,6 +10,7 @@ import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
+import { GestionImagenesPerfil } from "./GestionImagenesPerfil";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";
 import {
   PublicadorApiError,
@@ -344,6 +345,15 @@ export function MiPerfilEditor() {
                 />
               </dl>
             </SurfaceCard>
+
+            {/*
+              Identidad visual del perfil: ocupa el ancho completo porque
+              la portada es una banda ancha y no entra bien en una
+              columna angosta.
+            */}
+            <div className="lg:col-span-2">
+              <GestionImagenesPerfil />
+            </div>
           </div>
         ) : null}
       </section>

@@ -800,6 +800,75 @@ export async function eliminarImagenActividad(
   );
 }
 
+/*
+  Logo y portada del perfil. Mismo circuito de moderación que las
+  imágenes de actividad, pero cuelgan del perfil: el backend las resuelve
+  con el publicador del token, así que acá no viaja ningún id.
+*/
+export async function subirImagenPerfil(
+  archivo: File,
+  tipo: "LOGO" | "PORTADA",
+  accessToken: string
+): Promise<ImagenActividadPublicador> {
+  const formData = new FormData();
+  formData.append("archivo", archivo);
+  formData.append("tipo", tipo);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/perfil/imagenes`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: formData,
+    },
+    esImagenActividadPublicador
+  );
+}
+
+export async function listarImagenesPerfil(
+  accessToken: string
+): Promise<ImagenActividadPublicador[]> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/perfil/imagenes`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      cache: "no-store",
+    },
+    esListaImagenesActividadPublicador
+  );
+}
+
+export async function eliminarImagenPerfil(
+  imagenId: number,
+  accessToken: string
+): Promise<void> {
+  const imagenIdSeguro = validarIdPositivo(
+    imagenId,
+    () => new PublicadorApiError("El id de la imagen es invalido.")
+  );
+
+  await ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/perfil/imagenes/${encodeURIComponent(
+      String(imagenIdSeguro)
+    )}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+    },
+    esCuerpoVacioImagen
+  );
+}
+
 export function esImagenActividadPublicador(
   valor: unknown
 ): valor is ImagenActividadPublicador {

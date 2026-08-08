@@ -79,7 +79,7 @@ La única feature del lab que faltaba, implementada con la arquitectura que exig
 - **Adopción gradual de utilities de marca**: los tokens ya están en `@theme`; el código existente sigue con valores arbitrarios equivalentes. Migrarlos al escribir/tocar componentes.
 - `AppInput`/`AppSelect` compartidos para unificar formularios (hoy inputs 18px vs selects 14px).
 - Cache/`revalidate` para catálogos en landings SEO (hoy `no-store` con fetches repetidos por request).
-- Menores preexistentes del repo: IT del orden del feed, regla explícita `/api/usuario/**` en `SecurityConfig`, flag `Secure` en la cookie `de_sesion`.
+- Menores preexistentes del repo: IT del orden del feed, regla explícita `/api/usuario/**` en `SecurityConfig`. ~~Flag `Secure` en la cookie `de_sesion`~~ → **hecho**: se agrega condicionado a `location.protocol === "https:"`, porque ponerlo siempre haría que el navegador descarte la escritura en el dev local por HTTP y el guard de rutas privadas dejaría de funcionar. Alta y borrado comparten los mismos atributos para que el borrado matchee.
 
 ## 8. Riesgos
 

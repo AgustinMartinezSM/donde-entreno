@@ -63,7 +63,7 @@ export function sincronizarCookieSesion(
   }
 
   if (!sesion || sesion.expiresAt <= Date.now()) {
-    document.cookie = `${NOMBRE_COOKIE_SESION}=; path=/; max-age=0; SameSite=Lax`;
+    document.cookie = `${NOMBRE_COOKIE_SESION}=; ${atributosCookie(0)}`;
     return;
   }
 
@@ -76,5 +76,22 @@ export function sincronizarCookieSesion(
     expiresAt: sesion.expiresAt,
   });
 
-  document.cookie = `${NOMBRE_COOKIE_SESION}=${valor}; path=/; max-age=${maxAgeSegundos}; SameSite=Lax`;
+  document.cookie = `${NOMBRE_COOKIE_SESION}=${valor}; ${atributosCookie(
+    maxAgeSegundos
+  )}`;
+}
+
+/*
+  Atributos comunes de la cookie, compartidos entre el alta y el borrado
+  para que el borrado matchee siempre con lo que se escribió.
+
+  Secure va condicionado al protocolo: en producción impide que la
+  cookie viaje por una conexión sin cifrar, y en el dev local
+  (http://localhost) ponerla siempre haría que el navegador descarte la
+  escritura y el guard de rutas privadas dejara de funcionar.
+*/
+function atributosCookie(maxAgeSegundos: number) {
+  const seguro = window.location.protocol === "https:" ? "; Secure" : "";
+
+  return `path=/; max-age=${maxAgeSegundos}; SameSite=Lax${seguro}`;
 }

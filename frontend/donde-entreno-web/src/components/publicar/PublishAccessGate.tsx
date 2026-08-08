@@ -51,8 +51,8 @@ export function PublishAccessGate() {
   if (esRolPublicador(rolActual)) {
     return (
       <PublicarGateCard
-        eyebrow="Panel publicador"
-        title="Creá tu solicitud desde el panel publicador."
+        eyebrow="Mi perfil"
+        title="Creá tu solicitud desde tu perfil de publicador."
         description="Así podemos asociar el envío a tu perfil, mostrarte el código de seguimiento y mantener el estado de revisión en tus solicitudes."
         actions={
           <>
@@ -81,10 +81,10 @@ export function PublishAccessGate() {
       <PublicarGateCard
         eyebrow="Cuenta administradora"
         title="Estás usando una cuenta administradora."
-        description="Para revisar solicitudes y gestionar el panel interno, continuá desde el panel admin. Las publicaciones de actividades se trabajan desde cuentas publicadoras."
+        description="Para revisar solicitudes seguí desde administración. Las actividades se publican desde cuentas de publicador."
         actions={
           <AppLinkButton href="/admin/solicitudes" variant="primary" fullWidth>
-            Ir al panel admin
+            Ir a administración
           </AppLinkButton>
         }
       />

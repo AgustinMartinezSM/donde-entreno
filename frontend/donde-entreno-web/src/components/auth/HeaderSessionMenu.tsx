@@ -71,23 +71,31 @@ export function HeaderSessionMenu() {
   );
 }
 
+/*
+  El acceso se llama igual para todos —"Mi perfil"— y cada rol llega a
+  su propio destino. Antes decía "Panel publicador" y "Panel admin":
+  panel es una palabra de sistema, no de la persona que la lee.
+
+  La administración sí se nombra como tal: quien la usa es del equipo y
+  le sirve saber que está entrando a otra cosa.
+*/
 function obtenerAccesoSesion(rol: string): AccesoSesion {
   if (esRolAdmin(rol)) {
     return {
       href: "/admin/solicitudes",
-      label: "Panel admin",
+      label: "Administración",
     };
   }
 
   if (esRolPublicador(rol)) {
     return {
       href: "/publicador",
-      label: "Panel publicador",
+      label: "Mi perfil",
     };
   }
 
   return {
     href: "/mi-cuenta",
-    label: "Mi cuenta",
+    label: "Mi perfil",
   };
 }

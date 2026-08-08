@@ -40,7 +40,7 @@ export function AsistenteWidget() {
   const temporizadorRespuesta = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-  const botonLauncherRef = useRef<HTMLButtonElement | null>(null);
+  const origenDelFoco = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const debeDevolverFoco = useRef(false);
   const rutaActual = usePathname();
@@ -59,6 +59,15 @@ export function AsistenteWidget() {
 
   useEffect(() => {
     function abrirDesdeLaPagina() {
+      /*
+        Guardamos quién abrió el asistente para devolverle el foco al
+        cerrar: ahora el disparador puede ser la barra inferior o el
+        botón de la home, así que no hay un único elemento fijo.
+      */
+      if (document.activeElement instanceof HTMLElement) {
+        origenDelFoco.current = document.activeElement;
+      }
+
       setAbierto(true);
     }
 
@@ -76,14 +85,14 @@ export function AsistenteWidget() {
   }, []);
 
   /*
-    Al cerrar el panel, devolvemos el foco a la burbuja
-    para no dejar colgado al usuario de teclado.
+    Al cerrar el panel devolvemos el foco a quien lo abrió, para no dejar
+    colgado al usuario de teclado.
   */
   useEffect(() => {
     if (!abierto && debeDevolverFoco.current) {
       debeDevolverFoco.current = false;
       const destinoFoco =
-        botonLauncherRef.current ??
+        origenDelFoco.current ??
         document.getElementById("asistente-home-trigger");
       destinoFoco?.focus();
     }
@@ -202,47 +211,15 @@ export function AsistenteWidget() {
     - /admin, /login y /registro: el asistente de descubrimiento no aporta
       sobre el backoffice ni sobre los formularios de acceso.
   */
-  const rutaSinLauncher =
-    rutaActual === "/" ||
-    Boolean(
-      rutaActual &&
-        ["/admin", "/login", "/registro"].some(
-          (prefijo) =>
-            rutaActual === prefijo || rutaActual.startsWith(`${prefijo}/`)
-        )
-    );
-
+  /*
+    Sin burbuja flotante: el asistente se abre desde la barra inferior y
+    desde el botón de la home. Una burbuja fija en la esquina se
+    superponía con las barras de acción de las páginas (ya tapó una vez
+    el CTA de WhatsApp del detalle) y se llevaba un lugar de la pantalla
+    en todas las vistas.
+  */
   if (!abierto) {
-    if (rutaSinLauncher) {
-      return null;
-    }
-
-    return (
-      <button
-        ref={botonLauncherRef}
-        type="button"
-        onClick={() => setAbierto(true)}
-        aria-label="Abrir asistente de DondeEntreno"
-        aria-haspopup="dialog"
-        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F3D5E] text-white shadow-[0_12px_30px_rgba(15,61,94,0.28)] ring-4 ring-[#4FB3D9]/20 transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:bg-[#0B314D] active:scale-95 lg:bottom-20 lg:right-5"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-          aria-hidden="true"
-        >
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          <circle cx="8.5" cy="11.5" r="0.5" fill="currentColor" />
-          <circle cx="12.5" cy="11.5" r="0.5" fill="currentColor" />
-          <circle cx="16.5" cy="11.5" r="0.5" fill="currentColor" />
-        </svg>
-      </button>
-    );
+    return null;
   }
 
   return (

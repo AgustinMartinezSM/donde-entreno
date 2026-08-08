@@ -11,7 +11,11 @@ type PublicadorPageHeaderProps = {
 };
 
 export function PublicadorPageHeader({
-  eyebrow = "Panel publicador",
+  /*
+    "Mi perfil" y no "Panel publicador": panel es lenguaje de sistema.
+    El publicador entra a su espacio, no a una consola.
+  */
+  eyebrow = "Mi perfil",
   title,
   description,
   action,

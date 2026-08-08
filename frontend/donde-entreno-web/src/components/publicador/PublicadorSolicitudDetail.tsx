@@ -71,7 +71,7 @@ export function PublicadorSolicitudDetail() {
           }
 
           if (errorCarga.status === 403) {
-            setError("No tenés permisos para acceder al panel publicador.");
+            setError("No tenés permisos para ver esto: es una cuenta de publicador lo que hace falta.");
             return;
           }
 

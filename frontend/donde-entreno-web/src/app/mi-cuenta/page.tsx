@@ -50,7 +50,7 @@ function MiCuentaContenido() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-                  Mi espacio deportivo
+                  Mi perfil deportivo
                 </p>
                 <h1 className="mt-2 text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
                   {nombre ? `Hola, ${nombre}` : "Hola"}
@@ -66,7 +66,7 @@ function MiCuentaContenido() {
                   Explorar actividades
                 </AppLinkButton>
                 <AppLinkButton href="/favoritos" variant="secondary">
-                  Ver mis favoritos
+                  Ver mis guardados
                 </AppLinkButton>
               </div>
             </div>
@@ -164,11 +164,11 @@ function obtenerHrefPrincipal(rol: string | null): string {
 
 function obtenerTextoAccionPrincipal(rol: string | null): string {
   if (rol && esRolPublicador(rol)) {
-    return "Ir al panel publicador";
+    return "Ir a mi perfil de publicador";
   }
 
   if (rol && esRolAdmin(rol)) {
-    return "Ir al panel admin";
+    return "Ir a administración";
   }
 
   return "Publicar actividad";

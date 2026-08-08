@@ -6,6 +6,7 @@ import {
   CitySelectorFallback,
 } from "../ciudades/CitySelector";
 import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
+import { HeaderAsistenteButton } from "./HeaderAsistenteButton";
 import { HeaderFavoritosLink } from "./HeaderFavoritosLink";
 import { HeaderNavLinks } from "./HeaderNavLinks";
 import { MobileAccountShortcut } from "./MobileAccountShortcut";
@@ -40,6 +41,8 @@ export function Header() {
             <CitySelector idSelector="ciudad-activa-desktop" />
           </Suspense>
         </div>
+
+        <HeaderAsistenteButton />
 
         <HeaderFavoritosLink />
 

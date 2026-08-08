@@ -98,6 +98,24 @@ public class PerfilPublicadorController {
      * @param tipoImagen tipo opcional de imagen.
      * @return lista de imágenes activas del perfil publicador.
      */
+    /**
+     * Detalle público de un perfil publicador.
+     *
+     * GET /api/perfiles-publicadores/{id}
+     *
+     * Hasta ahora el frontend resolvía el perfil de la página
+     * /publicadores/{id} filtrando el listado completo, así que cada
+     * vista se traía todos los perfiles. Responde 404 si el perfil no
+     * existe o no está activo.
+     *
+     * @param id ID del perfil publicador.
+     * @return el perfil en formato DTO.
+     */
+    @GetMapping("/{id}")
+    public PerfilPublicadorDTO obtenerPerfilPublicadorPorId(@PathVariable Long id) {
+        return perfilPublicadorService.obtenerPerfilActivoPorId(id);
+    }
+
     @GetMapping("/{id}/imagenes")
     public List<ImagenDTO> obtenerImagenesPorPerfilPublicador(
             @PathVariable Long id,

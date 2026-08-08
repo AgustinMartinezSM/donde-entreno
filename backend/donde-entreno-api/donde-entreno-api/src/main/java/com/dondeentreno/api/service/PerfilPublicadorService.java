@@ -2,6 +2,7 @@ package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.dto.PerfilPublicadorDTO;
 import com.dondeentreno.api.entity.PerfilPublicador;
+import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.mapper.PerfilPublicadorMapper;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ import java.util.List;
  */
 @Service
 public class PerfilPublicadorService {
+
+    private static final String MENSAJE_PERFIL_NO_ENCONTRADO =
+            "El perfil publicador solicitado no existe o no está disponible.";
 
     private final PerfilPublicadorRepository perfilPublicadorRepository;
 
@@ -42,6 +46,27 @@ public class PerfilPublicadorService {
         return perfiles.stream()
                 .map(PerfilPublicadorMapper::toDTO)
                 .toList();
+    }
+
+    /**
+     * Obtiene un perfil publicador activo por ID.
+     *
+     * Aplica el mismo criterio de visibilidad que el listado público
+     * (activo = true) para que un perfil no pueda aparecer en la lista y
+     * responder 404 en su detalle.
+     *
+     * @param id ID del perfil publicador.
+     * @return el perfil en formato DTO.
+     * @throws RecursoNoEncontradoException si no existe o no está activo.
+     */
+    public PerfilPublicadorDTO obtenerPerfilActivoPorId(Long id) {
+        if (id == null) {
+            throw new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO);
+        }
+
+        return perfilPublicadorRepository.findByIdAndActivoTrue(id)
+                .map(PerfilPublicadorMapper::toDTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO));
     }
 
     /**

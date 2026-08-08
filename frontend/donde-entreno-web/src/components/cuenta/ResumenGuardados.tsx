@@ -54,7 +54,7 @@ export function ResumenGuardados() {
         <div className="flex items-center gap-4 rounded-[18px] border border-[#DDEAF3] bg-white/85 p-4">
           <span
             aria-hidden="true"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#E6F7EF] text-[#167A4A]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#E6F7EF] text-[#1D7B4A]"
           >
             <IconoGuardar relleno={favoritos.length > 0} className="h-5 w-5" />
           </span>

@@ -181,7 +181,7 @@ export function SearchBar({
                     {sugerencia.textoAyuda}
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#167A4A]">
+                <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#1D7B4A]">
                   {sugerencia.tipo === "deporte" ? "Deporte" : "Estilo"}
                 </span>
               </button>

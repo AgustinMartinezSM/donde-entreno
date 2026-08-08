@@ -72,7 +72,7 @@ export default async function CiudadDetallePage({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
@@ -213,7 +213,7 @@ export default async function CiudadDetallePage({
                         : ""}
                     </p>
 
-                    <span className="mt-5 w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#167A4A] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
+                    <span className="mt-5 w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#1D7B4A] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
                       Ver detalle
                     </span>
                   </Link>

@@ -200,7 +200,7 @@ export function PublicadorSolicitudesList() {
           ) : null}
 
           {!cargando && !error && solicitudes.length === 0 ? (
-            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A]">
+            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#1D7B4A]">
               <p className="font-extrabold text-[var(--color-primary)]">
                 No hay solicitudes para mostrar.
               </p>
@@ -292,7 +292,7 @@ function SolicitudCard({
         </p>
         <Link
           href={`/publicador/solicitudes/${solicitud.id}`}
-          className="inline-flex items-center justify-center rounded-[18px] border border-[#BDE8D0] bg-[#E6F7EF] px-4 py-2 text-sm font-extrabold text-[#167A4A] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#2EB872] hover:bg-white"
+          className="inline-flex items-center justify-center rounded-[18px] border border-[#BDE8D0] bg-[#E6F7EF] px-4 py-2 text-sm font-extrabold text-[#1D7B4A] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#2EB872] hover:bg-white"
         >
           Ver detalle
         </Link>

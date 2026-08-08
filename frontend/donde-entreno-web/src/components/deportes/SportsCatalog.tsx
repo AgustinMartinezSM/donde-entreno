@@ -245,7 +245,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
                       <span className="text-sm font-bold text-[var(--color-primary)]">
                         {sugerencia.label}
                       </span>
-                      <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#167A4A]">
+                      <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#1D7B4A]">
                         {sugerencia.tipo === "deporte" ? "Deporte" : "Estilo"}
                       </span>
                     </button>
@@ -312,7 +312,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
         </div>
 
         {hayFiltrosActivos ? (
-          <p className="mt-4 text-sm font-bold text-[#167A4A]" role="status">
+          <p className="mt-4 text-sm font-bold text-[#1D7B4A]" role="status">
             Mostrando {deportesFiltrados.length}{" "}
             {deportesFiltrados.length === 1 ? "deporte" : "deportes"}
           </p>

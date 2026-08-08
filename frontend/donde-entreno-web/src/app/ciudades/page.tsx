@@ -48,7 +48,7 @@ export default async function CiudadesPage() {
   const ciudadUnica = ciudades.length === 1 ? (ciudades[0] ?? null) : null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
@@ -138,7 +138,7 @@ export default async function CiudadesPage() {
                       key={ciudad.id}
                       className="flex min-h-full flex-col rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_34px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)]"
                     >
-                      <span className="w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#167A4A]">
+                      <span className="w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#1D7B4A]">
                         Disponible ahora
                       </span>
 

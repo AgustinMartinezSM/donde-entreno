@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RegistroPublicadorPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen bg-[var(--color-bg)] px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl items-center justify-center">
         <SurfaceCard className="grid w-full overflow-hidden rounded-[28px] shadow-[0_30px_80px_rgba(12,52,80,0.16)] xl:grid-cols-[0.82fr_1.18fr]">
           <aside className="bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872] p-6 text-white sm:p-8 lg:p-10">

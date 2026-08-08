@@ -903,7 +903,7 @@ function HorarioCard({
       variant="info"
       className="rounded-[20px] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
     >
-      <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#167A4A]">
+      <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#1D7B4A]">
         {horario.diaSemana}
       </p>
       <dl className="mt-3 grid gap-3 text-sm">

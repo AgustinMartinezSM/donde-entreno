@@ -195,7 +195,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
@@ -227,13 +227,13 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {nombreCiudadActiva ? (
-                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
+                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
                   Explorando actividades en {nombreCiudadActiva}
                 </p>
               ) : null}
 
               {textoBuscado ? (
-                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#167A4A]">
+                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
                   Resultados para &quot;{textoBuscado}&quot;
                 </p>
               ) : null}

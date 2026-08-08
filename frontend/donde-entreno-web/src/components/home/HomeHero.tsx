@@ -42,7 +42,7 @@ export function HomeHero({
 
       <div className="relative grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#E6F7EF] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#167A4A]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#E6F7EF] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#1D7B4A]">
             <IconoUbicacion />
             Descubriendo en {ciudadNombreInicial}
           </div>

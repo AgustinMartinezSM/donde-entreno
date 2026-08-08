@@ -160,7 +160,7 @@ export function MisFavoritos() {
                   <div className="p-2 pt-4">
                     <div className="mb-2 flex flex-wrap gap-2">
                       {favorito.deporteNombre && (
-                        <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#167A4A]">
+                        <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#1D7B4A]">
                           {favorito.deporteNombre}
                         </span>
                       )}

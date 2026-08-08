@@ -59,7 +59,7 @@ function obtenerClasesEstado(estado: string, activa?: boolean | null): string {
   }
 
   if (estado === "PUBLICADA") {
-    return "border-[#BDE8D0] bg-[#F6FCF8] text-[#167A4A]";
+    return "border-[#BDE8D0] bg-[#F6FCF8] text-[#1D7B4A]";
   }
 
   if (estado === "INACTIVA") {

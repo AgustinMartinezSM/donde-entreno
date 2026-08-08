@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function PublicarPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] text-[var(--color-text)]">
+    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl px-4 py-6">
         <Header />
 
@@ -59,7 +59,7 @@ export default function PublicarPage() {
               </div>
 
               <div className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-white/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
-                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#167A4A]">
+                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#1D7B4A]">
                   ¿Qué pasa después?
                 </p>
                 <ul className="mt-4 space-y-3 text-sm font-bold leading-6 text-[var(--color-primary)]">
@@ -67,7 +67,7 @@ export default function PublicarPage() {
                   <li>Mostrá horarios, ubicación y datos de contacto.</li>
                   <li>La publicación se revisa antes de quedar visible.</li>
                 </ul>
-                <p className="mt-4 rounded-[18px] bg-[#E6F7EF] px-4 py-3 text-sm font-bold leading-6 text-[#167A4A]">
+                <p className="mt-4 rounded-[18px] bg-[#E6F7EF] px-4 py-3 text-sm font-bold leading-6 text-[#1D7B4A]">
                   Te guiamos paso a paso para que la solicitud llegue clara y
                   lista para revisión.
                 </p>

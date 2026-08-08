@@ -277,7 +277,7 @@ export function SolicitarCambiosForm() {
                       {cambio.valorActual || "Sin valor"}
                     </span>{" "}
                     <span aria-hidden="true">→</span>{" "}
-                    <span className="font-bold text-[#167A4A]">
+                    <span className="font-bold text-[#1D7B4A]">
                       {cambio.valorPropuesto}
                     </span>
                   </li>

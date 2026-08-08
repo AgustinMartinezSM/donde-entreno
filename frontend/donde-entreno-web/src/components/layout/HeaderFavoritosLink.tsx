@@ -46,7 +46,7 @@ export function HeaderFavoritosLink() {
       {cantidad > 0 && (
         <span
           aria-hidden="true"
-          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#167A4A] px-1.5 text-[11px] font-extrabold text-white"
+          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1D7B4A] px-1.5 text-[11px] font-extrabold text-white"
         >
           {cantidad > 99 ? "99+" : cantidad}
         </span>

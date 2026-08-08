@@ -637,7 +637,7 @@ function PublishSectionHeader({
 }: PublishSectionHeaderProps) {
   return (
     <legend className="mb-5 flex w-full flex-col gap-3 sm:flex-row sm:items-start">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
         {paso}
       </span>
       <span>
@@ -1133,7 +1133,7 @@ export function PublishForm({
 
             <ol className="mt-4 space-y-3">
               <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
                   1
                 </span>
                 <span>
@@ -1159,7 +1159,7 @@ export function PublishForm({
                 </span>
               </li>
               <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
                   3
                 </span>
                 <span>
@@ -1185,14 +1185,14 @@ export function PublishForm({
                 </span>
               </li>
               <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#1D7B4A]">
                   5
                 </span>
                 <span>
                   <span className="block text-sm font-extrabold text-[var(--color-primary)]">
                     Enviá la solicitud a revisión
                   </span>
-                  <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
+                  <span className="mt-1 block text-sm leading-5 text-[#1D7B4A]">
                     El equipo de <BrandName className="inline font-bold" /> la
                     revisa antes de publicarla.
                   </span>
@@ -1216,7 +1216,7 @@ export function PublishForm({
 
           <ol className="mt-5 space-y-3">
             <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
                 1
               </span>
               <span>
@@ -1242,7 +1242,7 @@ export function PublishForm({
               </span>
             </li>
             <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#167A4A]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
                 3
               </span>
               <span>
@@ -1268,14 +1268,14 @@ export function PublishForm({
               </span>
             </li>
             <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#167A4A]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#1D7B4A]">
                 5
               </span>
               <span>
                 <span className="block text-sm font-extrabold text-[var(--color-primary)]">
                   Enviá la solicitud a revisión
                 </span>
-                <span className="mt-1 block text-sm leading-5 text-[#167A4A]">
+                <span className="mt-1 block text-sm leading-5 text-[#1D7B4A]">
                   El equipo de <BrandName className="inline font-bold" /> la
                   revisa antes de publicarla.
                 </span>
@@ -2201,7 +2201,7 @@ export function PublishForm({
                   className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-4 shadow-[0_10px_26px_rgba(12,52,80,0.06)]"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 className="inline-flex w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#167A4A]">
+                    <h3 className="inline-flex w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#1D7B4A]">
                       Horario {indice + 1}
                     </h3>
 
@@ -2495,7 +2495,7 @@ export function PublishForm({
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#167A4A] outline-none focus:ring-2 focus:ring-[#167A4A]"
+          className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#1D7B4A] outline-none focus:ring-2 focus:ring-[#1D7B4A]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             {tituloExitoPersonalizado ?? "Tu solicitud fue enviada correctamente"}

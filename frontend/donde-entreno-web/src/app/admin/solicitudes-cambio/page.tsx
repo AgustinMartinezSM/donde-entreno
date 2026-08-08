@@ -32,7 +32,7 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
   EN_REVISION: "bg-[#E8F6FB] text-[#0F6F8F] ring-1 ring-[#BFDDEA]",
-  APROBADA: "bg-[#E6F7EF] text-[#167A4A] ring-1 ring-[#BDE8D0]",
+  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 

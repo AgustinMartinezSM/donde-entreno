@@ -33,7 +33,7 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
   EN_REVISION: "bg-[#E8F6FB] text-[#0F6F8F] ring-1 ring-[#BFDDEA]",
-  APROBADA: "bg-[#E6F7EF] text-[#167A4A] ring-1 ring-[#BDE8D0]",
+  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -294,7 +294,7 @@ function AdminSolicitudCambioDetalle() {
                       <th className="border-y border-r border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-left font-extrabold text-[var(--color-primary)]">
                         Publicado hoy
                       </th>
-                      <th className="rounded-tr-[14px] border-y border-r border-[#DDEAF3] bg-[#E6F7EF] px-4 py-3 text-left font-extrabold text-[#167A4A]">
+                      <th className="rounded-tr-[14px] border-y border-r border-[#DDEAF3] bg-[#E6F7EF] px-4 py-3 text-left font-extrabold text-[#1D7B4A]">
                         Propuesto
                       </th>
                     </tr>
@@ -308,7 +308,7 @@ function AdminSolicitudCambioDetalle() {
                         <td className="border-b border-r border-[#DDEAF3] px-4 py-3 text-[var(--color-muted)]">
                           {cambio.valorActual || "Sin valor"}
                         </td>
-                        <td className="border-b border-r border-[#DDEAF3] bg-[#F4FBF7] px-4 py-3 font-bold text-[#167A4A]">
+                        <td className="border-b border-r border-[#DDEAF3] bg-[#F4FBF7] px-4 py-3 font-bold text-[#1D7B4A]">
                           {cambio.valorPropuesto}
                         </td>
                       </tr>

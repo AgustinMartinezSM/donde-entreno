@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-:root {
+/*
+  Tokens de marca en @theme (Tailwind v4): además de emitirse como
+  variables CSS en :root (todo el código existente con var(--color-*)
+  sigue funcionando igual), generan utilities de marca (bg-primary,
+  text-muted, shadow-card, rounded-lg de 20px, etc.) para el código
+  nuevo. Ningún token pisa utilities ya usadas en el proyecto.
+*/
+@theme {
   /* Marca */
   --color-primary: #0F3D5E;
   --color-secondary: #2EB872;
@@ -16,6 +23,18 @@
 
   /* Bordes */
   --color-border: #D9E2EC;
+
+  /*
+    Tintes y semánticos que antes vivían hardcodeados por el código:
+    verde de éxito único (#1D7B4A; reemplaza la dupla #1D7B4A/#1D7B4A)
+    y los fondos suaves recurrentes de la identidad.
+  */
+  --color-success: #1D7B4A;
+  --color-success-soft: #E6F7EF;
+  --color-info-deep: #0F6F8F;
+  --color-info-soft: #E8F6FB;
+  --color-border-soft: #DDEAF3;
+  --color-border-accent: #BFDDEA;
 
   /* Radios */
   --radius-sm: 10px;

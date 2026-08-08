@@ -162,8 +162,9 @@ function AdminSolicitudesCambioListado() {
                 <AppLinkButton href="/admin/solicitudes" variant="secondary">
                   Solicitudes de publicación
                 </AppLinkButton>
-                {/* La moderación de imágenes llega con el bloque 4 (Supabase
-                    Storage); hasta entonces no hay ruta que linkear. */}
+                <AppLinkButton href="/admin/imagenes" variant="outline">
+                  Moderación de imágenes
+                </AppLinkButton>
               </div>
             </div>
           </div>

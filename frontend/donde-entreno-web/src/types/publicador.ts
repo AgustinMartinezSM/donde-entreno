@@ -274,3 +274,19 @@ export type ListarSolicitudesCambioParams = {
   size?: number;
   orden?: "recientes" | "antiguos";
 };
+
+/*
+  Imagen de una actividad vista desde el panel del publicador
+  (subida con moderación). La url es la visualizable según estado:
+  pública si está aprobada, firmada temporal si está pendiente,
+  null si fue rechazada (el archivo ya no existe en el storage).
+*/
+export type ImagenActividadPublicador = {
+  id: number;
+  url: string | null;
+  tipoImagen: string;
+  estadoModeracion: "PENDIENTE" | "APROBADA" | "RECHAZADA" | string;
+  motivoRechazo: string | null;
+  activa: boolean;
+  createdAt: string | null;
+};

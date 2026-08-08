@@ -291,6 +291,65 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja imagenes invalidas (tipo, tamano o formato) en la subida
+     * y las reglas de moderacion (por ejemplo revisar dos veces).
+     */
+    @ExceptionHandler(ImagenInvalidaException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarImagenInvalida(
+            ImagenInvalidaException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Maneja archivos que superan el limite de multipart configurado.
+     */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarArchivoDemasiadoGrande(
+            org.springframework.web.multipart.MaxUploadSizeExceededException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.PAYLOAD_TOO_LARGE.value(),
+                HttpStatus.PAYLOAD_TOO_LARGE.getReasonPhrase(),
+                "El archivo supera el tamano maximo permitido (2 MB).",
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(error);
+    }
+
+    /**
+     * Maneja operaciones de imagenes cuando el almacenamiento externo
+     * (Supabase Storage) todavia no esta configurado en el entorno.
+     */
+    @ExceptionHandler(AlmacenNoConfiguradoException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarAlmacenNoConfigurado(
+            AlmacenNoConfiguradoException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    /**
      * Maneja rutas inexistentes que Spring MVC resuelve como recurso no encontrado.
      *
      * @param exception excepcion de ruta o recurso inexistente.

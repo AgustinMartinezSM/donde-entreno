@@ -46,20 +46,12 @@ export function PublicadorMetricasPanel({
       href: "/publicador/solicitudes-cambio",
       resaltarSiHay: true,
     },
-    /*
-      La gestión de imágenes (bloque 4) todavía no existe en producción:
-      la tile solo aparece si hay algo pendiente que reportar, para no
-      mostrar un 0 permanente de una sección inexistente.
-    */
-    ...(metricas.imagenesPendientesModeracion > 0
-      ? [
-          {
-            etiqueta: "Imágenes en moderación",
-            valor: metricas.imagenesPendientesModeracion,
-            resaltarSiHay: true,
-          } satisfies MetricaItem,
-        ]
-      : []),
+    {
+      etiqueta: "Imágenes en moderación",
+      valor: metricas.imagenesPendientesModeracion,
+      href: "/publicador/actividades",
+      resaltarSiHay: true,
+    },
     {
       etiqueta: "Seguidores",
       valor: metricas.seguidores,

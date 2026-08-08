@@ -17,10 +17,8 @@ import {
   PublicadorApiError,
   obtenerActividadPublicador,
 } from "../../services/publicadorService";
-import type {
-  ActividadPublicadorDetalle,
-  ActividadPublicadorImagen,
-} from "../../types/publicador";
+import type { ActividadPublicadorDetalle } from "../../types/publicador";
+import { GestionImagenesActividad } from "./GestionImagenesActividad";
 import { PublicadorActividadEstadoBadge } from "./PublicadorActividadEstadoBadge";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";
 
@@ -185,9 +183,6 @@ function ActividadDetalleContenido({
   const imagenFallbackUrl = obtenerImagenFallbackActividad({
     deporteSlug: actividad.deporteSlug,
   });
-  const imagenesConUrl = actividad.imagenes.filter((imagen) =>
-    Boolean(imagen.url.trim())
-  );
 
   return (
     <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
@@ -359,53 +354,9 @@ function ActividadDetalleContenido({
           )}
         </SurfaceCard>
 
-        <SurfaceCard className="p-6 sm:p-8">
-          <SectionHeader
-            eyebrow="Imágenes"
-            title="Imágenes asociadas"
-            description="Material visual publicado para esta actividad."
-          />
-          {imagenesConUrl.length > 0 ? (
-            <div className="mt-6 grid gap-3">
-              {imagenesConUrl.map((imagen) => (
-                <ImagenActividadItem key={imagen.id} imagen={imagen} />
-              ))}
-            </div>
-          ) : (
-            <StatusMessage variant="info" className="mt-6">
-              Esta actividad no tiene imágenes cargadas.
-            </StatusMessage>
-          )}
-        </SurfaceCard>
-      </div>
-    </div>
-  );
-}
-
-function ImagenActividadItem({
-  imagen,
-}: {
-  imagen: ActividadPublicadorImagen;
-}) {
-  const src = construirUrlImagenBackend(imagen.url);
-
-  return (
-    <div className="rounded-[18px] border border-[#DDEAF3] bg-white/80 p-3">
-      <ActivityImage
-        src={src}
-        alt={imagen.descripcion ?? imagen.titulo ?? "Imagen de actividad"}
-        fallbackText={imagen.titulo ?? "Imagen"}
-        heightClassName="h-36"
-      />
-      <div className="mt-3">
-        <p className="text-sm font-extrabold text-[var(--color-primary)]">
-          {imagen.titulo ?? formatearCatalogoONull(imagen.tipoImagen) ?? "Imagen"}
-        </p>
-        {imagen.descripcion ? (
-          <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
-            {imagen.descripcion}
-          </p>
-        ) : null}
+        {/* Gestión de imágenes con moderación: subida, estado y retiro
+            de pendientes (reemplaza al listado de solo lectura). */}
+        <GestionImagenesActividad actividadId={actividad.id} />
       </div>
     </div>
   );

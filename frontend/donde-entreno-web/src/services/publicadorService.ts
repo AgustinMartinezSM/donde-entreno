@@ -25,6 +25,7 @@ import type {
   ActividadPublicadorDetalle,
   ActividadPublicadorHorario,
   ActividadPublicadorImagen,
+  ImagenActividadPublicador,
   ActividadPublicadorResumen,
   ActividadesPublicadorPage,
   CrearSolicitudPublicadorRequest,
@@ -697,4 +698,129 @@ function esCrearSolicitudPublicadorResponse(
     typeof valor.createdAt === "string" &&
     typeof valor.mensaje === "string"
   );
+}
+
+// ============================================================
+// Imágenes de actividades (subida con moderación, Supabase Storage)
+// ============================================================
+
+/*
+  Sube una imagen para una actividad publicada propia. La imagen nace
+  PENDIENTE (archivo en el bucket privado): no se ve en público hasta
+  que el equipo la apruebe.
+  Multipart: NO se setea Content-Type (el navegador arma el boundary).
+*/
+export async function subirImagenActividad(
+  actividadId: number,
+  archivo: File,
+  tipo: "PRINCIPAL" | "GALERIA",
+  accessToken: string
+): Promise<ImagenActividadPublicador> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+
+  const formData = new FormData();
+  formData.append("archivo", archivo);
+  formData.append("tipo", tipo);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes`,
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: formData,
+    },
+    esImagenActividadPublicador
+  );
+}
+
+export async function listarImagenesActividad(
+  actividadId: number,
+  accessToken: string
+): Promise<ImagenActividadPublicador[]> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      cache: "no-store",
+    },
+    esListaImagenesActividadPublicador
+  );
+}
+
+/*
+  Retira una imagen propia PENDIENTE (el archivo se elimina del bucket
+  privado). El backend responde 204 sin cuerpo, por eso el validador
+  acepta null.
+*/
+export async function eliminarImagenActividad(
+  actividadId: number,
+  imagenId: number,
+  accessToken: string
+): Promise<void> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+  const imagenIdSeguro = validarIdPositivo(
+    imagenId,
+    () => new PublicadorApiError("El id de la imagen es invalido.")
+  );
+
+  await ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes/${encodeURIComponent(String(imagenIdSeguro))}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+    },
+    esCuerpoVacioImagen
+  );
+}
+
+export function esImagenActividadPublicador(
+  valor: unknown
+): valor is ImagenActividadPublicador {
+  return (
+    esObjeto(valor) &&
+    typeof valor.id === "number" &&
+    esStringONull(valor.url) &&
+    typeof valor.tipoImagen === "string" &&
+    typeof valor.estadoModeracion === "string" &&
+    esStringONull(valor.motivoRechazo) &&
+    typeof valor.activa === "boolean" &&
+    esStringONull(valor.createdAt)
+  );
+}
+
+function esListaImagenesActividadPublicador(
+  valor: unknown
+): valor is ImagenActividadPublicador[] {
+  return Array.isArray(valor) && valor.every(esImagenActividadPublicador);
+}
+
+function esCuerpoVacioImagen(valor: unknown): valor is null {
+  return valor === null;
 }

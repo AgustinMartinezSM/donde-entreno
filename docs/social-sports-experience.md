@@ -52,6 +52,24 @@ Se partió de una **auditoría comparativa** de las 10 áreas del frontend entre
 - El **bloque 4 de imágenes** completo (subida del publicador, `GestionImagenesActividad`, `admin/imagenes`, services de imágenes): sigue excluido a propósito hasta implementar Supabase Storage en el backend (regla de producción). La UI del lab queda como referencia lista para ese momento.
 - El resto del lab es byte-idéntico a main (verificado con diff ignorando CRLF): no había nada más que portar.
 
+## 6.b Bloque 4 — imágenes con moderación sobre Supabase Storage (rama `feature/imagenes-supabase-storage`)
+
+La única feature del lab que faltaba, implementada con la arquitectura que exige la regla de producción (nunca disco local) y corrigiendo las **dos vulnerabilidades** que motivaron la exclusión original:
+
+- **Dos buckets**: las subidas nacen en `imagenes-pendientes` (**privado**) → una imagen PENDIENTE o RECHAZADA **no es accesible por URL** (antes el archivo era público desde el momento de la subida). Al aprobar, el backend la copia a `imagenes-publicas` (**público**) y guarda la URL definitiva en `imagen.url`; al rechazar o retirar, **el archivo se elimina físicamente** (antes no existía `eliminar()`).
+- `AlmacenArchivos` (interfaz) + `AlmacenArchivosSupabase` (Storage API por HTTP con `RestClient`, sin dependencias nuevas): `guardarPendiente()`, `publicar()` (copy+delete compensado y reintentable), `firmarUrl()` (previews de moderación, expiración 10 min), `eliminar()`, `estaConfigurado()`.
+- **Sin configuración la app arranca igual**: las operaciones de storage responden 503 con mensaje claro → deploy tolerante al orden.
+- Endpoints (cubiertos por las reglas de seguridad existentes): `POST/GET/DELETE /api/publicador/actividades/{id}/imagenes` y `GET/POST /api/admin/imagenes(/{id}/aprobar|/{id}/rechazar)`. Validación por firma de bytes (JPG/PNG/WebP, 2 MB) y multipart limits restaurados.
+- Frontend: `GestionImagenesActividad` montada en el detalle del publicador (subida con preview, estados, retiro), cola de moderación en `/admin/imagenes` (botones del panel restaurados), tile de métricas activa, `remotePatterns` para `**.supabase.co`.
+- Tests: 9 unit nuevos de los services de imagen + **`ImagenModeracionIT`** (3 escenarios end-to-end contra PostgreSQL local con storage en memoria: pendiente invisible → aprobar visible → reemplazo de PRINCIPAL → rechazo con motivo → roles).
+- **Sin migración de base** (la tabla `imagen` ya tenía moderación desde el script 15). `imagen.url` guarda la ruta interna mientras PENDIENTE y la URL pública al aprobar.
+
+**Checklist del usuario para activar (antes del merge+push):**
+1. Supabase → Storage → crear bucket `imagenes-pendientes` (privado) y `imagenes-publicas` (público).
+2. Render → Environment: `DONDEENTRENO_STORAGE_SUPABASE_URL` (https://<ref>.supabase.co) y `DONDEENTRENO_STORAGE_SUPABASE_SERVICE_KEY` (service_role key). Solo por panel.
+3. (Opcional local) las mismas claves en `application-local.properties` para E2E local.
+4. Post-deploy: subir imagen de prueba como publicador → verla PENDIENTE en `/admin/imagenes` → aprobar → verla en la card pública → rechazar otra y verificar el motivo.
+
 ## 7. Qué quedó pendiente
 
 - **Perfil público de publicador — deuda de backend para la V2**: la V1 ya está implementada (`/publicadores/[id]`), pero resuelve el perfil filtrando el listado público (no hay `GET /api/perfiles-publicadores/{id}` individual — cuando exista, solo cambia `obtenerPerfilPublicadorPorId`), no hay slug amigable para la URL y no hay contador público de seguidores. Los tres son cambios aditivos de backend.

@@ -5,6 +5,7 @@ import type { Deporte } from "../types/deporte";
 import { Header } from "../components/layout/Header";
 import { HomeTopBar } from "../components/home/HomeTopBar";
 import { HomeStoriesDeportes } from "../components/home/HomeStoriesDeportes";
+import { HomeFeedSeguidos } from "../components/home/HomeFeedSeguidos";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
@@ -117,6 +118,13 @@ export default async function Home({ searchParams }: HomeProps) {
           <HomeTopBar ciudadNombre={ciudadNombre} ciudadSlug={ciudadSlug} />
 
           <HomeStoriesDeportes deportes={deportes} ciudadSlug={ciudadSlug} />
+
+          {/*
+            Para quien tiene cuenta, lo primero es lo nuevo de quienes
+            sigue; para el visitante anónimo no se dibuja nada y la home
+            arranca por el descubrimiento general.
+          */}
+          <HomeFeedSeguidos publicadoresSugeridos={publicadoresSugeridos} />
 
           <HomePreferenciasChips ciudadSlug={ciudadSlug} />
 

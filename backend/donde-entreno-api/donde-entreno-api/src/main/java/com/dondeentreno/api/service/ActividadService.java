@@ -89,9 +89,7 @@ public class ActividadService {
         List<Actividad> actividades =
                 actividadRepository.findByActivaTrueAndEstadoPublicacionOrderByCreatedAtDesc(ESTADO_PUBLICADA);
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -107,9 +105,7 @@ public class ActividadService {
                         deporteId
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -125,9 +121,7 @@ public class ActividadService {
                         deporteSlug
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -143,9 +137,7 @@ public class ActividadService {
                         ciudadId
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -161,9 +153,7 @@ public class ActividadService {
                         barrioId
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -179,9 +169,7 @@ public class ActividadService {
                         perfilPublicadorId
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -197,9 +185,7 @@ public class ActividadService {
                         nivel
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -215,9 +201,7 @@ public class ActividadService {
                         modalidad
                 );
 
-        return actividades.stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        return mapearConImagenPrincipal(actividades);
     }
 
     /**
@@ -234,7 +218,7 @@ public class ActividadService {
                 .findBySlugAndActivaTrueAndEstadoPublicacion(slug, ESTADO_PUBLICADA)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Actividad no encontrada"));
 
-        return ActividadMapper.toDTO(actividad);
+        return mapearConImagenPrincipal(List.of(actividad)).get(0);
     }
 
     /**
@@ -281,9 +265,21 @@ public class ActividadService {
                         prepararTextoBusqueda(texto)
                 );
 
-        return actividades.stream()
+        return mapearConImagenPrincipal(actividades);
+    }
+
+    /**
+     * Mapea entidades a DTO y les asigna la imagen PRINCIPAL visible
+     * en público (un query batch por lote, sin N+1).
+     */
+    private List<ActividadDTO> mapearConImagenPrincipal(List<Actividad> actividades) {
+        List<ActividadDTO> dtos = actividades.stream()
                 .map(ActividadMapper::toDTO)
                 .toList();
+
+        imagenService.asignarImagenPrincipal(dtos);
+
+        return dtos;
     }
 
     /**
@@ -443,10 +439,8 @@ public class ActividadService {
                         pageable
                 );
 
-        List<ActividadDTO> contenido = paginaActividades.getContent()
-                .stream()
-                .map(ActividadMapper::toDTO)
-                .toList();
+        List<ActividadDTO> contenido =
+                mapearConImagenPrincipal(paginaActividades.getContent());
 
         return new PaginaResponseDTO<>(
                 contenido,

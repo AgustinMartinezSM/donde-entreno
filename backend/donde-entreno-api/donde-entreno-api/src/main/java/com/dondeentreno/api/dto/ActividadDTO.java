@@ -66,6 +66,13 @@ public class ActividadDTO {
 
     private OffsetDateTime fechaPublicacion;
 
+    /*
+      URL de la imagen PRINCIPAL aprobada de la actividad (o null si no
+      tiene). No viaja por el constructor: la asigna ImagenService después
+      del mapeo, con un query batch por página para evitar N+1.
+    */
+    private String imagenPrincipalUrl;
+
     public ActividadDTO() {
     }
 
@@ -283,6 +290,10 @@ public class ActividadDTO {
         return fechaPublicacion;
     }
 
+    public String getImagenPrincipalUrl() {
+        return imagenPrincipalUrl;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -421,5 +432,9 @@ public class ActividadDTO {
 
     public void setFechaPublicacion(OffsetDateTime fechaPublicacion) {
         this.fechaPublicacion = fechaPublicacion;
+    }
+
+    public void setImagenPrincipalUrl(String imagenPrincipalUrl) {
+        this.imagenPrincipalUrl = imagenPrincipalUrl;
     }
 }

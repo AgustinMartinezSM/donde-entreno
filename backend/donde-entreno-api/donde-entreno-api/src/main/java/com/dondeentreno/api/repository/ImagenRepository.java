@@ -93,6 +93,17 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     java.util.Optional<Imagen> findByIdAndActividad_Id(Long id, Long actividadId);
 
     /**
+     * Imágenes PRINCIPAL visibles en público de un conjunto de
+     * actividades (activas Y aprobadas), en un solo query para
+     * enriquecer listados paginados sin caer en N+1.
+     */
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndTipoImagenAndActividad_IdInOrderByOrdenAsc(
+            String estadoModeracion,
+            String tipoImagen,
+            java.util.Collection<Long> actividadIds
+    );
+
+    /**
      * Cuenta las imágenes de las actividades de un perfil publicador en
      * un estado de moderación dado (métricas del panel: se usa con
      * PENDIENTE). Las imágenes que sube el publicador cuelgan de la

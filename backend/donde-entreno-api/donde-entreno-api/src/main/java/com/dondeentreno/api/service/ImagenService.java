@@ -1,12 +1,15 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.dto.ImagenDTO;
 import com.dondeentreno.api.entity.Imagen;
 import com.dondeentreno.api.mapper.ImagenMapper;
 import com.dondeentreno.api.repository.ImagenRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service de Imagen.
@@ -23,6 +26,8 @@ public class ImagenService {
      * se ven en el panel del publicador y en la cola del admin.
      */
     private static final String ESTADO_MODERACION_APROBADA = "APROBADA";
+
+    private static final String TIPO_IMAGEN_PRINCIPAL = "PRINCIPAL";
 
     private final ImagenRepository imagenRepository;
 
@@ -120,5 +125,54 @@ public class ImagenService {
         return imagenes.stream()
                 .map(ImagenMapper::toDTO)
                 .toList();
+    }
+
+    /**
+     * Enriquece DTOs de actividad con la URL de su imagen PRINCIPAL
+     * visible en público (activa y aprobada por moderación).
+     *
+     * Un solo query batch por lote (los listados son páginas de hasta
+     * 50 actividades), sin N+1. Si una actividad tiene más de una
+     * PRINCIPAL vigente, gana la de menor orden (el query ya viene
+     * ordenado así). Las actividades sin imagen quedan con null y el
+     * frontend cae a su ilustración por deporte.
+     *
+     * @param actividades DTOs ya mapeados (se mutan en el lugar).
+     */
+    public void asignarImagenPrincipal(List<ActividadDTO> actividades) {
+        if (actividades == null || actividades.isEmpty()) {
+            return;
+        }
+
+        List<Long> actividadIds = actividades.stream()
+                .map(ActividadDTO::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
+        if (actividadIds.isEmpty()) {
+            return;
+        }
+
+        List<Imagen> imagenes = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndTipoImagenAndActividad_IdInOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
+                        TIPO_IMAGEN_PRINCIPAL,
+                        actividadIds
+                );
+
+        Map<Long, String> urlPorActividad = new HashMap<>();
+
+        for (Imagen imagen : imagenes) {
+            if (imagen.getActividad() == null || imagen.getUrl() == null) {
+                continue;
+            }
+
+            /* putIfAbsent: conserva la primera (menor orden) por actividad. */
+            urlPorActividad.putIfAbsent(imagen.getActividad().getId(), imagen.getUrl());
+        }
+
+        for (ActividadDTO actividad : actividades) {
+            actividad.setImagenPrincipalUrl(urlPorActividad.get(actividad.getId()));
+        }
     }
 }

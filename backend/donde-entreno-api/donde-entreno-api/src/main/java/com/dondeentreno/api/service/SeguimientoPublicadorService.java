@@ -43,17 +43,20 @@ public class SeguimientoPublicadorService {
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final UsuarioRepository usuarioRepository;
     private final ActividadRepository actividadRepository;
+    private final ImagenService imagenService;
 
     public SeguimientoPublicadorService(
             SeguimientoPublicadorRepository seguimientoPublicadorRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
             UsuarioRepository usuarioRepository,
-            ActividadRepository actividadRepository
+            ActividadRepository actividadRepository,
+            ImagenService imagenService
     ) {
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.usuarioRepository = usuarioRepository;
         this.actividadRepository = actividadRepository;
+        this.imagenService = imagenService;
     }
 
     @Transactional
@@ -114,7 +117,7 @@ public class SeguimientoPublicadorService {
             return List.of();
         }
 
-        return actividadRepository
+        List<ActividadDTO> feed = actividadRepository
                 .findByActivaTrueAndEstadoPublicacionAndDeletedAtIsNullAndPerfilPublicador_IdInOrderByCreatedAtDesc(
                         ESTADO_ACTIVIDAD_PUBLICADA,
                         perfilesSeguidos,
@@ -123,6 +126,11 @@ public class SeguimientoPublicadorService {
                 .stream()
                 .map(ActividadMapper::toDTO)
                 .toList();
+
+        /* El feed usa las mismas cards públicas: también lleva imagen. */
+        imagenService.asignarImagenPrincipal(feed);
+
+        return feed;
     }
 
     @Transactional(readOnly = true)

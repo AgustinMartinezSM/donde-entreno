@@ -15,6 +15,7 @@ import {
 } from "../../lib/formatoFecha";
 import { ActivityImage } from "../actividad/ActivityImage";
 import { FavoritoButton } from "../actividad/FavoritoButton";
+import { CompartirButton } from "./CompartirButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { PublisherIdentity } from "./PublisherIdentity";
 
@@ -169,17 +170,36 @@ export function SocialActivityCard({
           {actividad.cuposLimitados ? <Etiqueta>Cupos limitados</Etiqueta> : null}
         </div>
 
-        {/* mt-auto ancla el CTA al fondo para que las cards vecinas alineen sus botones. */}
-        <div className={`mt-auto ${esFeed ? "pt-5" : "pt-4"}`}>
-          <AppLinkButton
-            href={hrefActividad}
-            fullWidth
-            size={esFeed ? "md" : "sm"}
-            className="gap-2"
-          >
-            Ver actividad
-            <span aria-hidden="true">→</span>
-          </AppLinkButton>
+        {/*
+          mt-auto ancla las acciones al fondo para que las cards vecinas
+          alineen sus botones.
+
+          Guardar vive sobre la imagen (arriba a la derecha), así que acá
+          va compartir y el CTA: tres acciones por card, sin repetir
+          ninguna.
+        */}
+        <div
+          className={`mt-auto flex items-center gap-2 ${
+            esFeed ? "pt-5" : "pt-4"
+          }`}
+        >
+          <div className="min-w-0 flex-1">
+            <AppLinkButton
+              href={hrefActividad}
+              fullWidth
+              size={esFeed ? "md" : "sm"}
+              className="gap-2"
+            >
+              Ver actividad
+              <span aria-hidden="true">→</span>
+            </AppLinkButton>
+          </div>
+
+          <CompartirButton
+            ruta={hrefActividad}
+            titulo={actividad.titulo}
+            soloIcono
+          />
         </div>
       </div>
     </article>

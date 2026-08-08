@@ -245,7 +245,7 @@ export default async function PerfilPublicadorPage({
               <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
                 <div className="flex min-w-0 items-end gap-4">
                   {logoUrl ? (
-                    <span className="relative -mt-12 h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28">
+                    <span className="relative z-10 -mt-12 h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28">
                       <Image
                         src={logoUrl}
                         alt={`Logo de ${perfil.nombre}`}
@@ -255,9 +255,15 @@ export default async function PerfilPublicadorPage({
                       />
                     </span>
                   ) : (
+                    /*
+                      relative + z-10: la portada de arriba es un
+                      elemento posicionado, así que pintaba por encima
+                      del avatar estático y le cortaba la mitad de
+                      arriba.
+                    */
                     <span
                       aria-hidden="true"
-                      className="-mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xl font-extrabold tracking-[0.08em] text-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
+                      className="relative z-10 -mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xl font-extrabold tracking-[0.08em] text-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
                     >
                       {iniciales}
                     </span>

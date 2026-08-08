@@ -32,8 +32,13 @@ export function HomeStoriesDeportes({
         Deportes para descubrir
       </h2>
 
-      {/* -mx-4 + px-4: el carrusel sangra hasta el borde en mobile. */}
-      <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      {/*
+        -mx-4 + px-4: el carrusel sangra hasta el borde en mobile.
+
+        py-2: overflow-x-auto también recorta en vertical, así que sin
+        aire arriba y abajo el anillo de los círculos quedaba cortado.
+      */}
+      <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         {deportes.map((deporte) => (
           <li key={deporte.slug} className="shrink-0 snap-start">
             <Link

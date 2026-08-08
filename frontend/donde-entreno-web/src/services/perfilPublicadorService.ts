@@ -35,16 +35,35 @@ export async function obtenerPerfilesPublicadores(): Promise<
 }
 
 /*
-  Perfil individual. El backend todavía no expone GET /{id} (deuda
-  documentada): resolvemos contra el listado público, que hoy es corto.
-  Cuando exista el endpoint de detalle, solo cambia esta función.
+  Perfil individual contra GET /api/perfiles-publicadores/{id}.
+
+  Antes se resolvía filtrando el listado público completo, y como la
+  página lo pide dos veces por vista (generateMetadata y el render, los
+  dos con no-store), cada perfil visitado descargaba la lista entera dos
+  veces.
+
+  404 devuelve null para que la página haga notFound(); cualquier otro
+  error se propaga y la página muestra su estado de error.
 */
 export async function obtenerPerfilPublicadorPorId(
   id: number
 ): Promise<PerfilPublicadorPublico | null> {
-  const perfiles = await obtenerPerfilesPublicadores();
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(id))}`,
+    { cache: "no-store" }
+  );
 
-  return perfiles.find((perfil) => perfil.id === id) ?? null;
+  if (respuesta.status === 404) {
+    return null;
+  }
+
+  if (!respuesta.ok) {
+    throw new Error("No se pudo obtener el perfil publicador");
+  }
+
+  const data: unknown = await respuesta.json();
+
+  return esPerfilPublicadorPublico(data) ? data : null;
 }
 
 /*

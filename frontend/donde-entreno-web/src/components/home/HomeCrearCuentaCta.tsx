@@ -77,7 +77,8 @@ export function HomeCrearCuentaCta() {
   return (
     <SurfaceCard
       as="section"
-      className="mt-14 overflow-hidden border-[#0F3D5E] bg-[#0F3D5E] p-6 text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)] sm:mt-16 sm:p-9"
+      variant="brand"
+      className="mt-14 overflow-hidden p-6 sm:mt-16 sm:p-9"
     >
       <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div>

@@ -496,12 +496,19 @@ export default async function ActividadDetallePage({
                   )}
                 </div>
 
-                <ContactButton
-                  whatsapp={actividad.whatsappContacto}
-                  instagram={actividad.instagramContacto}
-                  email={actividad.emailContacto}
-                  tituloActividad={actividad.titulo}
-                />
+                {/*
+                  Solo desde lg: por debajo, el mismo CTA ya vive en la
+                  barra sticky de abajo y se veían dos botones de
+                  WhatsApp en la misma pantalla.
+                */}
+                <div className="hidden lg:block">
+                  <ContactButton
+                    whatsapp={actividad.whatsappContacto}
+                    instagram={actividad.instagramContacto}
+                    email={actividad.emailContacto}
+                    tituloActividad={actividad.titulo}
+                  />
+                </div>
               </SurfaceCard>
             </aside>
           </div>
@@ -574,7 +581,12 @@ export default async function ActividadDetallePage({
       {/* Barra sticky de contacto en mobile: el paso de conversión principal
           queda siempre a mano, por encima de la navegación inferior. */}
       <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 border-t border-[#D9E2EC] bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
+        {/*
+          pr deja libre la esquina donde flota el asistente (56px + su
+          margen): sin eso el botón del asistente quedaba encima del
+          extremo derecho del CTA.
+        */}
+        <div className="mx-auto flex max-w-lg items-center gap-3 pr-[4.5rem]">
           {precioVisible ? (
             <div className="shrink-0">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[var(--color-muted)]">

@@ -175,7 +175,16 @@ function ActividadDetalleContenido({
   actividad: ActividadPublicadorDetalle;
 }) {
   const slugPublico = obtenerSlugPublico(actividad);
-  const imagenBackend = construirUrlImagenBackend(actividad.imagenPrincipalUrl);
+  /*
+    La portada se resuelve igual que en público: solo cuenta la imagen
+    de tipo PRINCIPAL. El campo imagenPrincipalUrl del panel cae a la
+    primera imagen que haya, así que con solo fotos de galería el
+    publicador veía una portada que el visitante no ve.
+  */
+  const imagenPrincipal = actividad.imagenes?.find(
+    (imagen) => imagen.tipoImagen === "PRINCIPAL"
+  );
+  const imagenBackend = construirUrlImagenBackend(imagenPrincipal?.url);
   const imagenUrl = obtenerImagenActividad({
     imagenBackend,
     deporteSlug: actividad.deporteSlug,

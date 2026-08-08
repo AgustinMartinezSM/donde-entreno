@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import type { Actividad, ActividadDetalle } from "../../../types/actividad";
@@ -146,6 +147,20 @@ export default async function ActividadDetallePage({
   const imagenPrincipal = actividad.imagenes?.find(
     (imagen) => imagen.tipoImagen === "PRINCIPAL"
   );
+
+  /*
+    Galería: el resto de las imágenes aprobadas que devuelve el detalle
+    (el backend ya filtra APROBADA + activa). Hasta ahora el detalle solo
+    leía la PRINCIPAL, así que las fotos de galería que subía y aprobaba
+    el publicador no se veían en ninguna superficie pública.
+  */
+  const galeria = (actividad.imagenes ?? [])
+    .filter((imagen) => imagen.id !== imagenPrincipal?.id)
+    .map((imagen) => ({
+      ...imagen,
+      urlPublicable: construirUrlImagenBackend(imagen.url),
+    }))
+    .filter((imagen) => imagen.urlPublicable !== null);
 
   /*
     Usamos la misma prioridad visual que las cards:
@@ -332,6 +347,42 @@ export default async function ActividadDetallePage({
                       "Esta actividad todavía no tiene una descripción cargada."}
                   </p>
                 </SurfaceCard>
+
+                {galeria.length > 0 ? (
+                  <SurfaceCard className="mt-7 p-5 sm:mt-8">
+                    <SectionHeader
+                      title="Fotos de la actividad"
+                      description="Imágenes que compartió el publicador."
+                    />
+
+                    <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {galeria.map((imagen) => (
+                        <li key={imagen.id}>
+                          <figure className="overflow-hidden rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC]">
+                            <div className="relative h-32 w-full sm:h-36">
+                              <Image
+                                src={imagen.urlPublicable as string}
+                                alt={
+                                  imagen.descripcion ||
+                                  imagen.titulo ||
+                                  `Foto de ${actividad.titulo}`
+                                }
+                                fill
+                                sizes="(max-width: 640px) 50vw, (max-width: 1023px) 33vw, 260px"
+                                className="object-cover"
+                              />
+                            </div>
+                            {imagen.titulo ? (
+                              <figcaption className="px-3 py-2 text-xs font-semibold leading-5 text-[var(--color-muted)]">
+                                {imagen.titulo}
+                              </figcaption>
+                            ) : null}
+                          </figure>
+                        </li>
+                      ))}
+                    </ul>
+                  </SurfaceCard>
+                ) : null}
 
                 <SurfaceCard className="mt-7 p-5 sm:mt-8">
                   <SectionHeader

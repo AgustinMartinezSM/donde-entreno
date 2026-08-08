@@ -13,6 +13,11 @@ export type PerfilPublicadorPublico = {
   instagram?: string | null;
   sitioWeb?: string | null;
   verificado?: boolean | null;
+  /*
+    Campo aditivo: tolera respuestas viejas del backend, así el frontend
+    no depende del orden de los deploys.
+  */
+  cantidadSeguidores?: number | null;
 };
 
 /*

@@ -158,6 +158,8 @@ export default async function PerfilPublicadorPage({
     ? formatearTipoPublicador(perfil.tipoPublicador)
     : "Publicador de la comunidad";
   const iniciales = obtenerIniciales(perfil.nombre);
+  /* Campo aditivo: un backend viejo no lo manda y queda en cero. */
+  const seguidores = Math.max(0, perfil.cantidadSeguidores ?? 0);
   const hrefExplorar = `/explorar?perfilPublicadorId=${perfil.id}`;
   const sitioWebUrl = normalizarSitioWeb(perfil.sitioWeb);
 
@@ -294,20 +296,33 @@ export default async function PerfilPublicadorPage({
                 Datos de un vistazo: el perfil sin descripción ni portada
                 quedaba prácticamente vacío entre el nombre y el contacto.
               */}
-              {!huboErrorActividades ? (
-                <div className="mt-5 flex flex-wrap items-center gap-2">
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                {!huboErrorActividades ? (
                   <span className="rounded-full bg-[#E8F6FB] px-3 py-1.5 text-xs font-extrabold text-[#0F6F8F]">
                     {totalActividades === 1
                       ? "1 actividad publicada"
                       : `${totalActividades} actividades publicadas`}
                   </span>
-                  {perfil.verificado === true ? (
-                    <span className="rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold text-[#1D7B4A]">
-                      Perfil verificado
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
+                ) : null}
+
+                {/*
+                  El contador se muestra recién a partir del primer
+                  seguidor: con la plataforma recién arrancando, un
+                  "0 seguidores" en todos los perfiles los hace ver
+                  abandonados sin aportar información.
+                */}
+                {seguidores > 0 ? (
+                  <span className="rounded-full bg-[#F1F8FC] px-3 py-1.5 text-xs font-extrabold text-[var(--color-primary)]">
+                    {seguidores === 1 ? "1 seguidor" : `${seguidores} seguidores`}
+                  </span>
+                ) : null}
+
+                {perfil.verificado === true ? (
+                  <span className="rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold text-[#1D7B4A]">
+                    Perfil verificado
+                  </span>
+                ) : null}
+              </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="sm:w-64">

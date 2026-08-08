@@ -40,6 +40,8 @@ public class ImagenAdminService {
     private static final String ESTADO_APROBADA = "APROBADA";
     private static final String ESTADO_RECHAZADA = "RECHAZADA";
     private static final String TIPO_PRINCIPAL = "PRINCIPAL";
+    /* Del perfil hay uno solo de cada uno a la vez. */
+    private static final List<String> TIPOS_UNICOS_DE_PERFIL = List.of("LOGO", "PORTADA");
     private static final Duration VALIDEZ_URL_FIRMADA = Duration.ofMinutes(10);
 
     private static final List<String> ESTADOS_PERMITIDOS =
@@ -103,19 +105,31 @@ public class ImagenAdminService {
         OffsetDateTime ahora = OffsetDateTime.now();
 
         if (TIPO_PRINCIPAL.equals(imagen.getTipoImagen()) && imagen.getActividad() != null) {
-            List<Imagen> principalesActivas = imagenRepository
-                    .findByActividad_IdAndTipoImagenAndActivaTrue(
+            desactivarAnteriores(
+                    imagenRepository.findByActividad_IdAndTipoImagenAndActivaTrue(
                             imagen.getActividad().getId(),
                             TIPO_PRINCIPAL
-                    );
+                    ),
+                    imagen,
+                    ahora
+            );
+        }
 
-            for (Imagen anterior : principalesActivas) {
-                if (!anterior.getId().equals(imagen.getId())) {
-                    anterior.setActiva(false);
-                    anterior.setUpdatedAt(ahora);
-                    imagenRepository.save(anterior);
-                }
-            }
+        /*
+          El perfil tiene un solo logo y una sola portada a la vez: al
+          aprobar uno nuevo, el anterior del mismo tipo se desactiva,
+          igual que la PRINCIPAL de una actividad.
+        */
+        if (TIPOS_UNICOS_DE_PERFIL.contains(imagen.getTipoImagen())
+                && imagen.getPerfilPublicador() != null) {
+            desactivarAnteriores(
+                    imagenRepository.findByPerfilPublicador_IdAndTipoImagenAndActivaTrue(
+                            imagen.getPerfilPublicador().getId(),
+                            imagen.getTipoImagen()
+                    ),
+                    imagen,
+                    ahora
+            );
         }
 
         imagen.setEstadoModeracion(ESTADO_APROBADA);
@@ -125,6 +139,23 @@ public class ImagenAdminService {
         imagen.setUpdatedAt(ahora);
 
         return aDTO(imagenRepository.save(imagen));
+    }
+
+    /*
+      Baja lógica de las imágenes que la recién aprobada reemplaza.
+    */
+    private void desactivarAnteriores(
+            List<Imagen> anteriores,
+            Imagen aprobada,
+            OffsetDateTime ahora
+    ) {
+        for (Imagen anterior : anteriores) {
+            if (!anterior.getId().equals(aprobada.getId())) {
+                anterior.setActiva(false);
+                anterior.setUpdatedAt(ahora);
+                imagenRepository.save(anterior);
+            }
+        }
     }
 
     /**

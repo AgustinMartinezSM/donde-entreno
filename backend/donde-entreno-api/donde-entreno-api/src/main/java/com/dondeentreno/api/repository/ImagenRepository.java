@@ -93,6 +93,28 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     java.util.Optional<Imagen> findByIdAndActividad_Id(Long id, Long actividadId);
 
     /**
+     * Todas las imágenes de un perfil publicador (incluidas pendientes
+     * y rechazadas): el publicador ve el estado de cada una desde su
+     * perfil, igual que con las de actividad.
+     */
+    List<Imagen> findByPerfilPublicador_IdOrderByCreatedAtDesc(Long perfilPublicadorId);
+
+    /**
+     * Imagen puntual validando que pertenezca al perfil publicador.
+     */
+    java.util.Optional<Imagen> findByIdAndPerfilPublicador_Id(Long id, Long perfilPublicadorId);
+
+    /**
+     * LOGO o PORTADA activa vigente de un perfil: al aprobar una nueva,
+     * la anterior del mismo tipo se desactiva lógicamente (el perfil
+     * tiene un solo logo y una sola portada a la vez).
+     */
+    List<Imagen> findByPerfilPublicador_IdAndTipoImagenAndActivaTrue(
+            Long perfilPublicadorId,
+            String tipoImagen
+    );
+
+    /**
      * Imágenes PRINCIPAL visibles en público de un conjunto de
      * actividades (activas Y aprobadas), en un solo query para
      * enriquecer listados paginados sin caer en N+1.

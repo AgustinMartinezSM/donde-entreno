@@ -44,6 +44,7 @@ public class ImagenPublicadorService {
     private static final String ESTADO_PUBLICACION_PUBLICADA = "PUBLICADA";
     private static final long TAMANIO_MAXIMO_BYTES = 2L * 1024 * 1024;
     private static final List<String> TIPOS_PERMITIDOS = List.of("PRINCIPAL", "GALERIA");
+    static final List<String> TIPOS_PERFIL_PERMITIDOS = List.of("LOGO", "PORTADA");
     private static final String MOTIVO_ELIMINADA_POR_PUBLICADOR =
             "Eliminada por el publicador antes de la revision.";
     private static final Duration VALIDEZ_URL_FIRMADA = Duration.ofMinutes(10);
@@ -111,6 +112,74 @@ public class ImagenPublicadorService {
         return aDTO(guardada);
     }
 
+    /**
+     * Sube el logo o la portada del perfil propio.
+     *
+     * Mismo circuito que las imágenes de actividad: nace PENDIENTE, con
+     * activa=false y el archivo en el bucket privado, y solo se ve en
+     * público cuando un admin la aprueba. La diferencia es el dueño: la
+     * fila cuelga del perfil (la constraint chk_imagen_duenio_unico
+     * exige exactamente uno de actividad o perfil).
+     */
+    @Transactional
+    public ImagenPublicadorDTO subirImagenDePerfil(
+            Long userId,
+            MultipartFile archivo,
+            String tipo
+    ) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+
+        String tipoNormalizado = validarTipoDePerfil(tipo);
+        byte[] contenido = leerArchivoValidado(archivo);
+        String extension = detectarExtension(contenido);
+
+        String rutaObjeto = almacenArchivos.guardarPendiente(
+                contenido,
+                "perfiles/" + perfil.getId(),
+                extension
+        );
+
+        OffsetDateTime ahora = OffsetDateTime.now();
+        Imagen imagen = new Imagen();
+        imagen.setPerfilPublicador(perfil);
+        imagen.setUrl(rutaObjeto);
+        imagen.setTipoImagen(tipoNormalizado);
+        imagen.setOrden(0);
+        imagen.setActiva(false);
+        imagen.setEstadoModeracion(ESTADO_PENDIENTE);
+        imagen.setCreatedAt(ahora);
+        imagen.setUpdatedAt(ahora);
+
+        return aDTO(imagenRepository.save(imagen));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ImagenPublicadorDTO> listarMiasDePerfil(Long userId) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+
+        return imagenRepository
+                .findByPerfilPublicador_IdOrderByCreatedAtDesc(perfil.getId())
+                .stream()
+                .map(this::aDTO)
+                .toList();
+    }
+
+    /**
+     * Retiro de una imagen propia del perfil que todavía está pendiente.
+     */
+    @Transactional
+    public void eliminarMiaDePerfil(Long userId, Long imagenId) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+
+        Imagen imagen = imagenRepository
+                .findByIdAndPerfilPublicador_Id(imagenId, perfil.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontro la imagen para este perfil."
+                ));
+
+        retirarPendiente(imagen);
+    }
+
     @Transactional(readOnly = true)
     public List<ImagenPublicadorDTO> listarMias(Long userId, Long actividadId) {
         PerfilPublicador perfil = buscarPerfil(userId);
@@ -137,6 +206,15 @@ public class ImagenPublicadorService {
                         "No se encontro la imagen para esta actividad."
                 ));
 
+        retirarPendiente(imagen);
+    }
+
+    /*
+      Retiro común a imágenes de actividad y de perfil: solo aplica a
+      pendientes y deja la fila como baja lógica con motivo (la tabla
+      imagen no tiene deleted_at).
+    */
+    private void retirarPendiente(Imagen imagen) {
         if (!ESTADO_PENDIENTE.equals(imagen.getEstadoModeracion())) {
             throw new ImagenInvalidaException(
                     "Solo se pueden eliminar imagenes pendientes de revision."
@@ -233,6 +311,26 @@ public class ImagenPublicadorService {
             throw new ImagenInvalidaException(
                     "El tipo de imagen es invalido. Valores permitidos: "
                             + String.join(", ", TIPOS_PERMITIDOS) + "."
+            );
+        }
+
+        return tipoNormalizado;
+    }
+
+    /**
+     * Tipos válidos para una imagen de perfil. El perfil no tiene
+     * PRINCIPAL ni GALERIA: tiene logo y portada, que son piezas de
+     * identidad y hay una sola de cada una a la vez.
+     */
+    private String validarTipoDePerfil(String tipo) {
+        String tipoNormalizado = tipo != null
+                ? tipo.trim().toUpperCase(Locale.ROOT)
+                : "";
+
+        if (!TIPOS_PERFIL_PERMITIDOS.contains(tipoNormalizado)) {
+            throw new ImagenInvalidaException(
+                    "El tipo de imagen es invalido. Valores permitidos: "
+                            + String.join(", ", TIPOS_PERFIL_PERMITIDOS) + "."
             );
         }
 

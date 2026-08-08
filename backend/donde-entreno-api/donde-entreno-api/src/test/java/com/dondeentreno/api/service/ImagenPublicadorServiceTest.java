@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -144,6 +145,85 @@ class ImagenPublicadorServiceTest {
         );
 
         verify(almacenArchivos, never()).eliminar(anyString());
+    }
+
+    @Test
+    void subirImagenDePerfilLaCuelgaDelPerfilYNoDeUnaActividad() {
+        PerfilPublicador perfil = prepararPerfil(5L);
+        when(perfil.getId()).thenReturn(20L);
+
+        when(almacenArchivos.guardarPendiente(any(), eq("perfiles/20"), eq("png")))
+                .thenReturn("perfiles/20/uuid.png");
+        when(imagenRepository.save(any(Imagen.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.subirImagenDePerfil(
+                5L,
+                new MockMultipartFile("archivo", "logo.png", "image/png", PNG_MINIMO),
+                "LOGO"
+        );
+
+        ArgumentCaptor<Imagen> captor = ArgumentCaptor.forClass(Imagen.class);
+        verify(imagenRepository).save(captor.capture());
+        Imagen guardada = captor.getValue();
+
+        assertEquals("perfiles/20/uuid.png", guardada.getUrl());
+        assertEquals("LOGO", guardada.getTipoImagen());
+        assertEquals("PENDIENTE", guardada.getEstadoModeracion());
+        assertFalse(guardada.getActiva());
+        /*
+          La constraint chk_imagen_duenio_unico exige exactamente un
+          dueño: si esto se rompe, el insert falla en la base.
+        */
+        assertEquals(perfil, guardada.getPerfilPublicador());
+        assertNull(guardada.getActividad());
+    }
+
+    /*
+      El perfil no tiene PRINCIPAL ni GALERIA: mezclar los vocabularios
+      dejaría un logo compitiendo con la portada de una actividad.
+    */
+    @Test
+    void subirImagenDePerfilRechazaLosTiposDeActividad() {
+        prepararPerfil(5L);
+
+        assertThrows(ImagenInvalidaException.class, () -> service.subirImagenDePerfil(
+                5L,
+                new MockMultipartFile("archivo", "logo.png", "image/png", PNG_MINIMO),
+                "PRINCIPAL"
+        ));
+
+        verify(almacenArchivos, never()).guardarPendiente(any(), anyString(), anyString());
+    }
+
+    @Test
+    void eliminarMiaDePerfilSoloPermiteImagenesPendientes() {
+        PerfilPublicador perfil = prepararPerfil(5L);
+        when(perfil.getId()).thenReturn(20L);
+
+        Imagen aprobada = crearImagen(90L, "https://storage/logo.png", "APROBADA");
+        when(imagenRepository.findByIdAndPerfilPublicador_Id(90L, 20L))
+                .thenReturn(Optional.of(aprobada));
+
+        assertThrows(
+                ImagenInvalidaException.class,
+                () -> service.eliminarMiaDePerfil(5L, 90L)
+        );
+
+        verify(almacenArchivos, never()).eliminar(anyString());
+    }
+
+    /*
+      Sin stub de getId: el test del tipo inválido corta en la
+      validación y nunca llega a pedirlo, y Mockito marca como error los
+      stubs que no se usan.
+    */
+    private PerfilPublicador prepararPerfil(Long userId) {
+        PerfilPublicador perfil = mock(PerfilPublicador.class);
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(userId))
+                .thenReturn(Optional.of(perfil));
+
+        return perfil;
     }
 
     private void prepararPerfilYActividad(Long userId, Long perfilId, Long actividadId) {

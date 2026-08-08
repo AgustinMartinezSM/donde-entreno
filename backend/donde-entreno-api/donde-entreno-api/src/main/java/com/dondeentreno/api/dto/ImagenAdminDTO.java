@@ -2,6 +2,7 @@ package com.dondeentreno.api.dto;
 
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.Imagen;
+import com.dondeentreno.api.entity.PerfilPublicador;
 
 import java.time.OffsetDateTime;
 
@@ -21,9 +22,17 @@ public class ImagenAdminDTO {
     private Long actividadId;
     private String actividadTitulo;
     private String actividadSlug;
+    /*
+      Una imagen cuelga de una actividad o de un perfil, nunca de las
+      dos. Sin estos campos, el logo o la portada de un publicador
+      llegaban a la cola sin nada que los identifique.
+    */
+    private Long perfilPublicadorId;
+    private String perfilPublicadorNombre;
 
     public static ImagenAdminDTO desdeEntidad(Imagen imagen) {
         Actividad actividad = imagen.getActividad();
+        PerfilPublicador perfil = imagen.getPerfilPublicador();
 
         ImagenAdminDTO dto = new ImagenAdminDTO();
         dto.setId(imagen.getId());
@@ -36,7 +45,25 @@ public class ImagenAdminDTO {
         dto.setActividadId(actividad != null ? actividad.getId() : null);
         dto.setActividadTitulo(actividad != null ? actividad.getTitulo() : null);
         dto.setActividadSlug(actividad != null ? actividad.getSlug() : null);
+        dto.setPerfilPublicadorId(perfil != null ? perfil.getId() : null);
+        dto.setPerfilPublicadorNombre(perfil != null ? perfil.getNombre() : null);
         return dto;
+    }
+
+    public Long getPerfilPublicadorId() {
+        return perfilPublicadorId;
+    }
+
+    public void setPerfilPublicadorId(Long perfilPublicadorId) {
+        this.perfilPublicadorId = perfilPublicadorId;
+    }
+
+    public String getPerfilPublicadorNombre() {
+        return perfilPublicadorNombre;
+    }
+
+    public void setPerfilPublicadorNombre(String perfilPublicadorNombre) {
+        this.perfilPublicadorNombre = perfilPublicadorNombre;
     }
 
     public Long getId() {

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatearTipoPublicador } from "../../lib/formatoCatalogo";
 
 type PublisherIdentityProps = {
@@ -9,6 +11,11 @@ type PublisherIdentityProps = {
     - "compacta": listados densos (grillas de explorar, filas del feed).
   */
   tamanio?: "normal" | "compacta";
+  /*
+    Destino del perfil público del publicador. Con href, el nombre se
+    vuelve link (la identidad es navegable, como en cualquier red).
+  */
+  href?: string;
 };
 
 export function PublisherIdentity({
@@ -16,6 +23,7 @@ export function PublisherIdentity({
   tipo,
   verificado = false,
   tamanio = "normal",
+  href,
 }: PublisherIdentityProps) {
   const nombreVisible = nombre?.trim() || "Comunidad DondeEntreno";
   const iniciales = obtenerIniciales(nombreVisible);
@@ -41,7 +49,16 @@ export function PublisherIdentity({
               compacta ? "text-xs" : "text-sm"
             }`}
           >
-            {nombreVisible}
+            {href ? (
+              <Link
+                href={href}
+                className="rounded-sm transition hover:text-[#0B314D] hover:underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+              >
+                {nombreVisible}
+              </Link>
+            ) : (
+              nombreVisible
+            )}
           </p>
           {verificado ? (
             <span

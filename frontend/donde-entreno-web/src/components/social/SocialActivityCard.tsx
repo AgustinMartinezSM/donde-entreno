@@ -70,6 +70,11 @@ export function SocialActivityCard({
           tipo={actividad.tipoPublicador}
           verificado={actividad.perfilVerificado}
           tamanio={esFeed ? "normal" : "compacta"}
+          href={
+            actividad.perfilPublicadorId
+              ? `/publicadores/${actividad.perfilPublicadorId}`
+              : undefined
+          }
         />
 
         {actividad.deporteNombre ? (

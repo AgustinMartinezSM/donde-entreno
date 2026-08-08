@@ -232,6 +232,11 @@ export default async function ActividadDetallePage({
                     nombre={actividad.perfilPublicadorNombre}
                     tipo={actividad.tipoPublicador}
                     verificado={actividad.perfilVerificado}
+                    href={
+                      actividad.perfilPublicadorId
+                        ? `/publicadores/${actividad.perfilPublicadorId}`
+                        : undefined
+                    }
                   />
 
                   {actividad.perfilPublicadorId ? (
@@ -241,11 +246,11 @@ export default async function ActividadDetallePage({
                         perfilPublicadorNombre={actividad.perfilPublicadorNombre}
                       />
                       <AppLinkButton
-                        href={`/explorar?perfilPublicadorId=${actividad.perfilPublicadorId}`}
+                        href={`/publicadores/${actividad.perfilPublicadorId}`}
                         variant="outline"
                         size="sm"
                       >
-                        Ver sus actividades
+                        Ver perfil
                       </AppLinkButton>
                     </div>
                   ) : null}

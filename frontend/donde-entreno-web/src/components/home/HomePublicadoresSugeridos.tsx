@@ -43,6 +43,7 @@ export function HomePublicadoresSugeridos({
               nombre={publicador.nombre}
               tipo={publicador.tipoPublicador}
               verificado={publicador.verificado === true}
+              href={`/publicadores/${publicador.id}`}
             />
 
             {publicador.descripcion ? (
@@ -57,11 +58,11 @@ export function HomePublicadoresSugeridos({
                 perfilPublicadorNombre={publicador.nombre}
               />
               <AppLinkButton
-                href={`/explorar?perfilPublicadorId=${publicador.id}`}
+                href={`/publicadores/${publicador.id}`}
                 variant="outline"
                 size="sm"
               >
-                Ver actividades
+                Ver perfil
               </AppLinkButton>
             </div>
           </article>

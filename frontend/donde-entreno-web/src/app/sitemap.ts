@@ -2,17 +2,20 @@ import type { MetadataRoute } from "next";
 import { CATALOGO_DEPORTES_ASISTENTE } from "../lib/asistente/conocimiento";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { SITE_URL } from "../lib/siteConfig";
+import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
 
 /*
-  Sitemap estático con las páginas públicas principales, las landings
-  por deporte y las combinaciones ciudad×deporte de la ciudad activa
-  (el catálogo es espejo del seed real).
+  Sitemap con las páginas públicas principales, las landings por deporte,
+  las combinaciones ciudad×deporte de la ciudad activa (el catálogo es
+  espejo del seed real) y los perfiles públicos de publicadores (estos
+  últimos best-effort: si el backend no responde, el sitemap sale igual
+  con las rutas estáticas).
 
   Cuando el producto sume más ciudades, las combinaciones de esas
   ciudades se agregan acá (o se genera fetcheando ciudades en build).
   Las actividades individuales quedan para una etapa posterior.
 */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const rutasPublicas = [
     { ruta: "", prioridad: 1 },
     { ruta: "/explorar", prioridad: 0.9 },
@@ -32,11 +35,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     prioridad: 0.6,
   }));
 
-  return [...rutasPublicas, ...rutasDeportes, ...rutasCiudadDeporte].map(
-    ({ ruta, prioridad }) => ({
-      url: `${SITE_URL}${ruta}`,
-      changeFrequency: "weekly" as const,
-      priority: prioridad,
-    })
-  );
+  let rutasPublicadores: Array<{ ruta: string; prioridad: number }> = [];
+
+  try {
+    const perfiles = await obtenerPerfilesPublicadores();
+    rutasPublicadores = perfiles.map((perfil) => ({
+      ruta: `/publicadores/${perfil.id}`,
+      prioridad: 0.6,
+    }));
+  } catch (error) {
+    console.error("Sitemap sin perfiles de publicadores:", error);
+  }
+
+  return [
+    ...rutasPublicas,
+    ...rutasDeportes,
+    ...rutasCiudadDeporte,
+    ...rutasPublicadores,
+  ].map(({ ruta, prioridad }) => ({
+    url: `${SITE_URL}${ruta}`,
+    changeFrequency: "weekly" as const,
+    priority: prioridad,
+  }));
 }

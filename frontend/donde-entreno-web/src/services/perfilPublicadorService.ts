@@ -1,5 +1,8 @@
 import { API_BASE_URL } from "../lib/apiConfig";
-import type { PerfilPublicadorPublico } from "../types/publicadorPublico";
+import type {
+  ImagenPerfilPublicador,
+  PerfilPublicadorPublico,
+} from "../types/publicadorPublico";
 
 /*
   Service del listado público de perfiles publicadores.
@@ -31,6 +34,44 @@ export async function obtenerPerfilesPublicadores(): Promise<
   return data.filter(esPerfilPublicadorPublico);
 }
 
+/*
+  Perfil individual. El backend todavía no expone GET /{id} (deuda
+  documentada): resolvemos contra el listado público, que hoy es corto.
+  Cuando exista el endpoint de detalle, solo cambia esta función.
+*/
+export async function obtenerPerfilPublicadorPorId(
+  id: number
+): Promise<PerfilPublicadorPublico | null> {
+  const perfiles = await obtenerPerfilesPublicadores();
+
+  return perfiles.find((perfil) => perfil.id === id) ?? null;
+}
+
+/*
+  Imágenes públicas del perfil (LOGO/PORTADA/GALERIA). El backend ya
+  filtra APROBADA + activa, así que acá solo validamos la forma.
+*/
+export async function obtenerImagenesPerfilPublicador(
+  id: number
+): Promise<ImagenPerfilPublicador[]> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(id))}/imagenes`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    throw new Error("No se pudieron obtener las imágenes del perfil");
+  }
+
+  const data: unknown = await respuesta.json();
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.filter(esImagenPerfilPublicador);
+}
+
 function esPerfilPublicadorPublico(
   valor: unknown
 ): valor is PerfilPublicadorPublico {
@@ -41,4 +82,16 @@ function esPerfilPublicadorPublico(
   const objeto = valor as Record<string, unknown>;
 
   return typeof objeto.id === "number" && typeof objeto.nombre === "string";
+}
+
+function esImagenPerfilPublicador(
+  valor: unknown
+): valor is ImagenPerfilPublicador {
+  if (typeof valor !== "object" || valor === null) {
+    return false;
+  }
+
+  const objeto = valor as Record<string, unknown>;
+
+  return typeof objeto.id === "number" && typeof objeto.url === "string";
 }

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { API_BASE_URL } from "../lib/apiConfig";
 import {
   esObjeto,
@@ -34,7 +36,12 @@ function parsearCiudad(valor: unknown): Ciudad | null {
   };
 }
 
-export async function obtenerCiudades(): Promise<Ciudad[]> {
+/*
+  cache() de React deduplica llamadas dentro del mismo request SSR
+  (varias páginas resuelven la ciudad en generateMetadata y de nuevo
+  en la página). En cliente actúa como passthrough.
+*/
+export const obtenerCiudades = cache(async (): Promise<Ciudad[]> => {
   try {
     const respuesta = await fetch(`${API_BASE_URL}/api/ciudades`, {
       headers: {
@@ -69,9 +76,9 @@ export async function obtenerCiudades(): Promise<Ciudad[]> {
   } catch {
     throw new Error(MENSAJE_ERROR_CIUDADES);
   }
-}
+});
 
-export async function obtenerCiudadPorSlug(slug: string): Promise<Ciudad> {
+export const obtenerCiudadPorSlug = cache(async (slug: string): Promise<Ciudad> => {
   const slugLimpio = slug.trim();
 
   if (!slugLimpio) {
@@ -104,4 +111,4 @@ export async function obtenerCiudadPorSlug(slug: string): Promise<Ciudad> {
   } catch {
     throw new Error(MENSAJE_ERROR_CIUDAD);
   }
-}
+});

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { API_BASE_URL } from "../lib/apiConfig";
 import {
   esObjeto,
@@ -36,7 +38,12 @@ function parsearDeporte(valor: unknown): Deporte | null {
   };
 }
 
-export async function obtenerDeportes(): Promise<Deporte[]> {
+/*
+  cache() de React deduplica llamadas dentro del mismo request SSR:
+  las landings piden el catálogo en generateMetadata y de nuevo en la
+  página, y antes eso eran fetches repetidos al backend.
+*/
+export const obtenerDeportes = cache(async (): Promise<Deporte[]> => {
   try {
     const respuesta = await fetch(`${API_BASE_URL}/api/deportes`, {
       headers: {
@@ -71,4 +78,4 @@ export async function obtenerDeportes(): Promise<Deporte[]> {
   } catch {
     throw new Error(MENSAJE_ERROR_DEPORTES);
   }
-}
+});

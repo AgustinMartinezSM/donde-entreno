@@ -14,3 +14,17 @@ export type PerfilPublicadorPublico = {
   sitioWeb?: string | null;
   verificado?: boolean | null;
 };
+
+/*
+  Imagen pública de un perfil publicador
+  (GET /api/perfiles-publicadores/{id}/imagenes; el backend ya filtra
+  por estado APROBADA + activa). tipoImagen: LOGO | PORTADA | GALERIA.
+*/
+export type ImagenPerfilPublicador = {
+  id: number;
+  url: string;
+  tipoImagen?: string | null;
+  titulo?: string | null;
+  descripcion?: string | null;
+  orden?: number | null;
+};

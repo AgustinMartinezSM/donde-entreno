@@ -45,6 +45,12 @@ const OPCIONES_TIPO = [
   },
 ] as const;
 
+type ArchivoElegido = {
+  archivo: File;
+  /* Object URL del preview, se libera al quitar o al desmontar. */
+  url: string;
+};
+
 function formatearEstado(estado: string): string {
   return estado
     .toLowerCase()
@@ -68,10 +74,17 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
 
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /*
+    Selección múltiple: cada archivo viaja en su propio request porque el
+    endpoint recibe uno por vez. Guardamos el object URL junto al archivo
+    para poder liberarlo cuando se quita de la selección.
+  */
+  const [seleccion, setSeleccion] = useState<ArchivoElegido[]>([]);
   const [tipo, setTipo] = useState<"PRINCIPAL" | "GALERIA">("GALERIA");
   const [subiendo, setSubiendo] = useState(false);
+  const [progreso, setProgreso] = useState<{ hecho: number; total: number } | null>(
+    null
+  );
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [errorSubida, setErrorSubida] = useState<string | null>(null);
   const inputArchivoRef = useRef<HTMLInputElement | null>(null);
@@ -115,83 +128,168 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
   }, [accessToken, actividadId]);
 
   /*
-    El object URL del preview se libera al reemplazarlo y al desmontar.
+    Ref espejo de la selección: el cleanup del efecto de desmontaje corre
+    una sola vez y necesita ver la lista final, no la del primer render.
+  */
+  const seleccionRef = useRef<ArchivoElegido[]>([]);
+
+  useEffect(() => {
+    seleccionRef.current = seleccion;
+  }, [seleccion]);
+
+  /*
+    Al desmontar liberamos los object URL que sigan vivos. La selección
+    se limpia con limpiarSeleccion, que también los libera.
   */
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      seleccionRef.current.forEach((elegido) => URL.revokeObjectURL(elegido.url));
     };
-  }, [previewUrl]);
+  }, []);
 
-  function manejarSeleccionArchivo(evento: ChangeEvent<HTMLInputElement>) {
-    const seleccionado = evento.target.files?.[0] ?? null;
+  function limpiarSeleccion() {
+    seleccion.forEach((elegido) => URL.revokeObjectURL(elegido.url));
+    setSeleccion([]);
+
+    if (inputArchivoRef.current) {
+      inputArchivoRef.current.value = "";
+    }
+  }
+
+  function manejarSeleccionArchivos(evento: ChangeEvent<HTMLInputElement>) {
+    const elegidos = Array.from(evento.target.files ?? []);
     setMensaje(null);
     setErrorSubida(null);
 
-    if (!seleccionado) {
-      setArchivo(null);
-      setPreviewUrl(null);
+    if (elegidos.length === 0) {
       return;
     }
 
-    if (!TIPOS_ARCHIVO_PERMITIDOS.includes(seleccionado.type)) {
-      setArchivo(null);
-      setPreviewUrl(null);
-      setErrorSubida("Formato no permitido: usá JPG, PNG o WebP.");
-      return;
+    const aceptados: ArchivoElegido[] = [];
+    const rechazados: string[] = [];
+
+    for (const archivo of elegidos) {
+      if (!TIPOS_ARCHIVO_PERMITIDOS.includes(archivo.type)) {
+        rechazados.push(`${archivo.name} (formato no permitido)`);
+        continue;
+      }
+
+      if (archivo.size > TAMANIO_MAXIMO_BYTES) {
+        rechazados.push(`${archivo.name} (supera 2 MB)`);
+        continue;
+      }
+
+      aceptados.push({ archivo, url: URL.createObjectURL(archivo) });
     }
 
-    if (seleccionado.size > TAMANIO_MAXIMO_BYTES) {
-      setArchivo(null);
-      setPreviewUrl(null);
-      setErrorSubida("La imagen supera el tamaño máximo de 2 MB.");
-      return;
+    /*
+      La portada es una sola: si el tipo es PRINCIPAL nos quedamos con el
+      primer archivo válido y avisamos, en vez de subir varias que se
+      pisarían entre sí al aprobarse.
+    */
+    const recorte = tipo === "PRINCIPAL" ? aceptados.slice(0, 1) : aceptados;
+
+    aceptados.slice(recorte.length).forEach((sobra) => URL.revokeObjectURL(sobra.url));
+
+    seleccion.forEach((previo) => URL.revokeObjectURL(previo.url));
+    setSeleccion(recorte);
+
+    const avisos: string[] = [];
+
+    if (rechazados.length > 0) {
+      avisos.push(`No se agregaron: ${rechazados.join(", ")}.`);
     }
 
-    setArchivo(seleccionado);
-    setPreviewUrl(URL.createObjectURL(seleccionado));
+    if (tipo === "PRINCIPAL" && aceptados.length > 1) {
+      avisos.push(
+        "La imagen principal es una sola: dejamos la primera. Para subir varias, elegí Galería."
+      );
+    }
+
+    setErrorSubida(avisos.length > 0 ? avisos.join(" ") : null);
+  }
+
+  function quitarDeLaSeleccion(url: string) {
+    URL.revokeObjectURL(url);
+    setSeleccion((previas) => previas.filter((elegido) => elegido.url !== url));
+    setMensaje(null);
+    setErrorSubida(null);
+  }
+
+  function cambiarTipo(nuevoTipo: "PRINCIPAL" | "GALERIA") {
+    setTipo(nuevoTipo);
+    setMensaje(null);
+    setErrorSubida(null);
+
+    /* Pasar a PRINCIPAL con varias elegidas deja solo la primera. */
+    if (nuevoTipo === "PRINCIPAL" && seleccion.length > 1) {
+      seleccion.slice(1).forEach((sobra) => URL.revokeObjectURL(sobra.url));
+      setSeleccion((previas) => previas.slice(0, 1));
+      setErrorSubida(
+        "La imagen principal es una sola: dejamos la primera de las que elegiste."
+      );
+    }
   }
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
 
-    if (subiendo || !accessToken || !archivo) {
+    if (subiendo || !accessToken || seleccion.length === 0) {
       return;
     }
 
     setSubiendo(true);
     setMensaje(null);
     setErrorSubida(null);
+    setProgreso({ hecho: 0, total: seleccion.length });
 
-    try {
-      const imagenNueva = await subirImagenActividad(
-        actividadId,
-        archivo,
-        tipo,
-        accessToken
-      );
+    const subidas: ImagenActividadPublicador[] = [];
+    const fallidas: string[] = [];
 
-      setImagenes((previas) => [imagenNueva, ...previas]);
-      setMensaje(
-        "Imagen subida. Queda pendiente de revisión: se va a ver en la página pública cuando el equipo la apruebe."
-      );
-      setArchivo(null);
-      setPreviewUrl(null);
-
-      if (inputArchivoRef.current) {
-        inputArchivoRef.current.value = "";
+    /*
+      Secuencial a propósito: son requests multipart y el orden en que
+      quedan cargadas es el que ve el publicador en su listado.
+    */
+    for (const [indice, elegido] of seleccion.entries()) {
+      try {
+        const imagenNueva = await subirImagenActividad(
+          actividadId,
+          elegido.archivo,
+          tipo,
+          accessToken
+        );
+        subidas.push(imagenNueva);
+      } catch (error: unknown) {
+        fallidas.push(
+          `${elegido.archivo.name}: ${
+            error instanceof PublicadorApiError
+              ? error.message
+              : "no pudimos subirla"
+          }`
+        );
+      } finally {
+        setProgreso({ hecho: indice + 1, total: seleccion.length });
       }
-    } catch (error: unknown) {
-      setErrorSubida(
-        error instanceof PublicadorApiError
-          ? error.message
-          : "No pudimos subir la imagen. Probá nuevamente."
-      );
-    } finally {
-      setSubiendo(false);
     }
+
+    if (subidas.length > 0) {
+      setImagenes((previas) => [...subidas.reverse(), ...previas]);
+      setMensaje(
+        subidas.length === 1
+          ? "Imagen subida. Queda pendiente de revisión: se va a ver en la página pública cuando el equipo la apruebe."
+          : `${subidas.length} imágenes subidas. Quedan pendientes de revisión: se van a ver en la página pública cuando el equipo las apruebe.`
+      );
+    }
+
+    setErrorSubida(
+      fallidas.length > 0
+        ? `No pudimos subir ${fallidas.length === 1 ? "una imagen" : `${fallidas.length} imágenes`}. ${fallidas.join(" · ")}`
+        : null
+    );
+
+    limpiarSeleccion();
+    setProgreso(null);
+    setSubiendo(false);
   }
 
   async function manejarQuitar(imagen: ImagenActividadPublicador) {
@@ -254,7 +352,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                       name={`imagen-tipo-${actividadId}`}
                       value={opcion.valor}
                       checked={seleccionada}
-                      onChange={() => setTipo(opcion.valor)}
+                      onChange={() => cambiarTipo(opcion.valor)}
                       disabled={subiendo}
                       className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
                     />
@@ -287,7 +385,9 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
               id={idArchivo}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              onChange={manejarSeleccionArchivo}
+              /* Varias solo en galería: la portada es una sola. */
+              multiple={tipo === "GALERIA"}
+              onChange={manejarSeleccionArchivos}
               disabled={subiendo}
               className="peer sr-only"
             />
@@ -295,42 +395,73 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
               htmlFor={idArchivo}
               className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
             >
-              {archivo ? "Cambiar imagen" : "Elegir imagen"}
+              {seleccion.length > 0
+                ? "Cambiar selección"
+                : tipo === "GALERIA"
+                  ? "Elegir imágenes"
+                  : "Elegir imagen"}
             </label>
             <p className="min-w-0 flex-1 truncate text-sm text-[var(--color-muted)]">
-              {archivo ? archivo.name : "JPG, PNG o WebP · hasta 2 MB"}
+              {seleccion.length > 0
+                ? `${seleccion.length} ${
+                    seleccion.length === 1 ? "archivo elegido" : "archivos elegidos"
+                  }`
+                : tipo === "GALERIA"
+                  ? "JPG, PNG o WebP · hasta 2 MB · podés elegir varias"
+                  : "JPG, PNG o WebP · hasta 2 MB"}
             </p>
           </div>
         </div>
 
-        {previewUrl ? (
-          <div className="flex flex-wrap items-center gap-4 rounded-[18px] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-            {/* Preview local del archivo elegido (object URL, no next/image). */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={previewUrl}
-              alt="Vista previa de la imagen elegida"
-              className="h-20 w-28 shrink-0 rounded-[12px] object-cover"
-            />
-            <p className="min-w-0 flex-1 text-sm text-[var(--color-muted)]">
-              Se va a subir como{" "}
+        {seleccion.length > 0 ? (
+          <div className="rounded-[18px] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+            <p className="text-sm text-[var(--color-muted)]">
+              Se {seleccion.length === 1 ? "va" : "van"} a subir como{" "}
               <span className="font-bold text-[var(--color-primary)]">
                 {tipo === "PRINCIPAL" ? "imagen principal" : "galería"}
               </span>
-              . Tocá <span className="font-bold">Subir imagen</span> para
-              enviarla a revisión.
+              .
             </p>
+
+            <ul className="mt-3 flex flex-wrap gap-3">
+              {seleccion.map((elegido) => (
+                <li key={elegido.url} className="relative">
+                  {/* Preview local (object URL, no next/image). */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={elegido.url}
+                    alt={`Vista previa de ${elegido.archivo.name}`}
+                    className="h-20 w-28 rounded-[12px] object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => quitarDeLaSeleccion(elegido.url)}
+                    disabled={subiendo}
+                    aria-label={`Quitar ${elegido.archivo.name} de la selección`}
+                    className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#DDEAF3] bg-white text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-red-300 hover:text-red-700 disabled:opacity-50"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-center sm:justify-between">
           <AppButton
             type="submit"
-            disabled={subiendo || !archivo}
+            disabled={subiendo || seleccion.length === 0}
             fullWidth
             className="sm:w-auto"
           >
-            {subiendo ? "Subiendo..." : "Subir imagen"}
+            {subiendo
+              ? progreso
+                ? `Subiendo ${progreso.hecho} de ${progreso.total}...`
+                : "Subiendo..."
+              : seleccion.length > 1
+                ? `Subir ${seleccion.length} imágenes`
+                : "Subir imagen"}
           </AppButton>
           <p className="text-xs leading-5 text-[var(--color-muted)]">
             Las imágenes se publican después de revisión.

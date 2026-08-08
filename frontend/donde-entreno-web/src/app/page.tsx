@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import type { Actividad } from "../types/actividad";
 import type { PerfilPublicadorPublico } from "../types/publicadorPublico";
+import type { Deporte } from "../types/deporte";
 import { Header } from "../components/layout/Header";
-import { HomeHero } from "../components/home/HomeHero";
+import { HomeTopBar } from "../components/home/HomeTopBar";
+import { HomeStoriesDeportes } from "../components/home/HomeStoriesDeportes";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
@@ -13,6 +15,7 @@ import { HomePublishCta } from "../components/home/HomePublishCta";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { buscarActividades } from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
+import { obtenerDeportes } from "../services/deportesService";
 import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
 
 export const dynamic = "force-dynamic";
@@ -86,17 +89,34 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("Error al cargar perfiles publicadores:", error);
   }
 
+  /*
+    Catálogo real para la fila de stories. Best-effort: sin deportes la
+    fila no se dibuja y la home sigue completa.
+  */
+  let deportes: Deporte[] = [];
+
+  try {
+    deportes = await obtenerDeportes();
+  } catch (error) {
+    console.error("Error al cargar deportes:", error);
+  }
+
   return (
     /* overflow-x-clip (y no hidden): hidden crea un scroll container y rompe el sticky del Header. */
     <main className="min-h-screen overflow-x-clip bg-[var(--color-bg)] text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6">
         <Header />
 
-        <div className="py-7 sm:py-10">
-          <HomeHero
-            ciudadNombreInicial={ciudadNombre}
-            ciudadSlugInicial={ciudadSlug}
-          />
+        {/*
+          Orden de app social: primero dónde estás y qué buscar, después
+          contenido real (stories, feed, publicadores) y recién al final
+          lo explicativo. Antes la home abría con un hero de una pantalla
+          entera y el primer contenido quedaba abajo del pliegue.
+        */}
+        <div className="py-5 sm:py-7">
+          <HomeTopBar ciudadNombre={ciudadNombre} ciudadSlug={ciudadSlug} />
+
+          <HomeStoriesDeportes deportes={deportes} ciudadSlug={ciudadSlug} />
 
           <HomePreferenciasChips ciudadSlug={ciudadSlug} />
 

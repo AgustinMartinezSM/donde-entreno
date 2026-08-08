@@ -1,6 +1,7 @@
 package com.dondeentreno.api.dto;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 /**
  * DTO de Actividad.
@@ -9,8 +10,12 @@ import java.math.BigDecimal;
  * que vamos a devolver desde la API hacia el frontend.
  *
  * No devolvemos directamente la entidad Actividad para evitar
- * exponer campos internos como deletedAt, createdAt, updatedAt,
- * motivoRechazo o estadoPublicacion.
+ * exponer campos internos como deletedAt, updatedAt,
+ * motivoRechazo o estadoPublicacion. La fecha de creación sí se
+ * expone, con semántica pública, como fechaPublicacion: las
+ * actividades nacen al aprobarse su solicitud, así que es la fecha
+ * en que quedaron publicadas (habilita "publicado hace X" en el
+ * feed y las cards).
  */
 public class ActividadDTO {
 
@@ -59,6 +64,8 @@ public class ActividadDTO {
     private Long barrioId;
     private String barrioNombre;
 
+    private OffsetDateTime fechaPublicacion;
+
     public ActividadDTO() {
     }
 
@@ -96,7 +103,8 @@ public class ActividadDTO {
             String ciudadNombre,
             String ciudadSlug,
             Long barrioId,
-            String barrioNombre
+            String barrioNombre,
+            OffsetDateTime fechaPublicacion
     ) {
         this.id = id;
         this.titulo = titulo;
@@ -132,6 +140,7 @@ public class ActividadDTO {
         this.ciudadSlug = ciudadSlug;
         this.barrioId = barrioId;
         this.barrioNombre = barrioNombre;
+        this.fechaPublicacion = fechaPublicacion;
     }
 
     public Long getId() {
@@ -270,6 +279,10 @@ public class ActividadDTO {
         return barrioNombre;
     }
 
+    public OffsetDateTime getFechaPublicacion() {
+        return fechaPublicacion;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -404,5 +417,9 @@ public class ActividadDTO {
 
     public void setBarrioNombre(String barrioNombre) {
         this.barrioNombre = barrioNombre;
+    }
+
+    public void setFechaPublicacion(OffsetDateTime fechaPublicacion) {
+        this.fechaPublicacion = fechaPublicacion;
     }
 }

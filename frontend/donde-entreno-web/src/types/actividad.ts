@@ -48,6 +48,12 @@ export type Actividad = {
   whatsappContacto?: string | null;
   instagramContacto?: string | null;
   emailContacto?: string | null;
+
+  /*
+    Fecha en que la actividad quedó publicada (ISO-8601). Opcional para
+    tolerar respuestas de un backend anterior al campo.
+  */
+  fechaPublicacion?: string | null;
 };
 
 // Representa la respuesta paginada del endpoint GET /api/actividades.
@@ -118,6 +124,8 @@ export type ActividadDetalle = {
 
   barrioId?: number;
   barrioNombre?: string;
+
+  fechaPublicacion?: string | null;
 
   horarios?: HorarioActividad[];
   imagenes?: ImagenActividad[];

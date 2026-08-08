@@ -25,6 +25,10 @@ import {
   formatearEtiquetaCatalogo,
   formatearPrecio,
 } from "../../../lib/formatoCatalogo";
+import {
+  formatearFechaLarga,
+  formatearFechaRelativa,
+} from "../../../lib/formatoFecha";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
@@ -166,6 +170,8 @@ export default async function ActividadDetallePage({
     actividad.edadMinima,
     actividad.edadMaxima
   );
+  const publicadaRelativa = formatearFechaRelativa(actividad.fechaPublicacion);
+  const publicadaExacta = formatearFechaLarga(actividad.fechaPublicacion);
   const datosFavorito = {
     slug: actividad.slug,
     titulo: actividad.titulo,
@@ -225,6 +231,15 @@ export default async function ActividadDetallePage({
                 <h1 className="mt-2 max-w-3xl text-[1.9rem] font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
                   {actividad.titulo}
                 </h1>
+
+                {publicadaRelativa ? (
+                  <p
+                    className="mt-2 text-sm font-semibold text-[var(--color-muted)]"
+                    title={publicadaExacta ?? undefined}
+                  >
+                    Publicada {publicadaRelativa}
+                  </p>
+                ) : null}
 
                 {/* Identidad del publicador: quién publica esta actividad */}
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-4">

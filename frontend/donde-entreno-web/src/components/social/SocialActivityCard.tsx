@@ -9,6 +9,10 @@ import {
   formatearEtiquetaCatalogo,
   formatearPrecio,
 } from "../../lib/formatoCatalogo";
+import {
+  formatearFechaLarga,
+  formatearFechaRelativa,
+} from "../../lib/formatoFecha";
 import { ActivityImage } from "../actividad/ActivityImage";
 import { FavoritoButton } from "../actividad/FavoritoButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
@@ -51,6 +55,8 @@ export function SocialActivityCard({
       ? formatearPrecio(actividad.precioReferencia)
       : null;
   const hrefActividad = `/actividades/${actividad.slug}`;
+  const publicadaRelativa = formatearFechaRelativa(actividad.fechaPublicacion);
+  const publicadaExacta = formatearFechaLarga(actividad.fechaPublicacion);
 
   return (
     <article
@@ -129,6 +135,14 @@ export function SocialActivityCard({
                 {ubicacion || "Ubicación a confirmar"}
               </span>
             </p>
+            {esFeed && publicadaRelativa ? (
+              <p
+                className="mt-1.5 text-xs font-semibold text-[var(--color-muted)]"
+                title={publicadaExacta ?? undefined}
+              >
+                Publicada {publicadaRelativa}
+              </p>
+            ) : null}
           </div>
 
           {precioVisible ? (

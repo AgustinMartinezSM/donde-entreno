@@ -147,7 +147,12 @@ public class ActividadMapper {
                 ciudadNombre,
                 ciudadSlug,
                 barrioId,
-                barrioNombre
+                barrioNombre,
+                /*
+                  createdAt con semántica pública: las actividades se crean
+                  al aprobarse su solicitud, así que es su fecha de publicación.
+                */
+                actividad.getCreatedAt()
         );
     }
 }

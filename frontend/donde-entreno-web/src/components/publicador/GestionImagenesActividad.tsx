@@ -10,6 +10,8 @@ import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
+import { ENCUADRE_INICIAL, recortarImagen } from "../../lib/recorteImagen";
+import { EditorRecorteImagen } from "../imagenes/EditorRecorteImagen";
 import {
   PublicadorApiError,
   eliminarImagenActividad,
@@ -49,6 +51,12 @@ type ArchivoElegido = {
   archivo: File;
   /* Object URL del preview, se libera al quitar o al desmontar. */
   url: string;
+  /*
+    Si el publicador ya eligió el encuadre, el archivo que se guarda acá
+    es el recortado. Las que no se ajustan se recortan igual al subir,
+    centradas, para que todas entren con la misma proporción.
+  */
+  ajustado: boolean;
 };
 
 function formatearEstado(estado: string): string {
@@ -87,6 +95,8 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
   );
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [errorSubida, setErrorSubida] = useState<string | null>(null);
+  /* URL del preview que está abierto en el editor de encuadre. */
+  const [editando, setEditando] = useState<string | null>(null);
   const inputArchivoRef = useRef<HTMLInputElement | null>(null);
 
   const idArchivo = `imagen-archivo-${actividadId}`;
@@ -179,7 +189,11 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
         continue;
       }
 
-      aceptados.push({ archivo, url: URL.createObjectURL(archivo) });
+      aceptados.push({
+        archivo,
+        url: URL.createObjectURL(archivo),
+        ajustado: false,
+      });
     }
 
     /*
@@ -212,8 +226,32 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
   function quitarDeLaSeleccion(url: string) {
     URL.revokeObjectURL(url);
     setSeleccion((previas) => previas.filter((elegido) => elegido.url !== url));
+    setEditando((actual) => (actual === url ? null : actual));
     setMensaje(null);
     setErrorSubida(null);
+  }
+
+  /*
+    Reemplaza el archivo por su versión recortada y refresca el preview,
+    para que la miniatura muestre el encuadre elegido y no el original.
+  */
+  function aplicarRecorte(url: string, recortada: File) {
+    setSeleccion((previas) =>
+      previas.map((elegido) => {
+        if (elegido.url !== url) {
+          return elegido;
+        }
+
+        URL.revokeObjectURL(elegido.url);
+
+        return {
+          archivo: recortada,
+          url: URL.createObjectURL(recortada),
+          ajustado: true,
+        };
+      })
+    );
+    setEditando(null);
   }
 
   function cambiarTipo(nuevoTipo: "PRINCIPAL" | "GALERIA") {
@@ -252,9 +290,18 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
     */
     for (const [indice, elegido] of seleccion.entries()) {
       try {
+        /*
+          Las que no pasaron por el editor se recortan centradas: así
+          todas las imágenes del mismo tipo entran con la proporción de
+          destino y el feed deja de mezclar apaisadas con verticales.
+        */
+        const archivoFinal = elegido.ajustado
+          ? elegido.archivo
+          : await recortarImagen(elegido.archivo, tipo, ENCUADRE_INICIAL);
+
         const imagenNueva = await subirImagenActividad(
           actividadId,
-          elegido.archivo,
+          archivoFinal,
           tipo,
           accessToken
         );
@@ -313,6 +360,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
     }
   }
 
+  const editandoElegido = seleccion.find((elegido) => elegido.url === editando);
   const principales = imagenes.filter(
     (imagen) => imagen.tipoImagen === "PRINCIPAL"
   );
@@ -442,9 +490,36 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                   >
                     ×
                   </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditando((actual) =>
+                        actual === elegido.url ? null : elegido.url
+                      )
+                    }
+                    disabled={subiendo}
+                    className="mt-1.5 w-full text-xs font-extrabold text-[var(--color-primary)] underline decoration-[#BFDDEA] underline-offset-4 hover:decoration-[var(--color-primary)] disabled:opacity-50"
+                  >
+                    {elegido.ajustado ? "Reencuadrar" : "Ajustar"}
+                  </button>
                 </li>
               ))}
             </ul>
+
+            {editandoElegido ? (
+              <div className="mt-4">
+                <EditorRecorteImagen
+                  key={editandoElegido.url}
+                  archivo={editandoElegido.archivo}
+                  url={editandoElegido.url}
+                  tipo={tipo}
+                  onConfirmar={(recortada) =>
+                    aplicarRecorte(editandoElegido.url, recortada)
+                  }
+                  onCancelar={() => setEditando(null)}
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
 

@@ -11,6 +11,12 @@ type CompartirButtonProps = {
     ancho lo necesita el CTA principal y el texto no aporta.
   */
   soloIcono?: boolean;
+  /*
+    Para la barra de acciones del detalle: en mobile queda solo el ícono
+    (los tres botones con texto no entran en una fila a 375px) y el texto
+    vuelve desde sm. El perfil del publicador lo deja siempre visible.
+  */
+  ocultarTextoEnMobile?: boolean;
 };
 
 /*
@@ -21,6 +27,7 @@ export function CompartirButton({
   ruta,
   titulo,
   soloIcono = false,
+  ocultarTextoEnMobile = false,
 }: CompartirButtonProps) {
   const [copiado, setCopiado] = useState(false);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,8 +67,16 @@ export function CompartirButton({
       onClick={compartir}
       aria-label={`Compartir ${titulo}`}
       title={soloIcono ? (copiado ? "¡Link copiado!" : "Compartir") : undefined}
-      className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[18px] border border-[#BFDDEA] bg-white text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] ${
-        soloIcono ? "h-11 w-11 px-0" : "px-4 py-2"
+      /*
+        Mismas medidas que "Me gusta" y "Guardar": los tres conviven en la
+        barra de acciones del detalle y antes este quedaba más bajo.
+      */
+      className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] ${
+        soloIcono
+          ? "h-11 w-11 gap-0 px-0 text-xs"
+          : ocultarTextoEnMobile
+            ? "gap-0 px-3 py-2.5 text-sm sm:gap-2 sm:px-4"
+            : "gap-2 px-4 py-2.5 text-sm"
       }`}
     >
       <svg
@@ -79,7 +94,11 @@ export function CompartirButton({
         <circle cx="18" cy="19" r="3" />
         <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
       </svg>
-      {soloIcono ? null : copiado ? "¡Link copiado!" : "Compartir"}
+      {soloIcono ? null : (
+        <span className={ocultarTextoEnMobile ? "hidden sm:inline" : undefined}>
+          {copiado ? "¡Link copiado!" : "Compartir"}
+        </span>
+      )}
     </button>
   );
 }

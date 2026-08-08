@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import type { Actividad, ActividadDetalle } from "../../../types/actividad";
@@ -9,12 +8,17 @@ import {
   buscarActividades,
   obtenerDetalleActividad,
 } from "../../../services/actividadService";
+import { obtenerImagenesPerfilPublicador } from "../../../services/perfilPublicadorService";
 import { ContactButton } from "../../../components/actividad/ContactButton";
-import { ActivityImage } from "../../../components/actividad/ActivityImage";
+import {
+  ActividadGaleria,
+  type FotoActividad,
+} from "../../../components/actividad/ActividadGaleria";
 import { FavoritoButton } from "../../../components/actividad/FavoritoButton";
 import { MeGustaButton } from "../../../components/actividad/MeGustaButton";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
 import { ErrorState } from "../../../components/feedback/ErrorState";
+import { CompartirButton } from "../../../components/social/CompartirButton";
 import { PublisherIdentity } from "../../../components/social/PublisherIdentity";
 import { SocialActivityCard } from "../../../components/social/SocialActivityCard";
 import { construirUrlImagenBackend } from "../../../lib/backendUrl";
@@ -26,10 +30,7 @@ import {
   formatearEtiquetaCatalogo,
   formatearPrecio,
 } from "../../../lib/formatoCatalogo";
-import {
-  formatearFechaLarga,
-  formatearFechaRelativa,
-} from "../../../lib/formatoFecha";
+import { formatearFechaRelativa } from "../../../lib/formatoFecha";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
@@ -149,28 +150,37 @@ export default async function ActividadDetallePage({
   );
 
   /*
-    Galería: el resto de las imágenes aprobadas que devuelve el detalle
-    (el backend ya filtra APROBADA + activa). Hasta ahora el detalle solo
-    leía la PRINCIPAL, así que las fotos de galería que subía y aprobaba
-    el publicador no se veían en ninguna superficie pública.
+    Medio del post: la PRINCIPAL primero y detrás el resto de la galería
+    aprobada, todo en un carrusel. El backend ya filtra APROBADA +
+    activa; acá solo descartamos las URLs no publicables (las filas
+    legado que guardan rutas de disco).
   */
-  const galeria = (actividad.imagenes ?? [])
-    .filter((imagen) => imagen.id !== imagenPrincipal?.id)
-    .map((imagen) => ({
-      ...imagen,
-      urlPublicable: construirUrlImagenBackend(imagen.url),
-    }))
-    .filter((imagen) => imagen.urlPublicable !== null);
+  const fotos: FotoActividad[] = [
+    ...(imagenPrincipal ? [imagenPrincipal] : []),
+    ...(actividad.imagenes ?? []).filter(
+      (imagen) => imagen.id !== imagenPrincipal?.id
+    ),
+  ].flatMap((imagen) => {
+    const url = construirUrlImagenBackend(imagen.url);
 
-  /*
-    Usamos la misma prioridad visual que las cards:
-    imagen real, imagen default por deporte y placeholder general.
-  */
-  const imagenBackend = construirUrlImagenBackend(imagenPrincipal?.url);
-  const imagenUrl = obtenerImagenActividad({
-    imagenBackend,
-    deporteSlug: actividad.deporteSlug,
+    if (!url) {
+      return [];
+    }
+
+    return [
+      {
+        id: imagen.id,
+        url,
+        alt:
+          imagen.descripcion?.trim() ||
+          imagen.titulo?.trim() ||
+          `Foto de ${actividad.titulo}`,
+        titulo: imagen.titulo?.trim() || null,
+      },
+    ];
   });
+
+  /* Sin fotos propias, el carrusel muestra la ilustración del deporte. */
   const imagenFallbackUrl = obtenerImagenFallbackActividad({
     deporteSlug: actividad.deporteSlug,
   });
@@ -186,7 +196,17 @@ export default async function ActividadDetallePage({
     actividad.edadMaxima
   );
   const publicadaRelativa = formatearFechaRelativa(actividad.fechaPublicacion);
-  const publicadaExacta = formatearFechaLarga(actividad.fechaPublicacion);
+  /*
+    Lugar en una línea, como la ubicación de un post. La dirección exacta
+    y el resto de los datos siguen en el panel lateral: antes la columna
+    principal repetía la misma caja de ubicación que el panel.
+  */
+  const zona = [actividad.barrioNombre, actividad.ciudadNombre]
+    .filter(Boolean)
+    .join(", ");
+  const lugarVisible =
+    [actividad.ubicacionNombre, zona].filter(Boolean).join(" · ") ||
+    "Ubicación a confirmar";
   const datosFavorito = {
     slug: actividad.slug,
     titulo: actividad.titulo,
@@ -202,10 +222,11 @@ export default async function ActividadDetallePage({
   };
 
   /*
-    Secciones de descubrimiento relacionado (best-effort: si el backend
-    falla acá, el detalle igual se muestra completo).
+    Contexto social del post (best-effort: si el backend falla acá, el
+    detalle igual se muestra completo).
   */
-  const { masDelPublicador, similares } = await cargarRelacionadas(actividad);
+  const { masDelPublicador, similares, logoPublicadorUrl } =
+    await cargarContextoDelPost(actividad);
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -229,76 +250,97 @@ export default async function ActividadDetallePage({
               as="article"
               className="overflow-hidden p-3 transition duration-200 ease-out sm:p-4"
             >
-              <ActivityImage
-                src={imagenUrl}
+              {/*
+                Encabezado del post: quién publica firma arriba de la foto,
+                como en cualquier publicación. Antes esta identidad quedaba
+                enterrada debajo del título, en una caja más.
+              */}
+              <header className="flex flex-wrap items-center justify-between gap-3 px-2 pb-3.5 pt-1.5 sm:px-3">
+                <PublisherIdentity
+                  nombre={actividad.perfilPublicadorNombre}
+                  tipo={actividad.tipoPublicador}
+                  verificado={actividad.perfilVerificado}
+                  avatarUrl={logoPublicadorUrl}
+                  tamanio="destacada"
+                  nota={
+                    publicadaRelativa ? `Publicada ${publicadaRelativa}` : null
+                  }
+                  href={
+                    actividad.perfilPublicadorId
+                      ? `/publicadores/${actividad.perfilPublicadorId}`
+                      : undefined
+                  }
+                />
+
+                {actividad.perfilPublicadorId ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SeguirPublicadorButton
+                      perfilPublicadorId={actividad.perfilPublicadorId}
+                      perfilPublicadorNombre={actividad.perfilPublicadorNombre}
+                    />
+                    <AppLinkButton
+                      href={`/publicadores/${actividad.perfilPublicadorId}`}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Ver perfil
+                    </AppLinkButton>
+                  </div>
+                ) : null}
+              </header>
+
+              <ActividadGaleria
+                fotos={fotos}
                 fallbackSrc={imagenFallbackUrl}
-                alt={imagenPrincipal?.descripcion || actividad.titulo}
+                fallbackAlt={actividad.titulo}
                 fallbackText={actividad.deporteNombre || "Actividad"}
-                heightClassName="h-56 sm:h-80"
-                sizes="(max-width: 1023px) 100vw, 800px"
               />
+
+              {/*
+                Barra de acciones del post, pegada al medio: las tres cosas
+                que puede hacer alguien que mira esta actividad.
+              */}
+              <div className="flex flex-wrap items-center gap-2 px-2 pt-4 sm:px-3">
+                <MeGustaButton
+                  slug={actividad.slug}
+                  titulo={actividad.titulo}
+                />
+
+                <FavoritoButton variante="detalle" actividad={datosFavorito} />
+
+                <CompartirButton
+                  ruta={`/actividades/${actividad.slug}`}
+                  titulo={actividad.titulo}
+                  ocultarTextoEnMobile
+                />
+              </div>
 
               <div className="p-2 pt-6 sm:p-3 sm:pt-7">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
                   {actividad.categoriaDeportivaNombre || "Deporte"}
                 </p>
 
-                <h1 className="mt-2 max-w-3xl text-[1.9rem] font-extrabold leading-tight text-[var(--color-primary)] sm:text-5xl">
+                <h1 className="mt-2 max-w-3xl text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
                   {actividad.titulo}
                 </h1>
 
-                {publicadaRelativa ? (
-                  <p
-                    className="mt-2 text-sm font-semibold text-[var(--color-muted)]"
-                    title={publicadaExacta ?? undefined}
-                  >
-                    Publicada {publicadaRelativa}
-                  </p>
-                ) : null}
+                <p className="mt-3 flex items-start gap-2 text-sm font-semibold text-[var(--color-muted)]">
+                  <IconoUbicacion />
+                  <span>{lugarVisible}</span>
+                </p>
 
-                {/* Identidad del publicador: quién publica esta actividad */}
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
-                  <PublisherIdentity
-                    nombre={actividad.perfilPublicadorNombre}
-                    tipo={actividad.tipoPublicador}
-                    verificado={actividad.perfilVerificado}
-                    href={
-                      actividad.perfilPublicadorId
-                        ? `/publicadores/${actividad.perfilPublicadorId}`
-                        : undefined
-                    }
-                  />
+                {/*
+                  La descripción es el epígrafe del post: va suelta debajo
+                  del título, sin caja ni encabezado de sección propios.
+                  whitespace-pre-line respeta los renglones que escribió el
+                  publicador.
+                */}
+                <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-7 text-[var(--color-muted)] sm:text-base">
+                  {actividad.descripcion ||
+                    "Esta actividad todavía no tiene una descripción cargada."}
+                </p>
 
-                  {actividad.perfilPublicadorId ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <SeguirPublicadorButton
-                        perfilPublicadorId={actividad.perfilPublicadorId}
-                        perfilPublicadorNombre={actividad.perfilPublicadorNombre}
-                      />
-                      <AppLinkButton
-                        href={`/publicadores/${actividad.perfilPublicadorId}`}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Ver perfil
-                      </AppLinkButton>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-4 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
-                  <p className="text-sm font-bold text-[var(--color-primary)]">
-                    {actividad.ubicacionNombre || "Ubicación no informada"}
-                  </p>
-                  <p className="mt-1 text-sm text-[var(--color-muted)]">
-                    {actividad.barrioNombre || "Barrio sin cargar"}
-                    {actividad.ciudadNombre
-                      ? `, ${actividad.ciudadNombre}`
-                      : ""}
-                  </p>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2.5">
+                <div className="mt-5 flex flex-wrap gap-2.5">
                   {actividad.nivel && (
                     <span className="rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
                       {formatearEtiquetaCatalogo(actividad.nivel)}
@@ -329,60 +371,6 @@ export default async function ActividadDetallePage({
                     </span>
                   )}
                 </div>
-
-                <div className="mt-5 flex flex-wrap gap-2.5">
-                  <FavoritoButton variante="detalle" actividad={datosFavorito} />
-
-                  <MeGustaButton
-                    slug={actividad.slug}
-                    titulo={actividad.titulo}
-                  />
-                </div>
-
-                <SurfaceCard className="mt-7 p-5 sm:mt-8">
-                  <SectionHeader title="Sobre la actividad" />
-
-                  <p className="mt-3 text-sm leading-7 text-[var(--color-muted)] sm:text-base">
-                    {actividad.descripcion ||
-                      "Esta actividad todavía no tiene una descripción cargada."}
-                  </p>
-                </SurfaceCard>
-
-                {galeria.length > 0 ? (
-                  <SurfaceCard className="mt-7 p-5 sm:mt-8">
-                    <SectionHeader
-                      title="Fotos de la actividad"
-                      description="Imágenes que compartió el publicador."
-                    />
-
-                    <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {galeria.map((imagen) => (
-                        <li key={imagen.id}>
-                          <figure className="overflow-hidden rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC]">
-                            <div className="relative h-32 w-full sm:h-36">
-                              <Image
-                                src={imagen.urlPublicable as string}
-                                alt={
-                                  imagen.descripcion ||
-                                  imagen.titulo ||
-                                  `Foto de ${actividad.titulo}`
-                                }
-                                fill
-                                sizes="(max-width: 640px) 50vw, (max-width: 1023px) 33vw, 260px"
-                                className="object-cover"
-                              />
-                            </div>
-                            {imagen.titulo ? (
-                              <figcaption className="px-3 py-2 text-xs font-semibold leading-5 text-[var(--color-muted)]">
-                                {imagen.titulo}
-                              </figcaption>
-                            ) : null}
-                          </figure>
-                        </li>
-                      ))}
-                    </ul>
-                  </SurfaceCard>
-                ) : null}
 
                 <SurfaceCard className="mt-7 p-5 sm:mt-8">
                   <SectionHeader
@@ -613,30 +601,43 @@ export default async function ActividadDetallePage({
 }
 
 /*
-  Carga las dos franjas de descubrimiento relacionado en paralelo.
-  Cualquier fallo devuelve listas vacías: nunca rompe el detalle.
+  Carga en paralelo el contexto social del post: las dos franjas de
+  descubrimiento relacionado y el logo del publicador que firma arriba.
+  Cualquier fallo devuelve vacío: nunca rompe el detalle.
 */
-async function cargarRelacionadas(actividad: ActividadDetalle): Promise<{
+async function cargarContextoDelPost(actividad: ActividadDetalle): Promise<{
   masDelPublicador: Actividad[];
   similares: Actividad[];
+  logoPublicadorUrl: string | null;
 }> {
-  const [respuestaPublicador, respuestaSimilares] = await Promise.all([
-    actividad.perfilPublicadorId
-      ? buscarActividades({
-          perfilPublicadorId: actividad.perfilPublicadorId,
-          page: 0,
-          size: 4,
-        }).catch(() => null)
-      : Promise.resolve(null),
-    actividad.deporteSlug
-      ? buscarActividades({
-          deporteSlug: actividad.deporteSlug,
-          ciudadSlug: actividad.ciudadSlug,
-          page: 0,
-          size: 7,
-        }).catch(() => null)
-      : Promise.resolve(null),
-  ]);
+  const [respuestaPublicador, respuestaSimilares, imagenesPerfil] =
+    await Promise.all([
+      actividad.perfilPublicadorId
+        ? buscarActividades({
+            perfilPublicadorId: actividad.perfilPublicadorId,
+            page: 0,
+            size: 4,
+          }).catch(() => null)
+        : Promise.resolve(null),
+      actividad.deporteSlug
+        ? buscarActividades({
+            deporteSlug: actividad.deporteSlug,
+            ciudadSlug: actividad.ciudadSlug,
+            page: 0,
+            size: 7,
+          }).catch(() => null)
+        : Promise.resolve(null),
+      /*
+        El detalle no trae el logo del publicador (el DTO público de
+        actividad no lo expone), así que lo pedimos al endpoint de
+        imágenes del perfil. Sin logo, la identidad cae a las iniciales.
+      */
+      actividad.perfilPublicadorId
+        ? obtenerImagenesPerfilPublicador(actividad.perfilPublicadorId).catch(
+            () => []
+          )
+        : Promise.resolve([]),
+    ]);
 
   const masDelPublicador = (respuestaPublicador?.contenido ?? [])
     .filter((otra) => otra.slug !== actividad.slug)
@@ -647,7 +648,29 @@ async function cargarRelacionadas(actividad: ActividadDetalle): Promise<{
     .filter((otra) => otra.slug !== actividad.slug && !idsYaMostrados.has(otra.id))
     .slice(0, 3);
 
-  return { masDelPublicador, similares };
+  const logoPublicadorUrl = construirUrlImagenBackend(
+    imagenesPerfil.find((imagen) => imagen.tipoImagen === "LOGO")?.url
+  );
+
+  return { masDelPublicador, similares, logoPublicadorUrl };
+}
+
+function IconoUbicacion() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-accent)]"
+      aria-hidden="true"
+    >
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
 }
 
 function formatearRangoEdad(

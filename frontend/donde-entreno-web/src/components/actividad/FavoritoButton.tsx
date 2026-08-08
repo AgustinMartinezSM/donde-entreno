@@ -70,7 +70,8 @@ export function FavoritoButton({
         type="button"
         onClick={manejarClick}
         aria-label={etiquetaDetalle}
-        className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] px-5 py-3 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] ${
+        /* Ver MeGustaButton: en mobile la barra de acciones va sin texto. */
+        className={`inline-flex min-h-11 items-center justify-center gap-0 rounded-[18px] px-3 py-2.5 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] sm:gap-2 sm:px-4 ${
           guardada
             ? "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872]"
             : "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
@@ -82,7 +83,15 @@ export function FavoritoButton({
         >
           <IconoGuardar relleno={guardada} />
         </span>
-        {guardada ? "Guardada en favoritos" : "Guardar en favoritos"}
+        {/*
+          Texto corto: en el detalle este botón vive en una barra de
+          acciones junto a "Me gusta" y "Compartir", y "Guardar en
+          favoritos" empujaba la fila a tres renglones. El aria-label de
+          arriba sí mantiene la frase completa.
+        */}
+        <span className="hidden sm:inline">
+          {guardada ? "Guardada" : "Guardar"}
+        </span>
       </button>
     );
   }

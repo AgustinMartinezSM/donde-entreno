@@ -63,7 +63,12 @@ export function MeGustaButton({ slug, titulo }: MeGustaButtonProps) {
       type="button"
       onClick={manejarClick}
       aria-label={leGusta ? `Te gusta ${titulo}` : `Me gusta ${titulo}`}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] px-5 py-3 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] ${
+      /*
+        En mobile queda solo el ícono: los tres botones de la barra de
+        acciones con texto no entran en una fila a 375px y la fila se
+        partía en dos. El nombre accesible lo sigue dando aria-label.
+      */
+      className={`inline-flex min-h-11 items-center justify-center gap-0 rounded-[18px] px-3 py-2.5 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] sm:gap-2 sm:px-4 ${
         leGusta
           ? "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872]"
           : "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
@@ -77,7 +82,9 @@ export function MeGustaButton({ slug, titulo }: MeGustaButtonProps) {
       >
         <IconoCorazon relleno={leGusta} />
       </span>
-      {leGusta ? "Te gusta" : "Me gusta"}
+      <span className="hidden sm:inline">
+        {leGusta ? "Te gusta" : "Me gusta"}
+      </span>
     </button>
   );
 }

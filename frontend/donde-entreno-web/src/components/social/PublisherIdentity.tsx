@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { formatearTipoPublicador } from "../../lib/formatoCatalogo";
@@ -7,15 +8,27 @@ type PublisherIdentityProps = {
   tipo?: string | null;
   verificado?: boolean;
   /*
-    - "normal": header de card de feed y detalle de actividad.
     - "compacta": listados densos (grillas de explorar, filas del feed).
+    - "normal": header de card de feed.
+    - "destacada": encabezado del detalle, donde el publicador firma el
+      post y necesita el peso visual de un autor.
   */
-  tamanio?: "normal" | "compacta";
+  tamanio?: "compacta" | "normal" | "destacada";
   /*
     Destino del perfil público del publicador. Con href, el nombre se
     vuelve link (la identidad es navegable, como en cualquier red).
   */
   href?: string;
+  /*
+    Logo real del publicador. Sin logo caemos a las iniciales: el avatar
+    nunca queda vacío.
+  */
+  avatarUrl?: string | null;
+  /*
+    Dato de contexto que se suma al tipo en la segunda línea, separado
+    por un punto medio (por ejemplo "Publicada hace 3 días").
+  */
+  nota?: string | null;
 };
 
 export function PublisherIdentity({
@@ -24,29 +37,56 @@ export function PublisherIdentity({
   verificado = false,
   tamanio = "normal",
   href,
+  avatarUrl,
+  nota,
 }: PublisherIdentityProps) {
   const nombreVisible = nombre?.trim() || "Comunidad DondeEntreno";
   const iniciales = obtenerIniciales(nombreVisible);
   const compacta = tamanio === "compacta";
+  const destacada = tamanio === "destacada";
+
+  const medidasAvatar = compacta
+    ? "h-8 w-8 ring-2"
+    : destacada
+      ? "h-14 w-14 ring-4"
+      : "h-11 w-11 ring-4";
+  const subtitulo = [
+    tipo ? formatearTipoPublicador(tipo) : "Actividad de la comunidad local",
+    nota?.trim() || null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className={`flex min-w-0 items-center ${compacta ? "gap-2" : "gap-3"}`}>
-      <span
-        aria-hidden="true"
-        className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] font-extrabold tracking-[0.08em] text-white ${
-          compacta
-            ? "h-8 w-8 text-[10px] ring-2 ring-[#E8F6FB]"
-            : "h-11 w-11 text-xs ring-4 ring-[#E8F6FB]"
-        }`}
-      >
-        {iniciales}
-      </span>
+      {avatarUrl ? (
+        <span
+          className={`relative shrink-0 overflow-hidden rounded-full bg-white ring-[#E8F6FB] ${medidasAvatar}`}
+        >
+          <Image
+            src={avatarUrl}
+            alt=""
+            fill
+            sizes="56px"
+            className="object-cover"
+          />
+        </span>
+      ) : (
+        <span
+          aria-hidden="true"
+          className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] font-extrabold tracking-[0.08em] text-white ring-[#E8F6FB] ${medidasAvatar} ${
+            compacta ? "text-[10px]" : destacada ? "text-sm" : "text-xs"
+          }`}
+        >
+          {iniciales}
+        </span>
+      )}
 
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <p
             className={`truncate font-extrabold text-[var(--color-primary)] ${
-              compacta ? "text-xs" : "text-sm"
+              compacta ? "text-xs" : destacada ? "text-base" : "text-sm"
             }`}
           >
             {href ? (
@@ -86,7 +126,7 @@ export function PublisherIdentity({
         </div>
         {!compacta ? (
           <p className="mt-0.5 truncate text-xs font-semibold text-[var(--color-muted)]">
-            {tipo ? formatearTipoPublicador(tipo) : "Actividad de la comunidad local"}
+            {subtitulo}
           </p>
         ) : null}
       </div>

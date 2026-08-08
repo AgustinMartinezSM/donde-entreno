@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { Actividad } from "../../../types/actividad";
@@ -18,7 +19,10 @@ import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { construirUrlImagenBackend } from "../../../lib/backendUrl";
 import { formatearTipoPublicador } from "../../../lib/formatoCatalogo";
-import { buscarActividades } from "../../../services/actividadService";
+import {
+  buscarActividades,
+  obtenerImagenesActividad,
+} from "../../../services/actividadService";
 import {
   obtenerImagenesPerfilPublicador,
   obtenerPerfilPublicadorPorId,
@@ -40,6 +44,23 @@ type PerfilPublicadorPageProps = {
   params: Promise<{
     id: string;
   }>;
+  /* La tab activa viaja en la URL: el perfil sigue siendo server component. */
+  searchParams?: Promise<{ [clave: string]: string | string[] | undefined }>;
+};
+
+const TABS = [
+  { clave: "actividades", etiqueta: "Actividades" },
+  { clave: "fotos", etiqueta: "Fotos" },
+  { clave: "info", etiqueta: "Info" },
+] as const;
+
+type ClaveTab = (typeof TABS)[number]["clave"];
+
+type FotoDelPerfil = {
+  clave: string;
+  url: string;
+  alt: string;
+  href?: string;
 };
 
 function parsearId(idCrudo: string): number | null {
@@ -93,8 +114,13 @@ export async function generateMetadata({
 
 export default async function PerfilPublicadorPage({
   params,
+  searchParams,
 }: PerfilPublicadorPageProps) {
   const { id: idCrudo } = await params;
+  const parametros = (await searchParams) ?? {};
+  const tabPedida = Array.isArray(parametros.tab)
+    ? parametros.tab[0]
+    : parametros.tab;
   const id = parsearId(idCrudo);
 
   if (id === null) {
@@ -153,6 +179,9 @@ export default async function PerfilPublicadorPage({
   const actividades: Actividad[] = respuestaActividades?.contenido ?? [];
   const totalActividades = respuestaActividades?.totalElementos ?? 0;
   const huboErrorActividades = respuestaActividades === null;
+
+  const fotos = await reunirFotosDelPerfil(perfil.nombre, actividades, imagenes);
+  const tabActiva: ClaveTab = resolverTab(tabPedida, fotos.length > 0);
 
   const tipoVisible = perfil.tipoPublicador
     ? formatearTipoPublicador(perfil.tipoPublicador)
@@ -347,59 +376,293 @@ export default async function PerfilPublicadorPage({
             </div>
           </article>
 
-          {/* Actividades del publicador */}
-          <section className="mt-10" aria-labelledby="actividades-perfil-titulo">
-            <SectionHeader
-              eyebrow="Actividades"
-              title={`Lo que publica ${perfil.nombre}`}
-              description={
-                totalActividades > 0
-                  ? `${totalActividades} ${
-                      totalActividades === 1
-                        ? "actividad publicada"
-                        : "actividades publicadas"
-                    } en la plataforma.`
-                  : undefined
-              }
-              titleId="actividades-perfil-titulo"
-              action={
-                totalActividades > 6 ? (
-                  <AppLinkButton
-                    href={hrefExplorar}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    Ver todas
-                  </AppLinkButton>
-                ) : undefined
-              }
-            />
+          {/*
+            Tabs por URL: mantienen el perfil como server component y hacen
+            que cada solapa sea enlazable y compartible.
+          */}
+          <nav
+            className="mt-8 flex gap-2 overflow-x-auto border-b border-[#D9E2EC] pb-px"
+            aria-label="Secciones del perfil"
+          >
+            {TABS.filter(
+              (tab) => tab.clave !== "fotos" || fotos.length > 0
+            ).map((tab) => {
+              const activa = tab.clave === tabActiva;
 
-            {huboErrorActividades ? (
-              <StatusMessage variant="warning" className="mt-5">
-                No pudimos cargar las actividades de este publicador. Probá de
-                nuevo en unos minutos.
-              </StatusMessage>
-            ) : actividades.length === 0 ? (
-              <StatusMessage variant="info" className="mt-5">
-                Este publicador todavía no tiene actividades publicadas. Seguilo
-                para enterarte cuando publique.
-              </StatusMessage>
-            ) : (
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {actividades.map((actividad) => (
-                  <SocialActivityCard
-                    key={actividad.id}
-                    actividad={actividad}
-                    variante="compacta"
-                  />
+              return (
+                <Link
+                  key={tab.clave}
+                  href={`/publicadores/${perfil.id}?tab=${tab.clave}`}
+                  scroll={false}
+                  aria-current={activa ? "page" : undefined}
+                  className={`-mb-px shrink-0 border-b-2 px-4 py-3 text-sm font-extrabold transition duration-200 ease-out ${
+                    activa
+                      ? "border-[var(--color-secondary)] text-[var(--color-primary)]"
+                      : "border-transparent text-[var(--color-muted)] hover:border-[#BFDDEA] hover:text-[var(--color-primary)]"
+                  }`}
+                >
+                  {tab.etiqueta}
+                  {tab.clave === "fotos" ? (
+                    <span className="ml-1.5 font-bold text-[var(--color-muted)]">
+                      {fotos.length}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {tabActiva === "actividades" ? (
+            <section className="mt-7" aria-labelledby="actividades-perfil-titulo">
+              <SectionHeader
+                eyebrow="Actividades"
+                title={`Lo que publica ${perfil.nombre}`}
+                description={
+                  totalActividades > 0
+                    ? `${totalActividades} ${
+                        totalActividades === 1
+                          ? "actividad publicada"
+                          : "actividades publicadas"
+                      } en la plataforma.`
+                    : undefined
+                }
+                titleId="actividades-perfil-titulo"
+                action={
+                  totalActividades > 6 ? (
+                    <AppLinkButton
+                      href={hrefExplorar}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      Ver todas
+                    </AppLinkButton>
+                  ) : undefined
+                }
+              />
+
+              {huboErrorActividades ? (
+                <StatusMessage variant="warning" className="mt-5">
+                  No pudimos cargar las actividades de este publicador. Probá de
+                  nuevo en unos minutos.
+                </StatusMessage>
+              ) : actividades.length === 0 ? (
+                <StatusMessage variant="info" className="mt-5">
+                  Este publicador todavía no tiene actividades publicadas.
+                  Seguilo para enterarte cuando publique.
+                </StatusMessage>
+              ) : (
+                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {actividades.map((actividad) => (
+                    <SocialActivityCard
+                      key={actividad.id}
+                      actividad={actividad}
+                      variante="compacta"
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {tabActiva === "fotos" ? (
+            <section className="mt-7" aria-labelledby="fotos-perfil-titulo">
+              <SectionHeader
+                eyebrow="Fotos"
+                title="Fotos reales"
+                description="Imágenes de las actividades que publica, ya revisadas por el equipo."
+                titleId="fotos-perfil-titulo"
+              />
+
+              <ul className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+                {fotos.map((foto) => (
+                  <li key={foto.clave}>
+                    {foto.href ? (
+                      <Link
+                        href={foto.href}
+                        className="group relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[#D9E2EC] bg-[#F8FAFC]"
+                      >
+                        <Image
+                          src={foto.url}
+                          alt={foto.alt}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
+                          className="object-cover transition duration-200 ease-out group-hover:scale-105"
+                        />
+                      </Link>
+                    ) : (
+                      <div className="relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[#D9E2EC] bg-[#F8FAFC]">
+                        <Image
+                          src={foto.url}
+                          alt={foto.alt}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </li>
                 ))}
-              </div>
-            )}
-          </section>
+              </ul>
+            </section>
+          ) : null}
+
+          {tabActiva === "info" ? (
+            <section className="mt-7" aria-labelledby="info-perfil-titulo">
+              <SectionHeader
+                eyebrow="Info"
+                title="Sobre este publicador"
+                titleId="info-perfil-titulo"
+              />
+
+              <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                <DatoDelPerfil termino="Tipo" valor={tipoVisible} />
+                <DatoDelPerfil
+                  termino="Actividades publicadas"
+                  valor={
+                    huboErrorActividades ? null : String(totalActividades)
+                  }
+                />
+                <DatoDelPerfil
+                  termino="Seguidores"
+                  valor={seguidores > 0 ? String(seguidores) : "Todavía ninguno"}
+                />
+                <DatoDelPerfil
+                  termino="Verificado"
+                  valor={perfil.verificado === true ? "Sí" : "Todavía no"}
+                />
+                <DatoDelPerfil termino="WhatsApp" valor={perfil.whatsapp} />
+                <DatoDelPerfil termino="Instagram" valor={perfil.instagram} />
+                <DatoDelPerfil termino="Email" valor={perfil.emailContacto} />
+                <DatoDelPerfil
+                  termino="Sitio web"
+                  valor={perfil.sitioWeb}
+                  href={sitioWebUrl}
+                />
+              </dl>
+
+              {perfil.descripcion ? (
+                <div className="mt-5 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5">
+                  <p className="text-sm font-extrabold text-[var(--color-primary)]">
+                    Descripción
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[var(--color-muted)] sm:text-base">
+                    {perfil.descripcion}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
         </div>
       </section>
     </main>
+  );
+}
+
+function resolverTab(pedida: string | undefined, hayFotos: boolean): ClaveTab {
+  const valida = TABS.some((tab) => tab.clave === pedida);
+
+  if (!valida) {
+    return "actividades";
+  }
+
+  /* Sin fotos la solapa no se muestra: entrar por URL cae en actividades. */
+  if (pedida === "fotos" && !hayFotos) {
+    return "actividades";
+  }
+
+  return pedida as ClaveTab;
+}
+
+/*
+  Junta las fotos visibles del publicador: la galería propia del perfil
+  más las imágenes aprobadas de cada una de sus actividades.
+
+  Hoy no existe un endpoint que devuelva las imágenes de todas las
+  actividades de un publicador, así que se pide una por actividad (como
+  máximo las de la primera página). Es best-effort: si alguna falla, el
+  perfil se muestra igual con las que sí respondieron.
+*/
+async function reunirFotosDelPerfil(
+  nombrePerfil: string,
+  actividades: Actividad[],
+  imagenesDelPerfil: ImagenPerfilPublicador[]
+): Promise<FotoDelPerfil[]> {
+  const fotos: FotoDelPerfil[] = [];
+
+  for (const imagen of imagenesDelPerfil) {
+    const url = construirUrlImagenBackend(imagen.url);
+
+    /* LOGO y PORTADA ya se ven en el encabezado: acá va la galería. */
+    if (url && imagen.tipoImagen !== "LOGO" && imagen.tipoImagen !== "PORTADA") {
+      fotos.push({
+        clave: `perfil-${imagen.id}`,
+        url,
+        alt: imagen.titulo?.trim() || `Foto de ${nombrePerfil}`,
+      });
+    }
+  }
+
+  const porActividad = await Promise.all(
+    actividades.map((actividad) =>
+      obtenerImagenesActividad(actividad.slug).catch(() => [])
+    )
+  );
+
+  porActividad.forEach((imagenesActividad, indice) => {
+    const actividad = actividades[indice];
+
+    for (const imagen of imagenesActividad) {
+      const url = construirUrlImagenBackend(imagen.url);
+
+      if (url) {
+        fotos.push({
+          clave: `actividad-${imagen.id}`,
+          url,
+          alt: imagen.descripcion?.trim() || `Foto de ${actividad.titulo}`,
+          href: `/actividades/${actividad.slug}`,
+        });
+      }
+    }
+  });
+
+  return fotos;
+}
+
+function DatoDelPerfil({
+  termino,
+  valor,
+  href,
+}: {
+  termino: string;
+  valor?: string | null;
+  href?: string | null;
+}) {
+  const limpio = valor?.trim();
+
+  if (!limpio) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-white p-4">
+      <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--color-muted)]">
+        {termino}
+      </dt>
+      <dd className="mt-1 text-sm font-bold text-[var(--color-primary)]">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-[#BFDDEA] underline-offset-4 hover:decoration-[var(--color-primary)]"
+          >
+            {limpio}
+          </a>
+        ) : (
+          limpio
+        )}
+      </dd>
+    </div>
   );
 }
 

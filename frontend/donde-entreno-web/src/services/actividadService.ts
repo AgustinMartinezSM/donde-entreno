@@ -122,3 +122,39 @@ export async function obtenerDetalleActividad(
     imagenes: data.imagenes || [],
   };
 }
+
+/*
+  Imágenes públicas de una actividad por slug. El backend ya filtra
+  APROBADA + activa, así que acá solo validamos la forma.
+
+  La usa el perfil del publicador para armar su grilla de fotos. Hoy no
+  hay un endpoint que devuelva las imágenes de todas las actividades de
+  un publicador de una vez, así que el perfil pide una por actividad;
+  cuando exista el agregado, solo cambia el caller.
+*/
+export async function obtenerImagenesActividad(
+  slug: string
+): Promise<ImagenActividad[]> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/actividades/${encodeURIComponent(slug)}/imagenes`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    throw new Error("No se pudieron obtener las imágenes de la actividad");
+  }
+
+  const data: unknown = await respuesta.json();
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.filter(
+    (item): item is ImagenActividad =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as ImagenActividad).id === "number" &&
+      typeof (item as ImagenActividad).url === "string"
+  );
+}

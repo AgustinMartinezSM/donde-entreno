@@ -151,15 +151,27 @@ public class PublicadorActividadMapper {
         );
     }
 
+    /**
+     * Resuelve la imagen de portada: prefiere la PRINCIPAL y si no hay
+     * usa la primera disponible.
+     *
+     * Solo considera imágenes con URL publicable: las rutas relativas
+     * legado de disco local no resuelven en ningún entorno y devolverlas
+     * dejaría al panel mostrando una imagen rota en vez de su fallback.
+     */
     public static String resolverImagenPrincipalUrl(List<Imagen> imagenes) {
         if (imagenes == null || imagenes.isEmpty()) {
             return null;
         }
 
-        return imagenes.stream()
+        List<Imagen> publicables = imagenes.stream()
+                .filter(imagen -> imagen != null && ImagenMapper.esUrlPublicable(imagen.getUrl()))
+                .toList();
+
+        return publicables.stream()
                 .filter(imagen -> TIPO_IMAGEN_PRINCIPAL.equalsIgnoreCase(imagen.getTipoImagen()))
                 .findFirst()
-                .or(() -> imagenes.stream().findFirst())
+                .or(() -> publicables.stream().findFirst())
                 .map(Imagen::getUrl)
                 .orElse(null);
     }

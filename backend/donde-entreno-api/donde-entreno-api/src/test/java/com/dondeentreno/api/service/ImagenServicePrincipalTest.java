@@ -28,6 +28,9 @@ class ImagenServicePrincipalTest {
     @Mock
     private ImagenRepository imagenRepository;
 
+    private static final String URL_PUBLICA =
+            "https://proyecto.supabase.co/storage/v1/object/public/imagenes-publicas/boxeo.jpg";
+
     @Test
     void asignaLaImagenPrincipalPorActividadYDejaNullLasQueNoTienen() {
         ImagenService service = new ImagenService(imagenRepository);
@@ -43,11 +46,11 @@ class ImagenServicePrincipalTest {
                         eq("PRINCIPAL"),
                         anyCollection()
                 ))
-                .thenReturn(List.of(crearImagen(1L, "/uploads/actividades/boxeo.jpg", 0)));
+                .thenReturn(List.of(crearImagen(1L, URL_PUBLICA, 0)));
 
         service.asignarImagenPrincipal(List.of(conImagen, sinImagen));
 
-        assertEquals("/uploads/actividades/boxeo.jpg", conImagen.getImagenPrincipalUrl());
+        assertEquals(URL_PUBLICA, conImagen.getImagenPrincipalUrl());
         assertNull(sinImagen.getImagenPrincipalUrl());
     }
 
@@ -66,13 +69,61 @@ class ImagenServicePrincipalTest {
                         anyCollection()
                 ))
                 .thenReturn(List.of(
-                        crearImagen(1L, "/uploads/primera.jpg", 0),
-                        crearImagen(1L, "/uploads/segunda.jpg", 1)
+                        crearImagen(1L, "https://cdn.test/primera.jpg", 0),
+                        crearImagen(1L, "https://cdn.test/segunda.jpg", 1)
                 ));
 
         service.asignarImagenPrincipal(List.of(actividad));
 
-        assertEquals("/uploads/primera.jpg", actividad.getImagenPrincipalUrl());
+        assertEquals("https://cdn.test/primera.jpg", actividad.getImagenPrincipalUrl());
+    }
+
+    /*
+      Las filas sembradas antes de Supabase Storage guardan rutas de disco
+      local que la API nunca sirvió. Exponerlas hacía que el frontend
+      pidiera una imagen inexistente en vez de caer a su ilustración.
+    */
+    @Test
+    void ignoraLasUrlsRelativasLegadoDeDiscoLocal() {
+        ImagenService service = new ImagenService(imagenRepository);
+
+        ActividadDTO actividad = new ActividadDTO();
+        actividad.setId(1L);
+
+        when(imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndTipoImagenAndActividad_IdInOrderByOrdenAsc(
+                        eq("APROBADA"),
+                        eq("PRINCIPAL"),
+                        anyCollection()
+                ))
+                .thenReturn(List.of(crearImagen(1L, "/uploads/actividades/boxeo.jpg", 0)));
+
+        service.asignarImagenPrincipal(List.of(actividad));
+
+        assertNull(actividad.getImagenPrincipalUrl());
+    }
+
+    @Test
+    void conUnaRelativaYUnaAbsolutaGanaLaAbsolutaAunqueTengaMayorOrden() {
+        ImagenService service = new ImagenService(imagenRepository);
+
+        ActividadDTO actividad = new ActividadDTO();
+        actividad.setId(1L);
+
+        when(imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndTipoImagenAndActividad_IdInOrderByOrdenAsc(
+                        eq("APROBADA"),
+                        eq("PRINCIPAL"),
+                        anyCollection()
+                ))
+                .thenReturn(List.of(
+                        crearImagen(1L, "/uploads/legado.jpg", 0),
+                        crearImagen(1L, URL_PUBLICA, 1)
+                ));
+
+        service.asignarImagenPrincipal(List.of(actividad));
+
+        assertEquals(URL_PUBLICA, actividad.getImagenPrincipalUrl());
     }
 
     @Test

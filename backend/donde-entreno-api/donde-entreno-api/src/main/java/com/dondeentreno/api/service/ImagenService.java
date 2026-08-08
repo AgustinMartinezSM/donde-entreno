@@ -163,7 +163,8 @@ public class ImagenService {
         Map<Long, String> urlPorActividad = new HashMap<>();
 
         for (Imagen imagen : imagenes) {
-            if (imagen.getActividad() == null || imagen.getUrl() == null) {
+            if (imagen.getActividad() == null
+                    || !ImagenMapper.esUrlPublicable(imagen.getUrl())) {
                 continue;
             }
 

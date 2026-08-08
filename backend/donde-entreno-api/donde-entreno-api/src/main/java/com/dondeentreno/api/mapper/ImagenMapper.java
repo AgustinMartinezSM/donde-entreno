@@ -14,6 +14,30 @@ import com.dondeentreno.api.entity.PerfilPublicador;
 public class ImagenMapper {
 
     /**
+     * Indica si una URL de imagen es servible por un cliente.
+     *
+     * Desde el bloque de imágenes con moderación las imágenes viven en
+     * Supabase Storage y se guardan con su URL absoluta. Las rutas
+     * relativas ("/uploads/...") son legado de cuando los archivos se
+     * guardaban en disco: la API no expone recursos estáticos y el
+     * contenedor es efímero, así que no resuelven en ningún entorno.
+     * Publicarlas equivale a publicar un link roto, por eso se tratan
+     * como ausencia de imagen.
+     *
+     * @param url URL almacenada en la fila de imagen.
+     * @return true si es absoluta http(s).
+     */
+    public static boolean esUrlPublicable(String url) {
+        if (url == null) {
+            return false;
+        }
+
+        String urlLimpia = url.trim();
+
+        return urlLimpia.startsWith("https://") || urlLimpia.startsWith("http://");
+    }
+
+    /**
      * Convierte Imagen a ImagenDTO.
      *
      * @param imagen entidad obtenida desde PostgreSQL.

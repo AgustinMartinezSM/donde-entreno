@@ -115,6 +115,26 @@ class PublicadorActividadMapperTest {
         assertNull(PublicadorActividadMapper.resolverImagenPrincipalUrl(List.of()));
     }
 
+    /*
+      Las rutas relativas son legado del disco local: no resuelven en
+      ningún entorno, así que el panel las trata como si no hubiera imagen.
+    */
+    @Test
+    void resolverImagenPrincipalUrlDescartaLasRutasRelativasLegado() {
+        Imagen legadoPrincipal = imagen(303L, "PRINCIPAL", "/uploads/actividades/boxeo.jpg", 1);
+        Imagen galeriaPublicable = imagen(304L, "GALERIA", "https://img.test/galeria.jpg", 2);
+
+        assertNull(
+                PublicadorActividadMapper.resolverImagenPrincipalUrl(List.of(legadoPrincipal))
+        );
+        assertEquals(
+                "https://img.test/galeria.jpg",
+                PublicadorActividadMapper.resolverImagenPrincipalUrl(
+                        List.of(legadoPrincipal, galeriaPublicable)
+                )
+        );
+    }
+
     @Test
     void mappersSonNullSafeYNoExponenCamposSensibles() {
         assertNull(PublicadorActividadMapper.toResumenDTO(null, null));

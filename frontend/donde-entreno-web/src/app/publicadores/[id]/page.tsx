@@ -169,47 +169,110 @@ export default async function PerfilPublicadorPage({
         <div className="py-7 sm:py-9">
           {/* Encabezado del perfil: portada + identidad */}
           <article className="overflow-hidden rounded-[24px] border border-[#D9E2EC] bg-white shadow-[0_12px_35px_rgba(15,61,94,0.08)]">
-            <div className="relative h-36 sm:h-48">
+            {/*
+              La portada solo reserva altura cuando hay una imagen que
+              mostrar. Sin imagen alcanza una banda fina de color: una
+              franja alta de degradado dejaba el perfil arrancando con
+              200px vacíos.
+            */}
+            <div
+              className={`relative ${
+                portadaUrl ? "h-40 sm:h-56" : "h-20 sm:h-24"
+              }`}
+            >
               {portadaUrl ? (
-                <Image
-                  src={portadaUrl}
-                  alt=""
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 1100px"
-                  className="object-cover"
-                />
+                <>
+                  <Image
+                    src={portadaUrl}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 1100px"
+                    className="object-cover"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-[#0F3D5E]/55 via-transparent to-transparent"
+                  />
+                </>
               ) : (
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872]"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0F3D5E]/60 via-transparent to-transparent" />
             </div>
 
-            <div className="px-5 pb-6 sm:px-8 sm:pb-7">
-              <div className="-mt-10 flex items-end justify-between gap-4 sm:-mt-12">
-                {logoUrl ? (
-                  <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:h-24 sm:w-24">
-                    <Image
-                      src={logoUrl}
-                      alt={`Logo de ${perfil.nombre}`}
-                      fill
-                      sizes="96px"
-                      className="object-cover"
-                    />
-                  </span>
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xl font-extrabold tracking-[0.08em] text-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:h-24 sm:w-24"
-                  >
-                    {iniciales}
-                  </span>
-                )}
+            <div className="px-5 pb-6 sm:px-8 sm:pb-8">
+              {/*
+                Identidad y acciones. En desktop comparten una fila, con el
+                avatar montado sobre la portada y el nombre a su lado; en
+                mobile las acciones bajan a su propia fila, porque cuando
+                convivían con el avatar se superponían (a 320px "Seguir"
+                quedaba flotando sobre la portada).
+              */}
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+                <div className="flex min-w-0 items-end gap-4">
+                  {logoUrl ? (
+                    <span className="relative -mt-12 h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28">
+                      <Image
+                        src={logoUrl}
+                        alt={`Logo de ${perfil.nombre}`}
+                        fill
+                        sizes="112px"
+                        className="object-cover"
+                      />
+                    </span>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="-mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xl font-extrabold tracking-[0.08em] text-white ring-4 ring-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
+                    >
+                      {iniciales}
+                    </span>
+                  )}
 
-                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <div className="min-w-0 pb-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h1 className="text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-3xl">
+                        {perfil.nombre}
+                      </h1>
+                      {perfil.verificado === true ? (
+                        <span
+                          role="img"
+                          aria-label="Publicador verificado"
+                          title="Publicador verificado"
+                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-white"
+                        >
+                          <svg
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          >
+                            <path d="m5.5 10 3 3 6-6" />
+                          </svg>
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <p className="mt-1 text-sm font-bold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
+                      {tipoVisible}
+                    </p>
+                  </div>
+                </div>
+
+                {/*
+                  Seguir es un botón "md" y Compartir uno "sm": quedaban
+                  escalonados (46px contra 40px). items-stretch los lleva a
+                  los dos a la altura del más alto; min-height solo no
+                  alcanzaba porque el contenido de Seguir la supera.
+                */}
+                <div className="grid grid-cols-2 items-stretch gap-2 sm:flex sm:shrink-0 sm:items-stretch sm:gap-3 [&>button]:min-h-11 [&>button]:w-full sm:[&>button]:w-auto">
                   <SeguirPublicadorButton
                     perfilPublicadorId={perfil.id}
                     perfilPublicadorNombre={perfil.nombre}
@@ -221,64 +284,50 @@ export default async function PerfilPublicadorPage({
                 </div>
               </div>
 
-              <div className="mt-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-3xl">
-                    {perfil.nombre}
-                  </h1>
+              {perfil.descripcion ? (
+                <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--color-muted)] sm:text-base">
+                  {perfil.descripcion}
+                </p>
+              ) : null}
+
+              {/*
+                Datos de un vistazo: el perfil sin descripción ni portada
+                quedaba prácticamente vacío entre el nombre y el contacto.
+              */}
+              {!huboErrorActividades ? (
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#E8F6FB] px-3 py-1.5 text-xs font-extrabold text-[#0F6F8F]">
+                    {totalActividades === 1
+                      ? "1 actividad publicada"
+                      : `${totalActividades} actividades publicadas`}
+                  </span>
                   {perfil.verificado === true ? (
-                    <span
-                      role="img"
-                      aria-label="Publicador verificado"
-                      title="Publicador verificado"
-                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-white"
-                    >
-                      <svg
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-3.5 w-3.5"
-                        aria-hidden="true"
-                      >
-                        <path d="m5.5 10 3 3 6-6" />
-                      </svg>
+                    <span className="rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold text-[#1D7B4A]">
+                      Perfil verificado
                     </span>
                   ) : null}
                 </div>
+              ) : null}
 
-                <p className="mt-1 text-sm font-bold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
-                  {tipoVisible}
-                </p>
-
-                {perfil.descripcion ? (
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--color-muted)] sm:text-base">
-                    {perfil.descripcion}
-                  </p>
-                ) : null}
-
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="sm:w-64">
-                    <ContactButton
-                      whatsapp={perfil.whatsapp}
-                      instagram={perfil.instagram}
-                      email={perfil.emailContacto}
-                      className=""
-                    />
-                  </div>
-                  {sitioWebUrl ? (
-                    <a
-                      href={sitioWebUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-11 items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
-                    >
-                      Sitio web ↗
-                    </a>
-                  ) : null}
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="sm:w-64">
+                  <ContactButton
+                    whatsapp={perfil.whatsapp}
+                    instagram={perfil.instagram}
+                    email={perfil.emailContacto}
+                    className=""
+                  />
                 </div>
+                {sitioWebUrl ? (
+                  <a
+                    href={sitioWebUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+                  >
+                    Sitio web ↗
+                  </a>
+                ) : null}
               </div>
             </div>
           </article>

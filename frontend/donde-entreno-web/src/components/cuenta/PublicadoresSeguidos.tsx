@@ -1,100 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { useAuthSession } from "../auth/AuthSessionProvider";
-import {
-  dejarDeSeguirPublicador,
-  listarPublicadoresSeguidos,
-  seguirPublicador,
-} from "../../services/seguimientoService";
-import type { PublicadorSeguido } from "../../types/seguimiento";
+import type { Seguimientos } from "./useSeguimientos";
 import { PublisherIdentity } from "../social/PublisherIdentity";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
-import { SurfaceCard } from "../ui/SurfaceCard";
 
 /*
-  Sección de mi-cuenta: publicadores que el usuario sigue (Bloque 8).
+  Solapa "Siguiendo" de mi perfil: los publicadores que el usuario sigue.
   Además de listar, permite dejar de seguir (y deshacer) sin salir de la
   página, con el mismo patrón optimista del botón Seguir del detalle.
+
+  El estado lo trae useSeguimientos desde la página, porque la cabecera
+  del perfil muestra el mismo contador.
 */
-export function PublicadoresSeguidos() {
-  const { accessToken } = useAuthSession();
-  const [seguidos, setSeguidos] = useState<PublicadorSeguido[] | null>(null);
-  const [error, setError] = useState(false);
-  /* Ids con "dejar de seguir" aplicado en esta visita (permite deshacer). */
-  const [idsNoSeguidos, setIdsNoSeguidos] = useState<number[]>([]);
-  const [idProcesando, setIdProcesando] = useState<number | null>(null);
-
-  useEffect(() => {
-    let activo = true;
-
-    if (!accessToken) {
-      return () => {
-        activo = false;
-      };
-    }
-
-    listarPublicadoresSeguidos(accessToken)
-      .then((lista) => {
-        if (activo) {
-          setSeguidos(lista);
-          setError(false);
-        }
-      })
-      .catch(() => {
-        if (activo) {
-          setError(true);
-        }
-      });
-
-    return () => {
-      activo = false;
-    };
-  }, [accessToken]);
-
-  async function alternarSeguimiento(publicador: PublicadorSeguido) {
-    if (!accessToken || idProcesando !== null) {
-      return;
-    }
-
-    const dejaba = !idsNoSeguidos.includes(publicador.perfilPublicadorId);
-    setIdProcesando(publicador.perfilPublicadorId);
-    setIdsNoSeguidos((ids) =>
-      dejaba
-        ? [...ids, publicador.perfilPublicadorId]
-        : ids.filter((id) => id !== publicador.perfilPublicadorId)
-    );
-
-    try {
-      if (dejaba) {
-        await dejarDeSeguirPublicador(publicador.perfilPublicadorId, accessToken);
-      } else {
-        await seguirPublicador(publicador.perfilPublicadorId, accessToken);
-      }
-    } catch {
-      /* Revertimos el cambio optimista si la API falla. */
-      setIdsNoSeguidos((ids) =>
-        dejaba
-          ? ids.filter((id) => id !== publicador.perfilPublicadorId)
-          : [...ids, publicador.perfilPublicadorId]
-      );
-    } finally {
-      setIdProcesando(null);
-    }
-  }
-
-  const cargando = !error && seguidos === null;
+export function PublicadoresSeguidos({
+  seguimientos,
+}: {
+  seguimientos: Seguimientos;
+}) {
+  const { seguidos, error, cargando, idsNoSeguidos, idProcesando, alternar } =
+    seguimientos;
 
   return (
-    <SurfaceCard className="p-6 sm:p-8">
+    <section aria-labelledby="seguidos-titulo">
       <SectionHeader
         eyebrow="Social"
         title="Publicadores que sigo"
         description="Los clubes, gimnasios y profes que elegiste seguir para descubrir sus actividades."
+        titleId="seguidos-titulo"
       />
 
       {error ? (
@@ -156,7 +91,7 @@ export function PublicadoresSeguidos() {
                       type="button"
                       variant={dejoDeSeguir ? "primary" : "secondary"}
                       size="sm"
-                      onClick={() => alternarSeguimiento(publicador)}
+                      onClick={() => alternar(publicador)}
                       disabled={idProcesando === publicador.perfilPublicadorId}
                       aria-label={
                         dejoDeSeguir
@@ -180,7 +115,7 @@ export function PublicadoresSeguidos() {
           })}
         </ul>
       ) : null}
-    </SurfaceCard>
+    </section>
   );
 }
 
@@ -215,4 +150,3 @@ function formatearSeguidoDesde(fechaIso: string | null): string {
     year: "numeric",
   })}`;
 }
-

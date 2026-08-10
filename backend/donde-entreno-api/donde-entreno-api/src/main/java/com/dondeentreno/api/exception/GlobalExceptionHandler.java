@@ -350,6 +350,48 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja consultas al asistente con entrada invalida
+     * (vacia o mas larga que el maximo configurado).
+     */
+    @ExceptionHandler(ConsultaAsistenteInvalidaException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarConsultaAsistenteInvalida(
+            ConsultaAsistenteInvalidaException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Maneja el limite de consultas por IP del asistente.
+     *
+     * No se loguea el texto de la consulta: para diagnosticar alcanza con
+     * saber que la ruta recibio mas trafico del permitido.
+     */
+    @ExceptionHandler(LimiteConsultasExcedidoException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarLimiteConsultasExcedido(
+            LimiteConsultasExcedidoException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
+    }
+
+    /**
      * Maneja rutas inexistentes que Spring MVC resuelve como recurso no encontrado.
      *
      * @param exception excepcion de ruta o recurso inexistente.

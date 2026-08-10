@@ -85,6 +85,13 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ubicaciones").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/solicitudes-publicacion").permitAll()
+                        /*
+                          Asistente publico: no requiere cuenta, igual que
+                          el resto del descubrimiento. La proteccion contra
+                          abuso no es la autenticacion sino el limite por IP
+                          del controller y el tope diario del asistente.
+                        */
+                        .requestMatchers(HttpMethod.POST, "/api/asistente/consulta").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/publicador").permitAll()

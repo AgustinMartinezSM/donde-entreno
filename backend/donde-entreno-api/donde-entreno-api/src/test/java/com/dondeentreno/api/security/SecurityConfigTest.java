@@ -1,8 +1,12 @@
 package com.dondeentreno.api.security;
 
+import com.dondeentreno.api.asistente.LimitadorConsultas;
+import com.dondeentreno.api.controller.AsistenteController;
 import com.dondeentreno.api.controller.AuthController;
 import com.dondeentreno.api.controller.HealthController;
 import com.dondeentreno.api.controller.SolicitudPublicacionController;
+import com.dondeentreno.api.dto.AsistenteRespuestaDTO;
+import com.dondeentreno.api.service.AsistenteService;
 import com.dondeentreno.api.dto.AuthUsuarioDTO;
 import com.dondeentreno.api.dto.LoginResponseDTO;
 import com.dondeentreno.api.dto.SolicitudPublicacionResponseDTO;
@@ -46,7 +50,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {
         HealthController.class,
         SolicitudPublicacionController.class,
-        AuthController.class
+        AuthController.class,
+        AsistenteController.class
 }, excludeAutoConfiguration = UserDetailsServiceAutoConfiguration.class)
 @Import({
         SecurityConfig.class,
@@ -73,6 +78,33 @@ class SecurityConfigTest {
 
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean
+    private AsistenteService asistenteService;
+
+    @MockitoBean
+    private LimitadorConsultas limitadorConsultas;
+
+    /*
+      El asistente es el POST publico nuevo del bloque G. Si alguna vez
+      deja de estar en la lista de permitAll, el widget deja de funcionar
+      para visitantes sin cuenta, que son la mayoria.
+    */
+    @Test
+    void asistenteEsPublicoSinToken() throws Exception {
+        when(limitadorConsultas.registrarConsulta(any())).thenReturn(true);
+        when(asistenteService.responder(any())).thenReturn(new AsistenteRespuestaDTO(
+                "Encontre 1 actividad de Karate.",
+                List.of(),
+                List.of(),
+                "local"
+        ));
+
+        mockMvc.perform(post("/api/asistente/consulta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"texto\":\"busco karate\"}"))
+                .andExpect(status().isOk());
+    }
 
     @Test
     void healthSiguePublico() throws Exception {

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -115,6 +117,45 @@ class AsistenteGeminiTest {
         assertThat(gemini.extraerInterpretacion("{\"steps\":[]}")).isEmpty();
         assertThat(gemini.extraerInterpretacion("")).isEmpty();
         assertThat(gemini.extraerInterpretacion(null)).isEmpty();
+    }
+
+    /*
+      La forma de response_format ya nos rompió una vez: lo mandamos como
+      objeto con type "json_schema" cuando la API espera una LISTA de
+      formatos con mime_type y schema. Daba 400 y el asistente caía al
+      motor local sin que se notara desde afuera. Este test lo fija.
+    */
+    @Test
+    void mandaResponseFormatComoListaConMimeTypeYEsquema() {
+        Map<String, Object> cuerpo = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", true);
+
+        assertThat(cuerpo.get("response_format")).isInstanceOf(List.class);
+
+        List<?> formatos = (List<?>) cuerpo.get("response_format");
+        assertThat(formatos).hasSize(1);
+
+        Map<?, ?> formato = (Map<?, ?>) formatos.get(0);
+        assertThat(formato.get("type")).isEqualTo("text");
+        assertThat(formato.get("mime_type")).isEqualTo("application/json");
+        assertThat(formato.get("schema")).isNotNull();
+    }
+
+    @Test
+    void elReintentoVaSinEsquemaPeroConLaMismaInstruccion() {
+        Map<String, Object> conEsquema = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", true);
+        Map<String, Object> sinEsquema = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", false);
+
+        assertThat(sinEsquema).doesNotContainKey("response_format");
+        assertThat(sinEsquema.get("system_instruction"))
+                .isEqualTo(conEsquema.get("system_instruction"));
+        assertThat(sinEsquema.get("input")).isEqualTo("busco yoga");
+    }
+
+    @Test
+    void elCatalogoViajaEnLaInstruccionDeSistema() {
+        Map<String, Object> cuerpo = gemini.armarCuerpo("hola", "Deportes: Yoga, Boxeo", true);
+
+        assertThat((String) cuerpo.get("system_instruction")).contains("Deportes: Yoga, Boxeo");
     }
 
     @Test

@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -106,12 +107,40 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
             return Optional.empty();
         }
 
+        Optional<InterpretacionRemota> conEsquema = llamar(texto, terminosValidos, true);
+
+        if (conEsquema.isPresent()) {
+            return conEsquema;
+        }
+
+        /*
+          Reintento sin response_format.
+
+          La forma de ese campo ya nos rompió una vez (lo mandamos como
+          objeto cuando es un array), y no se puede probar sin la key, que
+          vive solo en Render. La instrucción de sistema ya pide JSON y el
+          parser tolera cercos de código, así que si el esquema deja de ser
+          aceptado el asistente sigue funcionando en vez de quedar mudo.
+
+          No consume cuota extra: el tope diario se descuenta una sola vez
+          por consulta, antes de llegar acá.
+        */
+        log.info("Asistente: reintento del modelo sin esquema de salida.");
+
+        return llamar(texto, terminosValidos, false);
+    }
+
+    private Optional<InterpretacionRemota> llamar(
+            String texto,
+            String terminosValidos,
+            boolean conEsquema
+    ) {
         try {
             String crudo = restClient.post()
                     .uri(URL_INTERACTIONS)
                     .header("x-goog-api-key", propiedades.getGeminiApiKey())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(armarCuerpo(texto, terminosValidos))
+                    .body(armarCuerpo(texto, terminosValidos, conEsquema))
                     .retrieve()
                     .body(String.class);
 
@@ -119,18 +148,21 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
         } catch (Exception excepcion) {
             /*
               Nunca propagamos: el asistente tiene que seguir respondiendo
-              con el motor local. Del error se loguea el tipo y el mensaje,
-              que no contienen la API key (viaja en un header, no en la URL).
+              con el motor local. Se loguea el tipo de excepción y su
+              mensaje, que no contienen la API key: viaja en un header, no
+              en la URL.
             */
             log.warn(
-                    "Asistente: el motor remoto no respondio ({}). Se sigue con el motor local.",
-                    excepcion.getClass().getSimpleName()
+                    "Asistente: el motor remoto no respondio (conEsquema={}, {}): {}",
+                    conEsquema,
+                    excepcion.getClass().getSimpleName(),
+                    excepcion.getMessage()
             );
             return Optional.empty();
         }
     }
 
-    private Map<String, Object> armarCuerpo(String texto, String terminosValidos) {
+    Map<String, Object> armarCuerpo(String texto, String terminosValidos, boolean conEsquema) {
         Map<String, Object> cuerpo = new LinkedHashMap<>();
 
         cuerpo.put("model", propiedades.getGeminiModel());
@@ -142,10 +174,19 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
                 "max_output_tokens", 300,
                 "thinking_level", "minimal"
         ));
-        cuerpo.put("response_format", Map.of(
-                "type", "json_schema",
-                "json_schema", Map.of("schema", ESQUEMA)
-        ));
+
+        if (conEsquema) {
+            /*
+              response_format es una LISTA de formatos, no un objeto, y el
+              esquema va bajo "schema" junto a "mime_type". Mandarlo como
+              objeto devuelve 400.
+            */
+            cuerpo.put("response_format", List.of(Map.of(
+                    "type", "text",
+                    "mime_type", "application/json",
+                    "schema", ESQUEMA
+            )));
+        }
 
         return cuerpo;
     }

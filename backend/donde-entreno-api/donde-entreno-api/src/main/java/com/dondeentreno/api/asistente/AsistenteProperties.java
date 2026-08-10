@@ -36,8 +36,21 @@ public class AsistenteProperties {
      */
     private String geminiModel = "";
 
-    /** Tope global de llamadas a Gemini por día. Al agotarse se cae al motor local. */
-    private int geminiDailyLimit = 30;
+    /**
+     * Tope global de llamadas a Gemini por día. Al agotarse se cae al motor
+     * local, sin error para quien está conversando.
+     *
+     * Eran 30 cuando el modelo entraba solo donde el motor local no
+     * entendía. En el V2 entra en cada turno de la conversación, así que 30
+     * se agotaban con seis charlas: el primer grupo de gente que probara el
+     * asistente lo dejaba en modo local para el resto del día.
+     *
+     * 300 son unas sesenta conversaciones diarias —holgado para el tráfico
+     * actual— y siguen siendo un tope real: el límite por IP permite 60
+     * consultas por hora, así que sin este número una sola IP podría
+     * disparar más de mil llamadas en un día.
+     */
+    private int geminiDailyLimit = 300;
 
     /**
      * Cuántos mensajes previos se tienen en cuenta.

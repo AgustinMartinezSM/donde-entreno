@@ -1,10 +1,14 @@
 package com.dondeentreno.api.config;
 
+import com.dondeentreno.api.asistente.AsistenteGemini;
 import com.dondeentreno.api.asistente.AsistenteProperties;
 import com.dondeentreno.api.asistente.LimitadorConsultas;
+import com.dondeentreno.api.asistente.MotorAsistenteRemoto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 import java.time.Clock;
 
@@ -27,5 +31,20 @@ public class AsistenteConfig {
     @Bean
     public LimitadorConsultas limitadorConsultas(AsistenteProperties propiedades) {
         return new LimitadorConsultas(propiedades, Clock.systemUTC());
+    }
+
+    /**
+     * El motor remoto existe siempre; si Gemini está apagado o sin
+     * credenciales, responde que no está disponible y el asistente usa
+     * solo el motor local. Encender o apagar es una variable de entorno,
+     * sin tocar código.
+     */
+    @Bean
+    public MotorAsistenteRemoto motorAsistenteRemoto(
+            AsistenteProperties propiedades,
+            RestClient.Builder restClientBuilder,
+            ObjectMapper objectMapper
+    ) {
+        return new AsistenteGemini(propiedades, restClientBuilder, objectMapper);
     }
 }

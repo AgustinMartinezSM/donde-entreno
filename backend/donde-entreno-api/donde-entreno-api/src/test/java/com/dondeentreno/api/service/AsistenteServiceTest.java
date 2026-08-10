@@ -1,6 +1,9 @@
 package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.asistente.AsistenteProperties;
+import com.dondeentreno.api.asistente.InterpretacionRemota;
+import com.dondeentreno.api.asistente.LimitadorConsultas;
+import com.dondeentreno.api.asistente.MotorAsistenteRemoto;
 import com.dondeentreno.api.asistente.ResolutorConsulta;
 import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.dto.AsistenteEnlaceDTO;
@@ -15,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,27 +26,43 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AsistenteServiceTest {
 
     private FiltroService filtroService;
     private ActividadService actividadService;
+    private MotorAsistenteRemoto motorRemoto;
+    private LimitadorConsultas limitador;
     private AsistenteService asistenteService;
 
     @BeforeEach
     void prepararService() {
         filtroService = mock(FiltroService.class);
         actividadService = mock(ActividadService.class);
+        motorRemoto = mock(MotorAsistenteRemoto.class);
+        limitador = mock(LimitadorConsultas.class);
 
         asistenteService = new AsistenteService(
                 filtroService,
                 actividadService,
                 new ResolutorConsulta(),
-                new AsistenteProperties()
+                new AsistenteProperties(),
+                motorRemoto,
+                limitador
         );
 
         when(filtroService.obtenerOpcionesDeFiltros()).thenReturn(catalogo());
+        /* Por defecto, como en produccion hasta encenderlo: Gemini apagado. */
+        when(motorRemoto.estaDisponible()).thenReturn(false);
+    }
+
+    private void conModeloDisponible(InterpretacionRemota interpretacion) {
+        when(motorRemoto.estaDisponible()).thenReturn(true);
+        when(limitador.consumirCuotaGemini()).thenReturn(true);
+        when(motorRemoto.interpretar(any(), any())).thenReturn(Optional.ofNullable(interpretacion));
     }
 
     private FiltroOpcionesDTO catalogo() {
@@ -147,6 +167,68 @@ class AsistenteServiceTest {
     }
 
     @Test
+    void conElModeloApagadoNiSiquieraSeLeConsulta() {
+        asistenteService.responder("tengo 50 anios y quiero moverme");
+
+        verify(motorRemoto, never()).interpretar(any(), any());
+    }
+
+    @Test
+    void usaAlModeloSoloCuandoElMotorLocalNoEntendio() {
+        conModeloDisponible(new InterpretacionRemota("Yoga", null, null, null, null));
+        when(actividadService.buscarActividadesConFiltros(
+                any(), any(), any(), any(), any(), any(), any(), any(), any()
+        )).thenReturn(List.of(actividad("Yoga inicial")));
+
+        /* Esta la entiende el motor local: el modelo no deberia tocarse. */
+        AsistenteRespuestaDTO local = asistenteService.responder("busco yoga");
+        assertThat(local.getFuente()).isEqualTo("local");
+        verify(motorRemoto, never()).interpretar(any(), any());
+
+        /* Esta no: aca si entra, y la respuesta la sigue armando el backend. */
+        AsistenteRespuestaDTO remota = asistenteService.responder("quiero relajarme un poco");
+        assertThat(remota.getFuente()).isEqualTo("gemini");
+        assertThat(remota.getTexto()).contains("Yoga inicial");
+        assertThat(hrefs(remota)).containsExactly("/explorar?deporteSlug=yoga&page=0");
+    }
+
+    /*
+      El candado del bloque: lo que el modelo invente no existe en el
+      catalogo, no matchea y se descarta solo.
+    */
+    @Test
+    void descartaLosTerminosQueElModeloInventa() {
+        conModeloDisponible(new InterpretacionRemota("Quidditch", "Deportes magicos", "Hogwarts", null, null));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero jugar al quidditch");
+
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        assertThat(respuesta.getTexto()).contains("no la tengo del todo clara");
+        assertThat(hrefs(respuesta)).containsExactly("/explorar", "/deportes");
+    }
+
+    @Test
+    void sinCuotaDiariaNoLlamaAlModelo() {
+        when(motorRemoto.estaDisponible()).thenReturn(true);
+        when(limitador.consumirCuotaGemini()).thenReturn(false);
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero relajarme un poco");
+
+        verify(motorRemoto, never()).interpretar(any(), any());
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+    }
+
+    @Test
+    void siElModeloFallaElAsistenteResponderIgual() {
+        conModeloDisponible(null);
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero relajarme un poco");
+
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        assertThat(respuesta.getTexto()).contains("no la tengo del todo clara");
+    }
+
+    @Test
     void rechazaConsultaVacia() {
         assertThatThrownBy(() -> asistenteService.responder("   "))
                 .isInstanceOf(ConsultaAsistenteInvalidaException.class);
@@ -161,7 +243,9 @@ class AsistenteServiceTest {
                 filtroService,
                 actividadService,
                 new ResolutorConsulta(),
-                propiedades
+                propiedades,
+                motorRemoto,
+                limitador
         );
 
         assertThatThrownBy(() -> acotado.responder("un mensaje bastante mas largo que diez"))

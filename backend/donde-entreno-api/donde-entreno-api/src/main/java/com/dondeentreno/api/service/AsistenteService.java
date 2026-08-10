@@ -2,10 +2,16 @@ package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.asistente.AsistenteProperties;
 import com.dondeentreno.api.asistente.FiltrosResueltos;
+import com.dondeentreno.api.asistente.InterpretacionRemota;
+import com.dondeentreno.api.asistente.LimitadorConsultas;
+import com.dondeentreno.api.asistente.MotorAsistenteRemoto;
 import com.dondeentreno.api.asistente.ResolutorConsulta;
 import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.dto.AsistenteEnlaceDTO;
 import com.dondeentreno.api.dto.AsistenteRespuestaDTO;
+import com.dondeentreno.api.dto.BarrioDTO;
+import com.dondeentreno.api.dto.CategoriaDeportivaDTO;
+import com.dondeentreno.api.dto.DeporteDTO;
 import com.dondeentreno.api.dto.FiltroOpcionesDTO;
 import com.dondeentreno.api.exception.ConsultaAsistenteInvalidaException;
 import org.slf4j.Logger;
@@ -16,21 +22,24 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Asistente del lado del servidor.
  *
- * Paso A del bloque G: sin Gemini. Traduce el mensaje a filtros del
- * catálogo real, corre la búsqueda de verdad y arma una respuesta que
- * solo afirma lo que la base respalda.
+ * Traduce el mensaje a filtros del catálogo real, corre la búsqueda de
+ * verdad y arma una respuesta que solo afirma lo que la base respalda.
  *
  * Reglas que sostienen todo el bloque:
  * - Ningún enlace se escribe fuera de acá, y siempre a partir de slugs
  *   que salieron de la base.
  * - Ningún número sale de otro lado que no sea el resultado de la
  *   búsqueda. Si no hay actividades, se dice; no se maquilla.
- * - Cuando no se entiende la consulta, se admite. Ese es exactamente el
- *   hueco que va a cubrir Gemini en el paso D (ver responderSinEntender).
+ * - El modelo remoto SOLO traduce a términos del catálogo, y esos
+ *   términos vuelven a pasar por el resolutor determinístico. No escribe
+ *   una sola palabra de lo que lee el usuario, ni un solo enlace.
  */
 @Service
 public class AsistenteService {
@@ -41,22 +50,29 @@ public class AsistenteService {
     private static final int EJEMPLOS_EN_RESPUESTA = 2;
 
     private static final String FUENTE_LOCAL = "local";
+    private static final String FUENTE_GEMINI = "gemini";
 
     private final FiltroService filtroService;
     private final ActividadService actividadService;
     private final ResolutorConsulta resolutor;
     private final AsistenteProperties propiedades;
+    private final MotorAsistenteRemoto motorRemoto;
+    private final LimitadorConsultas limitador;
 
     public AsistenteService(
             FiltroService filtroService,
             ActividadService actividadService,
             ResolutorConsulta resolutor,
-            AsistenteProperties propiedades
+            AsistenteProperties propiedades,
+            MotorAsistenteRemoto motorRemoto,
+            LimitadorConsultas limitador
     ) {
         this.filtroService = filtroService;
         this.actividadService = actividadService;
         this.resolutor = resolutor;
         this.propiedades = propiedades;
+        this.motorRemoto = motorRemoto;
+        this.limitador = limitador;
     }
 
     /**
@@ -84,23 +100,43 @@ public class AsistenteService {
                 filtros.barrioId()
         );
 
-        if (!filtros.hayAlgo()) {
-            return responderSinEntender();
+        if (filtros.hayAlgo()) {
+            return construirRespuesta(filtros, FUENTE_LOCAL);
         }
 
+        /*
+          Recién acá entra el modelo, y solo para traducir. Lo que devuelve
+          vuelve a pasar por el mismo resolutor determinístico, así que de
+          este punto en adelante el camino es idéntico al local: mismas
+          búsquedas, mismos enlaces, mismos textos.
+        */
+        FiltrosResueltos delModelo = interpretarConMotorRemoto(consulta, opciones);
+
+        if (delModelo.hayAlgo()) {
+            return construirRespuesta(delModelo, FUENTE_GEMINI);
+        }
+
+        return responderSinEntender();
+    }
+
+    /**
+     * Arma la respuesta a partir de filtros ya validados contra el
+     * catálogo, sin importar quién los resolvió.
+     */
+    private AsistenteRespuestaDTO construirRespuesta(FiltrosResueltos filtros, String fuente) {
         /*
           La búsqueda por filtros no acepta categoría, así que una consulta
           que solo resolvió categoría se responde con el catálogo de esa
           categoría, sin inventar un conteo que no podemos calcular.
         */
         if (filtros.deporteSlug() == null && filtros.categoriaSlug() != null) {
-            return responderConCategoria(filtros);
+            return responderConCategoria(filtros, fuente);
         }
 
         List<ActividadDTO> encontradas = buscar(filtros);
 
         if (!encontradas.isEmpty()) {
-            return responderConResultados(filtros, encontradas);
+            return responderConResultados(filtros, encontradas, fuente);
         }
 
         /*
@@ -113,11 +149,83 @@ public class AsistenteService {
             List<ActividadDTO> enLaCiudad = buscar(ampliados);
 
             if (!enLaCiudad.isEmpty()) {
-                return responderAmpliandoZona(filtros, ampliados, enLaCiudad);
+                return responderAmpliandoZona(filtros, ampliados, enLaCiudad, fuente);
             }
         }
 
-        return responderSinResultados(filtros);
+        return responderSinResultados(filtros, fuente);
+    }
+
+    /**
+     * Le pide al modelo que traduzca la consulta a términos del catálogo.
+     *
+     * Tres compuertas antes de gastar: que esté encendido y con
+     * credenciales, que quede cuota diaria, y que la llamada no falle. Si
+     * cualquiera se cierra, se devuelve vacío y el asistente sigue con lo
+     * que sabe hacer solo.
+     */
+    private FiltrosResueltos interpretarConMotorRemoto(
+            String consulta,
+            FiltroOpcionesDTO opciones
+    ) {
+        if (!motorRemoto.estaDisponible()) {
+            return FiltrosResueltos.vacio();
+        }
+
+        if (!limitador.consumirCuotaGemini()) {
+            log.info("Asistente: cuota diaria del modelo agotada, se responde con el motor local.");
+            return FiltrosResueltos.vacio();
+        }
+
+        Optional<InterpretacionRemota> interpretacion =
+                motorRemoto.interpretar(consulta, describirCatalogo(opciones));
+
+        if (interpretacion.isEmpty()) {
+            return FiltrosResueltos.vacio();
+        }
+
+        /*
+          Acá está el candado: los términos que devuelve el modelo se
+          resuelven con el MISMO resolutor que la consulta del usuario. Lo
+          que invente no matchea contra el catálogo y se descarta solo, sin
+          necesidad de lista negra.
+        */
+        FiltrosResueltos resueltos = resolutor.resolver(
+                interpretacion.get().comoFrase(),
+                opciones
+        );
+
+        log.info(
+                "Asistente: el modelo interpreto resuelta={} deporte={} categoria={}",
+                resueltos.hayAlgo(),
+                resueltos.deporteSlug(),
+                resueltos.categoriaSlug()
+        );
+
+        return resueltos;
+    }
+
+    /**
+     * Lista compacta de lo que el modelo puede nombrar. Es todo dato
+     * público del catálogo: nada sensible viaja en el prompt.
+     */
+    private String describirCatalogo(FiltroOpcionesDTO opciones) {
+        return "Deportes: " + nombres(opciones.getDeportes(), DeporteDTO::getNombre)
+                + "\nCategorias: " + nombres(opciones.getCategorias(), CategoriaDeportivaDTO::getNombre)
+                + "\nBarrios: " + nombres(opciones.getBarrios(), BarrioDTO::getNombre)
+                + "\nNiveles: " + String.join(", ", opciones.getNiveles())
+                + "\nModalidades: " + String.join(", ", opciones.getModalidades());
+    }
+
+    private <T> String nombres(List<T> elementos, Function<T, String> nombreDe) {
+        if (elementos == null) {
+            return "";
+        }
+
+        return elementos.stream()
+                .map(nombreDe)
+                .filter(nombre -> nombre != null && !nombre.isBlank())
+                .collect(Collectors.joining(", "));
     }
 
     private String validarEntrada(String texto) {
@@ -160,7 +268,8 @@ public class AsistenteService {
 
     private AsistenteRespuestaDTO responderConResultados(
             FiltrosResueltos filtros,
-            List<ActividadDTO> encontradas
+            List<ActividadDTO> encontradas,
+            String fuente
     ) {
         String queEs = describirBusqueda(filtros);
         String donde = describirZona(filtros);
@@ -184,14 +293,15 @@ public class AsistenteService {
                         "¿Cómo contacto a un club?",
                         "¿Dónde veo precios y horarios?"
                 ),
-                FUENTE_LOCAL
+                fuente
         );
     }
 
     private AsistenteRespuestaDTO responderAmpliandoZona(
             FiltrosResueltos original,
             FiltrosResueltos ampliados,
-            List<ActividadDTO> enLaCiudad
+            List<ActividadDTO> enLaCiudad,
+            String fuente
     ) {
         String queEs = describirBusqueda(original);
         int total = enLaCiudad.size();
@@ -211,11 +321,11 @@ public class AsistenteService {
                         etiquetaVer(ampliados)
                 )),
                 List.of("¿Cómo filtro por barrio?", "¿Qué deportes hay?"),
-                FUENTE_LOCAL
+                fuente
         );
     }
 
-    private AsistenteRespuestaDTO responderSinResultados(FiltrosResueltos filtros) {
+    private AsistenteRespuestaDTO responderSinResultados(FiltrosResueltos filtros, String fuente) {
         String queEs = describirBusqueda(filtros);
 
         String texto = "Por ahora no hay actividades"
@@ -232,11 +342,11 @@ public class AsistenteService {
                         new AsistenteEnlaceDTO("/explorar", "Ir a Explorar")
                 ),
                 List.of("¿Qué deportes hay?", "No sé qué deporte elegir"),
-                FUENTE_LOCAL
+                fuente
         );
     }
 
-    private AsistenteRespuestaDTO responderConCategoria(FiltrosResueltos filtros) {
+    private AsistenteRespuestaDTO responderConCategoria(FiltrosResueltos filtros, String fuente) {
         String texto = "Tenemos varias opciones dentro de "
                 + filtros.categoriaNombre().toLowerCase()
                 + ". Mirá el catálogo de esa categoría y elegí el deporte que más te tire.";
@@ -248,16 +358,13 @@ public class AsistenteService {
                         "Ver " + filtros.categoriaNombre()
                 )),
                 List.of("No sé qué deporte elegir", "¿Cómo filtro en Explorar?"),
-                FUENTE_LOCAL
+                fuente
         );
     }
 
     /**
-     * Consulta que el motor local no supo interpretar.
-     *
-     * Es el único punto de entrada previsto para Gemini (paso D): si el
-     * modelo está disponible y queda cuota, acá se lo llama; si no, se
-     * devuelve esto mismo. La UI no cambia en ninguno de los dos casos.
+     * Nadie pudo interpretar la consulta: ni el motor local ni el modelo.
+     * Se admite, que es mejor que adivinar.
      */
     private AsistenteRespuestaDTO responderSinEntender() {
         return new AsistenteRespuestaDTO(

@@ -206,12 +206,6 @@ export function AsistenteWidget() {
   }
 
   /*
-    Rutas sin launcher flotante:
-    - "/": el Hero tiene su propio CTA del asistente.
-    - /admin, /login y /registro: el asistente de descubrimiento no aporta
-      sobre el backoffice ni sobre los formularios de acceso.
-  */
-  /*
     Sin burbuja flotante: el asistente se abre desde la barra inferior y
     desde el botón de la home. Una burbuja fija en la esquina se
     superponía con las barras de acción de las páginas (ya tapó una vez

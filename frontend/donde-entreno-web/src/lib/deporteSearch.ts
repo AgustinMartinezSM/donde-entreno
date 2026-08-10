@@ -41,6 +41,18 @@ const PUNTAJE_ALIAS_CATEGORIA_EXACTA = 700;
 const PUNTAJE_DEPORTE_RELACIONADO_CATEGORIA = 450;
 const PUNTAJE_DESCRIPCION_CONTIENE = 250;
 
+/*
+  Largo mínimo para aceptar una coincidencia por subcadena.
+
+  Con dos letras cualquier fragmento pega en cualquier lado: "con mi"
+  depura a "mi", que está dentro de "entrena-mi-ento" y de
+  "sub-mi-ssion grappling", y el asistente contestaba Jiu Jitsu a "algo
+  para hacer con mi hijo". Las coincidencias exacta y por prefijo no
+  pasan por acá, así que las búsquedas cortas de verdad ("k1", "bjj")
+  siguen andando.
+*/
+const LARGO_MINIMO_CONTIENE = 3;
+
 const aliasesPorDeporteSlug: Record<string, string[]> = {
   boxeo: [
     "boxeo",
@@ -79,14 +91,12 @@ const aliasesPorDeporteSlug: Record<string, string[]> = {
     "cancha",
     "pelota",
   ],
-  gimnasio: [
-    "gimnasio",
-    "gym",
-    "fitness",
-    "entrenamiento",
-    "entrenar",
-    "sala de musculacion",
-  ],
+  /*
+    Ojo: las claves de este mapa son slugs REALES de deportes. Una clave
+    que no existe en el catálogo deja sus alias huérfanos, sin error
+    visible. Acá vivía una clave "gimnasio" (no hay deporte con ese slug);
+    "gimnasio" y "gym" se resuelven como categoría, más abajo.
+  */
   natacion: [
     "natacion",
     "natación",
@@ -121,13 +131,16 @@ const aliasesPorDeporteSlug: Record<string, string[]> = {
   ],
   pilates: ["pilates", "reformer", "pilate", "postura", "core"],
   running: ["running", "correr", "trotar", "atletismo", "runner"],
-  tenis: ["tenis", "tennis", "raqueta"],
+  /* "raqueta" es el nombre de la categoría, no un sinónimo de tenis:
+     como alias suyo, "deportes con raqueta" resolvía Tenis. */
+  tenis: ["tenis", "tennis"],
   padel: ["padel", "pádel", "paddle", "paleta"],
   basquet: ["basquet", "básquet", "basket", "basketball"],
   voley: ["voley", "vóley", "volleyball", "volley"],
   karate: ["karate", "artes marciales", "defensa personal"],
   taekwondo: ["taekwondo", "tae kwon do", "artes marciales", "defensa personal"],
-  kickboxing: ["kickboxing", "kick boxing", "k1", "combate"],
+  /* Ídem "combate": con ese alias, "deportes de combate" caía en Kickboxing. */
+  kickboxing: ["kickboxing", "kick boxing", "k1"],
   "muay-thai": [
     "muay thai",
     "muay-thai",
@@ -145,21 +158,33 @@ const aliasesPorDeporteSlug: Record<string, string[]> = {
     "flexibilidad",
   ],
   calistenia: ["calistenia", "calisthenics", "barras", "peso corporal"],
-  cycling: ["cycling", "ciclismo", "bici", "bicicleta", "indoor bike", "spinning"],
+  /* La clave era "cycling" y el slug real es "ciclismo": todos estos
+     alias quedaban huérfanos y "spinning" o "bici" no resolvían nada. */
+  ciclismo: ["ciclismo", "cycling", "bici", "bicicleta", "indoor bike", "spinning"],
 };
 
 const aliasesPorCategoria: Record<string, string[]> = {
   "deportes-de-combate": [
     "deportes de combate",
     "deportes de contacto",
-    "artes marciales",
     "pelea",
     "lucha",
-    "defensa personal",
     "mma",
     "grappling",
     "striking",
     "combate",
+  ],
+  /*
+    "artes marciales" y "defensa personal" estaban acá arriba, en combate,
+    y no existía esta entrada: quien preguntaba por artes marciales
+    terminaba en boxeo, kickboxing, MMA y muay thai en vez de karate,
+    judo, taekwondo y jiu jitsu, que son los de esta categoría.
+  */
+  "artes-marciales": [
+    "artes marciales",
+    "arte marcial",
+    "defensa personal",
+    "marcial",
   ],
   "actividades-acuaticas": [
     "actividades acuaticas",
@@ -225,7 +250,17 @@ const aliasesAmpliosDeCategoria = [
   "deportes de combate",
   "deportes de contacto",
   "deportes de equipo",
+  /* Pedido de categoría: karate y taekwondo lo tienen como alias propio y
+     se quedaban con la consulta en vez de mostrar todas las marciales. */
+  "defensa personal",
   "fitness",
+  /*
+    "gym" y "gimnasio" son pedidos de categoría, no de un deporte: sin
+    esto "gym cerca de casa" resolvía Aqua Gym, porque "aqua gym"
+    contiene "gym".
+  */
+  "gimnasio",
+  "gym",
   "outdoor",
 ];
 
@@ -352,6 +387,17 @@ function obtenerVariantesBusquedaPuntaje(
 ): VariantesBusquedaPuntaje {
   const busquedaNormalizada = normalizarTexto(busqueda);
   const busquedaDepurada = quitarPalabrasIntencion(busquedaNormalizada);
+
+  /*
+    Si al sacar conectores y palabras de intención no queda nada, la
+    consulta no tiene señal propia ("con", "de", "clases") y no debe
+    puntuar: el asistente parte la frase en fragmentos y con "con" solo
+    llegaba a puntuar media docena de deportes por categoría.
+  */
+  if (!busquedaDepurada) {
+    return { textos: [], compactos: [] };
+  }
+
   const textos = obtenerValoresUnicos([
     busquedaNormalizada,
     busquedaDepurada,
@@ -444,16 +490,27 @@ function textoCoincideConBusqueda(
       return false;
     }
 
+    /*
+      Mismo piso de largo que textoContieneBusqueda: con dos letras
+      cualquier fragmento pega en cualquier lado ("mi" está dentro de
+      "entrena-mi-ento" y de "sub-mi-ssion").
+    */
+    const tokensUtiles = busqueda.tokens.filter(
+      (token) => token.length >= LARGO_MINIMO_CONTIENE
+    );
     const coincideTexto = busqueda.textos.some(
       (query) =>
-        textoNormalizado.includes(query) || query.includes(textoNormalizado)
+        query.length >= LARGO_MINIMO_CONTIENE &&
+        (textoNormalizado.includes(query) || query.includes(textoNormalizado))
     );
     const coincideCompacto = busqueda.compactos.some(
-      (query) => textoCompacto.includes(query) || query.includes(textoCompacto)
+      (query) =>
+        query.length >= LARGO_MINIMO_CONTIENE &&
+        (textoCompacto.includes(query) || query.includes(textoCompacto))
     );
     const coincideTokens =
-      busqueda.tokens.length > 0 &&
-      busqueda.tokens.every(
+      tokensUtiles.length > 0 &&
+      tokensUtiles.every(
         (token) => textoNormalizado.includes(token) || textoCompacto.includes(token)
       );
 
@@ -533,10 +590,13 @@ function textoContieneBusqueda(
 
     return (
       busqueda.textos.some(
-        (query) => query.length > 0 && textoNormalizado.includes(query)
+        (query) =>
+          query.length >= LARGO_MINIMO_CONTIENE &&
+          textoNormalizado.includes(query)
       ) ||
       busqueda.compactos.some(
-        (query) => query.length > 0 && textoCompacto.includes(query)
+        (query) =>
+          query.length >= LARGO_MINIMO_CONTIENE && textoCompacto.includes(query)
       )
     );
   });

@@ -27,6 +27,16 @@ export type IntencionAsistente = {
   prioridad: PrioridadIntencion;
   // Frases o palabras clave, ya en minúsculas y sin tildes.
   palabrasClave: string[];
+  /*
+    Frases que solo cuentan si son TODA la entrada.
+
+    Para palabras muy generales que, sueltas, son la consulta entera
+    ("deportes"), pero dentro de una frase pertenecen a otra cosa
+    ("deportes de combate" es una categoría, no el catálogo completo).
+    Sin esto, la intención de prioridad alta ganaba antes de que el motor
+    pudiera resolver el deporte o la categoría que el usuario nombró.
+  */
+  palabrasClaveExactas?: string[];
   respuesta: RespuestaAsistente;
 };
 
@@ -90,7 +100,8 @@ function crearDeporte(
 }
 
 /*
-  Catálogo espejo de los deportes reales del seed (26 deportes).
+  Catálogo espejo de los deportes reales del seed (27 deportes,
+  verificados contra el catálogo de producción el 2026-08-08).
   Los slugs deben existir en la base: son el destino de los enlaces
   /explorar?deporteSlug=... que genera el asistente.
 */
@@ -240,12 +251,17 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       "recomendame",
       "recomendacion",
       "quiero empezar a entrenar",
-      "quiero entrenar",
       "quiero arrancar",
       "estoy indeciso",
       "estoy indecisa",
       "no me decido",
     ],
+    /*
+      "quiero entrenar boxeo" tiene que responder boxeo, no la guía para
+      elegir: la frase suelta pide ayuda, dentro de una oración es el
+      arranque de un pedido concreto.
+    */
+    palabrasClaveExactas: ["quiero entrenar", "quiero hacer deporte"],
     respuesta: {
       texto:
         "¡Te ayudo a elegir! Contame un poco más de vos: ¿preferís entrenar solo o en grupo? ¿Buscás algo intenso para descargar o algo más tranquilo?",
@@ -331,6 +347,15 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       "transpirar",
       "quemar calorias",
       "ponerme en forma rapido",
+      "ponerme en forma",
+      /*
+        Objetivo muy pedido y sin intención propia: sin estas frases,
+        "quiero bajar de peso" resolvía calistenia por el alias
+        "peso corporal".
+      */
+      "bajar de peso",
+      "perder peso",
+      "adelgazar",
     ],
     respuesta: {
       texto:
@@ -390,9 +415,12 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       "ver deportes",
       "catalogo de deportes",
       "deportes disponibles",
-      "deportes",
-      "deporte",
     ],
+    /*
+      Sueltas son "mostrame el catálogo"; dentro de una frase pertenecen a
+      otra cosa: "deportes de combate" es una categoría y antes caía acá.
+    */
+    palabrasClaveExactas: ["deportes", "deporte", "actividades"],
     respuesta: {
       texto:
         "Hay de todo: fútbol, boxeo, yoga, natación, gimnasios, artes marciales y mucho más. Podés recorrer el catálogo completo por categoría o ir directo a Explorar y filtrar ahí.",

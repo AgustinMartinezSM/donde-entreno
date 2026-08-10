@@ -193,6 +193,18 @@ function puntuarIntencion(
     }
   }
 
+  /*
+    Las exactas solo suman si son toda la entrada: dentro de una frase no
+    participan (ver palabrasClaveExactas en conocimiento.ts).
+  */
+  for (const palabraClave of intencion.palabrasClaveExactas ?? []) {
+    const claveNormalizada = normalizarTexto(palabraClave);
+
+    if (claveNormalizada && entradaNormalizada === claveNormalizada) {
+      puntaje += claveNormalizada.length * 3;
+    }
+  }
+
   return puntaje;
 }
 

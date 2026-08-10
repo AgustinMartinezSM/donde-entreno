@@ -39,6 +39,15 @@ public class AsistenteProperties {
     /** Tope global de llamadas a Gemini por día. Al agotarse se cae al motor local. */
     private int geminiDailyLimit = 30;
 
+    /**
+     * Cuántos mensajes previos se tienen en cuenta.
+     *
+     * Ocho son cuatro idas y vueltas: alcanza para que el asistente
+     * recuerde lo que la persona rechazó y prefirió, sin que el prompt
+     * crezca sin control ni que la instrucción de sistema se diluya.
+     */
+    private int maxMensajesHistorial = 8;
+
     public int getMaxInputChars() {
         return maxInputChars;
     }
@@ -93,6 +102,14 @@ public class AsistenteProperties {
 
     public void setGeminiDailyLimit(int geminiDailyLimit) {
         this.geminiDailyLimit = geminiDailyLimit;
+    }
+
+    public int getMaxMensajesHistorial() {
+        return maxMensajesHistorial;
+    }
+
+    public void setMaxMensajesHistorial(int maxMensajesHistorial) {
+        this.maxMensajesHistorial = maxMensajesHistorial;
     }
 
     /**

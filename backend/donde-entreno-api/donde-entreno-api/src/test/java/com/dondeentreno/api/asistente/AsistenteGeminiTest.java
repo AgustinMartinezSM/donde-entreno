@@ -1,5 +1,6 @@
 package com.dondeentreno.api.asistente;
 
+import com.dondeentreno.api.dto.AsistenteMensajeDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
@@ -7,15 +8,17 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests del parseo de la respuesta de la Interactions API.
+ * Tests del cliente de la Interactions API.
  *
- * Es la parte más frágil del cliente: el texto no viene en la raíz sino
- * dentro del paso "model_output" de un array de steps que además puede
- * traer pasos de "thought" adelante.
+ * Dos partes frágiles: el parseo (el texto no viene en la raíz sino dentro
+ * del paso "model_output", que además puede venir después de pasos de
+ * "thought") y la forma del cuerpo, que ya nos costó un 400 en cada
+ * llamada.
  */
 class AsistenteGeminiTest {
 
@@ -25,8 +28,19 @@ class AsistenteGeminiTest {
             new ObjectMapper()
     );
 
+    private ConsultaRemota consulta() {
+        return new ConsultaRemota(
+                "quiero algo social",
+                List.of(),
+                "Deportes: Yoga",
+                "Yoga, Funcional, Pádel",
+                Set.of(),
+                Set.of()
+        );
+    }
+
     @Test
-    void extraeLosTerminosDelPasoModelOutput() throws Exception {
+    void extraeLaRespuestaDelPasoModelOutput() throws Exception {
         String respuesta = """
                 {
                   "id": "v1_abc",
@@ -35,19 +49,19 @@ class AsistenteGeminiTest {
                     {
                       "type": "model_output",
                       "content": [
-                        {"type": "text", "text": "{\\"deporte\\":\\"Yoga\\",\\"barrio\\":\\"Centro\\"}"}
+                        {"type": "text", "text": "{\\"mensaje\\":\\"Va esto\\",\\"deportes\\":[{\\"nombre\\":\\"Pádel\\",\\"motivo\\":\\"social\\"}]}"}
                       ]
                     }
                   ]
                 }
                 """;
 
-        Optional<InterpretacionRemota> interpretacion = gemini.extraerInterpretacion(respuesta);
+        Optional<RespuestaModelo> interpretada = gemini.extraerRespuesta(respuesta);
 
-        assertThat(interpretacion).isPresent();
-        assertThat(interpretacion.get().deporte()).isEqualTo("Yoga");
-        assertThat(interpretacion.get().barrio()).isEqualTo("Centro");
-        assertThat(interpretacion.get().comoFrase()).isEqualTo("Yoga Centro");
+        assertThat(interpretada).isPresent();
+        assertThat(interpretada.get().mensaje()).isEqualTo("Va esto");
+        assertThat(interpretada.get().deportesODefecto()).hasSize(1);
+        assertThat(interpretada.get().deportesODefecto().get(0).nombre()).isEqualTo("Pádel");
     }
 
     /* Con thinking activado, el primer paso no es la respuesta. */
@@ -60,17 +74,18 @@ class AsistenteGeminiTest {
                     {
                       "type": "model_output",
                       "content": [
-                        {"type": "text", "text": "{\\"deporte\\":\\"Pilates\\"}"}
+                        {"type": "text", "text": "{\\"mensaje\\":\\"Pilates va bien\\"}"}
                       ]
                     }
                   ]
                 }
                 """;
 
-        Optional<InterpretacionRemota> interpretacion = gemini.extraerInterpretacion(respuesta);
-
-        assertThat(interpretacion).isPresent();
-        assertThat(interpretacion.get().deporte()).isEqualTo("Pilates");
+        assertThat(gemini.extraerRespuesta(respuesta))
+                .isPresent()
+                .get()
+                .extracting(RespuestaModelo::mensaje)
+                .isEqualTo("Pilates va bien");
     }
 
     @Test
@@ -81,17 +96,14 @@ class AsistenteGeminiTest {
                     {
                       "type": "model_output",
                       "content": [
-                        {"type": "text", "text": "```json\\n{\\"deporte\\":\\"Boxeo\\"}\\n```"}
+                        {"type": "text", "text": "```json\\n{\\"mensaje\\":\\"Dale\\"}\\n```"}
                       ]
                     }
                   ]
                 }
                 """;
 
-        Optional<InterpretacionRemota> interpretacion = gemini.extraerInterpretacion(respuesta);
-
-        assertThat(interpretacion).isPresent();
-        assertThat(interpretacion.get().deporte()).isEqualTo("Boxeo");
+        assertThat(gemini.extraerRespuesta(respuesta)).isPresent();
     }
 
     @Test
@@ -102,32 +114,49 @@ class AsistenteGeminiTest {
                     {
                       "type": "model_output",
                       "content": [
-                        {"type": "text", "text": "{\\"deporte\\":\\"Tenis\\",\\"confianza\\":0.9}"}
+                        {"type": "text", "text": "{\\"mensaje\\":\\"Ok\\",\\"confianza\\":0.9}"}
                       ]
                     }
                   ]
                 }
                 """;
 
-        assertThat(gemini.extraerInterpretacion(respuesta)).isPresent();
+        assertThat(gemini.extraerRespuesta(respuesta)).isPresent();
     }
 
     @Test
-    void devuelveVacioCuandoNoHayPasoDeSalida() throws Exception {
-        assertThat(gemini.extraerInterpretacion("{\"steps\":[]}")).isEmpty();
-        assertThat(gemini.extraerInterpretacion("")).isEmpty();
-        assertThat(gemini.extraerInterpretacion(null)).isEmpty();
+    void devuelveVacioCuandoNoHayNadaAprovechable() throws Exception {
+        assertThat(gemini.extraerRespuesta("{\"steps\":[]}")).isEmpty();
+        assertThat(gemini.extraerRespuesta("")).isEmpty();
+        assertThat(gemini.extraerRespuesta(null)).isEmpty();
+    }
+
+    /* Un JSON valido pero vacio equivale a no haber llamado. */
+    @Test
+    void unaRespuestaSinContenidoSeTrataComoFalla() throws Exception {
+        String respuesta = """
+                {
+                  "steps": [
+                    {
+                      "type": "model_output",
+                      "content": [{"type": "text", "text": "{\\"mensaje\\":\\"\\"}"}]
+                    }
+                  ]
+                }
+                """;
+
+        assertThat(gemini.extraerRespuesta(respuesta)).isEmpty();
     }
 
     /*
-      La forma de response_format ya nos rompió una vez: lo mandamos como
+      La forma de response_format ya nos rompio una vez: lo mandamos como
       objeto con type "json_schema" cuando la API espera una LISTA de
-      formatos con mime_type y schema. Daba 400 y el asistente caía al
+      formatos con mime_type y schema. Daba 400 y el asistente caia al
       motor local sin que se notara desde afuera. Este test lo fija.
     */
     @Test
     void mandaResponseFormatComoListaConMimeTypeYEsquema() {
-        Map<String, Object> cuerpo = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", true);
+        Map<String, Object> cuerpo = gemini.armarCuerpo(consulta(), true);
 
         assertThat(cuerpo.get("response_format")).isInstanceOf(List.class);
 
@@ -142,26 +171,62 @@ class AsistenteGeminiTest {
 
     @Test
     void elReintentoVaSinEsquemaPeroConLaMismaInstruccion() {
-        Map<String, Object> conEsquema = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", true);
-        Map<String, Object> sinEsquema = gemini.armarCuerpo("busco yoga", "Deportes: Yoga", false);
+        Map<String, Object> conEsquema = gemini.armarCuerpo(consulta(), true);
+        Map<String, Object> sinEsquema = gemini.armarCuerpo(consulta(), false);
 
         assertThat(sinEsquema).doesNotContainKey("response_format");
         assertThat(sinEsquema.get("system_instruction"))
                 .isEqualTo(conEsquema.get("system_instruction"));
-        assertThat(sinEsquema.get("input")).isEqualTo("busco yoga");
+        assertThat(sinEsquema.get("input")).isEqualTo(conEsquema.get("input"));
     }
 
+    /*
+      Las prohibiciones tienen su equivalente en codigo, pero tambien
+      tienen que estar dichas: si alguien reescribe la instruccion y las
+      saca, el modelo empieza a intentar cosas que despues hay que filtrar.
+    */
     @Test
-    void elCatalogoViajaEnLaInstruccionDeSistema() {
-        Map<String, Object> cuerpo = gemini.armarCuerpo("hola", "Deportes: Yoga, Boxeo", true);
+    void laInstruccionDeSistemaProhibeInventarYAfirmarDisponibilidad() {
+        String instruccion = (String) gemini.armarCuerpo(consulta(), true).get("system_instruction");
 
-        assertThat((String) cuerpo.get("system_instruction")).contains("Deportes: Yoga, Boxeo");
+        assertThat(instruccion)
+                .contains("PROHIBIDO")
+                .contains("No escribas ningun enlace")
+                .contains("profesional de la salud");
+        assertThat(instruccion.toLowerCase()).contains("precios");
+    }
+
+    /*
+      El historial va como texto dentro de input y el mensaje nuevo va
+      ultimo y anunciado: es lo que separa contexto de pedido.
+    */
+    @Test
+    void elHistorialYElMensajeNuevoViajanEnLaEntrada() {
+        ConsultaRemota conCharla = new ConsultaRemota(
+                "y algo más tranqui?",
+                List.of(
+                        new AsistenteMensajeDTO("usuario", "recomendame algo"),
+                        new AsistenteMensajeDTO("asistente", "Te tiro Funcional y Pádel")
+                ),
+                "Deportes: Yoga",
+                "Yoga, Funcional",
+                Set.of("Básquet"),
+                Set.of("Yoga")
+        );
+
+        String entrada = gemini.armarEntrada(conCharla);
+
+        assertThat(entrada).contains("CONVERSACION HASTA ACA");
+        assertThat(entrada).contains("Persona: recomendame algo");
+        assertThat(entrada).contains("Vos: Te tiro Funcional y Pádel");
+        assertThat(entrada).contains("YA RECHAZADOS POR LA PERSONA, no los propongas: Básquet");
+        assertThat(entrada).endsWith("y algo más tranqui?");
     }
 
     @Test
     void sinCredencialesNoEstaDisponibleYNoIntentaLlamar() {
         assertThat(gemini.estaDisponible()).isFalse();
-        assertThat(gemini.interpretar("busco yoga", "Deportes: Yoga")).isEmpty();
+        assertThat(gemini.conversar(consulta())).isEmpty();
     }
 
     @Test

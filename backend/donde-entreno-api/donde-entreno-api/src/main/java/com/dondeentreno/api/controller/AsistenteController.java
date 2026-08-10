@@ -59,7 +59,9 @@ public class AsistenteController {
             );
         }
 
-        return ResponseEntity.ok(asistenteService.responder(request.getTexto()));
+        return ResponseEntity.ok(
+                asistenteService.responder(request.getTexto(), request.getHistorial())
+        );
     }
 
     /**

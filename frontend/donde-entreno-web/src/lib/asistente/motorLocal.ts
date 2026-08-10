@@ -1,9 +1,9 @@
 /*
   Motor local del Asistente DondeEntreno.
 
-  Implementación 100% determinística de MotorAsistente sobre la base de
-  conocimiento (conocimiento.ts): sin red, sin aleatoriedad. La misma entrada
-  produce siempre la misma respuesta.
+  Implementación 100% determinística sobre la base de conocimiento
+  (conocimiento.ts): sin red, sin aleatoriedad. La misma entrada produce
+  siempre la misma respuesta.
 
   Cómo decide:
   1. Normaliza la entrada (sin tildes ni mayúsculas, igual que deporteSearch).
@@ -14,6 +14,10 @@
   4. Elige en este orden: intención de prioridad alta → deporte/categoría con
      puntaje fuerte → intención de prioridad baja → deporte/categoría con
      puntaje aceptable → fallback amable.
+
+  Además de la respuesta devuelve QUÉ CLASE de respuesta es, que es lo que
+  la cascada usa para decidir si alcanza con el navegador o si conviene
+  preguntarle al backend (ver motorCascada.ts).
 */
 
 import type { Deporte } from "../../types/deporte";
@@ -36,6 +40,7 @@ import type {
   ContextoAsistente,
   MotorAsistente,
   RespuestaAsistente,
+  ResultadoLocal,
 } from "./tipos";
 
 /*
@@ -271,42 +276,90 @@ function crearRespuestaCoincidencia(
 }
 
 /*
-  Motor local: implementa la interfaz async de MotorAsistente para poder
-  reemplazarlo por una IA real más adelante sin tocar la UI.
+  Un saludo suelto se contesta acá; un saludo con una pregunta adentro, no.
+
+  "hola" merece una respuesta instantánea y gratis. "holis, algún deporte
+  que recomiendes?" también matchea el saludo, pero contestarlo con el
+  saludo es exactamente lo que hacía sentir robot al asistente V1: lo que
+  la persona quiere es la recomendación.
+*/
+function esSoloUnSaludo(
+  intencion: IntencionAsistente,
+  entradaNormalizada: string
+): boolean {
+  return intencion.palabrasClave.some(
+    (palabraClave) => normalizarTexto(palabraClave) === entradaNormalizada
+  );
+}
+
+/**
+ * Resuelve la consulta en el navegador y dice qué clase de respuesta es.
+ *
+ * El "tipo" es lo que consume la cascada. Cuando devuelve "recomendacion"
+ * o "fallback" está diciendo "tengo algo, pero el backend lo va a hacer
+ * mejor": la respuesta que acompaña queda como red de contención.
+ */
+export function resolverLocal(
+  entrada: string,
+  contexto?: ContextoAsistente
+): ResultadoLocal {
+  const entradaNormalizada = normalizarTexto(entrada);
+
+  if (!entradaNormalizada) {
+    return { respuesta: RESPUESTA_FALLBACK, tipo: "fallback" };
+  }
+
+  const intencionAlta = elegirMejorIntencion(entradaNormalizada, "alta");
+
+  if (intencionAlta) {
+    return {
+      respuesta: adaptarRespuestaAlContexto(intencionAlta, contexto),
+      tipo: intencionAlta.tipo,
+    };
+  }
+
+  const coincidencia = resolverCatalogo(entradaNormalizada);
+
+  if (coincidencia && coincidencia.puntaje >= PUNTAJE_DEPORTE_FUERTE) {
+    return {
+      respuesta: crearRespuestaCoincidencia(coincidencia),
+      tipo: "deporte",
+    };
+  }
+
+  const intencionBaja = elegirMejorIntencion(entradaNormalizada, "baja");
+
+  if (intencionBaja) {
+    return {
+      respuesta: adaptarRespuestaAlContexto(intencionBaja, contexto),
+      tipo:
+        intencionBaja.tipo === "conversacion" &&
+        !esSoloUnSaludo(intencionBaja, entradaNormalizada)
+          ? "recomendacion"
+          : intencionBaja.tipo,
+    };
+  }
+
+  if (coincidencia && coincidencia.puntaje >= PUNTAJE_DEPORTE_MINIMO) {
+    return {
+      respuesta: crearRespuestaCoincidencia(coincidencia),
+      tipo: "deporte",
+    };
+  }
+
+  return { respuesta: RESPUESTA_FALLBACK, tipo: "fallback" };
+}
+
+/*
+  Motor local puro, sin cascada. Se mantiene como implementación de
+  MotorAsistente para poder usarlo solo (por ejemplo, en tests) y porque
+  es la red de contención de motorCascada.
 */
 export const motorAsistenteLocal: MotorAsistente = {
   async procesar(
     entrada: string,
     contexto?: ContextoAsistente
   ): Promise<RespuestaAsistente> {
-    const entradaNormalizada = normalizarTexto(entrada);
-
-    if (!entradaNormalizada) {
-      return RESPUESTA_FALLBACK;
-    }
-
-    const intencionAlta = elegirMejorIntencion(entradaNormalizada, "alta");
-
-    if (intencionAlta) {
-      return adaptarRespuestaAlContexto(intencionAlta, contexto);
-    }
-
-    const coincidencia = resolverCatalogo(entradaNormalizada);
-
-    if (coincidencia && coincidencia.puntaje >= PUNTAJE_DEPORTE_FUERTE) {
-      return crearRespuestaCoincidencia(coincidencia);
-    }
-
-    const intencionBaja = elegirMejorIntencion(entradaNormalizada, "baja");
-
-    if (intencionBaja) {
-      return adaptarRespuestaAlContexto(intencionBaja, contexto);
-    }
-
-    if (coincidencia && coincidencia.puntaje >= PUNTAJE_DEPORTE_MINIMO) {
-      return crearRespuestaCoincidencia(coincidencia);
-    }
-
-    return RESPUESTA_FALLBACK;
+    return resolverLocal(entrada, contexto).respuesta;
   },
 };

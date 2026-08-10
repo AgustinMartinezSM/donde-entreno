@@ -1,17 +1,28 @@
 /*
   Base de conocimiento declarativa del Asistente DondeEntreno.
 
-  Todo lo que el asistente "sabe" está acá: intenciones con palabras clave,
-  respuestas en español rioplatense, enlaces internos y opciones rápidas de
-  seguimiento. El motor (motorLocal.ts) solo normaliza, puntúa y elige; el
-  contenido se edita en este archivo sin tocar lógica.
+  Todo lo que el asistente resuelve SIN RED está acá: intenciones con
+  palabras clave, respuestas en español rioplatense, enlaces internos y
+  opciones rápidas de seguimiento. El motor (motorLocal.ts) solo normaliza,
+  puntúa y elige; el contenido se edita en este archivo sin tocar lógica.
+
+  Qué quedó de este lado después del asistente V2: la ayuda de la app y los
+  deportes nombrados de forma directa. Son las consultas que se contestan
+  igual sin importar el resto de la charla, así que resolverlas en el
+  navegador es instantáneo, gratis y funciona aunque el backend esté caído.
+  Todo lo conversacional (preferencias, rechazos, "no sé qué entrenar") lo
+  responde el backend, que sí tiene memoria — ver motorCascada.ts.
 
   Las palabras clave se comparan normalizadas (sin tildes ni mayúsculas),
   usando la misma normalización que el buscador de deportes (deporteSearch).
 */
 
 import type { Deporte } from "../../types/deporte";
-import type { EnlaceAsistente, RespuestaAsistente } from "./tipos";
+import type {
+  EnlaceAsistente,
+  RespuestaAsistente,
+  TipoRespuestaLocal,
+} from "./tipos";
 
 /*
   Prioridad de una intención frente a una coincidencia de deporte:
@@ -25,6 +36,14 @@ export type PrioridadIntencion = "alta" | "baja";
 export type IntencionAsistente = {
   id: string;
   prioridad: PrioridadIntencion;
+  /*
+    Qué clase de respuesta es. Lo usa la cascada para decidir si alcanza
+    con el navegador o si la consulta merece ir al backend.
+  */
+  tipo: Extract<
+    TipoRespuestaLocal,
+    "ayuda-app" | "conversacion" | "recomendacion"
+  >;
   // Frases o palabras clave, ya en minúsculas y sin tildes.
   palabrasClave: string[];
   /*
@@ -176,45 +195,45 @@ const ENLACE_DEPORTES: EnlaceAsistente = {
 
 /*
   Mensaje de bienvenida que muestra el widget al abrirse.
+
+  Es el único lugar donde se muestran cuatro opciones: es el estado vacío y
+  hay que dar de dónde agarrarse. De ahí en adelante los chips son pocos y
+  dependen de lo que falte saber.
 */
 export const RESPUESTA_BIENVENIDA: RespuestaAsistente = {
   texto:
-    "¡Hola! Soy el asistente de DondeEntreno. Te ayudo a encontrar deportes, clubes, profes y gimnasios en tu ciudad. Contame qué buscás o elegí una opción.",
+    "¡Hola! Soy el asistente de DondeEntreno. Te puedo ayudar a elegir qué entrenar, encontrar actividades cerca tuyo o entender cómo usar la app.",
   opcionesRapidas: [
-    "No sé qué deporte elegir",
-    "¿Qué deportes hay?",
-    "¿Cómo publico una actividad?",
-    "¿Cómo filtro en Explorar?",
+    "No sé qué entrenar",
+    "Quiero algo social",
+    "Busco algo tranqui",
+    "Cómo publico una actividad",
   ],
 };
 
 /*
-  Respuesta amable cuando el motor no entiende la consulta.
+  Respuesta cuando el navegador no entiende la consulta.
+
+  La cascada la reconoce POR IDENTIDAD (es el mismo objeto), así que no hace
+  falta comparar textos para saber que hay que preguntarle al backend.
 */
 export const RESPUESTA_FALLBACK: RespuestaAsistente = {
   texto:
-    "Mmm, esa no la tengo del todo clara. ¿Me lo contás con otras palabras? Por ejemplo, decime un deporte («boxeo», «yoga») o probá con alguna de estas opciones.",
+    "Mmm, esa no la tengo del todo clara. ¿Me lo contás con otras palabras? Por ejemplo, decime un deporte («boxeo», «yoga») o contame qué buscás.",
   enlaces: [ENLACE_EXPLORAR, ENLACE_DEPORTES],
-  opcionesRapidas: [
-    "No sé qué deporte elegir",
-    "¿Qué deportes hay?",
-    "¿Cómo publico una actividad?",
-    "¿Cómo contacto a un club?",
-  ],
+  opcionesRapidas: ["No sé qué entrenar", "Quiero algo social"],
 };
 
 /*
   Respuesta cuando el motor resuelve un deporte concreto del catálogo.
+
+  Sin opciones rápidas a propósito: la respuesta ya cierra y el paso
+  siguiente es el enlace, no otro botón de charla.
 */
 export function crearRespuestaDeporte(deporte: Deporte): RespuestaAsistente {
   return {
     texto: `¡${deporte.nombre} es una gran elección! Mirá las actividades de ${deporte.nombre} en tu ciudad: en el detalle de cada una vas a encontrar precios, horarios, barrio y el contacto directo.`,
     enlaces: [crearEnlaceExplorarDeporte(deporte.slug, deporte.nombre), ENLACE_DEPORTES],
-    opcionesRapidas: [
-      "¿Cómo contacto a un club?",
-      "¿Dónde veo precios y horarios?",
-      "¿Cómo filtro por barrio?",
-    ],
   };
 }
 
@@ -228,7 +247,6 @@ export function crearRespuestaCategoria(
   return {
     texto: `Tenemos varias opciones dentro de ${nombre.toLowerCase()}. Mirá el catálogo de esa categoría y elegí el deporte que más te tire.`,
     enlaces: [crearEnlaceCategoria(valor, nombre), ENLACE_EXPLORAR],
-    opcionesRapidas: ["No sé qué deporte elegir", "¿Cómo filtro en Explorar?"],
   };
 }
 
@@ -237,16 +255,24 @@ export function crearRespuestaCategoria(
   gana la que está declarada primero.
 */
 export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
+  /* ---------------------------------------------------------------
+     Recomendación: se contestan acá solo si el backend no está. La
+     cascada las manda igual al servidor, que tiene memoria de la charla
+     y puede recomendar deportes que todavía no están cargados.
+     --------------------------------------------------------------- */
   {
     id: "elegir-deporte",
     prioridad: "alta",
+    tipo: "recomendacion",
     palabrasClave: [
       "no se que deporte",
+      "no se que entrenar",
       "no se que elegir",
       "no se cual elegir",
       "no se por donde empezar",
       "ayudame a elegir",
       "que me recomendas",
+      "que me recomiendas",
       "que me conviene",
       "recomendame",
       "recomendacion",
@@ -266,17 +292,13 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       texto:
         "¡Te ayudo a elegir! Contame un poco más de vos: ¿preferís entrenar solo o en grupo? ¿Buscás algo intenso para descargar o algo más tranquilo?",
       enlaces: [ENLACE_DEPORTES],
-      opcionesRapidas: [
-        "Prefiero entrenar solo",
-        "Prefiero entrenar en grupo",
-        "Quiero algo intenso",
-        "Quiero algo tranquilo",
-      ],
+      opcionesRapidas: ["Quiero algo social", "Algo tranqui", "Algo intenso"],
     },
   },
   {
     id: "entrenar-solo",
     prioridad: "alta",
+    tipo: "recomendacion",
     palabrasClave: [
       "prefiero entrenar solo",
       "prefiero entrenar sola",
@@ -294,18 +316,14 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
         crearEnlaceExplorarDeporte("musculacion", "Musculación"),
         crearEnlaceExplorarDeporte("running", "Running"),
         crearEnlaceExplorarDeporte("natacion", "Natación"),
-        crearEnlaceExplorarDeporte("yoga", "Yoga"),
       ],
-      opcionesRapidas: [
-        "Quiero algo intenso",
-        "Quiero algo tranquilo",
-        "Ver todos los deportes",
-      ],
+      opcionesRapidas: ["Algo intenso", "Algo tranqui"],
     },
   },
   {
     id: "entrenar-grupo",
     prioridad: "alta",
+    tipo: "recomendacion",
     palabrasClave: [
       "prefiero entrenar en grupo",
       "entrenar en grupo",
@@ -319,23 +337,19 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "¡Entrenar con gente motiva un montón! Mirá estas opciones: fútbol y vóley para sumarte a un equipo, básquet si te gusta el ritmo rápido, o cross training para transpirar en grupo.",
+        "¡Entrenar con gente motiva un montón! Mirá estas opciones: fútbol y vóley para sumarte a un equipo, o funcional y cross training para transpirar en grupo.",
       enlaces: [
         crearEnlaceExplorarDeporte("futbol", "Fútbol"),
         crearEnlaceExplorarDeporte("voley", "Vóley"),
-        crearEnlaceExplorarDeporte("basquet", "Básquet"),
-        crearEnlaceExplorarDeporte("cross-training", "Cross Training"),
+        crearEnlaceExplorarDeporte("funcional", "Funcional"),
       ],
-      opcionesRapidas: [
-        "Quiero algo intenso",
-        "Quiero algo tranquilo",
-        "Ver todos los deportes",
-      ],
+      opcionesRapidas: ["Algo intenso", "Algo tranqui"],
     },
   },
   {
     id: "intensidad-alta",
     prioridad: "alta",
+    tipo: "recomendacion",
     palabrasClave: [
       "quiero algo intenso",
       "algo intenso",
@@ -362,20 +376,16 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
         "Si querés transpirar en serio, estas actividades no fallan: boxeo o kickboxing para descargar todo, cross training para exigirte al máximo, o running para sumar resistencia.",
       enlaces: [
         crearEnlaceExplorarDeporte("boxeo", "Boxeo"),
-        crearEnlaceExplorarDeporte("kickboxing", "Kickboxing"),
         crearEnlaceExplorarDeporte("cross-training", "Cross Training"),
         crearEnlaceExplorarDeporte("running", "Running"),
       ],
-      opcionesRapidas: [
-        "Prefiero entrenar solo",
-        "Prefiero entrenar en grupo",
-        "Ver todos los deportes",
-      ],
+      opcionesRapidas: ["Quiero algo social", "Sin deportes de pelea"],
     },
   },
   {
     id: "intensidad-baja",
     prioridad: "alta",
+    tipo: "recomendacion",
     palabrasClave: [
       "quiero algo tranquilo",
       "algo tranquilo",
@@ -393,19 +403,21 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       enlaces: [
         crearEnlaceExplorarDeporte("yoga", "Yoga"),
         crearEnlaceExplorarDeporte("pilates", "Pilates"),
-        crearEnlaceExplorarDeporte("stretching", "Stretching"),
         crearEnlaceExplorarDeporte("natacion", "Natación"),
       ],
-      opcionesRapidas: [
-        "Prefiero entrenar solo",
-        "Prefiero entrenar en grupo",
-        "Ver todos los deportes",
-      ],
+      opcionesRapidas: ["Quiero algo social", "Algo intenso"],
     },
   },
+
+  /* ---------------------------------------------------------------
+     Ayuda de la app: siempre se responden en el navegador. La respuesta
+     es la misma con o sin contexto, así que no tiene sentido pagar una
+     llamada al backend ni esperar la red.
+     --------------------------------------------------------------- */
   {
     id: "ver-deportes",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "que deportes hay",
       "que actividades hay",
@@ -425,12 +437,12 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       texto:
         "Hay de todo: fútbol, boxeo, yoga, natación, gimnasios, artes marciales y mucho más. Podés recorrer el catálogo completo por categoría o ir directo a Explorar y filtrar ahí.",
       enlaces: [ENLACE_DEPORTES, ENLACE_EXPLORAR],
-      opcionesRapidas: ["No sé qué deporte elegir", "¿Cómo filtro en Explorar?"],
     },
   },
   {
     id: "publicar",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "como publico",
       "quiero publicar",
@@ -452,20 +464,137 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "¿Tenés un club, gimnasio o das clases? ¡Buenísimo! Publicar es simple: completás el formulario con los datos de tu actividad (deporte, barrio, horarios, precios y contacto) y el equipo la revisa antes de aprobarla. Si te registrás como publicador, además gestionás tus actividades desde tu propio panel.",
+        "¿Tenés un club, gimnasio o das clases? Publicar es simple: completás el formulario con los datos de tu actividad (deporte, barrio, horarios, precios y contacto) y el equipo la revisa antes de aprobarla. Si te registrás como publicador, además gestionás todo desde Mi perfil.",
       enlaces: [
         { href: "/publicar", etiqueta: "Publicar actividad" },
         { href: "/registro", etiqueta: "Crear cuenta" },
       ],
-      opcionesRapidas: [
-        "¿Para qué sirve registrarse?",
-        "¿Qué ciudades hay?",
+      opcionesRapidas: ["¿Dónde veo mis solicitudes?"],
+    },
+  },
+  {
+    id: "mis-imagenes",
+    prioridad: "alta",
+    tipo: "ayuda-app",
+    palabrasClave: [
+      "donde veo mis imagenes",
+      "donde estan mis imagenes",
+      "mis imagenes",
+      "mis fotos",
+      "subir imagenes",
+      "subir fotos",
+      "cargar fotos",
+      "cargar imagenes",
+      "agregar fotos",
+      "gestor de imagenes",
+      "cambiar la foto",
+      "editar las fotos",
+    ],
+    respuesta: {
+      texto:
+        "Si sos publicador: entrá a Mi perfil → Mis actividades y elegí la actividad. Ahí abajo está el gestor de imágenes, donde subís, ordenás y borrás fotos.\n\nLas fotos no se publican al instante: el equipo las revisa antes de que se vean. Para el logo y la portada de tu perfil, en cambio, andá a Mi perfil → editar perfil.",
+      enlaces: [
+        { href: "/publicador/actividades", etiqueta: "Mis actividades" },
+        { href: "/publicador/perfil", etiqueta: "Mi perfil de publicador" },
       ],
+      opcionesRapidas: ["¿Qué es la imagen principal?"],
+    },
+  },
+  {
+    id: "imagen-principal",
+    prioridad: "alta",
+    tipo: "ayuda-app",
+    palabrasClave: [
+      "imagen principal",
+      "foto principal",
+      "que es la imagen principal",
+      "imagen de portada",
+      "foto de portada",
+      "que es la galeria",
+      "galeria de fotos",
+      "para que sirve la galeria",
+      "diferencia entre principal y galeria",
+    ],
+    respuesta: {
+      texto:
+        "La imagen principal es la portada de la actividad: es la que se ve en las tarjetas del listado y arriba de todo en el detalle. Hay una sola por actividad.\n\nLa galería son las demás fotos: el lugar, la clase, el ambiente. Se ven en el carrusel del detalle. Las dos pasan por revisión antes de publicarse.",
+      enlaces: [{ href: "/publicador/actividades", etiqueta: "Mis actividades" }],
+    },
+  },
+  {
+    id: "mis-solicitudes",
+    prioridad: "alta",
+    tipo: "ayuda-app",
+    palabrasClave: [
+      "mis solicitudes",
+      "donde veo mis solicitudes",
+      "estado de mi solicitud",
+      "estado de mi actividad",
+      "ya mandé mi actividad",
+      "cuando aprueban",
+      "cuanto tarda la aprobacion",
+      "esta aprobada",
+      "solicitud de cambio",
+      "pedir un cambio",
+      "editar mi actividad",
+    ],
+    respuesta: {
+      texto:
+        "Todo lo que enviaste y su estado están en Mi perfil → Solicitudes. Ahí ves si una actividad está pendiente, aprobada o rechazada, con el motivo cuando corresponde.\n\nSi querés cambiar algo de una actividad ya publicada, se pide desde la actividad, con «solicitar cambios»: también pasa por revisión.",
+      enlaces: [
+        { href: "/publicador/solicitudes", etiqueta: "Mis solicitudes" },
+        { href: "/publicador/actividades", etiqueta: "Mis actividades" },
+      ],
+    },
+  },
+  {
+    id: "guardados",
+    prioridad: "alta",
+    tipo: "ayuda-app",
+    palabrasClave: [
+      "guardar una actividad",
+      "guardar actividades",
+      "como guardo",
+      "mis guardados",
+      "donde veo lo que guarde",
+      "favoritos",
+      "mis favoritos",
+      "marcar favorito",
+    ],
+    respuesta: {
+      texto:
+        "En cada actividad tenés el botón de guardar: al tocarlo se suma a tus Guardados y la encontrás después en Mi perfil, en la solapa Guardados. Para eso sí hace falta tener cuenta.",
+      enlaces: [
+        { href: "/favoritos", etiqueta: "Ver mis guardados" },
+        { href: "/mi-cuenta", etiqueta: "Ir a Mi perfil" },
+      ],
+    },
+  },
+  {
+    id: "seguir-publicadores",
+    prioridad: "alta",
+    tipo: "ayuda-app",
+    palabrasClave: [
+      "seguir un club",
+      "seguir a un profe",
+      "como sigo",
+      "seguir publicador",
+      "dejar de seguir",
+      "a quien sigo",
+      "mis seguidos",
+      "novedades",
+      "feed",
+    ],
+    respuesta: {
+      texto:
+        "Entrá al perfil del club o profe (desde cualquier actividad suya, tocando el nombre) y tocá «Seguir». Lo que publiquen después te aparece en Mi perfil, en la solapa Novedades, y en Siguiendo ves a todos los que seguís.",
+      enlaces: [{ href: "/mi-cuenta", etiqueta: "Ir a Mi perfil" }],
     },
   },
   {
     id: "contacto",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "como contacto",
       "como los contacto",
@@ -484,17 +613,14 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "Cada actividad tiene su botón de contacto en la página de detalle: puede ser WhatsApp, Instagram o email, según lo que haya cargado el club o profe. Entrá desde Explorar a la actividad que te interesa y tocá el botón verde de contacto para escribirles directo.",
+        "Cada actividad tiene su botón de contacto en la página de detalle: puede ser WhatsApp, Instagram o email, según lo que haya cargado el club o profe. Entrá desde Explorar a la actividad que te interesa y tocá el botón de contacto para escribirles directo.",
       enlaces: [ENLACE_EXPLORAR],
-      opcionesRapidas: [
-        "¿Dónde veo precios y horarios?",
-        "¿Cómo filtro en Explorar?",
-      ],
     },
   },
   {
     id: "ciudades",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "que ciudades",
       "en que ciudades",
@@ -513,12 +639,12 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       texto:
         "Por ahora el foco está puesto en Mar del Plata, y la idea es ir sumando más ciudades. Desde la página de ciudades podés ver las disponibles y cambiar la tuya cuando quieras; arriba de todo también tenés el selector de ciudad.",
       enlaces: [{ href: "/ciudades", etiqueta: "Ver ciudades" }],
-      opcionesRapidas: ["¿Qué deportes hay?", "¿Cómo filtro por barrio?"],
     },
   },
   {
     id: "filtros",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "como filtro",
       "filtrar",
@@ -541,15 +667,12 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       texto:
         "En Explorar tenés filtros por deporte, barrio, nivel (por ejemplo, principiante) y modalidad, y también podés ordenar los resultados, por ejemplo por precio. Elegí lo que quieras combinar, tocá «Aplicar filtros» y listo.",
       enlaces: [ENLACE_EXPLORAR],
-      opcionesRapidas: [
-        "¿Dónde veo precios y horarios?",
-        "¿Qué deportes hay?",
-      ],
     },
   },
   {
     id: "precios-horarios",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "precio",
       "precios",
@@ -569,15 +692,12 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
       texto:
         "Los precios y horarios se ven en el detalle de cada actividad: entrá desde Explorar a la que te interese y ahí tenés toda la info junta, incluido el contacto por si querés confirmar algo directamente con el club o profe.",
       enlaces: [ENLACE_EXPLORAR],
-      opcionesRapidas: [
-        "¿Cómo contacto a un club?",
-        "¿Cómo filtro en Explorar?",
-      ],
     },
   },
   {
     id: "registro-login",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "registro",
       "registrarme",
@@ -594,20 +714,17 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "Registrarte te sirve sobre todo si querés publicar: con una cuenta de publicador cargás tus actividades y las gestionás desde tu panel. Para buscar actividades y contactar clubes no hace falta cuenta, ¡podés usar todo libremente!",
+        "Con una cuenta podés guardar actividades y seguir a clubes y profes para ver sus novedades. Si además querés publicar, la cuenta de publicador te deja cargar y gestionar tus actividades desde Mi perfil. Para buscar y contactar no hace falta cuenta: eso es libre.",
       enlaces: [
         { href: "/registro", etiqueta: "Crear cuenta" },
         { href: "/login", etiqueta: "Iniciar sesión" },
-      ],
-      opcionesRapidas: [
-        "¿Cómo publico una actividad?",
-        "¿Qué deportes hay?",
       ],
     },
   },
   {
     id: "ayuda",
     prioridad: "alta",
+    tipo: "ayuda-app",
     palabrasClave: [
       "que es dondeentreno",
       "que es donde entreno",
@@ -620,18 +737,21 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "DondeEntreno es una guía deportiva local: buscás un deporte y ves clubes, profes y gimnasios de tu ciudad con precios, horarios, barrio y contacto directo. Yo te puedo ayudar a elegir un deporte, explicarte cómo publicar tu actividad y cómo sacarle el jugo a los filtros.",
+        "DondeEntreno es una guía deportiva local: buscás un deporte y ves clubes, profes y gimnasios de tu ciudad con precios, horarios, barrio y contacto directo. Yo te puedo ayudar a elegir qué entrenar, encontrar actividades y explicarte cómo usar la app.",
       enlaces: [ENLACE_EXPLORAR, ENLACE_DEPORTES],
-      opcionesRapidas: [
-        "No sé qué deporte elegir",
-        "¿Cómo publico una actividad?",
-        "¿Qué ciudades hay?",
-      ],
+      opcionesRapidas: ["No sé qué entrenar", "Cómo publico una actividad"],
     },
   },
+
+  /* ---------------------------------------------------------------
+     Conversación suelta: solo se responden acá cuando son TODA la
+     entrada. "hola" se contesta en el navegador; "hola, algún deporte
+     que recomiendes?" va al backend, que puede recomendar en serio.
+     --------------------------------------------------------------- */
   {
     id: "saludo",
     prioridad: "baja",
+    tipo: "conversacion",
     palabrasClave: [
       "hola",
       "holis",
@@ -646,18 +766,18 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto:
-        "¡Hola! ¿Cómo andás? Contame qué estás buscando: puedo ayudarte a encontrar un deporte, explicarte cómo publicar tu actividad o cómo usar los filtros de Explorar.",
+        "¡Hola! ¿Cómo andás? Contame qué estás buscando: te puedo ayudar a elegir qué entrenar, encontrar actividades cerca tuyo o explicarte cómo usar la app.",
       opcionesRapidas: [
-        "No sé qué deporte elegir",
-        "¿Qué deportes hay?",
-        "¿Cómo publico una actividad?",
-        "¿Cómo filtro en Explorar?",
+        "No sé qué entrenar",
+        "Quiero algo social",
+        "Cómo publico una actividad",
       ],
     },
   },
   {
     id: "agradecimiento",
     prioridad: "baja",
+    tipo: "conversacion",
     palabrasClave: [
       "gracias",
       "muchas gracias",
@@ -669,16 +789,13 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     ],
     respuesta: {
       texto: "¡De nada, para eso estoy! ¿Te doy una mano con algo más?",
-      opcionesRapidas: [
-        "No sé qué deporte elegir",
-        "¿Cómo filtro en Explorar?",
-        "¿Qué ciudades hay?",
-      ],
+      opcionesRapidas: ["No sé qué entrenar", "Ver todos los deportes"],
     },
   },
   {
     id: "despedida",
     prioridad: "baja",
+    tipo: "conversacion",
     palabrasClave: [
       "chau",
       "chao",
@@ -692,7 +809,6 @@ export const INTENCIONES_ASISTENTE: IntencionAsistente[] = [
     respuesta: {
       texto:
         "¡Nos vemos! Cuando quieras volver a buscar dónde entrenar, acá voy a estar. ¡Que entrenes bien!",
-      opcionesRapidas: ["Ver todos los deportes"],
     },
   },
 ];

@@ -1,42 +1,142 @@
 "use client";
 
 /*
-  Motor en cascada: primero el local, y solo si no entendió, el remoto.
+  Motor en cascada: qué se resuelve en el navegador y qué va al backend.
 
-  El orden importa y es la decisión de fondo del bloque G. El motor local
-  es instantáneo, gratis y determinístico, y hoy resuelve bien la mayoría
-  de las consultas concretas. Preguntarle al backend por todo cambiaría
-  respuestas que ya son correctas por otras más lentas y pagas, y ataría
-  el asistente entero a que un servicio externo esté vivo.
+  El asistente V1 preguntaba primero al navegador SIEMPRE, y solo iba al
+  backend si no había entendido nada. Eso hacía dos cosas mal:
 
-  Así, el costo se paga únicamente en las consultas que el navegador no
-  sabe resolver, y si el backend o el modelo se caen, el asistente sigue
-  funcionando exactamente como antes de este bloque.
+  - "no quiero básquet" lo entendía el motor local (ve la palabra
+    "básquet") y contestaba con actividades de básquet. Un rechazo leído
+    como pedido.
+  - "holis, algún deporte que recomiendes?" matcheaba el saludo y se
+    contestaba con un saludo.
+
+  En los dos casos el navegador entendía ALGO y por eso nunca cedía,
+  aunque la consulta tuviera más señal de la que él puede aprovechar. Esa
+  era la limitación conocida del bloque anterior, y esto la arregla.
+
+  La regla nueva reparte por clase de consulta:
+
+  - Ayuda de la app (cómo publicar, dónde veo mis imágenes, qué es la
+    imagen principal): SIEMPRE local. La respuesta es la misma con o sin
+    contexto, es instantánea, gratis y funciona sin conexión.
+  - Un saludo suelto: local.
+  - Un deporte nombrado a secas ("busco karate"), sin charla previa ni
+    negaciones: local. Es la consulta más común y ya se resolvía bien.
+  - Todo lo demás — preferencias, rechazos, correcciones, cualquier cosa
+    con conversación previa: al backend, que tiene memoria de la charla,
+    conoce el catálogo real y puede recomendar deportes que todavía no
+    están cargados.
+
+  Si el backend no contesta (sin red, timeout, 429, caído), se usa lo que
+  el navegador tenía. Nunca se queda mudo.
 */
 
-import { RESPUESTA_FALLBACK } from "./conocimiento";
-import { motorAsistenteLocal } from "./motorLocal";
+import { normalizarTexto } from "../deporteSearch";
+import { resolverLocal } from "./motorLocal";
 import { consultarAsistenteRemoto } from "./motorRemoto";
-import type { ContextoAsistente, MotorAsistente, RespuestaAsistente } from "./tipos";
+import type {
+  ContextoAsistente,
+  MotorAsistente,
+  RespuestaAsistente,
+} from "./tipos";
+
+/*
+  Señales de que la consulta lleva más información de la que el motor
+  local sabe usar: rechazos y preferencias.
+
+  Alcanza con que sean groseras — no deciden la respuesta, solo si vale la
+  pena preguntarle al backend. Del otro lado hay un analizador serio.
+*/
+const SENALES_CONVERSACIONALES = [
+  /* rechazos */
+  "no",
+  "nada",
+  "sin",
+  "tampoco",
+  "odio",
+  "detesto",
+  "aburre",
+  "aburrido",
+  "aburrida",
+  "miedo",
+  "cansa",
+  "harto",
+  "harta",
+  "evito",
+  "menos",
+  "otra",
+  "otras",
+  "otro",
+  /* preferencias */
+  "social",
+  "sociales",
+  "gente",
+  "grupo",
+  "grupal",
+  "amigos",
+  "tranqui",
+  "tranquilo",
+  "tranquila",
+  "suave",
+  "relajado",
+  "intenso",
+  "intensa",
+  "exigente",
+  "varien",
+  "variado",
+  "variedad",
+  "canso",
+  "estres",
+  "ansiedad",
+  "competir",
+  "competitivo",
+  "torneo",
+  "aire",
+  "resistencia",
+  "aguante",
+  "cardio",
+  /* salud: siempre conviene que lo maneje el backend */
+  "lesion",
+  "duele",
+  "dolor",
+  "rodilla",
+  "espalda",
+  "operado",
+  "embarazada",
+];
+
+function tieneSenalConversacional(entrada: string): boolean {
+  const conBordes = ` ${normalizarTexto(entrada)} `;
+
+  return SENALES_CONVERSACIONALES.some((senal) =>
+    conBordes.includes(` ${senal} `)
+  );
+}
 
 export const motorAsistenteCascada: MotorAsistente = {
   async procesar(
     entrada: string,
     contexto?: ContextoAsistente
   ): Promise<RespuestaAsistente> {
-    const local = await motorAsistenteLocal.procesar(entrada, contexto);
+    const local = resolverLocal(entrada, contexto);
+    const hayCharlaPrevia = (contexto?.historial?.length ?? 0) > 0;
 
-    /*
-      El motor local devuelve el MISMO objeto RESPUESTA_FALLBACK cuando no
-      entiende, así que comparar por identidad es exacto: no hace falta
-      adivinar por el texto.
-    */
-    if (local !== RESPUESTA_FALLBACK) {
-      return local;
+    if (local.tipo === "ayuda-app" || local.tipo === "conversacion") {
+      return local.respuesta;
+    }
+
+    if (
+      local.tipo === "deporte" &&
+      !hayCharlaPrevia &&
+      !tieneSenalConversacional(entrada)
+    ) {
+      return local.respuesta;
     }
 
     const remota = await consultarAsistenteRemoto(entrada, contexto);
 
-    return remota ?? local;
+    return remota ?? local.respuesta;
   },
 };

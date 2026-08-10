@@ -1,13 +1,24 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.asistente.AnalizadorConversacion;
 import com.dondeentreno.api.asistente.AsistenteProperties;
+import com.dondeentreno.api.asistente.ConocimientoDeportes;
+import com.dondeentreno.api.asistente.ConsultaRemota;
+import com.dondeentreno.api.asistente.DeporteConocido;
+import com.dondeentreno.api.asistente.DeporteSugerido;
+import com.dondeentreno.api.asistente.DisponibilidadCatalogo;
 import com.dondeentreno.api.asistente.FiltrosResueltos;
-import com.dondeentreno.api.asistente.InterpretacionRemota;
 import com.dondeentreno.api.asistente.LimitadorConsultas;
 import com.dondeentreno.api.asistente.MotorAsistenteRemoto;
+import com.dondeentreno.api.asistente.PerfilConversacion;
+import com.dondeentreno.api.asistente.RecomendadorDeportes;
+import com.dondeentreno.api.asistente.RedactorRespuesta;
 import com.dondeentreno.api.asistente.ResolutorConsulta;
+import com.dondeentreno.api.asistente.RespuestaModelo;
+import com.dondeentreno.api.asistente.SanitizadorTexto;
 import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.dto.AsistenteEnlaceDTO;
+import com.dondeentreno.api.dto.AsistenteMensajeDTO;
 import com.dondeentreno.api.dto.AsistenteRespuestaDTO;
 import com.dondeentreno.api.dto.BarrioDTO;
 import com.dondeentreno.api.dto.CategoriaDeportivaDTO;
@@ -18,39 +29,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Asistente del lado del servidor.
+ * Asistente del lado del servidor: coach deportivo local conversacional.
  *
- * Traduce el mensaje a filtros del catálogo real, corre la búsqueda de
- * verdad y arma una respuesta que solo afirma lo que la base respalda.
+ * Dos caminos, y la diferencia entre ellos es la que el usuario ve como
+ * "consejo" contra "esto lo tenemos":
  *
- * Reglas que sostienen todo el bloque:
- * - Ningún enlace se escribe fuera de acá, y siempre a partir de slugs
- *   que salieron de la base.
+ * 1. BÚSQUEDA. La persona nombró algo concreto ("busco karate"). Se
+ *    resuelve contra el catálogo real, se corre la búsqueda de verdad y se
+ *    responde con el total y los títulos reales.
+ * 2. COACH. La persona pide ayuda para elegir, o corrige lo que le
+ *    propusimos. Se arma un perfil con TODA la conversación, se
+ *    recomiendan deportes (existan o no en la base) y se aclara cuáles
+ *    tienen actividades publicadas.
+ *
+ * Reglas que sostienen el bloque:
+ * - Ningún enlace se escribe fuera de RedactorRespuesta, y siempre a
+ *   partir de slugs que salieron de la base.
  * - Ningún número sale de otro lado que no sea el resultado de la
  *   búsqueda. Si no hay actividades, se dice; no se maquilla.
- * - El modelo remoto SOLO traduce a términos del catálogo, y esos
- *   términos vuelven a pasar por el resolutor determinístico. No escribe
- *   una sola palabra de lo que lee el usuario, ni un solo enlace.
+ * - El modelo puede escribir el párrafo de consejo, pero cada deporte que
+ *   propone se valida contra el catálogo y contra los rechazos del
+ *   usuario, y cada afirmación sobre disponibilidad la escribe el backend.
  */
 @Service
 public class AsistenteService {
 
     private static final Logger log = LoggerFactory.getLogger(AsistenteService.class);
 
-    /** Cuántas actividades se nombran como ejemplo en la respuesta. */
-    private static final int EJEMPLOS_EN_RESPUESTA = 2;
-
     private static final String FUENTE_LOCAL = "local";
     private static final String FUENTE_GEMINI = "gemini";
+
+    /** Mínimo de deportes en una recomendación, para que valga la pena. */
+    private static final int MINIMO_SUGERENCIAS = 3;
 
     private final FiltroService filtroService;
     private final ActividadService actividadService;
@@ -58,6 +77,9 @@ public class AsistenteService {
     private final AsistenteProperties propiedades;
     private final MotorAsistenteRemoto motorRemoto;
     private final LimitadorConsultas limitador;
+    private final AnalizadorConversacion analizador;
+    private final RecomendadorDeportes recomendador;
+    private final RedactorRespuesta redactor;
 
     public AsistenteService(
             FiltroService filtroService,
@@ -65,7 +87,10 @@ public class AsistenteService {
             ResolutorConsulta resolutor,
             AsistenteProperties propiedades,
             MotorAsistenteRemoto motorRemoto,
-            LimitadorConsultas limitador
+            LimitadorConsultas limitador,
+            AnalizadorConversacion analizador,
+            RecomendadorDeportes recomendador,
+            RedactorRespuesta redactor
     ) {
         this.filtroService = filtroService;
         this.actividadService = actividadService;
@@ -73,70 +98,89 @@ public class AsistenteService {
         this.propiedades = propiedades;
         this.motorRemoto = motorRemoto;
         this.limitador = limitador;
+        this.analizador = analizador;
+        this.recomendador = recomendador;
+        this.redactor = redactor;
     }
 
     /**
      * Responde una consulta del asistente.
      *
-     * @param texto mensaje del usuario.
+     * @param texto     mensaje del usuario.
+     * @param historial turnos previos que manda el frontend. Puede ser null.
      * @return respuesta con texto, enlaces internos y opciones rápidas.
      */
-    public AsistenteRespuestaDTO responder(String texto) {
+    public AsistenteRespuestaDTO responder(String texto, List<AsistenteMensajeDTO> historial) {
         String consulta = validarEntrada(texto);
 
+        /*
+          Dos vistas del mismo historial, y la diferencia importa: el
+          perfil se calcula sobre TODO lo que mandó el frontend, porque
+          acordarse de un rechazo es gratis; al modelo solo le van los
+          últimos turnos, porque ahí cada carácter cuesta. Calcular el
+          perfil sobre lo recortado hacía que "no quiero básquet" se
+          olvidara a los pocos mensajes.
+        */
+        List<AsistenteMensajeDTO> conversacion = limpiarHistorial(historial);
+        List<AsistenteMensajeDTO> recientes = ultimosTurnos(conversacion);
+
         FiltroOpcionesDTO opciones = filtroService.obtenerOpcionesDeFiltros();
-        FiltrosResueltos filtros = resolutor.resolver(consulta, opciones);
+        PerfilConversacion perfil = analizador.analizar(consulta, conversacion);
+        FiltrosResueltos filtros = sinLoRechazado(resolutor.resolver(consulta, opciones), perfil);
 
         /*
-          Metadata mínima y nada más: si se entendió y qué se entendió, que
-          son valores del catálogo público. El texto que escribió la
-          persona NO se loguea nunca.
+          Metadata mínima y nada más: si se entendió, qué se entendió (que
+          son valores del catálogo público) y el tamaño de la charla. El
+          texto que escribió la persona NO se loguea nunca.
         */
         log.info(
-                "Asistente: resuelta={} deporte={} categoria={} barrio={}",
+                "Asistente: resuelta={} deporte={} categoria={} barrio={} turnos={} rechazos={} preferencias={}",
                 filtros.hayAlgo(),
                 filtros.deporteSlug(),
                 filtros.categoriaSlug(),
-                filtros.barrioId()
+                filtros.barrioId(),
+                recientes.size(),
+                perfil.nombresRechazados().size(),
+                perfil.preferencias().size()
         );
 
+        CatalogoDiferido catalogo = new CatalogoDiferido(opciones);
+
         if (filtros.hayAlgo()) {
-            return construirRespuesta(filtros, FUENTE_LOCAL);
+            return construirRespuestaDeBusqueda(filtros, perfil, catalogo, FUENTE_LOCAL);
         }
 
-        /*
-          Recién acá entra el modelo, y solo para traducir. Lo que devuelve
-          vuelve a pasar por el mismo resolutor determinístico, así que de
-          este punto en adelante el camino es idéntico al local: mismas
-          búsquedas, mismos enlaces, mismos textos.
-        */
-        FiltrosResueltos delModelo = interpretarConMotorRemoto(consulta, opciones);
-
-        if (delModelo.hayAlgo()) {
-            return construirRespuesta(delModelo, FUENTE_GEMINI);
-        }
-
-        return responderSinEntender();
+        return responderComoCoach(consulta, recientes, perfil, opciones, catalogo);
     }
 
-    /**
-     * Arma la respuesta a partir de filtros ya validados contra el
-     * catálogo, sin importar quién los resolvió.
-     */
-    private AsistenteRespuestaDTO construirRespuesta(FiltrosResueltos filtros, String fuente) {
+    /** Compatibilidad: una consulta suelta es una conversación de un turno. */
+    public AsistenteRespuestaDTO responder(String texto) {
+        return responder(texto, List.of());
+    }
+
+    /* ---------------------------------------------------------------
+       Camino 1: la persona nombró algo concreto.
+       --------------------------------------------------------------- */
+
+    private AsistenteRespuestaDTO construirRespuestaDeBusqueda(
+            FiltrosResueltos filtros,
+            PerfilConversacion perfil,
+            CatalogoDiferido catalogo,
+            String fuente
+    ) {
         /*
           La búsqueda por filtros no acepta categoría, así que una consulta
           que solo resolvió categoría se responde con el catálogo de esa
           categoría, sin inventar un conteo que no podemos calcular.
         */
         if (filtros.deporteSlug() == null && filtros.categoriaSlug() != null) {
-            return responderConCategoria(filtros, fuente);
+            return redactor.categoria(filtros, fuente);
         }
 
         List<ActividadDTO> encontradas = buscar(filtros);
 
         if (!encontradas.isEmpty()) {
-            return responderConResultados(filtros, encontradas, fuente);
+            return redactor.resultados(filtros, encontradas, fuente);
         }
 
         /*
@@ -149,72 +193,247 @@ public class AsistenteService {
             List<ActividadDTO> enLaCiudad = buscar(ampliados);
 
             if (!enLaCiudad.isEmpty()) {
-                return responderAmpliandoZona(filtros, ampliados, enLaCiudad, fuente);
+                return redactor.ampliandoZona(filtros, ampliados, enLaCiudad, fuente);
             }
         }
 
-        return responderSinResultados(filtros, fuente);
+        /*
+          El deporte existe pero nadie publicó todavía. En V1 esto era un
+          callejón sin salida; ahora se aprovecha para ofrecer alternativas
+          parecidas que sí tengan actividades.
+        */
+        PerfilConversacion conEsteDescartado = sumarRechazo(perfil, filtros.deporteNombre());
+
+        return redactor.sinResultados(
+                filtros,
+                recomendador.recomendar(conEsteDescartado, catalogo.obtener(), MINIMO_SUGERENCIAS),
+                perfil,
+                fuente
+        );
+    }
+
+    /* ---------------------------------------------------------------
+       Camino 2: hay que ayudar a elegir.
+       --------------------------------------------------------------- */
+
+    private AsistenteRespuestaDTO responderComoCoach(
+            String consulta,
+            List<AsistenteMensajeDTO> historial,
+            PerfilConversacion perfil,
+            FiltroOpcionesDTO opciones,
+            CatalogoDiferido catalogo
+    ) {
+        Optional<RespuestaModelo> delModelo = consultarModelo(consulta, historial, perfil, opciones, catalogo);
+
+        if (delModelo.isPresent()) {
+            Optional<AsistenteRespuestaDTO> conModelo =
+                    armarConLoQueDijoElModelo(delModelo.get(), perfil, opciones, catalogo);
+
+            if (conModelo.isPresent()) {
+                return conModelo.get();
+            }
+        }
+
+        /*
+          Sin modelo (apagado, sin cuota, caído o con una respuesta que no
+          sobrevivió a la validación) el asistente sigue funcionando: la
+          recomendación determinística entiende los mismos ejes y respeta
+          los mismos rechazos, solo que la redacción es nuestra.
+        */
+        if (!perfil.sinSenales() || analizador.pideRecomendacion(consulta)) {
+            return recomendacionDeterministica(perfil, catalogo);
+        }
+
+        return sinEntender();
     }
 
     /**
-     * Le pide al modelo que traduzca la consulta a términos del catálogo.
+     * Toma lo que dijo el modelo y lo convierte en respuesta, o devuelve
+     * vacío si no quedó nada aprovechable.
      *
-     * Tres compuertas antes de gastar: que esté encendido y con
-     * credenciales, que quede cuota diaria, y que la llamada no falle. Si
-     * cualquiera se cierra, se devuelve vacío y el asistente sigue con lo
-     * que sabe hacer solo.
+     * Acá está el candado del bloque: el texto se sanitiza, los deportes
+     * se validan contra el catálogo y contra los rechazos, y los filtros
+     * vuelven a pasar por el mismo resolutor determinístico del camino
+     * local. Lo que el modelo invente no sobrevive a este método.
      */
-    private FiltrosResueltos interpretarConMotorRemoto(
+    private Optional<AsistenteRespuestaDTO> armarConLoQueDijoElModelo(
+            RespuestaModelo respuesta,
+            PerfilConversacion perfil,
+            FiltroOpcionesDTO opciones,
+            CatalogoDiferido catalogo
+    ) {
+        List<RecomendadorDeportes.NombreYMotivo> propuestos = respuesta.deportesODefecto().stream()
+                .map(deporte -> new RecomendadorDeportes.NombreYMotivo(
+                        deporte.nombre(),
+                        deporte.motivo()
+                ))
+                .toList();
+
+        List<DeporteSugerido> sugeridos = recomendador.validar(
+                propuestos,
+                perfil,
+                catalogo.obtener(),
+                RecomendadorDeportes.MAXIMO_SUGERENCIAS
+        );
+
+        if (!sugeridos.isEmpty()) {
+            /*
+              Si el modelo devolvió menos de lo pedido (o si la mitad
+              estaban rechazados) se completa con el recomendador, para no
+              dar una respuesta pobre solo porque el modelo fue corto.
+            */
+            List<DeporteSugerido> completos = recomendador.completar(
+                    sugeridos,
+                    perfil,
+                    catalogo.obtener(),
+                    MINIMO_SUGERENCIAS,
+                    RecomendadorDeportes.MAXIMO_SUGERENCIAS
+            );
+
+            return Optional.of(redactor.recomendacion(
+                    introDelModelo(respuesta, perfil),
+                    completos,
+                    perfil,
+                    SanitizadorTexto.limpiarFragmento(respuesta.preguntaSeguimiento()),
+                    FUENTE_GEMINI
+            ));
+        }
+
+        /*
+          Sin deportes válidos, todavía puede haber entendido una búsqueda
+          concreta que el motor determinístico no captó ("yoga en
+          Constitución para arrancar").
+        */
+        FiltrosResueltos delModelo = sinLoRechazado(
+                resolutor.resolver(respuesta.fraseDeFiltros(), opciones),
+                perfil
+        );
+
+        if (delModelo.hayAlgo()) {
+            return Optional.of(
+                    construirRespuestaDeBusqueda(delModelo, perfil, catalogo, FUENTE_GEMINI)
+            );
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * El párrafo de apertura.
+     *
+     * Si el modelo escribió algo que sobrevive a la sanitización, va el
+     * suyo; si no, el nuestro. Nunca se queda sin apertura, porque la
+     * lista de deportes sola se lee como un formulario.
+     */
+    private String introDelModelo(RespuestaModelo respuesta, PerfilConversacion perfil) {
+        String limpio = SanitizadorTexto.limpiarMensaje(respuesta.mensaje());
+
+        return limpio.isBlank() ? redactor.introSegunPerfil(perfil) : limpio;
+    }
+
+    private AsistenteRespuestaDTO recomendacionDeterministica(
+            PerfilConversacion perfil,
+            CatalogoDiferido catalogo
+    ) {
+        List<DeporteSugerido> sugeridos = recomendador.recomendar(
+                perfil,
+                catalogo.obtener(),
+                RecomendadorDeportes.MAXIMO_SUGERENCIAS
+        );
+
+        return redactor.recomendacion(
+                redactor.introSegunPerfil(perfil),
+                sugeridos,
+                perfil,
+                null,
+                FUENTE_LOCAL
+        );
+    }
+
+    /**
+     * Nadie pudo interpretar la consulta. Se admite, que es mejor que
+     * adivinar, pero se ofrece la salida concreta.
+     */
+    private AsistenteRespuestaDTO sinEntender() {
+        return new AsistenteRespuestaDTO(
+                "Esa no la tengo del todo clara. Contame qué buscás y te doy una mano: "
+                        + "puedo ayudarte a elegir un deporte, buscar actividades cerca "
+                        + "o explicarte cómo usar la app.",
+                List.of(
+                        new AsistenteEnlaceDTO("/explorar", "Ir a Explorar"),
+                        new AsistenteEnlaceDTO("/deportes", "Ver todos los deportes")
+                ),
+                List.of("No sé qué entrenar", "Algo social", "Cómo publico una actividad"),
+                FUENTE_LOCAL
+        );
+    }
+
+    /* ---------------------------------------------------------------
+       Modelo remoto: tres compuertas antes de gastar.
+       --------------------------------------------------------------- */
+
+    private Optional<RespuestaModelo> consultarModelo(
             String consulta,
-            FiltroOpcionesDTO opciones
+            List<AsistenteMensajeDTO> historial,
+            PerfilConversacion perfil,
+            FiltroOpcionesDTO opciones,
+            CatalogoDiferido catalogo
     ) {
         if (!motorRemoto.estaDisponible()) {
-            return FiltrosResueltos.vacio();
+            return Optional.empty();
         }
 
         if (!limitador.consumirCuotaGemini()) {
             log.info("Asistente: cuota diaria del modelo agotada, se responde con el motor local.");
-            return FiltrosResueltos.vacio();
+            return Optional.empty();
         }
 
-        Optional<InterpretacionRemota> interpretacion =
-                motorRemoto.interpretar(consulta, describirCatalogo(opciones));
-
-        if (interpretacion.isEmpty()) {
-            return FiltrosResueltos.vacio();
-        }
-
-        /*
-          Acá está el candado: los términos que devuelve el modelo se
-          resuelven con el MISMO resolutor que la consulta del usuario. Lo
-          que invente no matchea contra el catálogo y se descarta solo, sin
-          necesidad de lista negra.
-        */
-        FiltrosResueltos resueltos = resolutor.resolver(
-                interpretacion.get().comoFrase(),
-                opciones
-        );
-
-        log.info(
-                "Asistente: el modelo interpreto resuelta={} deporte={} categoria={}",
-                resueltos.hayAlgo(),
-                resueltos.deporteSlug(),
-                resueltos.categoriaSlug()
-        );
-
-        return resueltos;
+        return motorRemoto.conversar(new ConsultaRemota(
+                consulta,
+                historial,
+                describirCatalogo(opciones),
+                vocabularioDeportes(perfil),
+                perfil.nombresRechazados(),
+                conActividadesPublicadas(catalogo.obtener())
+        ));
     }
 
     /**
-     * Lista compacta de lo que el modelo puede nombrar. Es todo dato
-     * público del catálogo: nada sensible viaja en el prompt.
+     * Los deportes que el modelo puede nombrar.
+     *
+     * Incluye los que NO están en DondeEntreno: recomendar pádel o
+     * escalada cuando encajan es mejor que callarse porque nadie los
+     * cargó. Lo que no incluye es lo que la persona ya rechazó.
+     */
+    private String vocabularioDeportes(PerfilConversacion perfil) {
+        return ConocimientoDeportes.todos().stream()
+                .filter(deporte -> !perfil.rechaza(deporte))
+                .map(DeporteConocido::nombre)
+                .collect(Collectors.joining(", "));
+    }
+
+    private Set<String> conActividadesPublicadas(DisponibilidadCatalogo catalogo) {
+        Set<String> nombres = new LinkedHashSet<>();
+
+        for (DisponibilidadCatalogo.EntradaCatalogo entrada : catalogo.porNombre().values()) {
+            if (entrada.publicadas() > 0) {
+                nombres.add(entrada.nombre());
+            }
+        }
+
+        return nombres;
+    }
+
+    /**
+     * Lista compacta de lo que el modelo puede nombrar en "filtros". Es
+     * todo dato público del catálogo: nada sensible viaja en el prompt.
      */
     private String describirCatalogo(FiltroOpcionesDTO opciones) {
         return "Deportes: " + nombres(opciones.getDeportes(), DeporteDTO::getNombre)
                 + "\nCategorias: " + nombres(opciones.getCategorias(), CategoriaDeportivaDTO::getNombre)
                 + "\nBarrios: " + nombres(opciones.getBarrios(), BarrioDTO::getNombre)
-                + "\nNiveles: " + String.join(", ", opciones.getNiveles())
-                + "\nModalidades: " + String.join(", ", opciones.getModalidades());
+                + "\nNiveles: " + unirTextos(opciones.getNiveles())
+                + "\nModalidades: " + unirTextos(opciones.getModalidades());
     }
 
     private <T> String nombres(List<T> elementos, Function<T, String> nombreDe) {
@@ -227,6 +446,12 @@ public class AsistenteService {
                 .filter(nombre -> nombre != null && !nombre.isBlank())
                 .collect(Collectors.joining(", "));
     }
+
+    private String unirTextos(List<String> valores) {
+        return valores == null ? "" : String.join(", ", valores);
+    }
+
+    /* --------------------------- helpers --------------------------- */
 
     private String validarEntrada(String texto) {
         String consulta = texto == null ? "" : texto.trim();
@@ -243,6 +468,102 @@ public class AsistenteService {
         }
 
         return consulta;
+    }
+
+    /**
+     * Descarta los mensajes que no sirven y acota el largo de cada uno.
+     *
+     * El cuerpo lo arma un cliente, así que puede venir con nulls, textos
+     * vacíos, autores desconocidos o un mensaje de diez mil caracteres.
+     */
+    private List<AsistenteMensajeDTO> limpiarHistorial(List<AsistenteMensajeDTO> historial) {
+        if (historial == null || historial.isEmpty()) {
+            return List.of();
+        }
+
+        List<AsistenteMensajeDTO> validos = new ArrayList<>();
+
+        for (AsistenteMensajeDTO mensaje : historial) {
+            if (mensaje == null || mensaje.getTexto() == null || mensaje.getTexto().isBlank()) {
+                continue;
+            }
+
+            if (!mensaje.esDelUsuario() && !mensaje.esDelAsistente()) {
+                continue;
+            }
+
+            validos.add(new AsistenteMensajeDTO(
+                    mensaje.esDelUsuario() ? "usuario" : "asistente",
+                    SanitizadorTexto.limpiarParaPrompt(
+                            mensaje.getTexto(),
+                            propiedades.getMaxInputChars() * 4
+                    )
+            ));
+        }
+
+        return List.copyOf(validos);
+    }
+
+    /**
+     * Los últimos turnos, que son los únicos que viajan al modelo.
+     *
+     * El tope existe por tres razones a la vez: el prompt no puede crecer
+     * sin control, un historial largo diluye la instrucción de sistema, y
+     * cada carácter de más es plata.
+     */
+    private List<AsistenteMensajeDTO> ultimosTurnos(List<AsistenteMensajeDTO> conversacion) {
+        int maximo = Math.max(0, propiedades.getMaxMensajesHistorial());
+
+        if (conversacion.size() <= maximo) {
+            return conversacion;
+        }
+
+        return List.copyOf(conversacion.subList(conversacion.size() - maximo, conversacion.size()));
+    }
+
+    /**
+     * Saca del resultado del resolutor lo que la persona ya rechazó.
+     *
+     * Es el arreglo del peor bug del asistente V1: "no quiero básquet"
+     * resolvía el deporte Básquet y respondía con actividades de básquet,
+     * porque el resolutor solo ve palabras y no ve la negación. El
+     * analizador sí la ve, y acá se aplica.
+     */
+    private FiltrosResueltos sinLoRechazado(FiltrosResueltos filtros, PerfilConversacion perfil) {
+        if (filtros.deporteNombre() == null || !perfil.rechazaNombre(filtros.deporteNombre())) {
+            return filtros;
+        }
+
+        return new FiltrosResueltos(
+                null,
+                null,
+                filtros.categoriaSlug(),
+                filtros.categoriaNombre(),
+                filtros.barrioId(),
+                filtros.barrioNombre(),
+                filtros.ciudadSlug(),
+                filtros.ciudadNombre(),
+                filtros.nivel(),
+                filtros.modalidad()
+        );
+    }
+
+    /** El deporte que buscó y no tiene actividades no vuelve como alternativa. */
+    private PerfilConversacion sumarRechazo(PerfilConversacion perfil, String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return perfil;
+        }
+
+        Set<String> rechazados = new LinkedHashSet<>(perfil.deportesRechazados());
+        rechazados.add(ResolutorConsulta.normalizar(nombre));
+
+        return new PerfilConversacion(
+                Set.copyOf(rechazados),
+                perfil.rechazaCombate(),
+                perfil.preferencias(),
+                perfil.yaSugeridos(),
+                perfil.mencionaSalud()
+        );
     }
 
     /**
@@ -266,203 +587,34 @@ public class AsistenteService {
         );
     }
 
-    private AsistenteRespuestaDTO responderConResultados(
-            FiltrosResueltos filtros,
-            List<ActividadDTO> encontradas,
-            String fuente
-    ) {
-        String queEs = describirBusqueda(filtros);
-        String donde = describirZona(filtros);
-        int total = encontradas.size();
-
-        StringBuilder texto = new StringBuilder();
-        texto.append(total == 1 ? "Encontré 1 actividad" : "Encontré " + total + " actividades");
-        texto.append(queEs.isEmpty() ? "" : " de " + queEs);
-        texto.append(donde.isEmpty() ? "" : " en " + donde);
-        texto.append(". ");
-        texto.append(nombrarEjemplos(encontradas));
-        texto.append("En el detalle de cada una están los horarios, el precio y el contacto directo.");
-
-        return new AsistenteRespuestaDTO(
-                texto.toString(),
-                List.of(new AsistenteEnlaceDTO(
-                        urlExplorar(filtros),
-                        etiquetaVer(filtros)
-                )),
-                List.of(
-                        "¿Cómo contacto a un club?",
-                        "¿Dónde veo precios y horarios?"
-                ),
-                fuente
-        );
-    }
-
-    private AsistenteRespuestaDTO responderAmpliandoZona(
-            FiltrosResueltos original,
-            FiltrosResueltos ampliados,
-            List<ActividadDTO> enLaCiudad,
-            String fuente
-    ) {
-        String queEs = describirBusqueda(original);
-        int total = enLaCiudad.size();
-
-        String texto = "En " + original.barrioNombre() + " no encontré "
-                + (queEs.isEmpty() ? "actividades" : queEs)
-                + ", pero hay "
-                + (total == 1 ? "1 actividad" : total + " actividades")
-                + " en el resto de la ciudad. "
-                + nombrarEjemplos(enLaCiudad)
-                + "Podés ver todas y filtrar por la zona que te quede bien.";
-
-        return new AsistenteRespuestaDTO(
-                texto,
-                List.of(new AsistenteEnlaceDTO(
-                        urlExplorar(ampliados),
-                        etiquetaVer(ampliados)
-                )),
-                List.of("¿Cómo filtro por barrio?", "¿Qué deportes hay?"),
-                fuente
-        );
-    }
-
-    private AsistenteRespuestaDTO responderSinResultados(FiltrosResueltos filtros, String fuente) {
-        String queEs = describirBusqueda(filtros);
-
-        String texto = "Por ahora no hay actividades"
-                + (queEs.isEmpty() ? "" : " de " + queEs)
-                + " publicadas"
-                + (filtros.barrioNombre() == null ? "" : " en " + filtros.barrioNombre())
-                + ". Todavía estamos sumando clubes y profes, así que puede aparecer pronto. "
-                + "Mientras tanto podés mirar el catálogo completo.";
-
-        return new AsistenteRespuestaDTO(
-                texto,
-                List.of(
-                        new AsistenteEnlaceDTO("/deportes", "Ver todos los deportes"),
-                        new AsistenteEnlaceDTO("/explorar", "Ir a Explorar")
-                ),
-                List.of("¿Qué deportes hay?", "No sé qué deporte elegir"),
-                fuente
-        );
-    }
-
-    private AsistenteRespuestaDTO responderConCategoria(FiltrosResueltos filtros, String fuente) {
-        String texto = "Tenemos varias opciones dentro de "
-                + filtros.categoriaNombre().toLowerCase()
-                + ". Mirá el catálogo de esa categoría y elegí el deporte que más te tire.";
-
-        return new AsistenteRespuestaDTO(
-                texto,
-                List.of(new AsistenteEnlaceDTO(
-                        "/deportes?categoria=" + codificar(filtros.categoriaSlug()),
-                        "Ver " + filtros.categoriaNombre()
-                )),
-                List.of("No sé qué deporte elegir", "¿Cómo filtro en Explorar?"),
-                fuente
-        );
-    }
-
     /**
-     * Nadie pudo interpretar la consulta: ni el motor local ni el modelo.
-     * Se admite, que es mejor que adivinar.
+     * La foto de qué hay publicado se arma una sola vez y solo si hace
+     * falta.
+     *
+     * El camino de búsqueda con resultados no la necesita, y es el más
+     * común: sin esta demora, cada "busco karate" pagaba una consulta
+     * extra que nadie iba a leer.
      */
-    private AsistenteRespuestaDTO responderSinEntender() {
-        return new AsistenteRespuestaDTO(
-                "Esa no la tengo del todo clara. ¿Me la contás con otras palabras? "
-                        + "Podés nombrarme un deporte, una zona o un nivel, "
-                        + "por ejemplo «yoga para principiantes en Centro».",
-                List.of(
-                        new AsistenteEnlaceDTO("/explorar", "Ir a Explorar"),
-                        new AsistenteEnlaceDTO("/deportes", "Ver todos los deportes")
-                ),
-                List.of("¿Qué deportes hay?", "No sé qué deporte elegir"),
-                FUENTE_LOCAL
-        );
-    }
+    private final class CatalogoDiferido {
 
-    /** "Yoga", "Yoga para principiantes", "actividades presenciales"... */
-    private String describirBusqueda(FiltrosResueltos filtros) {
-        List<String> partes = new ArrayList<>();
+        private final FiltroOpcionesDTO opciones;
+        private DisponibilidadCatalogo calculado;
 
-        if (filtros.deporteNombre() != null) {
-            partes.add(filtros.deporteNombre());
+        private CatalogoDiferido(FiltroOpcionesDTO opciones) {
+            this.opciones = opciones;
         }
 
-        if (filtros.nivel() != null) {
-            partes.add("nivel " + filtros.nivel().toLowerCase());
+        private DisponibilidadCatalogo obtener() {
+            if (calculado == null) {
+                calculado = DisponibilidadCatalogo.desde(
+                        opciones.getDeportes(),
+                        actividadService.buscarActividadesConFiltros(
+                                null, null, null, null, null, null, null, null, null
+                        )
+                );
+            }
+
+            return calculado;
         }
-
-        if (filtros.modalidad() != null) {
-            partes.add("modalidad " + filtros.modalidad().toLowerCase());
-        }
-
-        return String.join(", ", partes);
-    }
-
-    private String describirZona(FiltrosResueltos filtros) {
-        if (filtros.barrioNombre() != null) {
-            return filtros.barrioNombre();
-        }
-
-        return filtros.ciudadNombre() == null ? "" : filtros.ciudadNombre();
-    }
-
-    /** Nombra un par de actividades reales, nunca inventadas. */
-    private String nombrarEjemplos(List<ActividadDTO> encontradas) {
-        List<String> titulos = encontradas.stream()
-                .map(ActividadDTO::getTitulo)
-                .filter(titulo -> titulo != null && !titulo.isBlank())
-                .limit(EJEMPLOS_EN_RESPUESTA)
-                .toList();
-
-        if (titulos.isEmpty()) {
-            return "";
-        }
-
-        return "Por ejemplo: " + String.join(" y ", titulos) + ". ";
-    }
-
-    /**
-     * Arma la URL de Explorar con los mismos parámetros que la página
-     * sabe leer (page, orden, ciudadSlug, barrioId, deporteSlug, nivel,
-     * modalidad). Un parámetro que la página ignore es un enlace que
-     * miente sobre lo que va a mostrar.
-     */
-    private String urlExplorar(FiltrosResueltos filtros) {
-        StringBuilder url = new StringBuilder("/explorar?");
-
-        if (filtros.deporteSlug() != null) {
-            url.append("deporteSlug=").append(codificar(filtros.deporteSlug())).append("&");
-        }
-
-        if (filtros.ciudadSlug() != null) {
-            url.append("ciudadSlug=").append(codificar(filtros.ciudadSlug())).append("&");
-        }
-
-        if (filtros.barrioId() != null) {
-            url.append("barrioId=").append(filtros.barrioId()).append("&");
-        }
-
-        if (filtros.nivel() != null) {
-            url.append("nivel=").append(codificar(filtros.nivel())).append("&");
-        }
-
-        if (filtros.modalidad() != null) {
-            url.append("modalidad=").append(codificar(filtros.modalidad())).append("&");
-        }
-
-        return url.append("page=0").toString();
-    }
-
-    private String etiquetaVer(FiltrosResueltos filtros) {
-        if (filtros.deporteNombre() != null) {
-            return "Ver " + filtros.deporteNombre();
-        }
-
-        return "Ver actividades";
-    }
-
-    private String codificar(String valor) {
-        return URLEncoder.encode(valor, StandardCharsets.UTF_8);
     }
 }

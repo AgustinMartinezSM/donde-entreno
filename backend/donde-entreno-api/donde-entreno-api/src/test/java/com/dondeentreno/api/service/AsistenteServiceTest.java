@@ -1,12 +1,16 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.asistente.AnalizadorConversacion;
 import com.dondeentreno.api.asistente.AsistenteProperties;
-import com.dondeentreno.api.asistente.InterpretacionRemota;
 import com.dondeentreno.api.asistente.LimitadorConsultas;
 import com.dondeentreno.api.asistente.MotorAsistenteRemoto;
+import com.dondeentreno.api.asistente.RecomendadorDeportes;
+import com.dondeentreno.api.asistente.RedactorRespuesta;
 import com.dondeentreno.api.asistente.ResolutorConsulta;
+import com.dondeentreno.api.asistente.RespuestaModelo;
 import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.dto.AsistenteEnlaceDTO;
+import com.dondeentreno.api.dto.AsistenteMensajeDTO;
 import com.dondeentreno.api.dto.AsistenteRespuestaDTO;
 import com.dondeentreno.api.dto.BarrioDTO;
 import com.dondeentreno.api.dto.CategoriaDeportivaDTO;
@@ -22,6 +26,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -45,32 +50,34 @@ class AsistenteServiceTest {
         motorRemoto = mock(MotorAsistenteRemoto.class);
         limitador = mock(LimitadorConsultas.class);
 
-        asistenteService = new AsistenteService(
-                filtroService,
-                actividadService,
-                new ResolutorConsulta(),
-                new AsistenteProperties(),
-                motorRemoto,
-                limitador
-        );
+        asistenteService = construir(new AsistenteProperties());
 
         when(filtroService.obtenerOpcionesDeFiltros()).thenReturn(catalogo());
         /* Por defecto, como en produccion hasta encenderlo: Gemini apagado. */
         when(motorRemoto.estaDisponible()).thenReturn(false);
     }
 
-    private void conModeloDisponible(InterpretacionRemota interpretacion) {
+    private AsistenteService construir(AsistenteProperties propiedades) {
+        return new AsistenteService(
+                filtroService,
+                actividadService,
+                new ResolutorConsulta(),
+                propiedades,
+                motorRemoto,
+                limitador,
+                new AnalizadorConversacion(),
+                new RecomendadorDeportes(),
+                new RedactorRespuesta()
+        );
+    }
+
+    private void conModeloDisponible(RespuestaModelo respuesta) {
         when(motorRemoto.estaDisponible()).thenReturn(true);
         when(limitador.consumirCuotaGemini()).thenReturn(true);
-        when(motorRemoto.interpretar(any(), any())).thenReturn(Optional.ofNullable(interpretacion));
+        when(motorRemoto.conversar(any())).thenReturn(Optional.ofNullable(respuesta));
     }
 
     private FiltroOpcionesDTO catalogo() {
-        DeporteDTO yoga = new DeporteDTO(
-                1L, "Yoga", "yoga", null, null, 1,
-                6L, "Bienestar y salud", "bienestar-y-salud"
-        );
-
         CategoriaDeportivaDTO artesMarciales = new CategoriaDeportivaDTO();
         artesMarciales.setId(2L);
         artesMarciales.setNombre("Artes marciales");
@@ -83,12 +90,28 @@ class AsistenteServiceTest {
 
         return new FiltroOpcionesDTO(
                 List.of(artesMarciales),
-                List.of(yoga),
+                List.of(
+                        deporte(1L, "Yoga", "yoga", 6L, "Bienestar y salud", "bienestar-y-salud"),
+                        deporte(2L, "Funcional", "funcional", 3L, "Fitness", "fitness-y-entrenamiento"),
+                        deporte(3L, "Básquet", "basquet", 4L, "Deportes de equipo", "deportes-de-equipo"),
+                        deporte(4L, "Natación", "natacion", 5L, "Acuáticas", "actividades-acuaticas"),
+                        deporte(5L, "Boxeo", "boxeo", 1L, "Deportes de combate", "deportes-de-combate")
+                ),
                 List.of(marDelPlata),
                 List.of(new BarrioDTO(7L, "Constitución", 1L, "Mar del Plata")),
                 List.of(),
                 List.of(),
                 List.of()
+        );
+    }
+
+    private DeporteDTO deporte(
+            Long id, String nombre, String slug,
+            Long categoriaId, String categoriaNombre, String categoriaSlug
+    ) {
+        return new DeporteDTO(
+                id, nombre, slug, null, null, id.intValue(),
+                categoriaId, categoriaNombre, categoriaSlug
         );
     }
 
@@ -98,9 +121,36 @@ class AsistenteServiceTest {
         return actividad;
     }
 
+    private ActividadDTO actividad(String titulo, String deporteSlug) {
+        ActividadDTO actividad = actividad(titulo);
+        actividad.setDeporteSlug(deporteSlug);
+        return actividad;
+    }
+
+    /** Lo que devuelve la busqueda "todo lo publicado" que arma el catalogo. */
+    private void conActividadesPublicadas(ActividadDTO... actividades) {
+        when(actividadService.buscarActividadesConFiltros(
+                isNull(), isNull(), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull()
+        )).thenReturn(List.of(actividades));
+    }
+
     private List<String> hrefs(AsistenteRespuestaDTO respuesta) {
         return respuesta.getEnlaces().stream().map(AsistenteEnlaceDTO::getHref).toList();
     }
+
+    private List<AsistenteMensajeDTO> charla(String... alternados) {
+        return java.util.stream.IntStream.range(0, alternados.length)
+                .mapToObj(indice -> new AsistenteMensajeDTO(
+                        indice % 2 == 0 ? "usuario" : "asistente",
+                        alternados[indice]
+                ))
+                .toList();
+    }
+
+    /* =============================================================
+       Camino de busqueda: la persona nombro algo concreto.
+       ============================================================= */
 
     @Test
     void informaElTotalRealYEnlazaConLosFiltrosEntendidos() {
@@ -115,6 +165,17 @@ class AsistenteServiceTest {
         assertThat(respuesta.getTexto()).contains("Yoga inicial");
         assertThat(hrefs(respuesta)).containsExactly("/explorar?deporteSlug=yoga&page=0");
         assertThat(respuesta.getFuente()).isEqualTo("local");
+    }
+
+    /* Una respuesta que ya cierra no lleva botones de charla encima. */
+    @Test
+    void unaBusquedaConResultadosNoAgregaOpcionesRapidas() {
+        when(actividadService.buscarActividadesConFiltros(
+                isNull(), eq("yoga"), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull()
+        )).thenReturn(List.of(actividad("Yoga inicial")));
+
+        assertThat(asistenteService.responder("busco yoga").getOpcionesRapidas()).isEmpty();
     }
 
     @Test
@@ -134,19 +195,39 @@ class AsistenteServiceTest {
         assertThat(respuesta.getTexto()).contains("Constitución");
         assertThat(respuesta.getTexto()).contains("no encontré");
         assertThat(respuesta.getTexto()).contains("1 actividad");
-        /* El enlace ampliado ya no lleva el barrio que no tenía nada. */
+        /* El enlace ampliado ya no lleva el barrio que no tenia nada. */
         assertThat(hrefs(respuesta)).containsExactly("/explorar?deporteSlug=yoga&page=0");
     }
 
+    /*
+      V1 respondia "no hay" y cerraba. Ahora aprovecha para ofrecer algo
+      que si exista, pero sin dejar de decir la verdad sobre lo buscado.
+    */
     @Test
-    void siNoHayResultadosEnNingunLadoLoDiceSinInventar() {
+    void siNoHayDelDeporteBuscadoOfreceAlternativasQueSiTenganActividades() {
+        conActividadesPublicadas(actividad("Funcional en la playa", "funcional"));
+
+        when(actividadService.buscarActividadesConFiltros(
+                isNull(), eq("yoga"), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull()
+        )).thenReturn(List.of());
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("busco yoga");
+
+        assertThat(respuesta.getTexto()).contains("Todavía no hay actividades");
+        assertThat(respuesta.getTexto()).contains("Funcional");
+        assertThat(hrefs(respuesta)).contains("/explorar?deporteSlug=funcional&page=0");
+    }
+
+    @Test
+    void siNoHayNadaPublicadoLoDiceSinInventar() {
         when(actividadService.buscarActividadesConFiltros(
                 any(), any(), any(), any(), any(), any(), any(), any(), any()
         )).thenReturn(List.of());
 
         AsistenteRespuestaDTO respuesta = asistenteService.responder("busco yoga");
 
-        assertThat(respuesta.getTexto()).contains("no hay actividades");
+        assertThat(respuesta.getTexto()).contains("Todavía no hay actividades");
         assertThat(hrefs(respuesta)).containsExactly("/deportes", "/explorar");
     }
 
@@ -158,53 +239,253 @@ class AsistenteServiceTest {
         assertThat(respuesta.getTexto()).doesNotContain("actividades de");
     }
 
+    /* =============================================================
+       Memoria: lo que la persona rechaza no vuelve.
+       ============================================================= */
+
+    /*
+      El peor bug del asistente V1, y la razon de ser del bloque: "no
+      quiero basquet" tiene la palabra "basquet" adentro, asi que el
+      resolutor la encontraba y el asistente contestaba con actividades de
+      basquet. Un rechazo leido como pedido.
+    */
     @Test
-    void admiteQueNoEntendioEnVezDeInventarUnDeporte() {
-        AsistenteRespuestaDTO respuesta = asistenteService.responder("tengo 50 anios y quiero moverme");
+    void unRechazoNoSeLeeComoUnaBusquedaDeEseDeporte() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("no quiero básquet");
+
+        assertThat(respuesta.getTexto()).doesNotContain("Básquet");
+        verify(actividadService, never()).buscarActividadesConFiltros(
+                any(), eq("basquet"), any(), any(), any(), any(), any(), any(), any()
+        );
+    }
+
+    @Test
+    void noVuelveARecomendarUnDeporteRechazadoEnUnTurnoAnterior() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y algo social?",
+                charla(
+                        "algún deporte que recomiendes?",
+                        "Te tiro algunas: 1. Básquet 2. Funcional 3. Natación",
+                        "no quiero básquet"
+                )
+        );
+
+        assertThat(respuesta.getTexto()).doesNotContain("Básquet");
+    }
+
+    /* Un rechazo de grupo saca todo el grupo, no solo lo nombrado. */
+    @Test
+    void rechazarLaPeleaSacaTodosLosDeportesDeCombate() {
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("no me gustan los deportes de pelea");
+
+        assertThat(respuesta.getTexto())
+                .doesNotContain("Boxeo")
+                .doesNotContain("Kickboxing")
+                .doesNotContain("Muay Thai")
+                .doesNotContain("Karate")
+                .doesNotContain("Jiu Jitsu")
+                .doesNotContain("MMA");
+        assertThat(respuesta.getTexto()).contains("saco todo lo que sea contacto o pelea");
+    }
+
+    @Test
+    void noRepiteLaMismaListaDeDeportesTurnoATurno() {
+        AsistenteRespuestaDTO primera = asistenteService.responder("algún deporte que recomiendes?");
+
+        AsistenteRespuestaDTO segunda = asistenteService.responder(
+                "dame otras opciones",
+                charla("algún deporte que recomiendes?", primera.getTexto())
+        );
+
+        assertThat(segunda.getTexto()).isNotEqualTo(primera.getTexto());
+    }
+
+    /* =============================================================
+       Consejo general contra actividades reales.
+       ============================================================= */
+
+    @Test
+    void recomiendaDeportesQueNoEstanEnDondeEntrenoYLoAclara() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social");
+
+        /* Padel no esta en el catalogo de este test y aun asi se recomienda. */
+        assertThat(respuesta.getTexto()).contains("Pádel");
+        assertThat(respuesta.getTexto()).contains("recomendación general");
+    }
+
+    @Test
+    void separaLoQueSiHayPublicadoDeLoQueEsSoloConsejo() {
+        conActividadesPublicadas(
+                actividad("Funcional en la playa", "funcional"),
+                actividad("Funcional matutino", "funcional")
+        );
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social");
+
+        assertThat(respuesta.getTexto()).contains("En DondeEntreno ya hay actividades de Funcional");
+        assertThat(respuesta.getTexto()).contains("recomendación general");
+        assertThat(hrefs(respuesta)).containsExactly("/explorar?deporteSlug=funcional&page=0");
+    }
+
+    /* Sin actividades publicadas no se ofrece un enlace a una busqueda vacia. */
+    @Test
+    void noEnlazaDeportesSinActividadesPublicadas() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo tranqui");
+
+        assertThat(hrefs(respuesta)).containsExactly("/explorar", "/deportes");
+    }
+
+    @Test
+    void ofreceOpcionesProgresivasCuandoDiceQueSeCansaRapido() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("me canso rápido");
+
+        assertThat(respuesta.getTexto()).contains("de a poco");
+        /* Nada de alto impacto en la primera recomendacion. */
+        assertThat(respuesta.getTexto()).doesNotContain("Running");
+        assertThat(respuesta.getTexto()).doesNotContain("Cross Training");
+    }
+
+    @Test
+    void anteUnTemaDeSaludDerivaAUnProfesionalYBajaElImpacto() {
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("me duele la rodilla, qué puedo hacer?");
+
+        assertThat(respuesta.getTexto()).contains("profesional de la salud");
+        assertThat(respuesta.getTexto()).doesNotContain("Running");
+        assertThat(respuesta.getTexto()).doesNotContain("Boxeo");
+        /*
+          Y no se le encima el arranque genérico: el párrafo de derivación ya
+          hace de apertura y cierra presentando la lista.
+        */
+        assertThat(respuesta.getTexto()).doesNotContain("Depende de qué estés buscando");
+    }
+
+    /* "Social" no puede traer deportes de combate entre los primeros. */
+    @Test
+    void unaConsultaSocialNoDevuelveDeportesDeCombate() {
+        conActividadesPublicadas(actividad("Jiu Jitsu para todos", "jiu-jitsu"));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("quiero algo social y que varíe, me aburro con el gym");
+
+        assertThat(respuesta.getTexto())
+                .doesNotContain("Jiu Jitsu")
+                .doesNotContain("Boxeo")
+                .doesNotContain("Musculación");
+    }
+
+    @Test
+    void admiteQueNoEntendioCuandoNoHayNiSenalesNiPedido() {
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("asdkjh qwe zxc");
 
         assertThat(respuesta.getTexto()).contains("no la tengo del todo clara");
         assertThat(hrefs(respuesta)).containsExactly("/explorar", "/deportes");
     }
 
+    /* =============================================================
+       El modelo: entra donde el motor local no llega, y no manda.
+       ============================================================= */
+
     @Test
     void conElModeloApagadoNiSiquieraSeLeConsulta() {
-        asistenteService.responder("tengo 50 anios y quiero moverme");
+        asistenteService.responder("quiero algo social");
 
-        verify(motorRemoto, never()).interpretar(any(), any());
+        verify(motorRemoto, never()).conversar(any());
     }
 
     @Test
     void usaAlModeloSoloCuandoElMotorLocalNoEntendio() {
-        conModeloDisponible(new InterpretacionRemota("Yoga", null, null, null, null));
+        conModeloDisponible(modelo("Te tiro estas", "Funcional", "Natación"));
         when(actividadService.buscarActividadesConFiltros(
-                any(), any(), any(), any(), any(), any(), any(), any(), any()
+                isNull(), eq("yoga"), isNull(), isNull(), isNull(),
+                isNull(), isNull(), isNull(), isNull()
         )).thenReturn(List.of(actividad("Yoga inicial")));
 
         /* Esta la entiende el motor local: el modelo no deberia tocarse. */
-        AsistenteRespuestaDTO local = asistenteService.responder("busco yoga");
-        assertThat(local.getFuente()).isEqualTo("local");
-        verify(motorRemoto, never()).interpretar(any(), any());
+        assertThat(asistenteService.responder("busco yoga").getFuente()).isEqualTo("local");
+        verify(motorRemoto, never()).conversar(any());
 
-        /* Esta no: aca si entra, y la respuesta la sigue armando el backend. */
-        AsistenteRespuestaDTO remota = asistenteService.responder("quiero relajarme un poco");
+        /* Esta no: aca si entra. */
+        AsistenteRespuestaDTO remota = asistenteService.responder("tengo 50 años y quiero moverme un poco");
         assertThat(remota.getFuente()).isEqualTo("gemini");
-        assertThat(remota.getTexto()).contains("Yoga inicial");
-        assertThat(hrefs(remota)).containsExactly("/explorar?deporteSlug=yoga&page=0");
+        assertThat(remota.getTexto()).contains("Te tiro estas");
+        assertThat(remota.getTexto()).contains("Funcional");
+    }
+
+    /* El candado: lo que el modelo invente no existe y se descarta solo. */
+    @Test
+    void descartaLosDeportesQueElModeloInventa() {
+        conModeloDisponible(modelo("Mirá estas opciones", "Quidditch", "Parkour lunar"));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("recomendame algo, quiero algo social");
+
+        assertThat(respuesta.getTexto())
+                .doesNotContain("Quidditch")
+                .doesNotContain("Parkour");
+        /* Se cae a la recomendacion deterministica, no a un error. */
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        assertThat(respuesta.getTexto()).contains("Pádel");
     }
 
     /*
-      El candado del bloque: lo que el modelo invente no existe en el
-      catalogo, no matchea y se descarta solo.
+      El modelo no puede insistir con lo rechazado ni aunque lo devuelva:
+      el filtro esta en codigo, no en el prompt.
     */
     @Test
-    void descartaLosTerminosQueElModeloInventa() {
-        conModeloDisponible(new InterpretacionRemota("Quidditch", "Deportes magicos", "Hogwarts", null, null));
+    void filtraLosDeportesRechazadosAunqueElModeloLosProponga() {
+        conModeloDisponible(modelo("Probá con esto", "Básquet", "Funcional", "Natación"));
 
-        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero jugar al quidditch");
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "algo más",
+                charla("recomendame algo", "Te tiro Básquet y Funcional", "no quiero básquet")
+        );
 
-        assertThat(respuesta.getFuente()).isEqualTo("local");
-        assertThat(respuesta.getTexto()).contains("no la tengo del todo clara");
-        assertThat(hrefs(respuesta)).containsExactly("/explorar", "/deportes");
+        assertThat(respuesta.getTexto()).doesNotContain("Básquet");
+        assertThat(respuesta.getTexto()).contains("Funcional");
+    }
+
+    /* Lo que el modelo escriba se limpia antes de llegar a la pantalla. */
+    @Test
+    void leSacaEnlacesPreciosYTelefonosAlTextoDelModelo() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Mirá esto en https://otro-sitio.com. Sale 15000 pesos por mes. Escribime al 2235123456.",
+                List.of(new RespuestaModelo.DeportePropuesto("Funcional", "circuitos variados")),
+                null,
+                "¿Te sirve?"
+        ));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("recomendame algo copado para arrancar");
+
+        assertThat(respuesta.getTexto())
+                .doesNotContain("http")
+                .doesNotContain("otro-sitio")
+                .doesNotContain("15000")
+                .doesNotContain("2235123456");
+        assertThat(respuesta.getTexto()).contains("Funcional");
+    }
+
+    @Test
+    void elModeloRecibeLoRechazadoYElHistorialRecortado() {
+        conModeloDisponible(modelo("Va", "Funcional"));
+
+        AsistenteProperties propiedades = new AsistenteProperties();
+        propiedades.setMaxMensajesHistorial(2);
+
+        construir(propiedades).responder(
+                "otra idea?",
+                charla("hola", "hola!", "no quiero básquet", "listo", "algo social")
+        );
+
+        var captor = forClass(com.dondeentreno.api.asistente.ConsultaRemota.class);
+        verify(motorRemoto).conversar(captor.capture());
+
+        assertThat(captor.getValue().rechazados()).contains("Básquet");
+        assertThat(captor.getValue().historial()).hasSize(2);
+        assertThat(captor.getValue().vocabulario()).doesNotContain("Básquet");
     }
 
     @Test
@@ -212,21 +493,25 @@ class AsistenteServiceTest {
         when(motorRemoto.estaDisponible()).thenReturn(true);
         when(limitador.consumirCuotaGemini()).thenReturn(false);
 
-        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero relajarme un poco");
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social");
 
-        verify(motorRemoto, never()).interpretar(any(), any());
+        verify(motorRemoto, never()).conversar(any());
         assertThat(respuesta.getFuente()).isEqualTo("local");
     }
 
     @Test
-    void siElModeloFallaElAsistenteResponderIgual() {
+    void siElModeloFallaElAsistenteRespondeIgual() {
         conModeloDisponible(null);
 
-        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero relajarme un poco");
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social y variado");
 
         assertThat(respuesta.getFuente()).isEqualTo("local");
-        assertThat(respuesta.getTexto()).contains("no la tengo del todo clara");
+        assertThat(respuesta.getTexto()).contains("Pádel");
     }
+
+    /* =============================================================
+       Validaciones de entrada.
+       ============================================================= */
 
     @Test
     void rechazaConsultaVacia() {
@@ -239,17 +524,34 @@ class AsistenteServiceTest {
         AsistenteProperties propiedades = new AsistenteProperties();
         propiedades.setMaxInputChars(10);
 
-        AsistenteService acotado = new AsistenteService(
-                filtroService,
-                actividadService,
-                new ResolutorConsulta(),
-                propiedades,
-                motorRemoto,
-                limitador
-        );
-
-        assertThatThrownBy(() -> acotado.responder("un mensaje bastante mas largo que diez"))
+        assertThatThrownBy(() -> construir(propiedades)
+                .responder("un mensaje bastante mas largo que diez"))
                 .isInstanceOf(ConsultaAsistenteInvalidaException.class)
                 .hasMessageContaining("10");
+    }
+
+    @Test
+    void unHistorialConBasuraNoRompeNada() {
+        List<AsistenteMensajeDTO> sucio = new java.util.ArrayList<>();
+        sucio.add(null);
+        sucio.add(new AsistenteMensajeDTO(null, "sin autor"));
+        sucio.add(new AsistenteMensajeDTO("usuario", "   "));
+        sucio.add(new AsistenteMensajeDTO("sistema", "no soy de los dos"));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social", sucio);
+
+        assertThat(respuesta.getTexto()).isNotBlank();
+    }
+
+    private RespuestaModelo modelo(String mensaje, String... deportes) {
+        return new RespuestaModelo(
+                "consejo_deportivo",
+                mensaje,
+                java.util.Arrays.stream(deportes)
+                        .map(nombre -> new RespuestaModelo.DeportePropuesto(nombre, "motivo de " + nombre))
+                        .toList(),
+                null,
+                "¿Seguimos afinando?"
+        );
     }
 }

@@ -3,16 +3,15 @@ package com.dondeentreno.api.asistente;
 import java.util.Optional;
 
 /**
- * Motor remoto del asistente (hoy Gemini).
+ * Motor conversacional externo del asistente.
  *
- * Su único trabajo es TRADUCIR: recibe el mensaje que el motor local no
- * supo interpretar y devuelve términos del catálogo. No escribe la
- * respuesta que ve el usuario ni arma enlaces; de eso se sigue ocupando
- * AsistenteService con datos de la base.
+ * Es una interfaz y no la clase concreta por dos motivos: los tests corren
+ * sin red ni credenciales, y cambiar de proveedor no debería tocar el
+ * servicio.
  *
- * Cualquier problema (no configurado, error HTTP, timeout, respuesta
- * ilegible) se resuelve devolviendo Optional.empty(): el asistente cae al
- * motor local y el usuario nunca ve un error.
+ * Contrato: NUNCA lanza. Cualquier problema (apagado, sin cuota, timeout,
+ * 400, JSON ilegible) devuelve Optional vacío, y el asistente responde con
+ * el recomendador determinístico. El usuario no se entera.
  */
 public interface MotorAsistenteRemoto {
 
@@ -20,11 +19,11 @@ public interface MotorAsistenteRemoto {
     boolean estaDisponible();
 
     /**
-     * Traduce el mensaje a términos del catálogo.
+     * Pide una respuesta conversacional.
      *
-     * @param texto mensaje del usuario.
-     * @param terminosValidos catálogo real que el modelo puede usar.
-     * @return términos sueltos para volver a resolver localmente, o vacío.
+     * Lo que devuelve es una propuesta sin validar: el servicio la
+     * sanitiza, filtra los deportes contra el catálogo y los rechazos, y
+     * escribe él mismo cualquier afirmación sobre qué hay publicado.
      */
-    Optional<InterpretacionRemota> interpretar(String texto, String terminosValidos);
+    Optional<RespuestaModelo> conversar(ConsultaRemota consulta);
 }

@@ -4,30 +4,65 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { RESPUESTA_BIENVENIDA } from "../../lib/asistente/conocimiento";
 import { motorAsistenteCascada } from "../../lib/asistente/motorCascada";
-import type { MensajeAsistente } from "../../lib/asistente/tipos";
+import type {
+  MensajeAsistente,
+  MensajeHistorial,
+} from "../../lib/asistente/tipos";
 import { AsistenteConversacion } from "./AsistenteConversacion";
 
 /*
-  Widget flotante del Asistente DondeEntreno.
+  Widget del Asistente DondeEntreno.
 
-  - Burbuja circular azul en la esquina inferior derecha. En mobile deja lugar
-    para la navegación inferior y convive con el botón de volver arriba.
-  - Al abrir: tarjeta de ~380px anclada abajo a la derecha en desktop, y
-    bottom sheet a lo ancho en mobile.
-  - El estado vive solo en memoria del componente: no se persiste nada.
+  - Se abre desde la barra inferior y desde el botón de la home; no hay
+    burbuja flotante.
+  - En desktop es una tarjeta de ~380px abajo a la derecha; en mobile, un
+    bottom sheet a lo ancho.
+  - El estado vive solo en memoria del componente: la conversación no se
+    persiste en ningún lado y se pierde al cerrar la pestaña. Es a
+    propósito, porque parte de lo que se escribe puede salir hacia un
+    modelo externo.
 */
 
-// Delay fijo para simular que el asistente "escribe" (determinístico, 300-500ms).
-const RETRASO_RESPUESTA_MS = 400;
+const ID_BIENVENIDA = "mensaje-bienvenida";
+
+/*
+  Cuántos turnos previos viajan al backend.
+
+  Diez son cinco idas y vueltas: alcanza para que el asistente se acuerde
+  de lo que rechazaste y preferiste, sin mandar la charla entera. El
+  backend igual la vuelve a recortar por su cuenta.
+*/
+const MAX_TURNOS_ENVIADOS = 10;
+
+/*
+  Piso de tiempo antes de mostrar la respuesta, no espera fija.
+
+  V1 sumaba 400 ms a TODA respuesta, incluidas las que iban al backend:
+  eran 400 ms regalados encima de la red. Ahora las locales esperan este
+  mínimo para que no aparezcan de golpe, y las remotas tardan lo que
+  tardan, sin agregado.
+*/
+const PISO_RESPUESTA_MS = 260;
+
+/*
+  A partir de acá la consulta claramente salió a la red, así que se cambia
+  el cartel: decir "buscando actividades" desde el milisegundo cero sería
+  mentira en las que se resuelven en el navegador.
+*/
+const MS_HASTA_AVISAR_BUSQUEDA = 1200;
 
 function crearMensajeBienvenida(): MensajeAsistente {
   return {
-    id: "mensaje-bienvenida",
+    id: ID_BIENVENIDA,
     autor: "asistente",
     texto: RESPUESTA_BIENVENIDA.texto,
     enlaces: RESPUESTA_BIENVENIDA.enlaces,
     opcionesRapidas: RESPUESTA_BIENVENIDA.opcionesRapidas,
   };
+}
+
+function esperar(milisegundos: number): Promise<void> {
+  return new Promise((resolver) => setTimeout(resolver, milisegundos));
 }
 
 export function AsistenteWidget() {
@@ -36,23 +71,18 @@ export function AsistenteWidget() {
     crearMensajeBienvenida(),
   ]);
   const [escribiendo, setEscribiendo] = useState(false);
+  const [avisoDeEspera, setAvisoDeEspera] = useState("Pensando opciones…");
   const contadorMensajes = useRef(0);
-  const temporizadorRespuesta = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const temporizadorAviso = useRef<ReturnType<typeof setTimeout> | null>(null);
   const origenDelFoco = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const debeDevolverFoco = useRef(false);
   const rutaActual = usePathname();
 
-  /*
-    Limpieza del delay simulado si el componente se desmonta
-    mientras el asistente "escribe".
-  */
   useEffect(() => {
     return () => {
-      if (temporizadorRespuesta.current) {
-        clearTimeout(temporizadorRespuesta.current);
+      if (temporizadorAviso.current) {
+        clearTimeout(temporizadorAviso.current);
       }
     };
   }, []);
@@ -155,55 +185,79 @@ export function AsistenteWidget() {
     }
   }
 
-  function enviarMensaje(texto: string) {
+  /*
+    Los últimos turnos, sin el saludo inicial.
+
+    El mensaje de bienvenida no aporta nada al contexto y ocuparía lugar
+    en el prompt: es el mismo texto siempre.
+  */
+  function armarHistorial(): MensajeHistorial[] {
+    return mensajes
+      .filter((mensaje) => mensaje.id !== ID_BIENVENIDA)
+      .slice(-MAX_TURNOS_ENVIADOS)
+      .map((mensaje) => ({ autor: mensaje.autor, texto: mensaje.texto }));
+  }
+
+  async function enviarMensaje(texto: string) {
     const textoLimpio = texto.trim();
 
     if (!textoLimpio || escribiendo) {
       return;
     }
 
+    const historial = armarHistorial();
+
     setMensajes((mensajesPrevios) => [
       ...mensajesPrevios,
       { id: crearIdMensaje("usuario"), autor: "usuario", texto: textoLimpio },
     ]);
     setEscribiendo(true);
+    setAvisoDeEspera("Pensando opciones…");
 
-    /*
-      Pequeño delay simulado antes de responder, con indicador de
-      "escribiendo", para que la conversación se sienta viva. Las que
-      resuelve el motor local salen igual de rápido que antes; las que
-      van al backend tardan lo que tarde, con el mismo indicador.
-    */
-    temporizadorRespuesta.current = setTimeout(() => {
-      motorAsistenteCascada
-        .procesar(textoLimpio, { rutaActual })
-        .then((respuesta) => {
-          setMensajes((mensajesPrevios) => [
-            ...mensajesPrevios,
-            {
-              id: crearIdMensaje("asistente"),
-              autor: "asistente",
-              texto: respuesta.texto,
-              enlaces: respuesta.enlaces,
-              opcionesRapidas: respuesta.opcionesRapidas,
-            },
-          ]);
-        })
-        .catch(() => {
-          setMensajes((mensajesPrevios) => [
-            ...mensajesPrevios,
-            {
-              id: crearIdMensaje("asistente"),
-              autor: "asistente",
-              texto:
-                "Uy, algo salió mal de mi lado. ¿Probás de nuevo con otras palabras?",
-            },
-          ]);
-        })
-        .finally(() => {
-          setEscribiendo(false);
-        });
-    }, RETRASO_RESPUESTA_MS);
+    temporizadorAviso.current = setTimeout(() => {
+      setAvisoDeEspera("Buscando actividades reales…");
+    }, MS_HASTA_AVISAR_BUSQUEDA);
+
+    try {
+      const [respuesta] = await Promise.all([
+        motorAsistenteCascada.procesar(textoLimpio, { rutaActual, historial }),
+        esperar(PISO_RESPUESTA_MS),
+      ]);
+
+      setMensajes((mensajesPrevios) => [
+        ...mensajesPrevios,
+        {
+          id: crearIdMensaje("asistente"),
+          autor: "asistente",
+          texto: respuesta.texto,
+          enlaces: respuesta.enlaces,
+          opcionesRapidas: respuesta.opcionesRapidas,
+        },
+      ]);
+    } catch {
+      /*
+        La cascada ya se traga los errores de red y cae al motor local,
+        así que llegar acá es raro. Aun así la salida no puede ser un
+        callejón: se ofrece Explorar.
+      */
+      setMensajes((mensajesPrevios) => [
+        ...mensajesPrevios,
+        {
+          id: crearIdMensaje("asistente"),
+          autor: "asistente",
+          texto:
+            "No pude responder ahora mismo. Probá de nuevo en un momento, o mirá las actividades directamente desde acá.",
+          enlaces: [{ href: "/explorar", etiqueta: "Ir a Explorar" }],
+        },
+      ]);
+    } finally {
+      if (temporizadorAviso.current) {
+        clearTimeout(temporizadorAviso.current);
+        temporizadorAviso.current = null;
+      }
+
+      setEscribiendo(false);
+    }
   }
 
   /*
@@ -264,6 +318,7 @@ export function AsistenteWidget() {
       <AsistenteConversacion
         mensajes={mensajes}
         escribiendo={escribiendo}
+        avisoDeEspera={avisoDeEspera}
         onEnviarMensaje={enviarMensaje}
       />
     </div>

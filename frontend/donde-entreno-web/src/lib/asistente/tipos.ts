@@ -26,6 +26,19 @@ export type MensajeAsistente = {
   opcionesRapidas?: string[];
 };
 
+/*
+  Un turno pasado, tal como viaja al backend.
+
+  Es la memoria del asistente y vive únicamente en la pestaña: no se
+  persiste en localStorage ni en la base. Si el usuario recarga, la charla
+  arranca de cero, que es lo que corresponde para algo cuyo contenido puede
+  salir hacia un modelo externo.
+*/
+export type MensajeHistorial = {
+  autor: AutorMensaje;
+  texto: string;
+};
+
 // Lo que devuelve el motor para una entrada del usuario.
 export type RespuestaAsistente = {
   texto: string;
@@ -37,15 +50,37 @@ export type RespuestaAsistente = {
 export type ContextoAsistente = {
   // Ruta actual de la app (por ejemplo "/explorar"), por si la respuesta puede aprovecharla.
   rutaActual?: string;
+  // Turnos previos de la conversación, del más viejo al más nuevo.
+  historial?: MensajeHistorial[];
+};
+
+/*
+  Qué clase de respuesta produjo el motor local.
+
+  Existe para que la cascada pueda decidir sin volver a analizar el texto.
+  La diferencia que importa: una respuesta de "ayuda-app" (cómo publicar,
+  dónde veo mis imágenes) es igual de buena con o sin contexto, así que se
+  resuelve en el navegador; una recomendación depende de toda la
+  conversación, así que hay que mandarla al backend.
+*/
+export type TipoRespuestaLocal =
+  | "ayuda-app"
+  | "conversacion"
+  | "recomendacion"
+  | "deporte"
+  | "fallback";
+
+export type ResultadoLocal = {
+  respuesta: RespuestaAsistente;
+  tipo: TipoRespuestaLocal;
 };
 
 /*
   Motor del asistente.
 
-  La interfaz es async a propósito: hoy la implementación es 100% local y
-  determinística (ver motorLocal.ts), pero mañana se puede enchufar una IA real
-  (una API remota, un modelo, etc.) implementando esta misma interfaz,
-  sin tocar una sola línea de la UI.
+  La interfaz es async a propósito: la implementación local es
+  determinística y sin red, pero la cascada consulta el backend cuando la
+  consulta lo amerita, sin que la UI se entere.
 */
 export interface MotorAsistente {
   procesar(

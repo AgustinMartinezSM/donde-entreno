@@ -14,8 +14,13 @@
 import { API_BASE_URL } from "../apiConfig";
 import type { ContextoAsistente, EnlaceAsistente, RespuestaAsistente } from "./tipos";
 
-/* Mismo tope que valida el backend: cortamos antes de gastar una request. */
-const MAX_CARACTERES = 300;
+/*
+  Mismo tope que valida el backend: cortamos antes de gastar una request.
+  El input además tiene maxLength, así que llegar acá pasado de largo es
+  raro; queda como red por si el texto entra pegado desde otro lado.
+*/
+export const MAX_CARACTERES_CONSULTA = 300;
+const MAX_CARACTERES = MAX_CARACTERES_CONSULTA;
 
 /*
   Más que esto no se espera: el usuario ya tiene una respuesta local
@@ -37,7 +42,11 @@ export async function consultarAsistenteRemoto(
     const respuesta = await fetch(`${API_BASE_URL}/api/asistente/consulta`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ texto, rutaActual: contexto?.rutaActual }),
+      body: JSON.stringify({
+        texto,
+        rutaActual: contexto?.rutaActual,
+        historial: contexto?.historial ?? [],
+      }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 

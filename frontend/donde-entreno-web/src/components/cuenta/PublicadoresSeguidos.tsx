@@ -1,6 +1,7 @@
 "use client";
 
 import type { Seguimientos } from "./useSeguimientos";
+import { ComunidadSugerida } from "./ComunidadSugerida";
 import { PublisherIdentity } from "../social/PublisherIdentity";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
@@ -22,6 +23,33 @@ export function PublicadoresSeguidos({
 }) {
   const { seguidos, error, cargando, idsNoSeguidos, idProcesando, alternar } =
     seguimientos;
+  const vacio = !error && seguidos !== null && seguidos.length === 0;
+  const idsSeguidos = (seguidos ?? [])
+    .map((publicador) => publicador.perfilPublicadorId)
+    .filter((id) => !idsNoSeguidos.includes(id));
+
+  /*
+    Sin seguidos, la solapa mostraba un cartel azul y nada más. Ahora
+    muestra a quién seguir, que es la única forma de que la sección deje
+    de estar vacía.
+  */
+  if (vacio) {
+    return (
+      <div className="grid gap-8">
+        <StatusMessage variant="info">
+          Todavía no seguís a ningún club, gimnasio ni profe. Seguilos para
+          enterarte cuando publiquen nuevas actividades.
+        </StatusMessage>
+
+        <ComunidadSugerida
+          idsSeguidos={idsSeguidos}
+          titulo="Para empezar a seguir"
+          descripcion="Clubes, gimnasios y profes que ya publican actividades en la plataforma."
+          maximo={6}
+        />
+      </div>
+    );
+  }
 
   return (
     <section aria-labelledby="seguidos-titulo">
@@ -47,14 +75,6 @@ export function PublicadoresSeguidos({
           <EsqueletoFila />
           <EsqueletoFila />
         </div>
-      ) : null}
-
-      {!error && seguidos && seguidos.length === 0 ? (
-        <StatusMessage variant="info" className="mt-5">
-          Todavía no seguís a ningún publicador. Entrá al detalle de una
-          actividad y tocá <strong>Seguir</strong> para no perderte sus
-          novedades.
-        </StatusMessage>
       ) : null}
 
       {!error && seguidos && seguidos.length > 0 ? (

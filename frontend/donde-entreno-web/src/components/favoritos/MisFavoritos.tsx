@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
+import type { ReactNode } from "react";
 
 import {
   quitarFavorito,
@@ -17,19 +18,27 @@ import { ActivityImage } from "../actividad/ActivityImage";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { IconoGuardar } from "../ui/IconoGuardar";
 import { SectionHeader } from "../ui/SectionHeader";
-import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
 function suscripcionVacia() {
   return () => {};
 }
 
+type MisFavoritosProps = {
+  /*
+    Acciones extra para el estado vacío. Desde el perfil se aprovecha
+    para ofrecer los deportes elegidos y el asistente; en /favoritos, que
+    no tiene ese contexto, queda solo "Explorar actividades".
+  */
+  accionesVacio?: ReactNode;
+};
+
 /*
   Listado de actividades guardadas (V1 local).
   Renderiza desde el snapshot guardado en el dispositivo, sin llamar a la
   API: así la página funciona incluso sin backend levantado.
 */
-export function MisFavoritos() {
+export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
   const favoritos = useFavoritos();
   const [anuncio, setAnuncio] = useState("");
   const regionRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +130,8 @@ export function MisFavoritos() {
           <AppLinkButton href="/explorar" className="mt-2">
             Explorar actividades
           </AppLinkButton>
+
+          {accionesVacio}
         </SurfaceCard>
       ) : (
         <>
@@ -207,14 +218,39 @@ export function MisFavoritos() {
             })}
           </div>
 
-          <StatusMessage variant="info" title="Favoritos locales" className="mt-8">
-            <p>
-              Por ahora tus favoritos se guardan solo en este navegador. Más
-              adelante vas a poder sincronizarlos con tu cuenta.
-            </p>
-          </StatusMessage>
+          {/*
+            El aviso era un cartel con título al pie de la grilla y
+            pesaba tanto como el contenido. La advertencia sigue estando
+            —importa saber que esto vive en el dispositivo— pero como
+            nota al pie, que es lo que es.
+          */}
+          <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--color-muted)]">
+            <span aria-hidden="true" className="mt-px">
+              <IconoInfo />
+            </span>
+            Por ahora tus favoritos se guardan solo en este navegador. Más
+            adelante vas a poder sincronizarlos con tu cuenta.
+          </p>
         </>
       )}
     </div>
+  );
+}
+
+function IconoInfo() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4 shrink-0 text-[var(--color-accent)]"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </svg>
   );
 }

@@ -79,6 +79,44 @@ export function AsistenteConversacion({
         aria-label="Mensajes de la conversación"
         className="flex-1 space-y-3 overflow-y-auto bg-white px-4 py-4"
       >
+        {/*
+          Aviso de privacidad, arriba de la conversación y no fijo en el
+          encabezado: se ve siempre al abrir el asistente y se va con el
+          scroll a medida que la charla avanza, sin comerse alto en un
+          panel que ya es chico.
+
+          Dice "puede enviarse" porque es literal: las consultas que el
+          asistente resuelve en el navegador nunca salen del dispositivo.
+        */}
+        <div className="rounded-2xl bg-[#F8FCFE] px-4 py-3 text-xs leading-5 text-[var(--color-muted)] ring-1 ring-[#DDEAF3]">
+          <p>
+            Al usar el asistente, tu mensaje <strong>puede enviarse a Google
+            Gemini</strong> para generar una respuesta. No compartas datos
+            sensibles.
+          </p>
+
+          {/*
+            El resto va plegado: con todo el texto visible, el aviso se
+            comía un tercio del panel a 375px y empujaba el saludo y las
+            opciones fuera de la primera pantalla. Lo accionable queda
+            arriba; la aclaración está a un toque.
+          */}
+          <details className="group mt-1">
+            <summary className="cursor-pointer list-none font-bold text-[var(--color-primary)] [&::-webkit-details-marker]:hidden">
+              Cómo funciona
+              <span aria-hidden="true" className="ml-1 inline-block transition group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <p className="mt-2">
+              Las recomendaciones salen de las actividades publicadas en
+              DondeEntreno: la IA no inventa clubes, precios ni enlaces, y no
+              aprueba ni modifica actividades. Si no hay resultados, te lo
+              decimos.
+            </p>
+          </details>
+        </div>
+
         {mensajes.map((mensaje) => {
           const esAsistente = mensaje.autor === "asistente";
           const esUltimoMensaje = ultimoMensaje?.id === mensaje.id;

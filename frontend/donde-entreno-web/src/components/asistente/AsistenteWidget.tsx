@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { RESPUESTA_BIENVENIDA } from "../../lib/asistente/conocimiento";
-import { motorAsistenteLocal } from "../../lib/asistente/motorLocal";
+import { motorAsistenteCascada } from "../../lib/asistente/motorCascada";
 import type { MensajeAsistente } from "../../lib/asistente/tipos";
 import { AsistenteConversacion } from "./AsistenteConversacion";
 
@@ -169,12 +169,13 @@ export function AsistenteWidget() {
     setEscribiendo(true);
 
     /*
-      Pequeño delay simulado antes de responder, con indicador de "escribiendo",
-      para que la conversación se sienta viva. La respuesta en sí es
-      determinística: sale del motor local.
+      Pequeño delay simulado antes de responder, con indicador de
+      "escribiendo", para que la conversación se sienta viva. Las que
+      resuelve el motor local salen igual de rápido que antes; las que
+      van al backend tardan lo que tarde, con el mismo indicador.
     */
     temporizadorRespuesta.current = setTimeout(() => {
-      motorAsistenteLocal
+      motorAsistenteCascada
         .procesar(textoLimpio, { rutaActual })
         .then((respuesta) => {
           setMensajes((mensajesPrevios) => [

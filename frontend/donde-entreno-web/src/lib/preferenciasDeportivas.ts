@@ -7,8 +7,14 @@
   este módulo es el único punto a reemplazar: los componentes
   consumen los hooks.
 
-  Hoy alimentan los accesos rápidos de Mi cuenta; más adelante pueden
-  personalizar la Home y las respuestas del asistente.
+  **Cada cuenta elige los suyos** (`porUsuario`), por lo mismo que los
+  favoritos: con una sola clave por navegador, una cuenta nueva heredaba
+  los deportes de otra persona que hubiera usado la misma computadora, y
+  además arrancaba con ese paso del perfil dado por hecho. El visitante
+  conserva la clave histórica — ver scopeAlmacen.ts.
+
+  Alimentan los accesos rápidos del perfil, los chips de la Home y las
+  recomendaciones de "Para vos".
 */
 
 import { useSyncExternalStore } from "react";
@@ -20,7 +26,8 @@ function esSlug(valor: unknown): valor is string {
 
 const almacen = crearAlmacenLocal<string>(
   "dondeentreno.deportesFavoritos.v1",
-  esSlug
+  esSlug,
+  { porUsuario: true }
 );
 
 export function alternarDeporteFavorito(slug: string): boolean {

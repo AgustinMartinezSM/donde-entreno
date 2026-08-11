@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import {
   quitarFavorito,
   useFavoritos,
+  useScopeFavoritosResuelto,
   type FavoritoGuardado,
 } from "../../lib/favoritos";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
@@ -57,6 +58,15 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
   );
 
   /*
+    Además de hidratar, hay que saber de quién es la lista: hasta que la
+    sesión resuelve, los favoritos vienen vacíos a propósito y sin esto
+    alguien con actividades guardadas vería "Todavía no guardaste
+    actividades" antes de que aparezcan.
+  */
+  const scopeResuelto = useScopeFavoritosResuelto();
+  const listo = hidratado && scopeResuelto;
+
+  /*
     Al quitar una tarjeta, su botón se desmonta y el foco caería a <body>.
     Movemos el foco a un destino estable (el encabezado de la sección) y
     anunciamos el cambio en una región aria-live para lectores de pantalla.
@@ -85,7 +95,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
         {anuncio}
       </p>
 
-      {!hidratado ? (
+      {!listo ? (
         <div
           role="status"
           aria-label="Cargando tus favoritos"

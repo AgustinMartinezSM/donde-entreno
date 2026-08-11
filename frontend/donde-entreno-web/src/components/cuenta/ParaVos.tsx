@@ -56,9 +56,14 @@ export function ParaVos({ perfil, feed, seguimientos, onIrATab }: ParaVosProps) 
   */
   return (
     <div className="grid items-start gap-10 sm:gap-12 xl:grid-cols-[minmax(0,1fr)_19rem] xl:gap-8">
+      {/*
+        En xl esta columna mide 304px, así que su card del asistente sabe
+        que ahí tiene que apilar: con el layout ancho el texto se quedaba
+        sin lugar y caía en vertical.
+      */}
       <aside className="grid gap-6 xl:sticky xl:top-6 xl:order-2">
         <ProgresoPerfil perfil={perfil} onIrATab={onIrATab} />
-        <BloqueAsistente />
+        <BloqueAsistente disposicion="lateral" />
       </aside>
 
       <div className="grid min-w-0 gap-10 sm:gap-12 xl:order-1">

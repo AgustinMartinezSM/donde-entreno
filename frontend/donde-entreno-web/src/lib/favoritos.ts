@@ -5,12 +5,20 @@
   de este dispositivo. Guardamos un snapshot de los datos visibles de la
   card para poder renderizar "Mis favoritos" sin depender de la API.
 
+  **Cada cuenta tiene su propia lista** (`porUsuario`). Con una sola
+  clave por navegador, una cuenta recién creada abría "Guardados" y
+  encontraba actividades de otra persona que había usado la misma
+  computadora. El visitante sin cuenta conserva la clave histórica, así
+  que no pierde lo que ya tenía; las cuentas estrenan lista propia y no
+  heredan nada — ver scopeAlmacen.ts.
+
   Cuando exista sincronización con backend/cuenta de usuario, este módulo
   es el único punto a reemplazar: los componentes consumen los hooks.
 */
 
 import { useSyncExternalStore } from "react";
 import { crearAlmacenLocal } from "./almacenLocal";
+import { obtenerScopeAlmacen, suscribirScopeAlmacen } from "./scopeAlmacen";
 
 export type FavoritoGuardado = {
   slug: string;
@@ -76,7 +84,8 @@ function esFavoritoGuardado(valor: unknown): valor is FavoritoGuardado {
 
 const almacen = crearAlmacenLocal<FavoritoGuardado>(
   "dondeentreno.favoritos.v1",
-  esFavoritoGuardado
+  esFavoritoGuardado,
+  { porUsuario: true }
 );
 
 export function leerFavoritos(): FavoritoGuardado[] {
@@ -121,6 +130,22 @@ export function useFavoritos(): FavoritoGuardado[] {
     almacen.suscribir,
     almacen.obtenerSnapshot,
     almacen.obtenerSnapshotServidor
+  );
+}
+
+/*
+  Si ya sabemos de quién es la lista.
+
+  Mientras la sesión se resuelve, la lista está vacía a propósito (no por
+  falta de datos), así que quien la muestre debe distinguir "todavía no
+  sé" de "no guardaste nada": si no, la primera pantalla de alguien con
+  favoritos es "Todavía no guardaste actividades".
+*/
+export function useScopeFavoritosResuelto(): boolean {
+  return useSyncExternalStore(
+    suscribirScopeAlmacen,
+    () => obtenerScopeAlmacen() !== null,
+    () => false
   );
 }
 

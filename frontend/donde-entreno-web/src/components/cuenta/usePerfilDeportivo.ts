@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 
 import { CATALOGO_DEPORTES_ASISTENTE } from "../../lib/asistente/conocimiento";
 import { leerSlugCiudadGuardada } from "../../lib/ciudadActiva";
 import { useFavoritos } from "../../lib/favoritos";
+import {
+  marcarOnboardingPerfilResuelto,
+  useOnboardingPerfilResuelto,
+} from "../../lib/onboardingPerfil";
 import { useDeportesFavoritos } from "../../lib/preferenciasDeportivas";
 import type { FavoritoGuardado } from "../../lib/favoritos";
 
@@ -34,6 +38,13 @@ export type PerfilDeportivo = {
   porcentaje: number;
   /* true cuando todavía falta algún paso y sabemos lo suficiente para decirlo. */
   perfilIncompleto: boolean;
+  /*
+    Si corresponde ofrecer la guía de bienvenida. Falta algún paso Y la
+    persona todavía no terminó (ni descartó) el onboarding: una vez que lo
+    resolvió, quitar un favorito no la devuelve al estado de recién
+    llegada.
+  */
+  mostrarOnboarding: boolean;
   /* El primer paso pendiente: es el que se ofrece como acción principal. */
   proximoPaso: PasoPerfil | null;
 };
@@ -60,6 +71,7 @@ export function usePerfilDeportivo({
 }): PerfilDeportivo {
   const favoritos = useFavoritos();
   const deportesElegidos = useDeportesFavoritos();
+  const onboardingResuelto = useOnboardingPerfilResuelto();
 
   /*
     La ciudad activa vive en localStorage: se lee recién después de
@@ -72,7 +84,7 @@ export function usePerfilDeportivo({
     () => null
   );
 
-  return useMemo(() => {
+  const perfil = useMemo(() => {
     const nombreCompleto = [nombre.trim(), apellido.trim()]
       .filter(Boolean)
       .join(" ");
@@ -141,9 +153,31 @@ export function usePerfilDeportivo({
       pasosCompletados,
       porcentaje: Math.round((pasosCompletados / pasos.length) * 100),
       perfilIncompleto: proximoPaso !== null,
+      mostrarOnboarding: proximoPaso !== null && !onboardingResuelto,
       proximoPaso,
     };
-  }, [nombre, apellido, ciudadSlug, deportesElegidos, favoritos, cantidadSiguiendo]);
+  }, [
+    nombre,
+    apellido,
+    ciudadSlug,
+    deportesElegidos,
+    favoritos,
+    cantidadSiguiendo,
+    onboardingResuelto,
+  ]);
+
+  /*
+    Haber terminado se registra en el momento en que pasa, no se deduce
+    después: si se recalculara, bastaría con quitar un favorito para que
+    la persona volviera a ser "nueva".
+  */
+  useEffect(() => {
+    if (!perfil.perfilIncompleto && !onboardingResuelto) {
+      marcarOnboardingPerfilResuelto();
+    }
+  }, [perfil.perfilIncompleto, onboardingResuelto]);
+
+  return perfil;
 }
 
 function obtenerIniciales(nombre: string): string {

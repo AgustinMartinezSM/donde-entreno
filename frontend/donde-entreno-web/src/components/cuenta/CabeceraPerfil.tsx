@@ -93,9 +93,12 @@ export function CabeceraPerfil({
 
           {/*
             Una sola acción, y solo mientras haya algo por hacer: cuando
-            el perfil está completo la cabecera queda limpia.
+            el perfil está completo —o la persona ya pasó por el
+            onboarding— la cabecera queda limpia. Sigue el mismo criterio
+            que la tarjeta de progreso, para no ofrecer un paso de
+            bienvenida a alguien que ya usó la app.
           */}
-          {perfil.proximoPaso?.accion ? (
+          {perfil.mostrarOnboarding && perfil.proximoPaso?.accion ? (
             <div className="sm:shrink-0">
               {perfil.proximoPaso.accion.href ? (
                 <AppLinkButton

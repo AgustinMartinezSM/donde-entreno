@@ -19,6 +19,11 @@ import {
   obtenerUsuarioActual,
 } from "../../services/authService";
 import { sincronizarCookieSesion } from "../../lib/sesionCookie";
+import {
+  crearScopeDeUsuario,
+  establecerScopeAlmacen,
+  SCOPE_INVITADO,
+} from "../../lib/scopeAlmacen";
 import type { LoginResponse, SesionAuth, UsuarioActual } from "../../types/auth";
 import type { ReactNode } from "react";
 
@@ -60,6 +65,12 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
     versionSesionRef.current += 1;
     cerrarSesionAuth();
     sincronizarCookieSesion(null);
+    /*
+      Lo guardado en este dispositivo vuelve al scope del visitante: si no,
+      la próxima persona que use esta computadora vería la lista de quien
+      acaba de salir.
+    */
+    establecerScopeAlmacen(SCOPE_INVITADO);
     setSesion(null);
     setUsuario(null);
     setStatus("guest");
@@ -73,6 +84,13 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
         HTML de rutas privadas a visitantes sin sesión.
       */
       sincronizarCookieSesion(sesionActual);
+      /*
+        A partir de acá, lo guardado en el dispositivo es de esta cuenta y
+        no de la anterior ni del visitante.
+      */
+      establecerScopeAlmacen(
+        crearScopeDeUsuario(usuarioActual ?? sesionActual.usuario)
+      );
       setSesion(sesionActual);
       setUsuario(usuarioActual);
       setStatus("authenticated");
@@ -158,6 +176,7 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
 
       if (resultado.tipo === "guest") {
         sincronizarCookieSesion(null);
+        establecerScopeAlmacen(SCOPE_INVITADO);
         setSesion(null);
         setUsuario(null);
         setStatus("guest");
@@ -165,6 +184,9 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
       }
 
       sincronizarCookieSesion(resultado.sesion);
+      establecerScopeAlmacen(
+        crearScopeDeUsuario(resultado.usuario ?? resultado.sesion.usuario)
+      );
       setSesion(resultado.sesion);
       setUsuario(resultado.usuario);
       setStatus("authenticated");

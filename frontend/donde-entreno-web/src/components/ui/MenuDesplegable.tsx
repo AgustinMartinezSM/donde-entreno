@@ -77,7 +77,12 @@ export function MenuDesplegable({
   return (
     <div
       ref={contenedorRef}
-      className="relative"
+      /*
+        min-w-0: el contenedor se usa dentro de barras flex que pueden
+        apretarlo. Sin esto, el disparador conserva su ancho de contenido
+        y se desborda del hueco que le queda.
+      */
+      className="relative min-w-0"
       onKeyDown={(evento) => {
         if (evento.key === "Escape" && abierto) {
           evento.stopPropagation();

@@ -7,6 +7,18 @@ type BloqueAsistenteProps = {
   titulo?: string;
   descripcion?: string;
   textoBoton?: string;
+  /*
+    - "ancha": la card ocupa el ancho del contenido y el botón va al lado.
+    - "lateral": la card vive en la columna de apoyo del perfil, que solo
+      es angosta a partir de `xl` (304px). Hasta ahí se comporta como la
+      ancha; desde ahí apila todo.
+
+    Hace falta decírselo porque los breakpoints miden la ventana y no el
+    contenedor: en una pantalla de 1440px la columna lateral mide 304px,
+    así que `sm:flex-row` se activaba igual y le dejaba al texto 70px. El
+    resultado era el título cayendo en vertical, una letra por línea.
+  */
+  disposicion?: "ancha" | "lateral";
 };
 
 /*
@@ -18,13 +30,18 @@ type BloqueAsistenteProps = {
 */
 export function BloqueAsistente({
   titulo = "¿No sabés por dónde empezar?",
-  descripcion = "Contale qué buscás y te digo dónde entrenar cerca tuyo.",
+  descripcion = "Contame qué buscás y te recomiendo deportes o actividades cerca tuyo.",
   textoBoton = "Hablar con el asistente",
+  disposicion = "ancha",
 }: BloqueAsistenteProps) {
+  const lateral = disposicion === "lateral";
+
   return (
     <SurfaceCard
       variant="info"
-      className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+      className={`flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 ${
+        lateral ? "xl:flex-col xl:items-stretch xl:gap-0 xl:p-5" : ""
+      }`}
     >
       <div className="flex min-w-0 items-start gap-3">
         <span
@@ -45,6 +62,11 @@ export function BloqueAsistente({
           </svg>
         </span>
 
+        {/*
+          min-w-0 en la columna de texto: sin esto el contenido no puede
+          encogerse por debajo de su ancho mínimo y empuja el layout en
+          lugar de ajustarse.
+        */}
         <div className="min-w-0">
           <p className="font-extrabold text-[var(--color-primary)]">{titulo}</p>
           <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
@@ -56,7 +78,7 @@ export function BloqueAsistente({
       <AppButton
         variant="secondary"
         size="sm"
-        className="shrink-0"
+        className={`shrink-0 ${lateral ? "xl:mt-4 xl:w-full" : ""}`}
         aria-haspopup="dialog"
         onClick={() =>
           window.dispatchEvent(new Event("donde-entreno:abrir-asistente"))

@@ -60,7 +60,13 @@ export function HeaderSessionMenu() {
   return (
     <MenuDesplegable
       etiqueta={`Abrir el menú de tu cuenta. Sesión de ${nombre || "usuario"}`}
-      className="flex min-h-11 min-w-0 items-center gap-2.5 rounded-full border border-[#DDEAF3] bg-white py-1.5 pl-1.5 pr-3.5 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[#BFDDEA] hover:bg-[#F8FCFE] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+      /*
+        w-full sobre un contenedor con min-w-0: el botón se adapta al
+        hueco que le deja el header en vez de desbordarlo. Con el ancho
+        del contenido sobresalía ~20px por la derecha cuando la barra
+        quedaba justa de espacio.
+      */
+      className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[#DDEAF3] bg-white py-1.5 pl-1.5 pr-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[#BFDDEA] hover:bg-[#F8FCFE] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
       disparador={
         <>
           <span
@@ -69,7 +75,8 @@ export function HeaderSessionMenu() {
           >
             {inicial}
           </span>
-          <span className="min-w-0 max-w-28 truncate">
+          {/* El nombre es lo único que puede ceder ancho: se recorta. */}
+          <span className="min-w-0 flex-1 truncate text-left">
             {nombre || "Mi cuenta"}
           </span>
           <IconoChevron />

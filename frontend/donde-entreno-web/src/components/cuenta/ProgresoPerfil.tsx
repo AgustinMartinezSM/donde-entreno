@@ -1,5 +1,6 @@
 "use client";
 
+import { marcarOnboardingPerfilResuelto } from "../../lib/onboardingPerfil";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
@@ -19,10 +20,14 @@ type ProgresoPerfilProps = {
   persistencia nueva y por eso tampoco puede quedar desactualizado.
 
   Cuando están los cinco pasos la tarjeta desaparece sola: es una guía
-  para empezar, no un panel permanente.
+  para empezar, no un panel permanente. Y no vuelve: que se muestre
+  depende de `mostrarOnboarding`, que recuerda si la persona ya terminó
+  —o la descartó— en vez de recalcularlo. Antes se decidía solo con el
+  progreso en vivo, así que quitar un favorito devolvía a alguien con la
+  app usada al instructivo de bienvenida.
 */
 export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
-  if (!perfil.perfilIncompleto) {
+  if (!perfil.mostrarOnboarding) {
     return null;
   }
 
@@ -40,9 +45,22 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
           </h2>
         </div>
 
-        <p className="text-sm font-extrabold text-[#1D7B4A]">
-          {perfil.pasosCompletados} de {totalPasos}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-extrabold text-[#1D7B4A]">
+            {perfil.pasosCompletados} de {totalPasos}
+          </p>
+          {/*
+            Salida para quien no quiere la guía. Se recuerda por cuenta,
+            así que no reaparece en la próxima visita.
+          */}
+          <button
+            type="button"
+            onClick={marcarOnboardingPerfilResuelto}
+            className="rounded-full px-2 py-1 text-xs font-bold text-[var(--color-muted)] transition duration-200 ease-out hover:bg-white hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+          >
+            Ahora no
+          </button>
+        </div>
       </div>
 
       <div

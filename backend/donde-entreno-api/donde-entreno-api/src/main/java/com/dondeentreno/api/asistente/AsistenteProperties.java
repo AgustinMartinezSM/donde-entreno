@@ -2,6 +2,9 @@ package com.dondeentreno.api.asistente;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Configuración del asistente.
  *
@@ -134,5 +137,37 @@ public class AsistenteProperties {
         return geminiEnabled
                 && !geminiApiKey.isBlank()
                 && !geminiModel.isBlank();
+    }
+
+    /**
+     * Por qué el modelo no está disponible, en texto apto para un log.
+     *
+     * Dice qué falta, nunca cuánto vale: de la key y del modelo solo se
+     * informa si están vacíos. La key jamás se loguea.
+     *
+     * Existe porque esta condición se evaluaba en silencio, y una consulta
+     * que no llega al modelo se veía igual esté apagado, sin credenciales o
+     * caído. Distinguirlo obligaba a leer el código.
+     */
+    public String motivoGeminiNoDisponible() {
+        if (geminiDisponible()) {
+            return "disponible";
+        }
+
+        if (!geminiEnabled) {
+            return "apagado (gemini-enabled=false)";
+        }
+
+        List<String> faltantes = new ArrayList<>();
+
+        if (geminiApiKey.isBlank()) {
+            faltantes.add("gemini-api-key");
+        }
+
+        if (geminiModel.isBlank()) {
+            faltantes.add("gemini-model");
+        }
+
+        return "encendido pero sin " + String.join(" ni ", faltantes);
     }
 }

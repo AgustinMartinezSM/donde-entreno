@@ -25,6 +25,7 @@ import com.dondeentreno.api.dto.CategoriaDeportivaDTO;
 import com.dondeentreno.api.dto.DeporteDTO;
 import com.dondeentreno.api.dto.FiltroOpcionesDTO;
 import com.dondeentreno.api.exception.ConsultaAsistenteInvalidaException;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -101,6 +102,31 @@ public class AsistenteService {
         this.analizador = analizador;
         this.recomendador = recomendador;
         this.redactor = redactor;
+    }
+
+    /**
+     * Deja el estado del modelo en el log de arranque.
+     *
+     * Una línea por instancia, para no tener que esperar a que alguien
+     * consulte —ni deducirlo de la ausencia de otras líneas— para saber si
+     * Gemini va a entrar. En Render el servicio se reinicia solo (el plan
+     * free hace spin down), así que esta línea aparece seguido y sirve para
+     * ubicar desde cuándo la instancia está como está.
+     */
+    @PostConstruct
+    void registrarEstadoDelModelo() {
+        if (propiedades.geminiDisponible()) {
+            log.info(
+                    "Asistente: modelo remoto habilitado, tope diario de {} llamadas.",
+                    propiedades.getGeminiDailyLimit()
+            );
+            return;
+        }
+
+        log.info(
+                "Asistente: modelo remoto NO disponible. Motivo: {}. Se responde solo con el motor local.",
+                propiedades.motivoGeminiNoDisponible()
+        );
     }
 
     /**
@@ -380,6 +406,17 @@ public class AsistenteService {
             CatalogoDiferido catalogo
     ) {
         if (!motorRemoto.estaDisponible()) {
+            /*
+              Esta rama salía en silencio, y era la única de las tres: la
+              cuota agotada y el fallo de la llamada sí dejaban rastro. El
+              resultado era que "el modelo está apagado" y "el modelo falló"
+              se veían idénticos en los logs, y distinguirlos obligaba a
+              leer el código. El motivo nunca incluye el valor de la key.
+            */
+            log.info(
+                    "Asistente: el modelo no esta disponible. Motivo: {}. Se responde con el motor local.",
+                    propiedades.motivoGeminiNoDisponible()
+            );
             return Optional.empty();
         }
 

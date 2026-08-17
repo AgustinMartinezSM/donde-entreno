@@ -424,8 +424,14 @@ class AsistenteServiceTest {
         assertThat(respuesta.getTexto())
                 .doesNotContain("Quidditch")
                 .doesNotContain("Parkour");
-        /* Se cae a la recomendacion deterministica, no a un error. */
-        assertThat(respuesta.getFuente()).isEqualTo("local");
+        /*
+          Los deportes en pantalla son nuestros. La prosa del modelo se
+          conserva (por eso la fuente es gemini y no local, como era
+          antes de aceptar el consejo puro): descartar lo inventado no
+          obliga a descartar el saludo.
+        */
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Mirá estas opciones");
         assertThat(respuesta.getTexto()).contains("Pádel");
     }
 
@@ -507,6 +513,138 @@ class AsistenteServiceTest {
 
         assertThat(respuesta.getFuente()).isEqualTo("local");
         assertThat(respuesta.getTexto()).contains("Pádel");
+    }
+
+    /*
+      El caso que dejó el asistente en modo local una semana: el modelo
+      contesta consejo válido pero con "deportes" vacío. Su prosa se
+      acepta y los deportes los pone el recomendador determinístico.
+    */
+    @Test
+    void aceptaElConsejoDelModeloAunqueVengaSinDeportes() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Buenísimo que quieras arrancar, te tiro ideas para elegir.",
+                List.of(),
+                null,
+                "¿Cuál te tienta?"
+        ));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("quiero arrancar algo, ayudame a elegir");
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Buenísimo que quieras arrancar");
+        /* Los deportes son nuestros, no un texto sin opciones. */
+        assertThat(respuesta.getTexto()).contains("Pádel");
+    }
+
+    /*
+      Si el modelo metió la lista adentro del mensaje (que es exactamente
+      lo que hacía), no se muestra dos veces: nos quedamos con la
+      apertura y la lista la escribe el backend, que sí respeta los
+      rechazos.
+    */
+    @Test
+    void siElConsejoTraeLaListaAdentroSeQuedaSoloConLaApertura() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Te tiro opciones: 1. Básquet: picado y aros 2. Boxeo: bolsa y guantes",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("recomendame algo", "ok", "no quiero básquet ni nada de pelea")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        /* La enumeración del modelo no pasa: ignoraba los rechazos. */
+        assertThat(respuesta.getTexto()).doesNotContain("picado y aros");
+        assertThat(respuesta.getTexto()).doesNotContain("Básquet");
+        assertThat(respuesta.getTexto()).doesNotContain("Boxeo");
+    }
+
+    /*
+      Si TODO lo que propuso estaba rechazado, su prosa tampoco se
+      muestra: es justamente la más propensa a elogiar lo rechazado, y el
+      sanitizador no filtra nombres de deportes. Se conserva el descarte
+      completo que había antes del consejo puro.
+    */
+    @Test
+    void siTodoLoPropuestoEstabaRechazadoLaProsaTampocoSeMuestra() {
+        conModeloDisponible(modelo(
+                "El boxeo te va a encantar para descargar la bronca",
+                "Boxeo", "Muay Thai"
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("recomendame algo", "ok", "nada de pelea ni combate")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        assertThat(respuesta.getTexto()).doesNotContain("te va a encantar");
+        assertThat(respuesta.getTexto()).doesNotContain("Boxeo");
+    }
+
+    /*
+      El hábito de repetir la lista adentro del mensaje no distingue
+      caminos: también con deportes válidos la apertura se recorta, o la
+      pantalla mostraba la lista dos veces.
+    */
+    @Test
+    void tambienConDeportesValidosLaAperturaSeQuedaSinLaEnumeracion() {
+        conModeloDisponible(modelo(
+                "Te tiro ideas: 1. Funcional: circuitos 2. Vóley: en grupo",
+                "Funcional", "Vóley"
+        ));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("recomendame algo, quiero algo social");
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Te tiro ideas");
+        /* La enumeración embebida no pasa; la lista la arma el backend. */
+        assertThat(respuesta.getTexto()).doesNotContain("1. Funcional: circuitos");
+    }
+
+    /* La variante rioplatense "1- " también es una enumeración. */
+    @Test
+    void laEnumeracionConGuionTambienSeRecorta() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Mirá estas: 1- Funcional para variar 2- Vóley en grupo",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta =
+                asistenteService.responder("quiero algo social y variado");
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Mirá estas");
+        assertThat(respuesta.getTexto()).doesNotContain("para variar");
+    }
+
+    /* Consejo vacío y sin deportes: recién ahí decide el motor local. */
+    @Test
+    void sinProsaNiDeportesElModeloNoAportaNadaYDecideElLocal() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "   ",
+                List.of(),
+                null,
+                "¿seguimos?"
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder("quiero algo social");
+
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        assertThat(respuesta.getTexto()).isNotBlank();
     }
 
     /* =============================================================

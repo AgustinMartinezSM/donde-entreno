@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -361,6 +363,58 @@ public class AsistenteService {
         }
 
         /*
+          Sin deportes válidos ni filtros, queda la prosa. Antes acá se
+          descartaba todo, y en producción eso dejó el asistente en modo
+          local durante una semana: el modelo empezó a devolver el consejo
+          con la lista adentro del mensaje y "deportes" vacío, y su prosa
+          —que era buena— se tiraba entera. Ahora se reparte como en el
+          resto del V2: la apertura la escribe el modelo (sanitizada, y
+          sin la enumeración que haya metido en el texto), los deportes
+          los pone el recomendador determinístico, que respeta catálogo y
+          rechazos por código.
+        */
+        String consejo = soloLaApertura(SanitizadorTexto.limpiarMensaje(respuesta.mensaje()));
+
+        /*
+          El consejo NO se acepta si el modelo venía insistiendo con lo
+          rechazado — deportes descartados por rechazo, o filtros que
+          resolvían justo el deporte rechazado—: esa prosa es la más
+          propensa a elogiar lo que la persona ya descartó ("el boxeo te
+          va a encantar"), y el sanitizador no filtra nombres de
+          deportes. Para ese caso se conserva el comportamiento anterior:
+          descarte completo y respuesta determinística, cuya apertura
+          reconoce el rechazo. El caso del bug real de producción —lista
+          vacía con la prosa buena— no trae descartes por rechazo y entra
+          igual.
+        */
+        boolean insistioConLoRechazado =
+                !validacion.descartadosPorRechazo().isEmpty() || resueltosCrudos.hayAlgo();
+
+        if (!consejo.isBlank() && !insistioConLoRechazado) {
+            List<DeporteSugerido> sugeridosPropios = recomendador.recomendar(
+                    perfil,
+                    catalogo.obtener(),
+                    RecomendadorDeportes.MAXIMO_SUGERENCIAS
+            );
+
+            log.info(
+                    "Asistente: GEMINI_VALIDADO via=consejo-completado tipo={} propuestos={} porCatalogo={} rechazosActivos={}",
+                    campoParaLog(respuesta.tipoRespuesta()),
+                    propuestos.size(),
+                    listaParaLog(validacion.descartadosPorCatalogo()),
+                    perfil.nombresRechazados().size()
+            );
+
+            return Optional.of(redactor.recomendacion(
+                    consejo,
+                    sugeridosPropios,
+                    perfil,
+                    SanitizadorTexto.limpiarFragmento(respuesta.preguntaSeguimiento()),
+                    FUENTE_GEMINI
+            ));
+        }
+
+        /*
           El modelo respondió y nada sobrevivió: sin esta línea, este
           desenlace era invisible y en producción se confundió primero con
           la cuota y después con una llamada fallida. Solo nombres de
@@ -455,6 +509,40 @@ public class AsistenteService {
         return limpio.isBlank() ? "-" : limpio;
     }
 
+    /*
+      Dónde arranca una enumeración dentro de la prosa. OJO: esto corre
+      DESPUÉS de limpiarMensaje, que ya aplanó todos los saltos de línea
+      a espacios — por eso no hay una rama con \n, no serviría de nada.
+
+      Se busca "1." o "1)" o "1-" tras inicio, espacio o dos puntos (las
+      listas empiezan en uno, y un número suelto en una frase no suele
+      venir como "1."), o un bullet real: ese carácter no aparece en
+      prosa. El guion SOLO se mira pegado al uno ("1- Funcional", muy
+      común en castellano): suelto, " - " aplanado es un inciso legítimo
+      y no se toca.
+    */
+    private static final Pattern ARRANQUE_DE_ENUMERACION =
+            Pattern.compile("(?:^|[\\s:])1[.)\\-]\\s|\\s•\\s");
+
+    /**
+     * La prosa de apertura, sin la enumeración que el modelo haya metido
+     * en el texto.
+     *
+     * Cuando el modelo escribe la lista dentro del mensaje (el caso que
+     * dejó el asistente en modo local), aceptar el mensaje entero
+     * duplicaría la lista en pantalla: la suya en prosa y la nuestra
+     * estructurada con enlaces. Nos quedamos con lo que haya antes de la
+     * enumeración; si el mensaje ERA pura lista, queda vacío y el caller
+     * decide.
+     */
+    private String soloLaApertura(String mensaje) {
+        Matcher enumeracion = ARRANQUE_DE_ENUMERACION.matcher(mensaje);
+
+        return enumeracion.find()
+                ? mensaje.substring(0, enumeracion.start()).trim()
+                : mensaje;
+    }
+
     /**
      * El párrafo de apertura.
      *
@@ -463,7 +551,15 @@ public class AsistenteService {
      * lista de deportes sola se lee como un formulario.
      */
     private String introDelModelo(RespuestaModelo respuesta, PerfilConversacion perfil) {
-        String limpio = SanitizadorTexto.limpiarMensaje(respuesta.mensaje());
+        /*
+          soloLaApertura también acá: el hábito del modelo de repetir la
+          lista adentro del mensaje no distingue caminos, y con el esquema
+          exigiendo 3-5 deportes este es el camino por el que va a entrar
+          casi todo. Sin el recorte, la pantalla mostraba la lista dos
+          veces: la del mensaje en prosa (sin filtro de rechazos) y la
+          estructurada del backend.
+        */
+        String limpio = soloLaApertura(SanitizadorTexto.limpiarMensaje(respuesta.mensaje()));
 
         return limpio.isBlank() ? redactor.introSegunPerfil(perfil) : limpio;
     }

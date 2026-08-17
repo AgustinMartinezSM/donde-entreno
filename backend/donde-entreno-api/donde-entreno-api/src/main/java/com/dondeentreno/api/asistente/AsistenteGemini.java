@@ -77,10 +77,11 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
             QUE DEVOLVES (siempre JSON, nunca texto suelto)
             - "mensaje": una o dos frases de apertura, en tu tono. NO pongas la lista \
             de deportes aca ni uses numeros ni vinetas: la lista va en "deportes".
-            - "deportes": entre 3 y 5 opciones. "nombre" tiene que ser EXACTAMENTE uno \
-            de los nombres de la lista de deportes que te paso. "motivo" es una linea \
-            corta, en minuscula y sin punto final, explicando de que se trata y por que \
-            le puede servir.
+            - "deportes": entre 3 y 5 opciones, NUNCA vacio, ni siquiera cuando tu \
+            respuesta es consejo general: la lista va SIEMPRE aca y no dentro de \
+            "mensaje". "nombre" tiene que ser EXACTAMENTE uno de los nombres de la \
+            lista de deportes que te paso. "motivo" es una linea corta, en minuscula y \
+            sin punto final, explicando de que se trata y por que le puede servir.
             - "filtros": solo si la persona nombro un deporte, barrio, nivel o modalidad \
             concretos, con los terminos EXACTOS del catalogo. Si no aplica, vacio.
             - "preguntaSeguimiento": una pregunta corta para seguir afinando. Vacia si \
@@ -127,16 +128,35 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
       Esquema de salida. Es lo que impide que el modelo conteste con un
       parrafo suelto: necesitamos los deportes separados del texto para
       poder filtrarlos y para armar los enlaces nosotros.
+
+      Los required, el minItems y el enum se agregaron cuando en
+      producción el modelo empezó a devolver "deportes" vacío (con la
+      lista adentro del mensaje) y "tipoRespuesta" con dos valores
+      concatenados. Si la API rechazara alguno de estos campos con un
+      400, el cliente reintenta sin esquema y el service igual aprovecha
+      la prosa: la falla queda visible en el log de reintento, no muda.
     */
     private static final Map<String, Object> ESQUEMA = Map.of(
             "type", "object",
+            "required", List.of("mensaje", "deportes"),
             "properties", Map.of(
-                    "tipoRespuesta", Map.of("type", "string"),
+                    "tipoRespuesta", Map.of(
+                            "type", "string",
+                            "enum", List.of(
+                                    "consejo_deportivo",
+                                    "busqueda_app",
+                                    "ayuda_app",
+                                    "fallback"
+                            )
+                    ),
                     "mensaje", Map.of("type", "string"),
                     "deportes", Map.of(
                             "type", "array",
+                            "minItems", 3,
+                            "maxItems", 5,
                             "items", Map.of(
                                     "type", "object",
+                                    "required", List.of("nombre"),
                                     "properties", Map.of(
                                             "nombre", Map.of("type", "string"),
                                             "motivo", Map.of("type", "string")

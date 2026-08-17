@@ -272,4 +272,95 @@ class RecomendadorDeportesTest {
         assertThat(recomendador.validar(null, PerfilConversacion.vacio(), catalogoCon(), 5))
                 .isEmpty();
     }
+
+    /* --------------------- detalle de la validación --------------------- */
+
+    /*
+      El detalle existe para el log diagnóstico de producción: cuando todo
+      lo que propone el modelo se cae, hay que poder decir si fue por
+      inventado, por rechazado o por repetido, sin adivinar.
+    */
+    @Test
+    void elDetalleClasificaCadaDescartePorSuCausa() {
+        PerfilConversacion conRechazo =
+                new PerfilConversacion(Set.of("basquet"), false, Set.of(), Set.of(), false);
+
+        RecomendadorDeportes.ResultadoValidacion resultado = recomendador.validarConDetalle(
+                List.of(
+                        new RecomendadorDeportes.NombreYMotivo("Yoga", "tranquilo"),
+                        new RecomendadorDeportes.NombreYMotivo("Básquet", "en equipo"),
+                        new RecomendadorDeportes.NombreYMotivo("Quidditch", "en escoba"),
+                        new RecomendadorDeportes.NombreYMotivo("Yoga", "de nuevo"),
+                        new RecomendadorDeportes.NombreYMotivo("   ", "sin nombre")
+                ),
+                conRechazo,
+                catalogoCon(),
+                5
+        );
+
+        assertThat(nombres(resultado.validos())).containsExactly("Yoga");
+        /* El rechazado sale con su nombre canónico, no como lo tipeó el modelo. */
+        assertThat(resultado.descartadosPorRechazo()).containsExactly("Básquet");
+        /* El inventado sale tal cual vino: es el dato diagnóstico. */
+        assertThat(resultado.descartadosPorCatalogo()).containsExactly("Quidditch");
+        assertThat(resultado.duplicados()).isEqualTo(1);
+        assertThat(resultado.invalidos()).isEqualTo(1);
+    }
+
+    /*
+      validar() delega en el detalle: si esto falla, el refactor cambió el
+      comportamiento y no solo agregó información.
+    */
+    @Test
+    void validarDevuelveExactamenteLosValidosDelDetalle() {
+        List<RecomendadorDeportes.NombreYMotivo> propuestos = List.of(
+                new RecomendadorDeportes.NombreYMotivo("paddle", "social"),
+                new RecomendadorDeportes.NombreYMotivo("Pádel", "otra vez"),
+                new RecomendadorDeportes.NombreYMotivo("Quidditch", "inventado"),
+                new RecomendadorDeportes.NombreYMotivo("crossfit", "intenso")
+        );
+        PerfilConversacion perfil =
+                new PerfilConversacion(Set.of(), true, Set.of(), Set.of(), false);
+
+        assertThat(recomendador.validar(propuestos, perfil, catalogoCon(), 5))
+                .isEqualTo(recomendador
+                        .validarConDetalle(propuestos, perfil, catalogoCon(), 5)
+                        .validos());
+    }
+
+    @Test
+    void elDetalleDeUnaListaVaciaNoTieneNada() {
+        RecomendadorDeportes.ResultadoValidacion resultado =
+                recomendador.validarConDetalle(null, PerfilConversacion.vacio(), catalogoCon(), 5);
+
+        assertThat(resultado.validos()).isEmpty();
+        assertThat(resultado.descartadosPorCatalogo()).isEmpty();
+        assertThat(resultado.descartadosPorRechazo()).isEmpty();
+        assertThat(resultado.duplicados()).isZero();
+        assertThat(resultado.invalidos()).isZero();
+    }
+
+    /*
+      Con el combate rechazado en bloque, el descarte tiene que nombrar el
+      deporte que cayó: "rechazosActivos=8" solo no alcanza para saber si
+      el modelo insistió con la pelea.
+    */
+    @Test
+    void elDetalleNombraLosDeportesDeCombateQueCayeronPorElRechazoEnBloque() {
+        PerfilConversacion sinPelea =
+                new PerfilConversacion(Set.of(), true, Set.of(), Set.of(), false);
+
+        RecomendadorDeportes.ResultadoValidacion resultado = recomendador.validarConDetalle(
+                List.of(
+                        new RecomendadorDeportes.NombreYMotivo("Boxeo", "descarga"),
+                        new RecomendadorDeportes.NombreYMotivo("Muay Thai", "intenso")
+                ),
+                sinPelea,
+                catalogoCon(),
+                5
+        );
+
+        assertThat(resultado.validos()).isEmpty();
+        assertThat(resultado.descartadosPorRechazo()).containsExactly("Boxeo", "Muay Thai");
+    }
 }

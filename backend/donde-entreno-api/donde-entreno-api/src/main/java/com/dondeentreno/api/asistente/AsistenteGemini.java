@@ -1,6 +1,7 @@
 package com.dondeentreno.api.asistente;
 
 import com.dondeentreno.api.dto.AsistenteMensajeDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -224,6 +225,21 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
                     .body(String.class);
 
             return extraerRespuesta(crudo);
+        } catch (JsonProcessingException excepcion) {
+            /*
+              El modelo SÍ respondió, pero con un cuerpo que no se pudo
+              parsear (típico del reintento sin esquema, donde puede
+              contestar prosa). Antes esto caía al catch general y se
+              logueaba como "no respondio", que es literalmente lo
+              contrario. Solo el tipo de excepción: el mensaje de Jackson
+              puede citar un fragmento del cuerpo.
+            */
+            log.info(
+                    "Asistente: GEMINI_VACIO motivo=RESPUESTA_ILEGIBLE conEsquema={} excepcion={}",
+                    conEsquema,
+                    excepcion.getClass().getSimpleName()
+            );
+            return Optional.empty();
         } catch (Exception excepcion) {
             /*
               Nunca propagamos: el asistente tiene que seguir respondiendo
@@ -339,7 +355,14 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
      * steps[0]: cuando el modelo piensa, el primer paso es un "thought".
      */
     Optional<RespuestaModelo> extraerRespuesta(String crudo) throws Exception {
+        /*
+          Cada rama que devuelve vacío deja su línea: estas salidas eran
+          silenciosas y hacían indistinguible "el modelo devolvió basura"
+          de "el modelo ni respondió". Del cuerpo solo se loguea el largo:
+          puede contener un eco del mensaje del usuario.
+        */
         if (crudo == null || crudo.isBlank()) {
+            log.info("Asistente: GEMINI_VACIO motivo=RESPUESTA_HTTP_SIN_CUERPO");
             return Optional.empty();
         }
 
@@ -361,6 +384,10 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
         String json = limpiarCercos(texto.toString());
 
         if (json.isBlank()) {
+            log.info(
+                    "Asistente: GEMINI_VACIO motivo=SIN_TEXTO_EN_MODEL_OUTPUT largoCuerpo={}",
+                    crudo.length()
+            );
             return Optional.empty();
         }
 
@@ -370,7 +397,12 @@ public class AsistenteGemini implements MotorAsistenteRemoto {
           Una respuesta vacía es lo mismo que no haber llamado: que decida
           el recomendador determinístico.
         */
-        return respuesta.tieneContenido() ? Optional.of(respuesta) : Optional.empty();
+        if (!respuesta.tieneContenido()) {
+            log.info("Asistente: GEMINI_VACIO motivo=ESTRUCTURA_VALIDA_SIN_CONTENIDO");
+            return Optional.empty();
+        }
+
+        return Optional.of(respuesta);
     }
 
     /**

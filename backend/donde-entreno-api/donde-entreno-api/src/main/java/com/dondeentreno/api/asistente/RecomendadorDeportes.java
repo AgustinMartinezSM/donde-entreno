@@ -103,11 +103,36 @@ public class RecomendadorDeportes {
             DisponibilidadCatalogo catalogo,
             int maximo
     ) {
+        return validarConDetalle(propuestos, perfil, catalogo, maximo).validos();
+    }
+
+    /**
+     * Lo mismo que {@link #validar}, contando además qué se descartó y por
+     * qué.
+     *
+     * Existe para el log diagnóstico: cuando en producción la respuesta
+     * del modelo caía entera, "propuso deportes inventados" y "propuso
+     * deportes que la persona ya rechazó" eran indistinguibles, porque el
+     * filtrado devolvía solo los sobrevivientes. Las listas traen los
+     * nombres tal cual vinieron del modelo: quien los loguee debe
+     * sanearlos antes.
+     */
+    public ResultadoValidacion validarConDetalle(
+            List<NombreYMotivo> propuestos,
+            PerfilConversacion perfil,
+            DisponibilidadCatalogo catalogo,
+            int maximo
+    ) {
+        List<DeporteSugerido> validos = new ArrayList<>();
+        List<String> porCatalogo = new ArrayList<>();
+        List<String> porRechazo = new ArrayList<>();
+        int duplicados = 0;
+        int invalidos = 0;
+
         if (propuestos == null || propuestos.isEmpty()) {
-            return List.of();
+            return new ResultadoValidacion(List.of(), List.of(), List.of(), 0, 0);
         }
 
-        List<DeporteSugerido> validos = new ArrayList<>();
         Set<String> yaPuestos = new LinkedHashSet<>();
 
         for (NombreYMotivo propuesto : propuestos) {
@@ -116,6 +141,7 @@ public class RecomendadorDeportes {
             }
 
             if (propuesto == null || propuesto.nombre() == null || propuesto.nombre().isBlank()) {
+                invalidos += 1;
                 continue;
             }
 
@@ -131,13 +157,20 @@ public class RecomendadorDeportes {
                 Optional<DisponibilidadCatalogo.EntradaCatalogo> delCatalogo =
                         catalogo.buscarPorTexto(propuesto.nombre());
 
-                if (delCatalogo.isEmpty() || perfil.rechazaNombre(propuesto.nombre())) {
+                if (delCatalogo.isEmpty()) {
+                    porCatalogo.add(propuesto.nombre());
+                    continue;
+                }
+
+                if (perfil.rechazaNombre(propuesto.nombre())) {
+                    porRechazo.add(propuesto.nombre());
                     continue;
                 }
 
                 DisponibilidadCatalogo.EntradaCatalogo entrada = delCatalogo.get();
 
                 if (!yaPuestos.add(ResolutorConsulta.normalizar(entrada.nombre()))) {
+                    duplicados += 1;
                     continue;
                 }
 
@@ -153,10 +186,12 @@ public class RecomendadorDeportes {
             DeporteConocido deporte = conocido.get();
 
             if (perfil.rechaza(deporte)) {
+                porRechazo.add(deporte.nombre());
                 continue;
             }
 
             if (!yaPuestos.add(ConocimientoDeportes.claveDe(deporte))) {
+                duplicados += 1;
                 continue;
             }
 
@@ -167,7 +202,36 @@ public class RecomendadorDeportes {
             ));
         }
 
-        return List.copyOf(validos);
+        return new ResultadoValidacion(
+                List.copyOf(validos),
+                List.copyOf(porCatalogo),
+                List.copyOf(porRechazo),
+                duplicados,
+                invalidos
+        );
+    }
+
+    /**
+     * El desenlace de una validación, sobreviviente por sobreviviente y
+     * caído por caído.
+     *
+     * @param validos               lo que se puede sugerir (idéntico a lo
+     *                              que devuelve {@link #validar}).
+     * @param descartadosPorCatalogo nombres que no matchearon ni el
+     *                              conocimiento ni el catálogo real.
+     * @param descartadosPorRechazo nombres que la persona ya descartó en
+     *                              la conversación.
+     * @param duplicados            propuestas repetidas dentro de la misma
+     *                              respuesta.
+     * @param invalidos             entradas sin nombre.
+     */
+    public record ResultadoValidacion(
+            List<DeporteSugerido> validos,
+            List<String> descartadosPorCatalogo,
+            List<String> descartadosPorRechazo,
+            int duplicados,
+            int invalidos
+    ) {
     }
 
     /**

@@ -295,12 +295,13 @@ public class AsistenteService {
                 ))
                 .toList();
 
-        List<DeporteSugerido> sugeridos = recomendador.validar(
+        RecomendadorDeportes.ResultadoValidacion validacion = recomendador.validarConDetalle(
                 propuestos,
                 perfil,
                 catalogo.obtener(),
                 RecomendadorDeportes.MAXIMO_SUGERENCIAS
         );
+        List<DeporteSugerido> sugeridos = validacion.validos();
 
         if (!sugeridos.isEmpty()) {
             /*
@@ -316,6 +317,15 @@ public class AsistenteService {
                     RecomendadorDeportes.MAXIMO_SUGERENCIAS
             );
 
+            log.info(
+                    "Asistente: GEMINI_VALIDADO via=deportes tipo={} propuestos={} validos={} completados={} rechazosActivos={}",
+                    campoParaLog(respuesta.tipoRespuesta()),
+                    propuestos.size(),
+                    sugeridos.size(),
+                    completos.size(),
+                    perfil.nombresRechazados().size()
+            );
+
             return Optional.of(redactor.recomendacion(
                     introDelModelo(respuesta, perfil),
                     completos,
@@ -329,19 +339,120 @@ public class AsistenteService {
           Sin deportes válidos, todavía puede haber entendido una búsqueda
           concreta que el motor determinístico no captó ("yoga en
           Constitución para arrancar").
+
+          Se resuelve en dos pasos a propósito: "no matcheó nada" y
+          "matcheó pero era justo lo rechazado" son diagnósticos distintos.
         */
-        FiltrosResueltos delModelo = sinLoRechazado(
-                resolutor.resolver(respuesta.fraseDeFiltros(), opciones),
-                perfil
-        );
+        FiltrosResueltos resueltosCrudos = resolutor.resolver(respuesta.fraseDeFiltros(), opciones);
+        FiltrosResueltos delModelo = sinLoRechazado(resueltosCrudos, perfil);
 
         if (delModelo.hayAlgo()) {
+            log.info(
+                    "Asistente: GEMINI_VALIDADO via=filtros tipo={} deporte={} categoria={} rechazosActivos={}",
+                    campoParaLog(respuesta.tipoRespuesta()),
+                    delModelo.deporteSlug(),
+                    delModelo.categoriaSlug(),
+                    perfil.nombresRechazados().size()
+            );
+
             return Optional.of(
                     construirRespuestaDeBusqueda(delModelo, perfil, catalogo, FUENTE_GEMINI)
             );
         }
 
+        /*
+          El modelo respondió y nada sobrevivió: sin esta línea, este
+          desenlace era invisible y en producción se confundió primero con
+          la cuota y después con una llamada fallida. Solo nombres de
+          deportes y metadata; nunca el mensaje del usuario ni la prosa
+          del modelo.
+        */
+        log.info(
+                "Asistente: GEMINI_DESCARTADO motivo={} tipo={} propuestos={} porCatalogo={} porRechazo={} duplicados={} invalidos={} filtrosPropuestos={} filtrosResueltos={} filtrosTrasRechazo=false mensajePresente={} rechazosActivos={} fuenteFinal=local_fallback",
+                motivoDelDescarte(propuestos, validacion, respuesta),
+                campoParaLog(respuesta.tipoRespuesta()),
+                listaParaLog(propuestos.stream().map(RecomendadorDeportes.NombreYMotivo::nombre).toList()),
+                listaParaLog(validacion.descartadosPorCatalogo()),
+                listaParaLog(validacion.descartadosPorRechazo()),
+                validacion.duplicados(),
+                validacion.invalidos(),
+                !respuesta.fraseDeFiltros().isBlank(),
+                resueltosCrudos.hayAlgo(),
+                !SanitizadorTexto.limpiarMensaje(respuesta.mensaje()).isBlank(),
+                perfil.nombresRechazados().size()
+        );
+
         return Optional.empty();
+    }
+
+    /**
+     * La causa dominante del descarte, para leer el log sin reconstruirla
+     * a mano desde los contadores.
+     */
+    private String motivoDelDescarte(
+            List<RecomendadorDeportes.NombreYMotivo> propuestos,
+            RecomendadorDeportes.ResultadoValidacion validacion,
+            RespuestaModelo respuesta
+    ) {
+        if (propuestos.isEmpty()) {
+            /*
+              El modelo no propuso deportes. Si encima trae mensaje, es el
+              caso "respondió consejo general puro y el backend no tiene
+              qué validar": importa distinguirlo porque la solución sería
+              de diseño, no de datos.
+            */
+            return respuesta.fraseDeFiltros().isBlank()
+                    ? "SIN_DEPORTES_NI_FILTROS"
+                    : "SOLO_FILTROS_SIN_MATCH";
+        }
+
+        boolean porRechazo = !validacion.descartadosPorRechazo().isEmpty();
+        boolean porCatalogo = !validacion.descartadosPorCatalogo().isEmpty();
+
+        if (porRechazo && porCatalogo) {
+            return "DEPORTES_RECHAZADOS_Y_FUERA_DE_CATALOGO";
+        }
+
+        if (porRechazo) {
+            return "DEPORTES_RECHAZADOS";
+        }
+
+        if (porCatalogo) {
+            return "DEPORTES_FUERA_DE_CATALOGO";
+        }
+
+        return "DEPORTES_DUPLICADOS_O_INVALIDOS";
+    }
+
+    /**
+     * Una lista de nombres propuestos por el modelo, apta para un log:
+     * cada nombre aplanado y recortado (el modelo puede devolver cualquier
+     * cosa) y la lista limitada, con el resto resumido en un contador.
+     */
+    private String listaParaLog(List<String> nombres) {
+        final int maxItems = 8;
+
+        if (nombres.isEmpty()) {
+            return "[]";
+        }
+
+        String visibles = nombres.stream()
+                .limit(maxItems)
+                .map(nombre -> SanitizadorTexto.limpiarParaPrompt(nombre, 30))
+                .collect(Collectors.joining(", "));
+
+        int restantes = nombres.size() - maxItems;
+
+        return restantes > 0
+                ? "[" + visibles + ", +" + restantes + "]"
+                : "[" + visibles + "]";
+    }
+
+    /** Un valor suelto que escribió el modelo, aplanado y recortado. */
+    private String campoParaLog(String valor) {
+        String limpio = SanitizadorTexto.limpiarParaPrompt(valor, 24);
+
+        return limpio.isBlank() ? "-" : limpio;
     }
 
     /**

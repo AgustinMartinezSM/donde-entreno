@@ -21,23 +21,31 @@ type HomeTopBarProps = {
 */
 export function HomeTopBar({ ciudadNombre, ciudadSlug }: HomeTopBarProps) {
   return (
-    <section className="w-full min-w-0">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-[#1D7B4A]">
-          <IconoUbicacion />
-          {ciudadNombre}
-        </span>
-      </div>
+    /*
+      El encabezado ahora es una superficie propia y no texto suelto
+      sobre el fondo: con la página en blanco plano, el buscador —que es
+      lo más importante de la home— no se distinguía de lo que venía
+      abajo. El orbe y los puntos son decoración de CSS, sin peso extra.
+    */
+    <section className="decorative-orb decorative-dots relative w-full min-w-0 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white/70 p-5 shadow-soft backdrop-blur-sm sm:p-6">
+      <div className="relative z-10">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--color-success)]">
+            <IconoUbicacion />
+            {ciudadNombre}
+          </span>
+        </div>
 
-      <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-3xl">
-        Entrená en{" "}
-        <span className="text-[var(--color-secondary)]">{ciudadNombre}</span>
-      </h1>
+        <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-3xl">
+          Entrená en{" "}
+          <span className="text-[var(--color-secondary)]">{ciudadNombre}</span>
+        </h1>
 
-      <SearchBar ciudadSlugActual={ciudadSlug} />
+        <SearchBar ciudadSlugActual={ciudadSlug} />
 
-      <div className="mt-3">
-        <AsistenteHomeButton />
+        <div className="mt-3">
+          <AsistenteHomeButton />
+        </div>
       </div>
     </section>
   );

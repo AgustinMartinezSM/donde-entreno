@@ -203,13 +203,13 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
           <SurfaceCard
             as="section"
             variant="info"
-            className="overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:p-6"
+            className="decorative-orb decorative-dots relative overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:p-6"
           >
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+            <p className="relative z-10 mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               EXPLORAR
             </p>
 
-            <h1 className="max-w-3xl text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
+            <h1 className="relative z-10 max-w-3xl text-3xl font-extrabold leading-tight text-[var(--color-primary)] sm:text-4xl">
               Explorá{" "}
               <span className="text-[var(--color-secondary)]">
                 actividades
@@ -219,13 +219,13 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 : " cerca tuyo"}
             </h1>
 
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
+            <p className="relative z-10 mt-3 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
               {nombreCiudadActiva
                 ? `Encontrá actividades para entrenar en ${nombreCiudadActiva} y ajustá la búsqueda por deporte, barrio, nivel o modalidad.`
                 : "Buscá por deporte, zona, nivel o modalidad y descubrí opciones para moverte cerca tuyo."}
             </p>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="relative z-10 mt-4 flex flex-wrap items-center gap-3">
               {nombreCiudadActiva ? (
                 <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
                   Explorando actividades en {nombreCiudadActiva}

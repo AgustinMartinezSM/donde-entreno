@@ -51,10 +51,24 @@ export function CabeceraPerfil({
         con overflow-hidden, el panel del menú de ajustes quedaba cortado
         por el borde de la tarjeta.
       */}
-      <div className="relative h-20 sm:h-24">
+      {/*
+        La banda usa el gradiente de marca compartido en vez de repetir
+        los tres colores acá: es el mismo que encabeza el chat de Dondi,
+        así las dos superficies "de marca" de la app se leen iguales.
+      */}
+      <div className="relative h-24 sm:h-28">
         <div
           aria-hidden="true"
-          className="absolute inset-0 rounded-t-[var(--radius-xl)] bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872]"
+          className="gradient-brand absolute inset-0 rounded-t-[var(--radius-xl)]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 rounded-t-[var(--radius-xl)] opacity-40"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "0.9rem 0.9rem",
+          }}
         />
 
         <div className="absolute right-4 top-4 sm:right-5">

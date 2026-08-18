@@ -202,7 +202,7 @@ const ENLACE_DEPORTES: EnlaceAsistente = {
 */
 export const RESPUESTA_BIENVENIDA: RespuestaAsistente = {
   texto:
-    "¡Hola! Soy el asistente de DondeEntreno. Te puedo ayudar a elegir qué entrenar, encontrar actividades cerca tuyo o entender cómo usar la app.",
+    "¡Hola! Soy Dondi, tu asistente deportivo de DondeEntreno. Te ayudo a elegir qué entrenar, encontrar actividades cerca tuyo y entender cómo usar la app.",
   opcionesRapidas: [
     "No sé qué entrenar",
     "Quiero algo social",

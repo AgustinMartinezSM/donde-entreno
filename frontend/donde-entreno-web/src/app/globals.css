@@ -122,3 +122,132 @@ h3,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===================================================================
+   Sistema visual: superficies, fondos y decoración.
+
+   Nace de un problema concreto: la app era "cards blancas sobre fondo
+   blanco". Cada clase de acá existe para dar profundidad SIN recargar,
+   y para que las pantallas dejen de resolver lo mismo con estilos
+   sueltos distintos.
+
+   Todo usa los tokens de marca de @theme: si cambia un color, cambia
+   acá y en toda la app.
+   =================================================================== */
+
+/*
+  Fondo ambientado de la app. Dos halos muy suaves (celeste arriba a la
+  derecha, verde abajo a la izquierda) fijos respecto del viewport, así
+  el scroll no los arrastra y no compiten con el contenido.
+
+  Opacidades bajas a propósito: se tienen que percibir como "el fondo
+  tiene vida", no como dos manchas.
+*/
+body {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(60rem 60rem at 100% -10%, rgba(79, 179, 217, 0.13), transparent 60%),
+    radial-gradient(45rem 45rem at -10% 100%, rgba(46, 184, 114, 0.10), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/*
+  Superficie de vidrio: la usa la navegación inferior.
+
+  Acá va SOLO el color. El desenfoque se aplica con las utilities de
+  Tailwind (backdrop-blur-*, backdrop-saturate-*) porque Lightning CSS
+  elimina un `backdrop-filter` escrito a mano en CSS plano —verificado:
+  la regla llegaba al navegador con el background y sin el filtro— pero
+  sí emite el que genera Tailwind.
+*/
+.surface-glass {
+  background-color: rgba(255, 255, 255, 0.82);
+}
+
+/* Superficie tenue para bloques que no deben competir con una card. */
+.surface-soft {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.75));
+}
+
+/* Degradado de marca: azul profundo a verde, en diagonal. */
+.gradient-brand {
+  background-image: linear-gradient(135deg, #0F3D5E 0%, #145276 45%, #2EB872 100%);
+}
+
+/* Variante fría, para cabeceras que llevan texto largo encima. */
+.gradient-deep {
+  background-image: linear-gradient(135deg, #0B314D 0%, #0F3D5E 55%, #145276 100%);
+}
+
+/*
+  Sombras. La "lifted" es para lo que flota de verdad (launcher del
+  asistente, bottom nav); la "soft" para cards en reposo.
+*/
+.shadow-soft {
+  box-shadow: 0 10px 30px rgba(15, 61, 94, 0.08);
+}
+
+.shadow-lifted {
+  box-shadow: 0 18px 40px rgba(15, 61, 94, 0.18);
+}
+
+/*
+  Decoración. Los orbes y la grilla de puntos son pseudo-elementos para
+  no ensuciar el DOM con divs vacíos, y van con aria-hidden implícito
+  (no son contenido). Siempre detrás del contenido y sin capturar
+  clicks.
+*/
+.decorative-orb::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -30%;
+  inset-inline-end: -20%;
+  block-size: 22rem;
+  inline-size: 22rem;
+  border-radius: 9999px;
+  background-image: radial-gradient(circle, rgba(79, 179, 217, 0.18), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.decorative-dots::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 1.5rem;
+  inset-inline-end: 1.5rem;
+  block-size: 4.5rem;
+  inline-size: 4.5rem;
+  background-image: radial-gradient(rgba(79, 179, 217, 0.45) 1.5px, transparent 1.5px);
+  background-size: 0.9rem 0.9rem;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/*
+  Aparición del panel del asistente desde abajo (bottom sheet). El
+  bloque de prefers-reduced-motion de arriba ya la neutraliza.
+*/
+@keyframes de-sheet {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Latido del launcher: solo el halo, nunca el botón (no debe moverse). */
+@keyframes de-halo {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.18);
+  }
+}

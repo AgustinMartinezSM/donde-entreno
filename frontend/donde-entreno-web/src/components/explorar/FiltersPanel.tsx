@@ -68,18 +68,33 @@ export function FiltersPanel({
     "TODOS",
   ]);
 
-  const hayFiltrosActivos =
-    ciudadIdActual ||
-    ciudadSlugActual ||
-    barrioIdActual ||
-    deporteSlugActual ||
-    nivelActual ||
-    modalidadActual;
-
-  const [filtrosAbiertos, setFiltrosAbiertos] = useState(
-    Boolean(hayFiltrosActivos),
-  );
+  /*
+    Siempre colapsado al entrar, incluso con filtros activos: abierto
+    ocupaba media pantalla en mobile y empujaba los resultados —que son
+    lo que la persona vino a ver— abajo del pliegue. Lo que está
+    filtrando no se pierde: se resume en chips debajo del encabezado.
+  */
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const filtrosPanelId = "filtros-explorar";
+
+  /*
+    Los filtros activos en palabras, para el modo compacto. Salen de la
+    URL (lo aplicado) y no del estado de los selects (lo tocado sin
+    aplicar): el resumen tiene que describir los resultados que se están
+    viendo, no una intención a medias.
+  */
+  const resumenFiltrosActivos = [
+    filtros.ciudades.find(
+      (ciudad) =>
+        String(ciudad.id) === ciudadIdActual || ciudad.slug === ciudadSlugActual
+    )?.nombre,
+    filtros.barrios.find((barrio) => String(barrio.id) === barrioIdActual)
+      ?.nombre,
+    filtros.deportes.find((deporte) => deporte.slug === deporteSlugActual)
+      ?.nombre,
+    nivelActual ? formatearEtiquetaCatalogo(nivelActual) : null,
+    modalidadActual ? formatearEtiquetaCatalogo(modalidadActual) : null,
+  ].filter((valor): valor is string => Boolean(valor));
 
   function aplicarFiltros() {
     const params = new URLSearchParams();
@@ -185,32 +200,70 @@ export function FiltersPanel({
   }
 
   return (
-    <SurfaceCard className="mt-5 p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-extrabold text-[var(--color-primary)]">
-            Filtros
-          </h2>
+    <SurfaceCard className="relative mt-5 overflow-hidden p-4 decorative-dots sm:p-5">
+      <div className="relative z-10 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-info-soft)] text-[var(--color-primary)]"
+          >
+            <IconoFiltros />
+          </span>
 
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            Refiná la búsqueda por ciudad, deporte, nivel o modalidad.
-          </p>
+          <div className="min-w-0">
+            <h2 className="text-base font-extrabold text-[var(--color-primary)] sm:text-lg">
+              Filtros
+            </h2>
+
+            <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-[var(--color-muted)] sm:text-sm">
+              Refiná la búsqueda por ciudad, deporte, nivel o modalidad.
+            </p>
+          </div>
         </div>
 
+        {/*
+          El botón ya no es solo de mobile: en desktop el panel también
+          arranca cerrado, así que sin esto no habría manera de abrirlo.
+        */}
         <button
           type="button"
           onClick={() => setFiltrosAbiertos((valorActual) => !valorActual)}
           aria-expanded={filtrosAbiertos}
           aria-controls={filtrosPanelId}
-          className="rounded-full border border-[#BFDDEA] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:hidden"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] sm:text-sm"
         >
           {filtrosAbiertos ? "Ocultar" : "Mostrar"}
+          <span
+            aria-hidden="true"
+            className={`transition-transform duration-200 ease-out ${
+              filtrosAbiertos ? "rotate-180" : ""
+            }`}
+          >
+            <IconoChevronAbajo />
+          </span>
         </button>
       </div>
 
+      {/*
+        Con el panel cerrado, lo que se está filtrando igual se ve: sin
+        esto, colapsar equivalía a esconder el estado de la búsqueda.
+      */}
+      {!filtrosAbiertos && resumenFiltrosActivos.length > 0 ? (
+        <ul className="relative z-10 mt-3 flex flex-wrap gap-1.5">
+          {resumenFiltrosActivos.map((etiqueta) => (
+            <li
+              key={etiqueta}
+              className="rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)]"
+            >
+              {etiqueta}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       <div
         id={filtrosPanelId}
-        className={`${filtrosAbiertos ? "block" : "hidden"} mt-4 sm:block`}
+        className={`relative z-10 ${filtrosAbiertos ? "block" : "hidden"} mt-4`}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {/* Filtro por ciudad */}
@@ -384,3 +437,37 @@ function filtrarOpcionesNeutrales(opciones: string[], neutrales: string[]) {
 
 /* El formateo vive en lib/formatoCatalogo para que filtros y cards hablen igual. */
 const formatearEtiquetaFiltro = formatearEtiquetaCatalogo;
+
+function IconoFiltros() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </svg>
+  );
+}
+
+function IconoChevronAbajo() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}

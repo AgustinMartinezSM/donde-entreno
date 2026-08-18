@@ -92,16 +92,21 @@ export function MobileNavigation() {
   return (
     <nav
       aria-label="Navegación principal mobile"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#D9E2EC] bg-white/95 shadow-[0_-10px_30px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden"
+      className="surface-glass fixed inset-x-0 bottom-0 z-50 border-t border-white/60 shadow-[0_-10px_30px_rgba(15,61,94,0.12)] backdrop-blur-xl backdrop-saturate-150 lg:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto grid min-h-16 max-w-lg grid-cols-4 px-2 pt-1.5">
         {items.map((item) => {
           const seleccionado = item.activo(pathname);
-          const clase = `group flex min-h-14 flex-col items-center justify-center gap-1 rounded-[16px] px-1 text-[11px] font-extrabold transition duration-200 ease-out ${
+          /*
+            El tab activo se marca con pastilla verde Y con un punto
+            debajo del ícono: en una barra de vidrio, el fondo suave solo
+            se pierde sobre contenido claro.
+          */
+          const clase = `group relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-[18px] px-1 text-[11px] font-extrabold transition duration-200 ease-out ${
             seleccionado
-              ? "bg-[#E6F7EF] text-[#1D7B4A]"
-              : "text-[var(--color-muted)] hover:bg-[#F8FCFE] hover:text-[var(--color-primary)]"
+              ? "bg-[var(--color-success-soft)] text-[var(--color-success)] shadow-[inset_0_0_0_1px_rgba(46,184,114,0.22)]"
+              : "text-[var(--color-muted)] hover:bg-white/70 hover:text-[var(--color-primary)]"
           }`;
 
           if (item.icono === "cuenta" && sesionCargando) {

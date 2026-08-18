@@ -144,10 +144,47 @@ alto extra de la segunda fila no le saca lugar a los resultados.
     `/registro/usuario`, `/registro/publicador`, `/deportes`,
     `/ciudades`, `/publicar`, `/actividades/karate`, `/publicadores/8`.
 
-**Falta la confirmación visual con capturas**: el panel del navegador no
-estuvo disponible en la sesión, así que todo lo de arriba está medido en
-el DOM y en el CSS compilado, no mirado. Antes de pushear conviene
-recorrer la app a ojo.
+### Lo que encontró la pasada visual y la medición no
+
+Mirar las pantallas destapó **tres cosas que ninguna medición iba a
+encontrar**, porque no eran errores de layout sino de coherencia:
+
+1. **Tres CTA quedaron planos.** `SearchBar` ("Buscar"), el "Publicar"
+   de escritorio y "Ver detalle" del panel de publicador no pasan por
+   `AppButton`, así que el degradado no les llegó. El peor era "Buscar":
+   el botón principal de la primera pantalla de la home. Verificar que
+   *un* botón tuviera el degradado no era lo mismo que verificar que
+   **todos** lo tuvieran.
+2. **El CTA del asistente en `/mi-cuenta` era secundario** —blanco sobre
+   la tarjeta celeste—, siendo lo único que esa tarjeta propone. Pasó a
+   primario.
+3. Dos falsas alarmas que la captura sugería y la medición descartó: el
+   círculo oscuro sobre "Inicio" es el indicador de dev de Next (no
+   existe en producción) y la franja blanca de la derecha es padding del
+   panel del navegador, no de la página.
+
+### Recorrido visual hecho
+
+Con **sesión real de usuario** (`agustin diaz`) y **de publicador**
+(`club atletico sur`), solo lecturas:
+
+- Home a 390px: fondo con cuerpo, cards recortadas contra él, "Buscar"
+  con degradado, launcher de Dondi 11px por encima de la barra inferior.
+- Pie a 390px y a 1440px: filas con tile y chevron, reglas de acento,
+  contacto como botones, tres columnas en escritorio.
+- `/explorar` con filtros abiertos: tiles alineados con cada select,
+  grilla de 3 columnas en escritorio, "Aplicar filtros" con degradado.
+- **`/mi-cuenta` con sesión real** (pendiente de dos bloques): cabecera
+  de marca, contadores, solapas, el **feed de seguidos con actividades
+  reales** de los publicadores seguidos y la columna de progreso. Sin
+  overflow a 390px (stats 50→341, solapas 16→374).
+- A 1440px, Dondi y "Volver arriba" no se solapan (16px de aire) y no
+  tapan ningún control.
+
+**Queda sin ver**: `/login` y los dos `/registro` a ojo. Con sesión
+activa redirigen, y no correspondía cerrarla. De esas pantallas hay
+medición completa (hero 263px, campo de email a 520px de 844, cero
+desbordes a 320 y 390px), no captura.
 
 ## 4. Fuera de alcance
 

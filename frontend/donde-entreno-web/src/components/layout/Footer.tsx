@@ -39,7 +39,7 @@ const enlacesNavegacion: EnlaceNavegacion[] = [
 */
 const enlacesContacto = [
   {
-    href: "https://www.instagram.com/dondenentrenoapp/",
+    href: "https://www.instagram.com/dondeentrenoapp/",
     texto: "Instagram",
     externo: true,
     icono: <IconoInstagram />,

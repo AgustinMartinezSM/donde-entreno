@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandName } from "../brand/BrandName";
@@ -29,24 +30,37 @@ const enlacesNavegacion: EnlaceNavegacion[] = [
   { href: "/publicar", texto: "Publicar actividad", icono: <IconoMas /> },
 ];
 
+/*
+  Datos de contacto REALES (2026-08-18, pasados por Agustín). El
+  WhatsApp anterior era un número de relleno (5492230000000) que abría
+  un chat a la nada, así que salió hasta tener número real. El link de
+  Facebook se normalizó a la forma pública del perfil: el que llegó era
+  una URL de notificación con parámetros de sesión.
+*/
 const enlacesContacto = [
   {
-    href: "https://instagram.com/dondeentreno",
+    href: "https://www.instagram.com/dondenentrenoapp/",
     texto: "Instagram",
     externo: true,
     icono: <IconoInstagram />,
   },
   {
-    href: "mailto:contacto@dondeentreno.com",
+    href: "mailto:dondeentrenoapp@gmail.com",
     texto: "Email",
     externo: false,
     icono: <IconoMail />,
   },
   {
-    href: "https://wa.me/5492230000000",
-    texto: "WhatsApp",
+    href: "https://www.linkedin.com/in/dondeentreno",
+    texto: "LinkedIn",
     externo: true,
-    icono: <IconoWhatsapp />,
+    icono: <IconoLinkedin />,
+  },
+  {
+    href: "https://www.facebook.com/profile.php?id=61591536422219",
+    texto: "Facebook",
+    externo: true,
+    icono: <IconoFacebook />,
   },
 ];
 
@@ -129,7 +143,8 @@ export function Footer() {
           <div>
             <TituloPie>Contacto</TituloPie>
 
-            <div className="mt-4 grid gap-2.5 sm:grid-cols-3 md:grid-cols-1">
+            {/* 2 columnas en sm: cuatro botones en fila de a 3 dejaban uno colgado. */}
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2 md:grid-cols-1">
               {enlacesContacto.map((enlace) => (
                 <a
                   key={enlace.href}
@@ -147,13 +162,18 @@ export function Footer() {
         </div>
 
         <div className="mt-9 flex items-center gap-3 border-t border-[#2A5B78] pt-5">
-          <span
+          {/*
+            Versión dark del isotipo (fondo navy propio): reemplaza al
+            círculo "DE" de iniciales que hacía de logo improvisado.
+          */}
+          <Image
+            src="/brand/logo-darkmode.png"
+            alt=""
             aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#2A5B78] bg-white/5 text-sm font-extrabold tracking-tight"
-          >
-            <span className="text-white">D</span>
-            <span className="text-[var(--color-secondary)]">E</span>
-          </span>
+            width={40}
+            height={40}
+            className="h-10 w-10 shrink-0 rounded-[12px] border border-[#2A5B78]"
+          />
 
           <p className="text-xs leading-5 text-[#C9E4EF]">
             © {anioActual}{" "}
@@ -263,11 +283,21 @@ function IconoMail() {
   );
 }
 
-function IconoWhatsapp() {
+function IconoLinkedin() {
   return (
     <svg {...propsIcono}>
-      <path d="M3.5 20.5 5 16.4A8 8 0 1 1 8.1 19.4l-4.6 1.1Z" />
-      <path d="M9 9.5c0 3 2.5 5.5 5.5 5.5.7 0 1.2-.6 1.1-1.2l-.2-.8-1.7-.5-.8.9a5.6 5.6 0 0 1-2.3-2.3l.9-.8-.5-1.7-.8-.2c-.6-.1-1.2.4-1.2 1.1Z" />
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <path d="M8 10.5V17M8 7.5v.01" />
+      <path d="M12 17v-3.6a2.4 2.4 0 0 1 4.8 0V17M12 10.5V17" />
+    </svg>
+  );
+}
+
+function IconoFacebook() {
+  return (
+    <svg {...propsIcono}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M13.5 20v-7h2.3M13.5 13h-3M13.5 13v-2.3A2.2 2.2 0 0 1 15.7 8.5h.3" />
     </svg>
   );
 }

@@ -49,6 +49,48 @@ const imagenesPorDeporteSlug: Record<string, string> = {
 
 const imagenPlaceholderGeneral = "/placeholders/placeholder-general.png";
 
+/*
+  Badges circulares para la fila de historias de la home (public/stories,
+  512x512 con fondo transparente y anillo propio). Son un set aparte de
+  las ilustraciones de card: aquellas son anchas y para usarlas en un
+  círculo había que hacer zoom al centro; estas se diseñaron redondas.
+
+  Cubren 18 de los 27 deportes del catálogo. "GYM" se asignó a
+  entrenamiento-personalizado (musculación ya tiene badge propio). Los
+  deportes sin badge caen a la ilustración de card con el zoom de
+  siempre, así la fila nunca queda con huecos.
+*/
+const badgesStoryPorDeporteSlug: Record<string, string> = {
+  boxeo: "/stories/story-boxeo.png",
+  "cross-training": "/stories/story-cross-training.png",
+  "entrenamiento-personalizado":
+    "/stories/story-entrenamiento-personalizado.png",
+  funcional: "/stories/story-funcional.png",
+  futbol: "/stories/story-futbol.png",
+  "jiu-jitsu": "/stories/story-jiu-jitsu.png",
+  judo: "/stories/story-judo.png",
+  karate: "/stories/story-karate.png",
+  kickboxing: "/stories/story-kickboxing.png",
+  mma: "/stories/story-mma.png",
+  musculacion: "/stories/story-musculacion.png",
+  natacion: "/stories/story-natacion.png",
+  padel: "/stories/story-padel.png",
+  pilates: "/stories/story-pilates.png",
+  running: "/stories/story-running.png",
+  taekwondo: "/stories/story-taekwondo.png",
+  tenis: "/stories/story-tenis.png",
+  yoga: "/stories/story-yoga.png",
+};
+
+/* Badge de historia del deporte, o null si todavía no tiene arte propio. */
+export function obtenerBadgeStoryDeporte(deporteSlug?: string | null) {
+  if (!deporteSlug) {
+    return null;
+  }
+
+  return badgesStoryPorDeporteSlug[deporteSlug] ?? null;
+}
+
 type ObtenerImagenActividadParams = {
   imagenBackend?: string | null;
   deporteSlug?: string | null;

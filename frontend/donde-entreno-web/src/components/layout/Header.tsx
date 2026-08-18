@@ -37,11 +37,17 @@ export function Header() {
           className="mr-auto flex min-w-0 items-center transition hover:opacity-90"
           aria-label="Ir al inicio de DondeEntreno"
         >
+          {/*
+            width/height declaran la proporción intrínseca del archivo
+            (2172x724 = 3:1); el tamaño real lo ponen las clases. Antes
+            decía 180x48 (3.75:1), que no era la proporción ni del
+            archivo viejo.
+          */}
           <Image
             src="/brand/logo-horizontal.png"
             alt="DondeEntreno"
             width={180}
-            height={48}
+            height={60}
             priority
             className="h-auto w-[138px] sm:w-[160px] lg:w-[170px]"
           />

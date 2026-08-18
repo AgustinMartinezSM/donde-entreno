@@ -36,9 +36,20 @@ export function SectionHeader({
     >
       <div className={unirClases(centrado && "mx-auto max-w-2xl")}>
         {eyebrow ? (
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-            {eyebrow}
-          </p>
+          <>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
+              {eyebrow}
+            </p>
+            {/*
+              Regla de acento debajo del eyebrow. Las 50 secciones de la
+              app usan eyebrow, así que con esto todas ganan el mismo
+              anclaje visual sin tocar el tamaño ni el peso del título.
+            */}
+            <span
+              aria-hidden="true"
+              className={unirClases("rule-accent mt-2", centrado && "mx-auto")}
+            />
+          </>
         ) : null}
         <h2
           id={titleId}

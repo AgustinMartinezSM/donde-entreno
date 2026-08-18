@@ -18,8 +18,9 @@ const variantClassNames: Record<
   NonNullable<AppLinkButtonProps["variant"]>,
   string
 > = {
+  /* Mismo criterio que AppButton: color de respaldo debajo del degradado. */
   primary:
-    "bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)] hover:bg-[#0B314D]",
+    "gradient-cta gradient-cta-hover bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)]",
   secondary:
     "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]",
   outline:

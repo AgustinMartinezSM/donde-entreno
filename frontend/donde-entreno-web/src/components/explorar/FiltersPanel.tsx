@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { FiltrosOpciones } from "../../types/filtros";
 import { formatearEtiquetaCatalogo } from "../../lib/formatoCatalogo";
@@ -265,16 +266,19 @@ export function FiltersPanel({
         id={filtrosPanelId}
         className={`relative z-10 ${filtrosAbiertos ? "block" : "hidden"} mt-4`}
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/*
+          Tres columnas y no cinco: con cinco selects en fila cada campo
+          quedaba en 211px a 1440px, y sumarle el tile de ícono lo dejaba
+          en 159px útiles. El panel es colapsable, así que el alto extra
+          de la segunda fila no le saca lugar a los resultados.
+        */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Filtro por ciudad */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="filtro-ciudad"
-              className="text-sm font-bold text-[var(--color-primary)]"
-            >
-              Ciudad
-            </label>
-
+          <CampoFiltro
+            htmlFor="filtro-ciudad"
+            etiqueta="Ciudad"
+            icono={<IconoCiudad />}
+          >
             <select
               id="filtro-ciudad"
               value={ciudadId}
@@ -292,17 +296,14 @@ export function FiltersPanel({
                 </option>
               ))}
             </select>
-          </div>
+          </CampoFiltro>
 
           {/* Filtro por barrio */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="filtro-barrio"
-              className="text-sm font-bold text-[var(--color-primary)]"
-            >
-              Barrio
-            </label>
-
+          <CampoFiltro
+            htmlFor="filtro-barrio"
+            etiqueta="Barrio"
+            icono={<IconoBarrio />}
+          >
             <select
               id="filtro-barrio"
               value={barrioId}
@@ -323,17 +324,14 @@ export function FiltersPanel({
                   </option>
                 ))}
             </select>
-          </div>
+          </CampoFiltro>
 
           {/* Filtro por deporte */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="filtro-deporte"
-              className="text-sm font-bold text-[var(--color-primary)]"
-            >
-              Deporte
-            </label>
-
+          <CampoFiltro
+            htmlFor="filtro-deporte"
+            etiqueta="Deporte"
+            icono={<IconoDeporte />}
+          >
             <select
               id="filtro-deporte"
               value={deporteSlug}
@@ -348,17 +346,14 @@ export function FiltersPanel({
                 </option>
               ))}
             </select>
-          </div>
+          </CampoFiltro>
 
           {/* Filtro por nivel */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="filtro-nivel"
-              className="text-sm font-bold text-[var(--color-primary)]"
-            >
-              Nivel
-            </label>
-
+          <CampoFiltro
+            htmlFor="filtro-nivel"
+            etiqueta="Nivel"
+            icono={<IconoNivel />}
+          >
             <select
               id="filtro-nivel"
               value={nivel}
@@ -373,17 +368,14 @@ export function FiltersPanel({
                 </option>
               ))}
             </select>
-          </div>
+          </CampoFiltro>
 
           {/* Filtro por modalidad */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="filtro-modalidad"
-              className="text-sm font-bold text-[var(--color-primary)]"
-            >
-              Modalidad
-            </label>
-
+          <CampoFiltro
+            htmlFor="filtro-modalidad"
+            etiqueta="Modalidad"
+            icono={<IconoModalidad />}
+          >
             <select
               id="filtro-modalidad"
               value={modalidad}
@@ -398,7 +390,7 @@ export function FiltersPanel({
                 </option>
               ))}
             </select>
-          </div>
+          </CampoFiltro>
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -427,6 +419,48 @@ export function FiltersPanel({
   );
 }
 
+type CampoFiltroProps = {
+  htmlFor: string;
+  etiqueta: string;
+  icono: ReactNode;
+  children: ReactNode;
+};
+
+/*
+  Una fila de filtro: tile de ícono a la izquierda, etiqueta y control a
+  la derecha.
+
+  El tile no es decoración gratis: cinco selects idénticos apilados en
+  mobile se leen como un formulario largo y sin jerarquía, y el ícono es
+  lo que deja distinguir de un vistazo en cuál está parada la persona.
+  Va con aria-hidden porque la etiqueta ya nombra el campo.
+*/
+function CampoFiltro({ htmlFor, etiqueta, icono, children }: CampoFiltroProps) {
+  return (
+    <div className="flex items-start gap-3">
+      {/*
+        mt-8 alinea el centro del tile con el del select: la etiqueta
+        mide 20px, el gap 8 y el select 48, así que su centro cae a 52px
+        del tope; el tile de 40px arranca en 32 y cierra en el mismo 52.
+      */}
+      <span aria-hidden="true" className="icon-tile mt-8">
+        {icono}
+      </span>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <label
+          htmlFor={htmlFor}
+          className="text-sm font-bold text-[var(--color-primary)]"
+        >
+          {etiqueta}
+        </label>
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function filtrarOpcionesNeutrales(opciones: string[], neutrales: string[]) {
   return opciones.filter((opcion) => {
     const opcionNormalizada = opcion.trim().toUpperCase();
@@ -438,19 +472,69 @@ function filtrarOpcionesNeutrales(opciones: string[], neutrales: string[]) {
 /* El formateo vive en lib/formatoCatalogo para que filtros y cards hablen igual. */
 const formatearEtiquetaFiltro = formatearEtiquetaCatalogo;
 
+const propsIconoCampo = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  className: "h-5 w-5",
+  "aria-hidden": true,
+} as const;
+
 function IconoFiltros() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-5 w-5"
-      aria-hidden="true"
-    >
+    <svg {...propsIconoCampo}>
       <path d="M4 6h16M7 12h10M10 18h4" />
+    </svg>
+  );
+}
+
+function IconoCiudad() {
+  return (
+    <svg {...propsIconoCampo}>
+      <path d="M4 21V7l5-3v17M13 21V10l6 3v8M4 21h16" />
+      <path d="M6.5 10h.01M6.5 13.5h.01M16 16h.01" />
+    </svg>
+  );
+}
+
+function IconoBarrio() {
+  return (
+    <svg {...propsIconoCampo}>
+      <path d="M4 11.5 12 5l8 6.5" />
+      <path d="M6 10.5V20h12v-9.5" />
+      <path d="M10 20v-4.5h4V20" />
+    </svg>
+  );
+}
+
+function IconoDeporte() {
+  return (
+    <svg {...propsIconoCampo}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 3.5v5M12 15.5v5M3.5 12h5M15.5 12h5" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconoNivel() {
+  return (
+    <svg {...propsIconoCampo}>
+      <path d="M5 20v-5M12 20V9M19 20V4" />
+    </svg>
+  );
+}
+
+function IconoModalidad() {
+  return (
+    <svg {...propsIconoCampo}>
+      <circle cx="14.5" cy="4.8" r="1.9" />
+      <path d="M6 21.5l3.2-5.6 3-1.9-1.2-4.4-3.6 2-1.2 3" />
+      <path d="M12.2 9.6 15.5 12l3.5.4" />
+      <path d="m12.4 14 1.9 3.2 2.4 2.6" />
     </svg>
   );
 }

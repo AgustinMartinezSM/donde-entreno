@@ -10,8 +10,13 @@ const baseClassName =
   "inline-flex items-center justify-center rounded-[18px] font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0";
 
 const variantClassNames: Record<NonNullable<AppButtonProps["variant"]>, string> = {
+  /*
+    El color de fondo queda debajo del degradado a propósito: si el
+    degradado no se pintara, el botón sigue siendo azul de marca con
+    texto blanco, nunca transparente.
+  */
   primary:
-    "bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)] hover:bg-[#0B314D]",
+    "gradient-cta gradient-cta-hover bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)]",
   secondary:
     "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]",
   outline:

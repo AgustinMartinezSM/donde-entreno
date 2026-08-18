@@ -19,7 +19,14 @@
 
   /* Texto */
   --color-text: #102A43;
-  --color-muted: #627D98;
+  /*
+    Texto secundario. Era #627D98, que sobre blanco da 4,28:1 y sobre el
+    fondo de la app 4,09:1 — los dos por debajo del 4,5:1 que pide AA
+    para texto normal, y la mayor parte de este texto es de 14px. Con
+    #4E6A85 pasa a 5,64:1 sobre blanco y 5,13:1 sobre el fondo, así que
+    el fondo ambientado puede tener más cuerpo sin quedar al límite.
+  */
+  --color-muted: #4E6A85;
 
   /* Bordes */
   --color-border: #D9E2EC;
@@ -136,18 +143,34 @@ h3,
    =================================================================== */
 
 /*
-  Fondo ambientado de la app. Dos halos muy suaves (celeste arriba a la
-  derecha, verde abajo a la izquierda) fijos respecto del viewport, así
-  el scroll no los arrastra y no compiten con el contenido.
+  Fondo ambientado de la app: un campo frío con halos de marca, fijo
+  respecto del viewport para que el scroll no lo arrastre.
 
-  Opacidades bajas a propósito: se tienen que percibir como "el fondo
-  tiene vida", no como dos manchas.
+  Ojo con una trampa que ya se pagó una vez: esto solo se ve si las
+  páginas NO pintan un fondo opaco encima. Cada `main` traía
+  `bg-[var(--color-bg)]`, que sobre la home cubría 8508 px de los 9256
+  del documento, así que los halos existían y no los veía nadie. Los
+  `main` ahora no pintan fondo y el color base lo pone este bloque.
+
+  Las capas van de arriba hacia abajo en el orden en que se escriben:
+  primero los halos, y la base fría al final.
 */
 body {
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(60rem 60rem at 100% -10%, rgba(79, 179, 217, 0.13), transparent 60%),
-    radial-gradient(45rem 45rem at -10% 100%, rgba(46, 184, 114, 0.10), transparent 60%);
+    /* Halo celeste, arriba a la derecha. */
+    radial-gradient(38rem 32rem at 88% 0%, rgba(79, 179, 217, 0.22), transparent 68%),
+    /* Halo verde, abajo a la izquierda. */
+    radial-gradient(34rem 30rem at 4% 96%, rgba(46, 184, 114, 0.17), transparent 68%),
+    /* Azul de marca al medio izquierda: liga los dos halos anteriores. */
+    radial-gradient(30rem 28rem at -8% 38%, rgba(15, 61, 94, 0.09), transparent 70%),
+    /*
+      Base fría con degradado vertical. Arranca en blanco puro detrás de
+      la cabecera —que es donde la app tiene que sentirse liviana— y va
+      tomando cuerpo hacia abajo para que las cards blancas se recorten
+      en vez de fundirse con la página.
+    */
+    linear-gradient(180deg, #FFFFFF 0%, #F2F7FC 38%, #EAF1F8 100%);
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
@@ -178,6 +201,62 @@ body {
 /* Variante fría, para cabeceras que llevan texto largo encima. */
 .gradient-deep {
   background-image: linear-gradient(135deg, #0B314D 0%, #0F3D5E 55%, #145276 100%);
+}
+
+/*
+  Degradado de los botones de acción principal.
+
+  Va del azul de marca a un azul saturado y NO llega al verde: un botón
+  chico con los tres colores de la marca adentro se lee sucio, y el
+  verde ya es el color del acento y de los estados de éxito. El
+  resultado sigue siendo azul de marca, pero con volumen.
+
+  Se aplica como clase y no como variante de color suelta porque los
+  botones también pintan un background-color de respaldo: si el
+  navegador descartara el degradado, el botón queda azul, nunca
+  transparente con texto blanco encima.
+*/
+.gradient-cta {
+  background-image: linear-gradient(135deg, #0F3D5E 0%, #14608F 58%, #1B7FB8 100%);
+}
+
+.gradient-cta-hover:hover {
+  background-image: linear-gradient(135deg, #0B314D 0%, #114F76 58%, #166B9B 100%);
+}
+
+/*
+  Tile de ícono: el círculo tenue que acompaña a una fila (un filtro, un
+  ítem del pie, un acceso). Existe para que las listas dejen de ser
+  texto suelto y se lean como filas de app.
+*/
+.icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  block-size: 2.5rem;
+  inline-size: 2.5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(140deg, rgba(79, 179, 217, 0.18), rgba(46, 184, 114, 0.14));
+  color: var(--color-primary);
+}
+
+/* Sobre superficies oscuras el mismo tile necesita más cuerpo. */
+.icon-tile-dark {
+  background-image: linear-gradient(140deg, rgba(79, 179, 217, 0.22), rgba(46, 184, 114, 0.18));
+  color: #A7F3CF;
+}
+
+/*
+  Regla de acento: la barrita corta debajo de un título de sección.
+  Da jerarquía sin subir el peso ni el tamaño de la tipografía.
+*/
+.rule-accent {
+  display: block;
+  block-size: 0.25rem;
+  inline-size: 2.75rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg, var(--color-secondary), var(--color-accent));
 }
 
 /*

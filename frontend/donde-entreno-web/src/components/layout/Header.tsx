@@ -16,8 +16,14 @@ export function Header() {
     /*
       -mx-4/px-4 compensa el px-4 de los contenedores de página para que
       el header pegado en mobile cubra el viewport completo (fondo y borde).
+
+      La barra usa la misma superficie de vidrio que la navegación
+      inferior (surface-glass + blur y saturación de Tailwind, nunca
+      backdrop-filter a mano: Lightning CSS lo elimina). Las dos barras
+      de la app tienen que leerse iguales; antes esta era un #F8FAFC al
+      95% que sobre el fondo ambientado quedaba como una franja opaca.
     */
-    <header className="sticky top-0 z-40 -mx-4 border-b border-[#D9E2EC]/80 bg-[#F8FAFC]/95 px-4 py-3 backdrop-blur-xl sm:static sm:mx-0 sm:rounded-[22px] sm:border sm:bg-white/88 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
+    <header className="surface-glass sticky top-0 z-40 -mx-4 border-b border-white/70 px-4 py-3 shadow-[0_6px_24px_rgba(15,61,94,0.06)] backdrop-blur-xl backdrop-saturate-150 sm:static sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
       <div className="flex min-w-0 items-center gap-3">
         <Link
           href="/"

@@ -54,7 +54,7 @@ export function Header() {
 
         <Link
           href="/publicar"
-          className="hidden min-h-11 items-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 hover:bg-[#0B314D] lg:inline-flex"
+          className="gradient-cta gradient-cta-hover hidden min-h-11 items-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 lg:inline-flex"
         >
           Publicar
         </Link>

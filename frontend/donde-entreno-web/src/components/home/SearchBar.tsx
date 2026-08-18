@@ -154,7 +154,13 @@ export function SearchBar({
 
         <button
           type="submit"
-          className="min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
+          /*
+            Este botón no pasa por AppButton (tiene alto propio para
+            acompañar al input), así que el degradado de acción va acá a
+            mano: si no, el CTA más visible de la home era el único que
+            quedaba plano.
+          */
+          className="gradient-cta gradient-cta-hover min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
         >
           Buscar
         </button>

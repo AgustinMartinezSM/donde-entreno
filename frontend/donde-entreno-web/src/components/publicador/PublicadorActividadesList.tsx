@@ -335,7 +335,7 @@ function ActividadCardPublicador({
             <div className="grid gap-3 sm:grid-cols-2">
               <Link
                 href={`/publicador/actividades/${actividad.id}`}
-                className="inline-flex items-center justify-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0B314D]"
+                className="gradient-cta gradient-cta-hover inline-flex items-center justify-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5"
               >
                 Ver detalle
               </Link>

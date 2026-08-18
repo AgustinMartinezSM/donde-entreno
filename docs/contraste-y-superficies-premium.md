@@ -181,10 +181,42 @@ Con **sesión real de usuario** (`agustin diaz`) y **de publicador**
 - A 1440px, Dondi y "Volver arriba" no se solapan (16px de aire) y no
   tapan ningún control.
 
-**Queda sin ver**: `/login` y los dos `/registro` a ojo. Con sesión
-activa redirigen, y no correspondía cerrarla. De esas pantallas hay
-medición completa (hero 263px, campo de email a 520px de 844, cero
-desbordes a 320 y 390px), no captura.
+### Dos botones flotantes que tapaban controles reales
+
+Mirar las pantallas de acceso **sin sesión** destapó lo peor del día, y
+ninguna de las dos cosas era del diseño: eran controles que no se podían
+tocar.
+
+1. **"Volver arriba" era inalcanzable en mobile.** Ese botón y el
+   launcher de Dondi caían en el **mismo punto** (x16, y704 a 390×844).
+   Dondi va en `z-50` y mide 56px; el otro en `z-40` y mide 48px, así
+   que quedaba tapado entero.
+
+   Viene de `af03e0e`: ese bloque puso a Dondi a la izquierda "porque la
+   derecha ya la ocupa el botón de volver arriba", y la premisa era
+   falsa — `ScrollToTopButton` era `left-4` hasta `lg`. Como estaba en
+   producción y no dependía de nada del resto, **el fix se separó del
+   bloque y se pusheó aparte** (`8a13390`); este bloque lo trae de base.
+   Ahora ese botón va a la derecha en mobile y la premisa pasa a ser
+   cierta; en desktop los dos siguen a la derecha, separados 16px.
+
+2. **En `/login`, el launcher se comía el botón "Ingresar"**: el botón
+   va de x41 a x350 y el launcher de x16 a x72, y `elementFromPoint`
+   sobre esa franja devolvía el launcher — tocar el borde izquierdo de
+   "Ingresar" abría a Dondi en lugar de iniciar sesión. El launcher ya
+   no se dibuja en `/login`, `/registro*` ni `/admin/login`, donde
+   además no tiene nada que aportar mientras alguien escribe su
+   contraseña. **El panel sigue abriéndose desde la barra inferior**: se
+   saca el botón flotante, no el asistente.
+
+De paso, en el hero de acceso la regla de acento era verde sobre el
+tramo verde del degradado (invisible) y pasó a ser clara, y la trama de
+puntos se movió a la derecha, donde no cae detrás del párrafo.
+
+**Lección que vale para el próximo bloque flotante**: verificar el punto
+de un elemento fijo no alcanza; hay que cruzar **todos** los elementos
+fijos entre sí y correr `elementFromPoint` sobre los controles que
+quedan debajo.
 
 ## 4. Fuera de alcance
 

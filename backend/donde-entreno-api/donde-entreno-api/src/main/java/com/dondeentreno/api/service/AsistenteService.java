@@ -297,6 +297,30 @@ public class AsistenteService {
                 ))
                 .toList();
 
+        /*
+          El hábito real del modelo en producción: campo "deportes" vacío
+          y la lista entera escrita como enumeración DENTRO del mensaje,
+          desde el primer carácter (sin apertura). Recortar la enumeración
+          dejaba la prosa vacía y no había nada que aceptar. En vez de
+          descartar su elección, la convertimos a la estructura que el
+          diseño esperaba: se extraen los ítems del texto y pasan por el
+          MISMO validar() que el campo — catálogo, rechazos y dedup en
+          código, como siempre. Un ítem mal extraído no matchea nada y se
+          cae solo.
+        */
+        String mensajeLimpio = SanitizadorTexto.limpiarMensaje(respuesta.mensaje());
+        String origenPropuestas = "campo";
+
+        if (propuestos.isEmpty()) {
+            List<RecomendadorDeportes.NombreYMotivo> deLaProsa =
+                    propuestasDeLaEnumeracion(mensajeLimpio);
+
+            if (!deLaProsa.isEmpty()) {
+                propuestos = deLaProsa;
+                origenPropuestas = "prosa";
+            }
+        }
+
         RecomendadorDeportes.ResultadoValidacion validacion = recomendador.validarConDetalle(
                 propuestos,
                 perfil,
@@ -320,7 +344,8 @@ public class AsistenteService {
             );
 
             log.info(
-                    "Asistente: GEMINI_VALIDADO via=deportes tipo={} propuestos={} validos={} completados={} rechazosActivos={}",
+                    "Asistente: GEMINI_VALIDADO via=deportes origen={} tipo={} propuestos={} validos={} completados={} rechazosActivos={}",
+                    origenPropuestas,
                     campoParaLog(respuesta.tipoRespuesta()),
                     propuestos.size(),
                     sugeridos.size(),
@@ -373,7 +398,7 @@ public class AsistenteService {
           los pone el recomendador determinístico, que respeta catálogo y
           rechazos por código.
         */
-        String consejo = soloLaApertura(SanitizadorTexto.limpiarMensaje(respuesta.mensaje()));
+        String consejo = soloLaApertura(mensajeLimpio);
 
         /*
           El consejo NO se acepta si el modelo venía insistiendo con lo
@@ -422,8 +447,9 @@ public class AsistenteService {
           del modelo.
         */
         log.info(
-                "Asistente: GEMINI_DESCARTADO motivo={} tipo={} propuestos={} porCatalogo={} porRechazo={} duplicados={} invalidos={} filtrosPropuestos={} filtrosResueltos={} filtrosTrasRechazo=false mensajePresente={} rechazosActivos={} fuenteFinal=local_fallback",
+                "Asistente: GEMINI_DESCARTADO motivo={} origen={} tipo={} propuestos={} porCatalogo={} porRechazo={} duplicados={} invalidos={} filtrosPropuestos={} filtrosResueltos={} filtrosTrasRechazo=false mensajePresente={} aperturaTrasRecorte={} rechazosActivos={} fuenteFinal=local_fallback",
                 motivoDelDescarte(propuestos, validacion, respuesta),
+                origenPropuestas,
                 campoParaLog(respuesta.tipoRespuesta()),
                 listaParaLog(propuestos.stream().map(RecomendadorDeportes.NombreYMotivo::nombre).toList()),
                 listaParaLog(validacion.descartadosPorCatalogo()),
@@ -432,7 +458,8 @@ public class AsistenteService {
                 validacion.invalidos(),
                 !respuesta.fraseDeFiltros().isBlank(),
                 resueltosCrudos.hayAlgo(),
-                !SanitizadorTexto.limpiarMensaje(respuesta.mensaje()).isBlank(),
+                !mensajeLimpio.isBlank(),
+                !consejo.isBlank(),
                 perfil.nombresRechazados().size()
         );
 
@@ -516,13 +543,14 @@ public class AsistenteService {
 
       Se busca "1." o "1)" o "1-" tras inicio, espacio o dos puntos (las
       listas empiezan en uno, y un número suelto en una frase no suele
-      venir como "1."), o un bullet real: ese carácter no aparece en
-      prosa. El guion SOLO se mira pegado al uno ("1- Funcional", muy
-      común en castellano): suelto, " - " aplanado es un inciso legítimo
-      y no se toca.
+      venir como "1."), o un bullet real en esas mismas posiciones: ese
+      carácter no aparece en prosa, y un mensaje que ES pura lista
+      arranca con él en el primer carácter. El guion SOLO se mira pegado
+      al uno ("1- Funcional", muy común en castellano): suelto, " - "
+      aplanado es un inciso legítimo y no se toca.
     */
     private static final Pattern ARRANQUE_DE_ENUMERACION =
-            Pattern.compile("(?:^|[\\s:])1[.)\\-]\\s|\\s•\\s");
+            Pattern.compile("(?:^|[\\s:])(?:1[.)\\-]|•)\\s");
 
     /**
      * La prosa de apertura, sin la enumeración que el modelo haya metido
@@ -541,6 +569,78 @@ public class AsistenteService {
         return enumeracion.find()
                 ? mensaje.substring(0, enumeracion.start()).trim()
                 : mensaje;
+    }
+
+    /*
+      Marcador de CUALQUIER ítem de la enumeración (no solo el primero):
+      número de uno o dos dígitos con "." ")" o "-", o un bullet, en las
+      mismas posiciones que ARRANQUE_DE_ENUMERACION — si los dos patrones
+      no ven lo mismo, un formato se recorta de la apertura pero no se
+      extrae, o al revés.
+    */
+    private static final Pattern ITEM_DE_ENUMERACION =
+            Pattern.compile("(?:^|[\\s:])(?:\\d{1,2}[.)\\-]|•)\\s");
+
+    /** Más que esto es ruido, no una recomendación. */
+    private static final int MAX_ITEMS_EXTRAIDOS = 8;
+
+    /**
+     * Los deportes que el modelo escribió como enumeración dentro del
+     * mensaje, convertidos en propuestas.
+     *
+     * Cada ítem tiene la forma "Nombre: motivo" (o solo el nombre). El
+     * nombre extraído NO se muestra: pasa por el mismo validar() que el
+     * campo "deportes", así que un segmento mal cortado no matchea contra
+     * el catálogo y desaparece — extraer de más es gratis, extraer de
+     * menos pierde la elección del modelo.
+     */
+    private List<RecomendadorDeportes.NombreYMotivo> propuestasDeLaEnumeracion(
+            String mensajeLimpio
+    ) {
+        if (mensajeLimpio.isBlank()) {
+            return List.of();
+        }
+
+        /* El segmento 0 es la apertura (si la hay); el resto, los ítems. */
+        String[] segmentos = ITEM_DE_ENUMERACION.split(mensajeLimpio);
+
+        List<RecomendadorDeportes.NombreYMotivo> propuestas = new ArrayList<>();
+
+        for (int indice = 1; indice < segmentos.length; indice++) {
+            if (propuestas.size() >= MAX_ITEMS_EXTRAIDOS) {
+                break;
+            }
+
+            String segmento = segmentos[indice].trim();
+
+            if (segmento.isEmpty()) {
+                continue;
+            }
+
+            int dosPuntos = segmento.indexOf(':');
+            String nombre;
+            String motivo;
+
+            /*
+              "Funcional: circuitos variados" → nombre y motivo. Un ":"
+              muy lejos no separa un nombre de deporte, separa una frase.
+            */
+            if (dosPuntos > 0 && dosPuntos <= 40) {
+                nombre = segmento.substring(0, dosPuntos).trim();
+                motivo = segmento.substring(dosPuntos + 1).trim();
+            } else {
+                nombre = segmento.length() > 40
+                        ? segmento.substring(0, 40).trim()
+                        : segmento;
+                motivo = "";
+            }
+
+            if (!nombre.isBlank()) {
+                propuestas.add(new RecomendadorDeportes.NombreYMotivo(nombre, motivo));
+            }
+        }
+
+        return List.copyOf(propuestas);
     }
 
     /**

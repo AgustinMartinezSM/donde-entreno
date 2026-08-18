@@ -540,13 +540,15 @@ class AsistenteServiceTest {
     }
 
     /*
-      Si el modelo metió la lista adentro del mensaje (que es exactamente
-      lo que hacía), no se muestra dos veces: nos quedamos con la
-      apertura y la lista la escribe el backend, que sí respeta los
-      rechazos.
+      Con el extractor, la enumeración del mensaje ES la propuesta del
+      modelo: si todo lo que enumeró estaba rechazado, corre el mismo
+      candado que el campo "deportes" (test siguiente) y se descarta
+      completo. Antes este caso recortaba la enumeración y aceptaba la
+      apertura como consejo puro; eso mostraba con tono amable a un
+      modelo que venía insistiendo con lo rechazado.
     */
     @Test
-    void siElConsejoTraeLaListaAdentroSeQuedaSoloConLaApertura() {
+    void siLaEnumeracionSoloTraiaLoRechazadoSeDescartaComoSiFueraElCampo() {
         conModeloDisponible(new RespuestaModelo(
                 "consejo_deportivo",
                 "Te tiro opciones: 1. Básquet: picado y aros 2. Boxeo: bolsa y guantes",
@@ -560,11 +562,113 @@ class AsistenteServiceTest {
                 charla("recomendame algo", "ok", "no quiero básquet ni nada de pelea")
         );
 
-        assertThat(respuesta.getFuente()).isEqualTo("gemini");
-        /* La enumeración del modelo no pasa: ignoraba los rechazos. */
+        assertThat(respuesta.getFuente()).isEqualTo("local");
+        /* Nada de la prosa del modelo sobrevive al descarte. */
         assertThat(respuesta.getTexto()).doesNotContain("picado y aros");
+        assertThat(respuesta.getTexto()).doesNotContain("Te tiro opciones");
         assertThat(respuesta.getTexto()).doesNotContain("Básquet");
         assertThat(respuesta.getTexto()).doesNotContain("Boxeo");
+    }
+
+    /*
+      El hábito real del modelo en producción (visto el 2026-08-18):
+      campo "deportes" vacío y la lista entera como enumeración adentro
+      del mensaje. Su elección no se tira: se extrae y pasa por el mismo
+      validar() que el campo, y la lista final la re-arma el backend con
+      la apertura del modelo sin su enumeración.
+    */
+    @Test
+    void extraeLosDeportesQueElModeloEnumeroDentroDelMensaje() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Para arrancar tranqui: 1. Yoga: para soltar el cuerpo 2. Natación: bajo impacto",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("quiero moverme un poco", "ok")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        /* La elección del modelo, honrada. */
+        assertThat(respuesta.getTexto()).contains("Yoga");
+        assertThat(respuesta.getTexto()).contains("Natación");
+        /* Su apertura queda; la lista la enumera el backend. */
+        assertThat(respuesta.getTexto()).contains("Para arrancar tranqui");
+    }
+
+    /*
+      Extraer de la prosa no relaja ninguna garantía: lo rechazado se cae
+      igual que si hubiera venido en el campo, y lo válido sobrevive.
+    */
+    @Test
+    void deLaEnumeracionSoloSobreviveLoQueNoEstabaRechazado() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Mirá: 1. Boxeo: para descargar 2. Yoga: para aflojar",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("recomendame algo", "ok", "nada de pelea")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Yoga");
+        assertThat(respuesta.getTexto()).doesNotContain("Boxeo");
+    }
+
+    /* La lista pura con viñetas y sin apertura también es una elección. */
+    @Test
+    void extraeLaListaPuraConVinetasDesdeElPrimerCaracter() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "• Yoga: para el estrés • Funcional: circuitos cortos",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("quiero moverme un poco", "ok")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Yoga");
+        assertThat(respuesta.getTexto()).contains("Funcional");
+    }
+
+    /*
+      Una enumeración sin deportes reales ("dormí bien") no matchea nada
+      del catálogo: no hay elección que honrar y el caso degrada al
+      consejo puro de siempre — apertura del modelo + deportes del
+      recomendador determinístico.
+    */
+    @Test
+    void unaEnumeracionSinDeportesRealesDegradaAlConsejoPuro() {
+        conModeloDisponible(new RespuestaModelo(
+                "consejo_deportivo",
+                "Arranquemos por lo básico: 1. Dormí bien 2. Tomá agua",
+                List.of(),
+                null,
+                null
+        ));
+
+        AsistenteRespuestaDTO respuesta = asistenteService.responder(
+                "y entonces qué hago?",
+                charla("quiero arrancar algo", "ok")
+        );
+
+        assertThat(respuesta.getFuente()).isEqualTo("gemini");
+        assertThat(respuesta.getTexto()).contains("Arranquemos por lo básico");
+        assertThat(respuesta.getTexto()).doesNotContain("Dormí bien");
     }
 
     /*

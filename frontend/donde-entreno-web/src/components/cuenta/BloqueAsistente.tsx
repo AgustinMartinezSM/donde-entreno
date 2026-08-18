@@ -75,8 +75,14 @@ export function BloqueAsistente({
         </div>
       </div>
 
+      {/*
+        Primario y no secundario: la tarjeta va sobre la superficie
+        celeste (variant="info") y un botón blanco encima casi no se
+        despega del fondo, siendo que abrir a Dondi es lo único que esta
+        tarjeta viene a proponer.
+      */}
       <AppButton
-        variant="secondary"
+        variant="primary"
         size="sm"
         className={`shrink-0 ${lateral ? "xl:mt-4 xl:w-full" : ""}`}
         aria-haspopup="dialog"

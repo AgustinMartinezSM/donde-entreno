@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { RESPUESTA_BIENVENIDA } from "../../lib/asistente/conocimiento";
 import { motorAsistenteCascada } from "../../lib/asistente/motorCascada";
@@ -86,9 +86,41 @@ export function AsistenteWidget() {
   const launcherRef = useRef<HTMLButtonElement | null>(null);
   const debeDevolverFoco = useRef(false);
   const rutaActual = usePathname();
+  /*
+    Burbuja de invitación junto al launcher.
+
+    La lectura inicial va con useSyncExternalStore y no con un efecto:
+    el servidor no tiene sessionStorage, así que el snapshot de servidor
+    dice "descartada" (no se dibuja en el HTML) y el del cliente lee el
+    valor real; React resuelve la divergencia después de hidratar sin
+    setState a mano. El descarte en runtime es estado local que se setea
+    solo desde handlers (la X o cualquier apertura del panel).
+  */
+  const [burbujaDescartadaAhora, setBurbujaDescartadaAhora] = useState(false);
+  const burbujaDescartadaEnSesion = useSyncExternalStore(
+    suscripcionInerte,
+    leerBurbujaDescartada,
+    () => true
+  );
+  const burbujaVisible = !burbujaDescartadaEnSesion && !burbujaDescartadaAhora;
 
   /* Hay charla cuando la persona ya escribió: el saludo solo no cuenta. */
   const hayConversacion = mensajes.length > 1;
+
+  /*
+    Abrir a Dondi también descarta la burbuja, y para toda la sesión: la
+    invitación ya cumplió. Sin esto reaparecería en cada minimizar. Se
+    llama desde cada camino de apertura, no desde un efecto.
+  */
+  function descartarBurbuja() {
+    setBurbujaDescartadaAhora(true);
+
+    try {
+      sessionStorage.setItem(CLAVE_BURBUJA_DESCARTADA, "1");
+    } catch {
+      /* Sin persistencia queda solo el estado en memoria. */
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -107,6 +139,19 @@ export function AsistenteWidget() {
       */
       if (document.activeElement instanceof HTMLElement) {
         origenDelFoco.current = document.activeElement;
+      }
+
+      /*
+        Abrir descarta la invitación para toda la sesión. Inline y no
+        via descartarBurbuja: el efecto corre una sola vez y no debe
+        depender de funciones del render.
+      */
+      setBurbujaDescartadaAhora(true);
+
+      try {
+        sessionStorage.setItem(CLAVE_BURBUJA_DESCARTADA, "1");
+      } catch {
+        /* Sin persistencia queda solo el estado en memoria. */
       }
 
       setAbierto(true);
@@ -315,14 +360,28 @@ export function AsistenteWidget() {
     }
 
     return (
-      <DondiLauncher
-        ref={launcherRef}
-        hayConversacion={hayConversacion}
-        onAbrir={() => {
-          origenDelFoco.current = launcherRef.current;
-          setAbierto(true);
-        }}
-      />
+      <>
+        {burbujaVisible ? (
+          <DondiBurbuja
+            onAbrir={() => {
+              origenDelFoco.current = launcherRef.current;
+              descartarBurbuja();
+              setAbierto(true);
+            }}
+            onDescartar={descartarBurbuja}
+          />
+        ) : null}
+
+        <DondiLauncher
+          ref={launcherRef}
+          hayConversacion={hayConversacion}
+          onAbrir={() => {
+            origenDelFoco.current = launcherRef.current;
+            descartarBurbuja();
+            setAbierto(true);
+          }}
+        />
+      </>
     );
   }
 
@@ -425,6 +484,27 @@ export function AsistenteWidget() {
 */
 const RUTAS_DE_ACCESO = ["/login", "/registro", "/admin/login"];
 
+/*
+  El descarte de la burbuja vive en sessionStorage a propósito: molesta
+  una vez por sesión de navegación como mucho, y no toca backend ni
+  persiste entre visitas (una invitación de hace una semana no aporta).
+*/
+const CLAVE_BURBUJA_DESCARTADA = "dondi-burbuja-descartada";
+
+/* sessionStorage no emite cambios: la suscripción no tiene qué escuchar. */
+function suscripcionInerte() {
+  return () => {};
+}
+
+function leerBurbujaDescartada() {
+  try {
+    return sessionStorage.getItem(CLAVE_BURBUJA_DESCARTADA) === "1";
+  } catch {
+    /* sessionStorage bloqueado: mejor no insistir con la invitación. */
+    return true;
+  }
+}
+
 function esRutaDeAcceso(ruta: string | null) {
   if (!ruta) {
     return false;
@@ -432,6 +512,83 @@ function esRutaDeAcceso(ruta: string | null) {
 
   return RUTAS_DE_ACCESO.some(
     (base) => ruta === base || ruta.startsWith(`${base}/`)
+  );
+}
+
+type DondiBurbujaProps = {
+  onAbrir: () => void;
+  onDescartar: () => void;
+};
+
+/*
+  Burbuja de invitación de Dondi: un mensajito corto junto al launcher,
+  como si Dondi saludara primero.
+
+  Posición pensada contra los otros flotantes, no al ojo:
+  - En mobile va ARRIBA del launcher y no al costado: al costado, a
+    320px llegaba hasta x290 y "Volver arriba" (que aparece al scrollear)
+    arranca en x256 — se pisaban. Arriba queda fuera de la franja de los
+    dos botones.
+  - En desktop va a la IZQUIERDA del launcher (que vive a la derecha),
+    donde no hay nada: "Volver arriba" queda más abajo, a la altura del
+    propio launcher no llega.
+
+  z-40: por encima del contenido, por debajo del launcher y de la barra
+  (z-50). La flecha son dos spans —una por layout— porque apunta hacia
+  abajo en mobile y hacia la derecha en desktop.
+*/
+function DondiBurbuja({ onAbrir, onDescartar }: DondiBurbujaProps) {
+  return (
+    /*
+      El bottom va por clase y no por style: en desktop hay que
+      overridearlo (lg:) para centrar la burbuja con el launcher, y un
+      style inline le ganaría siempre a la clase. En mobile queda 8px
+      por encima del launcher; en desktop, a su izquierda y centrada
+      (launcher bottom 84px + (56-46)/2 = 89px).
+    */
+    <div className="fixed bottom-[calc(9.25rem+env(safe-area-inset-bottom))] left-4 z-40 lg:bottom-[89px] lg:left-auto lg:right-[5.375rem]">
+      <div className="surface-glass relative flex max-w-[13rem] items-center gap-1 rounded-2xl rounded-bl-md border border-[#BFDDEA]/80 py-1.5 pl-3 pr-1.5 shadow-lifted backdrop-blur-md backdrop-saturate-150 motion-safe:animate-[de-entrada_0.35s_ease-out] lg:rounded-2xl">
+        {/* Flecha hacia abajo (mobile): apunta al launcher que está debajo. */}
+        <span
+          aria-hidden="true"
+          className="absolute -bottom-[5px] left-5 h-2.5 w-2.5 rotate-45 border-b border-r border-[#BFDDEA]/80 bg-white/90 lg:hidden"
+        />
+        {/* Flecha hacia la derecha (desktop): apunta al launcher del costado. */}
+        <span
+          aria-hidden="true"
+          className="absolute -right-[5px] top-1/2 hidden h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-r border-t border-[#BFDDEA]/80 bg-white/90 lg:block"
+        />
+
+        <button
+          type="button"
+          onClick={onAbrir}
+          aria-haspopup="dialog"
+          className="text-left text-xs font-bold leading-4 text-[var(--color-primary)] transition duration-200 ease-out hover:text-[#0B314D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/50"
+        >
+          ¿Necesitás ayuda?{" "}
+          <span className="text-[var(--color-success)]">Escribime</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onDescartar}
+          aria-label="Cerrar el mensaje de Dondi"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-white hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/50"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            className="h-3 w-3"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 }
 

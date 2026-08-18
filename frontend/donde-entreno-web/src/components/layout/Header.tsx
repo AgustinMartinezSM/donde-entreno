@@ -6,7 +6,6 @@ import {
   CitySelectorFallback,
 } from "../ciudades/CitySelector";
 import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
-import { HeaderAsistenteButton } from "./HeaderAsistenteButton";
 import { HeaderFavoritosLink } from "./HeaderFavoritosLink";
 import { HeaderNavLinks } from "./HeaderNavLinks";
 import { MobileAccountShortcut } from "./MobileAccountShortcut";
@@ -22,8 +21,16 @@ export function Header() {
       backdrop-filter a mano: Lightning CSS lo elimina). Las dos barras
       de la app tienen que leerse iguales; antes esta era un #F8FAFC al
       95% que sobre el fondo ambientado quedaba como una franja opaca.
+
+      sm:relative y NO sm:static: el backdrop-filter le crea al header
+      un stacking context aunque sea estático, pero estático el z-40 se
+      ignora, así que el hero —que viene después en el DOM— pintaba
+      encima de TODO lo que cuelga del header, incluido el menú de
+      usuario abierto (z-50 no puede salir del contexto del padre). Como
+      el hero es translúcido, el menú se veía "lavado" debajo suyo.
+      Verificado con una sonda absoluta y elementFromPoint.
     */
-    <header className="surface-glass sticky top-0 z-40 -mx-4 border-b border-white/70 px-4 py-3 shadow-[0_6px_24px_rgba(15,61,94,0.06)] backdrop-blur-xl backdrop-saturate-150 sm:static sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
+    <header className="surface-glass sticky top-0 z-40 -mx-4 border-b border-white/70 px-4 py-3 shadow-[0_6px_24px_rgba(15,61,94,0.06)] backdrop-blur-xl backdrop-saturate-150 sm:relative sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
       <div className="flex min-w-0 items-center gap-3">
         <Link
           href="/"
@@ -48,8 +55,12 @@ export function Header() {
           </Suspense>
         </div>
 
-        <HeaderAsistenteButton />
-
+        {/*
+          Sin botón "Asistente": el launcher flotante de Dondi está en
+          toda la app y duplicar la entrada en la barra confundía cuál
+          es el acceso. Los CTA contextuales (home, mi-cuenta) siguen
+          disparando el mismo evento.
+        */}
         <HeaderFavoritosLink />
 
         <Link

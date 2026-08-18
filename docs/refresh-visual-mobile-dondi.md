@@ -140,3 +140,46 @@ la base.
   página, que es lo esperado de un chat anclado.
 - El halo del launcher usa `motion-safe`, así que se apaga con
   `prefers-reduced-motion`.
+
+## 7. Pulido post-deploy (bloque aparte, mismo espíritu)
+
+Tres correcciones hechas después de ver el refresh desplegado con
+usuarios reales:
+
+**El menú de usuario se veía "lavado" debajo del hero (desktop).** No
+era el menú: el header es `sm:static` y su `backdrop-filter` le crea un
+stacking context aunque sea estático — pero estático, el `z-40` se
+ignora, así que el hero (posterior en el DOM y translúcido) pintaba
+encima de todo lo que cuelga del header, incluido el panel `z-50` del
+menú, que no puede salir del contexto del padre. Fix: `sm:relative`, un
+solo cambio de clase. Verificado con una sonda absoluta y
+`elementFromPoint` antes y después.
+
+**El botón "Asistente" duplicado se fue de la navegación.** Con Dondi
+flotante en toda la app, la barra inferior y el header ofrecían dos
+entradas al mismo panel. La barra inferior queda **Inicio · Explorar ·
+Guardados · Mi perfil/Ingresar** (Guardados vuelve: para el visitante va
+al login con `returnTo`, como el acceso del header); del header desktop
+y del encabezado del publicador el botón se eliminó
+(`HeaderAsistenteButton.tsx` borrado). Los CTA contextuales —home y
+mi-cuenta— siguen disparando `donde-entreno:abrir-asistente`, que el
+widget escucha igual que siempre.
+
+**Dondi ahora invita: burbuja "¿Necesitás ayuda? Escribime".** Vive
+junto al launcher: **arriba** en mobile (al costado chocaba con "Volver
+arriba" a 320px: llegaba a x290 y el botón arranca en x256) y **al
+costado, centrada** en desktop. Tocarla abre el panel; la X la descarta.
+El descarte vive en `sessionStorage` (`dondi-burbuja-descartada`) y
+abrir el asistente por cualquier camino también la descarta para toda la
+sesión: la invitación ya cumplió, y sin eso reaparecería en cada
+minimizar. La lectura inicial va con `useSyncExternalStore` (el linter
+prohíbe `setState` sincrónico en efectos, y el snapshot de servidor
+evita el mismatch de hidratación). Entrada con `de-entrada` bajo
+`motion-safe`. El `bottom` va por clase y no por `style`: en desktop hay
+que overridearlo con `lg:` y un inline le ganaría.
+
+Verificado a 320/375/390/768/1280: cuatro flotantes (barra, burbuja,
+launcher, volver arriba) sin ningún solapamiento ni overflow, burbuja
+ausente en `/login` y `/registro*` (rinde con el launcher), y el ciclo
+completo abrir → descartar → minimizar → recargar deja la burbuja donde
+corresponde.

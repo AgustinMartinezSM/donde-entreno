@@ -4,20 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
 import { useAuthSession } from "../auth/AuthSessionProvider";
+import { IconoGuardar } from "../ui/IconoGuardar";
 
-type IconoNavegacion = "inicio" | "explorar" | "asistente" | "cuenta";
+type IconoNavegacion = "inicio" | "explorar" | "guardados" | "cuenta";
 
-/*
-  Un item puede navegar (href) o disparar una acción en la página, como
-  abrir el asistente, que no es una ruta.
-*/
 type ItemNavegacion = {
   label: string;
   icono: IconoNavegacion;
   activo: (pathname: string) => boolean;
-  href?: string;
-  alPresionar?: () => void;
-  ariaLabel?: string;
+  href: string;
 };
 
 export function MobileNavigation() {
@@ -52,18 +47,18 @@ export function MobileNavigation() {
     },
     {
       /*
-        El asistente no es una ruta: abre el panel con el mismo evento
-        que usa el botón de la home. Ocupa el lugar que antes tenía
-        "Guardados", que ahora vive dentro de Mi perfil (como en las
-        apps sociales: lo guardado es un destino al que vas a propósito,
-        no algo que tocás mientras navegás).
+        "Guardados" vuelve a la barra: el asistente ya no necesita este
+        lugar porque Dondi vive como launcher flotante en toda la app, y
+        dos entradas al mismo panel confundían cuál era la principal.
+        Para el visitante el destino es el login con aviso y returnTo,
+        igual que el acceso de Guardados del header.
       */
-      label: "Asistente",
-      ariaLabel: "Abrir el asistente de DondeEntreno",
-      icono: "asistente",
-      alPresionar: () =>
-        window.dispatchEvent(new Event("donde-entreno:abrir-asistente")),
-      activo: () => false,
+      label: "Guardados",
+      href: autenticado
+        ? "/favoritos"
+        : `/login?motivo=cuenta&returnTo=${encodeURIComponent("/favoritos")}`,
+      icono: "guardados",
+      activo: (ruta) => ruta === "/favoritos",
     },
     {
       /*
@@ -123,26 +118,10 @@ export function MobileNavigation() {
             );
           }
 
-          if (item.alPresionar) {
-            return (
-              <button
-                key={item.icono}
-                type="button"
-                onClick={item.alPresionar}
-                aria-label={item.ariaLabel}
-                aria-haspopup="dialog"
-                className={clase}
-              >
-                <Icono tipo={item.icono} seleccionado={seleccionado} />
-                <span>{item.label}</span>
-              </button>
-            );
-          }
-
           return (
             <Link
               key={item.icono}
-              href={item.href ?? "/"}
+              href={item.href}
               aria-current={seleccionado ? "page" : undefined}
               className={clase}
             >
@@ -193,13 +172,9 @@ function Icono({
     );
   }
 
-  if (tipo === "asistente") {
-    return (
-      <svg {...comun} fill="none">
-        <path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z" />
-        <path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" />
-      </svg>
-    );
+  if (tipo === "guardados") {
+    /* Mismo bookmark que FavoritoButton y el header: relleno = activo. */
+    return <IconoGuardar relleno={seleccionado} className="h-5 w-5" />;
   }
 
   return (

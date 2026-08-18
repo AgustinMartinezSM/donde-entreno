@@ -298,8 +298,22 @@ export function AsistenteWidget() {
     había ninguno y el acceso dependía de la barra inferior o de un
     bloque de la home, así que en el resto de las pantallas el asistente
     directamente no existía.
+
+    La excepción son las pantallas de acceso: ahí el launcher se
+    superponía al botón de enviar del formulario —medido en /login a
+    390×844: el botón va de x41 a x350 y el launcher de x16 a x72, y
+    `elementFromPoint` sobre esa franja devolvía el launcher, o sea que
+    tocar el borde izquierdo de "Ingresar" abría a Dondi en lugar de
+    iniciar sesión—. Además Dondi no tiene nada que aportar mientras
+    alguien escribe su contraseña. El panel sigue siendo accesible desde
+    la barra inferior, así que no se pierde el acceso: se saca el botón
+    flotante, no el asistente.
   */
   if (!abierto) {
+    if (esRutaDeAcceso(rutaActual)) {
+      return null;
+    }
+
     return (
       <DondiLauncher
         ref={launcherRef}
@@ -401,6 +415,23 @@ export function AsistenteWidget() {
         />
       </div>
     </>
+  );
+}
+
+/*
+  Pantallas donde la persona está completando credenciales: ingresar,
+  elegir tipo de cuenta, los dos registros y el acceso de administración.
+  Se compara por prefijo para cubrir las rutas hijas de /registro.
+*/
+const RUTAS_DE_ACCESO = ["/login", "/registro", "/admin/login"];
+
+function esRutaDeAcceso(ruta: string | null) {
+  if (!ruta) {
+    return false;
+  }
+
+  return RUTAS_DE_ACCESO.some(
+    (base) => ruta === base || ruta.startsWith(`${base}/`)
   );
 }
 

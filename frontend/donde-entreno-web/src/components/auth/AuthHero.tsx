@@ -33,10 +33,14 @@ export function AuthHero({
         Trama de puntos propia (y no .decorative-dots): sobre la
         superficie oscura los puntos tienen que ser claros, y la utility
         compartida los pinta en celeste para fondos claros.
+
+        Va abajo a la derecha y no a la izquierda: a la izquierda caía
+        justo detrás del párrafo de la descripción y le ensuciaba la
+        lectura.
       */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-6 -left-6 h-28 w-28 opacity-40 [background-image:radial-gradient(rgba(255,255,255,0.55)_1.5px,transparent_1.5px)] [background-size:0.9rem_0.9rem]"
+        className="pointer-events-none absolute -bottom-6 -right-6 h-28 w-28 opacity-30 [background-image:radial-gradient(rgba(255,255,255,0.55)_1.5px,transparent_1.5px)] [background-size:0.9rem_0.9rem]"
       />
 
       <div className="relative z-10">
@@ -56,7 +60,15 @@ export function AuthHero({
           {titulo}
         </h1>
 
-        <span aria-hidden="true" className="rule-accent mt-4" />
+        {/*
+          Regla clara y no .rule-accent: la utility va de verde a celeste
+          y acá cae sobre el tramo verde del degradado de marca, donde
+          desaparece. Sobre superficie oscura el acento tiene que ser luz.
+        */}
+        <span
+          aria-hidden="true"
+          className="mt-4 block h-1 w-11 rounded-full bg-gradient-to-r from-white to-white/40"
+        />
 
         <p className="mt-4 max-w-sm text-sm leading-6 text-white/85 sm:text-base">
           {descripcion}

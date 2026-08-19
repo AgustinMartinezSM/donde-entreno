@@ -46,7 +46,7 @@ export function BloqueAsistente({
       <div className="flex min-w-0 items-start gap-3">
         <span
           aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-primary)] shadow-sm"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-primary)] shadow-sm"
         >
           <svg
             viewBox="0 0 24 24"

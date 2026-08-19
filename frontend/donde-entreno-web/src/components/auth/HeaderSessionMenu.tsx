@@ -6,6 +6,7 @@ import { obtenerSeccionesCuenta } from "../../lib/menuCuenta";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
+import { SelectorTema } from "../tema/SelectorTema";
 import {
   MenuDesplegable,
   OpcionMenu,
@@ -18,7 +19,7 @@ export function HeaderSessionMenu() {
   if (status === "loading") {
     return (
       <div
-        className="h-10 w-full rounded-full border border-[var(--color-border-soft)] bg-white/60 sm:w-36"
+        className="h-10 w-full rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface)]/60 sm:w-36"
         role="status"
         aria-label="Cargando sesión"
       />
@@ -69,12 +70,12 @@ export function HeaderSessionMenu() {
         del contenido sobresalía ~20px por la derecha cuando la barra
         quedaba justa de espacio.
       */
-      className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-white py-1.5 pl-1.5 pr-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+      className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface)] py-1.5 pl-1.5 pr-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
       disparador={
         <>
           <span
             aria-hidden="true"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-extrabold text-white"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xs font-extrabold text-white"
           >
             {inicial}
           </span>
@@ -114,6 +115,13 @@ export function HeaderSessionMenu() {
               ))}
             </Fragment>
           ))}
+
+          <SeparadorMenu />
+
+          {/* Elegir apariencia no cierra el menú: se comparan temas en vivo. */}
+          <div className="px-2 py-1">
+            <SelectorTema />
+          </div>
 
           <SeparadorMenu />
 

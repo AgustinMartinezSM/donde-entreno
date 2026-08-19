@@ -154,7 +154,7 @@ export function ActividadGaleria({
                   className={`h-2.5 rounded-full transition-all duration-200 ease-out ${
                     activa
                       ? "w-6 bg-[var(--color-secondary)]"
-                      : "w-2.5 bg-[#C7DCE8] hover:bg-[var(--color-primary)]"
+                      : "w-2.5 bg-[#C7DCE8] hover:bg-[var(--color-brand)]"
                   }`}
                 />
               );
@@ -194,7 +194,7 @@ function FlechaGaleria({
       tabIndex={oculta ? -1 : 0}
       aria-hidden={oculta}
       aria-label={esAnterior ? "Foto anterior" : "Foto siguiente"}
-      className={`absolute top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[var(--color-primary)] shadow-[0_6px_18px_rgba(15,61,94,0.22)] backdrop-blur transition duration-200 ease-out hover:bg-white active:scale-95 sm:flex ${
+      className={`absolute top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[var(--color-brand)] shadow-[0_6px_18px_rgba(15,61,94,0.22)] backdrop-blur transition duration-200 ease-out hover:bg-white active:scale-95 sm:flex ${
         esAnterior ? "left-3" : "right-3"
       } ${
         oculta

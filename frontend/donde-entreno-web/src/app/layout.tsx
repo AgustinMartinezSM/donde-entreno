@@ -7,6 +7,8 @@ import { SincronizadorCuenta } from "../components/auth/SincronizadorCuenta";
 import { ScrollToTopButton } from "../components/layout/ScrollToTopButton";
 import { Footer } from "../components/layout/Footer";
 import { MobileNavigation } from "../components/layout/MobileNavigation";
+import { SincronizadorTema } from "../components/tema/SincronizadorTema";
+import { SCRIPT_TEMA_INICIAL } from "../lib/preferenciaTema";
 import { SITE_URL } from "../lib/siteConfig";
 
 const inter = Inter({
@@ -86,14 +88,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    /*
+      suppressHydrationWarning: el script anti-FOUC pone data-theme en
+      <html> antes de que React hidrate, así que el atributo difiere del
+      HTML del servidor a propósito.
+    */
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${inter.variable} ${sora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/*
+          Primero de todo el body y bloqueante a propósito: resuelve la
+          preferencia de tema (sistema/claro/oscuro) y marca <html>
+          ANTES de que se pinte nada — sin esto, cada visita en oscuro
+          arrancaría con un flash claro.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA_INICIAL }} />
+
         <AuthSessionProvider>
           {/* Sincroniza favoritos y deportes con la cuenta al loguearse. */}
           <SincronizadorCuenta />
+          {/* Mantiene el tema al día si cambia el sistema u otra pestaña. */}
+          <SincronizadorTema />
           {children}
           <Footer />
           <MobileNavigation />

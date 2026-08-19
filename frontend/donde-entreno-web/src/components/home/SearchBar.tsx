@@ -139,7 +139,7 @@ export function SearchBar({
   return (
     <form
       onSubmit={manejarBusqueda}
-      className="mt-8 w-full min-w-0 rounded-[24px] border border-[var(--color-border-accent)] bg-white/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[var(--color-border-soft)] sm:p-3"
+      className="mt-8 w-full min-w-0 rounded-[24px] border border-[var(--color-border-accent)] bg-[var(--color-surface)]/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[var(--color-border-soft)] sm:p-3"
     >
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
         <input
@@ -160,14 +160,14 @@ export function SearchBar({
             mano: si no, el CTA más visible de la home era el único que
             quedaba plano.
           */
-          className="gradient-cta gradient-cta-hover min-h-12 w-full rounded-[18px] bg-[var(--color-primary)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
+          className="gradient-cta gradient-cta-hover min-h-12 w-full rounded-[18px] bg-[var(--color-brand)] px-6 font-bold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 active:scale-[0.98] sm:min-h-14 sm:w-auto sm:min-w-32"
         >
           Buscar
         </button>
       </div>
 
       {mostrarSugerencias ? (
-        <div className="mt-2 min-w-0 rounded-[20px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_16px_38px_rgba(12,52,80,0.14)]">
+        <div className="mt-2 min-w-0 rounded-[20px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-2 shadow-[0_16px_38px_rgba(12,52,80,0.14)]">
           <p className="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
             Sugerencias
           </p>

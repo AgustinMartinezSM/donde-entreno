@@ -67,7 +67,7 @@ export function AuthHero({
         */}
         <span
           aria-hidden="true"
-          className="mt-4 block h-1 w-11 rounded-full bg-gradient-to-r from-white to-white/40"
+          className="mt-4 block h-1 w-11 rounded-full bg-gradient-to-r from-[var(--color-surface)] to-white/40"
         />
 
         <p className="mt-4 max-w-sm text-sm leading-6 text-white/85 sm:text-base">

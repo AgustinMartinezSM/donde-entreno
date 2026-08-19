@@ -259,7 +259,7 @@ export function LoginForm() {
               mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"
             }
             aria-pressed={mostrarPassword}
-            className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-white hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+            className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[var(--color-surface)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
           >
             <IconoOjo tachado={!mostrarPassword} />
           </button>

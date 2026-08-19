@@ -317,7 +317,7 @@ export function RegisterPublisherForm() {
         />
       </fieldset>
 
-      <div className="rounded-[24px] border border-[var(--color-border-soft)] bg-white/70 p-4 sm:p-5">
+      <div className="rounded-[24px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/70 p-4 sm:p-5">
         <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
           Perfil publicador
         </p>

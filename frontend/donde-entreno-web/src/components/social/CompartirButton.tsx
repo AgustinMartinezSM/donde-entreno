@@ -71,7 +71,7 @@ export function CompartirButton({
         Mismas medidas que "Me gusta" y "Guardar": los tres conviven en la
         barra de acciones del detalle y antes este quedaba más bajo.
       */
-      className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98] ${
+      className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98] ${
         soloIcono
           ? "h-11 w-11 gap-0 px-0 text-xs"
           : ocultarTextoEnMobile

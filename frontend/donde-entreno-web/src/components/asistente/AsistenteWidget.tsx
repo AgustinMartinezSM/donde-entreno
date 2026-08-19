@@ -404,11 +404,11 @@ export function AsistenteWidget() {
         aria-modal="true"
         aria-label="Dondi, asistente de DondeEntreno"
         onKeyDown={manejarTeclaPanel}
-        className="fixed inset-x-0 bottom-0 z-[60] flex h-[min(36rem,88dvh)] w-full animate-[de-sheet_0.28s_ease-out] flex-col overflow-hidden rounded-t-[28px] border border-[var(--color-border-soft)] bg-white shadow-[0_-18px_50px_rgba(12,52,80,0.28)] lg:inset-x-auto lg:bottom-5 lg:right-5 lg:h-[min(34rem,calc(100dvh-6rem))] lg:w-[400px] lg:animate-[de-entrada_0.2s_ease-out] lg:rounded-[28px]"
+        className="fixed inset-x-0 bottom-0 z-[60] flex h-[min(36rem,88dvh)] w-full animate-[de-sheet_0.28s_ease-out] flex-col overflow-hidden rounded-t-[28px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] shadow-[0_-18px_50px_rgba(12,52,80,0.28)] lg:inset-x-auto lg:bottom-5 lg:right-5 lg:h-[min(34rem,calc(100dvh-6rem))] lg:w-[400px] lg:animate-[de-entrada_0.2s_ease-out] lg:rounded-[28px]"
       >
         {/* Agarradera: la señal de que esto es un panel que se baja. */}
         <div aria-hidden="true" className="flex justify-center pt-2.5 lg:hidden">
-          <span className="h-1.5 w-11 rounded-full bg-[#CBD9E5]" />
+          <span className="h-1.5 w-11 rounded-full bg-[var(--color-border)]" />
         </div>
 
         <div className="gradient-deep flex items-center gap-3 px-4 py-3.5 sm:px-5">
@@ -551,12 +551,12 @@ function DondiBurbuja({ onAbrir, onDescartar }: DondiBurbujaProps) {
         {/* Flecha hacia abajo (mobile): apunta al launcher que está debajo. */}
         <span
           aria-hidden="true"
-          className="absolute -bottom-[5px] left-5 h-2.5 w-2.5 rotate-45 border-b border-r border-[#BFDDEA]/80 bg-white/90 lg:hidden"
+          className="absolute -bottom-[5px] left-5 h-2.5 w-2.5 rotate-45 border-b border-r border-[#BFDDEA]/80 bg-[var(--color-surface)]/90 lg:hidden"
         />
         {/* Flecha hacia la derecha (desktop): apunta al launcher del costado. */}
         <span
           aria-hidden="true"
-          className="absolute -right-[5px] top-1/2 hidden h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-r border-t border-[#BFDDEA]/80 bg-white/90 lg:block"
+          className="absolute -right-[5px] top-1/2 hidden h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-r border-t border-[#BFDDEA]/80 bg-[var(--color-surface)]/90 lg:block"
         />
 
         <button
@@ -573,7 +573,7 @@ function DondiBurbuja({ onAbrir, onDescartar }: DondiBurbujaProps) {
           type="button"
           onClick={onDescartar}
           aria-label="Cerrar el mensaje de Dondi"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-white hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/50"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[var(--color-surface)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/50"
         >
           <svg
             viewBox="0 0 24 24"

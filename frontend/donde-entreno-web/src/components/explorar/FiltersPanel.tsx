@@ -231,7 +231,7 @@ export function FiltersPanel({
           onClick={() => setFiltrosAbiertos((valorActual) => !valorActual)}
           aria-expanded={filtrosAbiertos}
           aria-controls={filtrosPanelId}
-          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] sm:text-sm"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] sm:text-sm"
         >
           {filtrosAbiertos ? "Ocultar" : "Mostrar"}
           <span

@@ -68,7 +68,7 @@ export function SocialActivityCard({
         sola mancha. El degradado corta a blanco antes de la imagen para
         no teñir la foto.
       */
-      className={`group flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-gradient-to-b from-[#FAFDFF] via-white to-white transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] ${
+      className={`group flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-gradient-to-b from-[#FAFDFF] via-[var(--color-surface)] to-[var(--color-surface)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] ${
         esFeed
           ? "rounded-[24px] shadow-[0_12px_35px_rgba(15,61,94,0.08)] hover:shadow-[0_22px_50px_rgba(15,61,94,0.13)]"
           : "rounded-[20px] shadow-[0_8px_24px_rgba(15,61,94,0.07)] hover:shadow-[0_16px_40px_rgba(15,61,94,0.12)]"

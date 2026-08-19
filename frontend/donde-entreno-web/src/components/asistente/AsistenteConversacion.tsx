@@ -107,7 +107,7 @@ export function AsistenteConversacion({
         role="log"
         aria-live="polite"
         aria-label="Mensajes de la conversación"
-        className="relative flex-1 space-y-3 overflow-y-auto bg-white px-4 py-4"
+        className="relative flex-1 space-y-3 overflow-y-auto bg-[var(--color-surface)] px-4 py-4"
       >
         {/*
           Aviso de privacidad, arriba de la conversación y no fijo en el
@@ -199,7 +199,7 @@ export function AsistenteConversacion({
                 className={
                   esAsistente
                     ? "max-w-[85%] rounded-2xl rounded-bl-md bg-[var(--color-bg)] px-4 py-2.5 ring-1 ring-[var(--color-border-soft)]"
-                    : "max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-primary)] px-4 py-2.5 shadow-sm"
+                    : "max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-brand)] px-4 py-2.5 shadow-sm"
                 }
               >
                 <p
@@ -219,7 +219,7 @@ export function AsistenteConversacion({
                     <Link
                       key={`${mensaje.id}-${enlace.href}`}
                       href={enlace.href}
-                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
                     >
                       <span className="truncate">{enlace.etiqueta}</span>
                       <span aria-hidden="true" className="shrink-0">
@@ -237,7 +237,7 @@ export function AsistenteConversacion({
                       key={`${mensaje.id}-${opcion}`}
                       type="button"
                       onClick={() => manejarOpcionRapida(opcion)}
-                      className="rounded-full border border-[var(--color-border-soft)] bg-white px-3 py-1.5 text-left text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
+                      className="rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface)] px-3 py-1.5 text-left text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
                     >
                       {opcion}
                     </button>
@@ -266,7 +266,7 @@ export function AsistenteConversacion({
 
       <form
         onSubmit={manejarEnvio}
-        className="border-t border-[var(--color-border-soft)] bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3"
+        className="border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3"
       >
         <div className="flex items-center gap-2">
           <input

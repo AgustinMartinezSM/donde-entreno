@@ -25,7 +25,7 @@ export function HomeHowItWorks() {
     <SurfaceCard
       as="section"
       variant="info"
-      className="mt-16 bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:mt-20 sm:p-7"
+      className="mt-16 bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:mt-20 sm:p-7"
     >
       <SectionHeader
         eyebrow="Cómo funciona"
@@ -39,8 +39,20 @@ export function HomeHowItWorks() {
             key={paso.titulo}
             className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:shadow-[0_14px_35px_rgba(12,52,80,0.10)]"
           >
+            {/*
+              El PNG del icono trae fondo blanco cuadrado (sin alfa): se
+              recorta como moneda blanca para que no aparezca el
+              cuadrado dentro del círculo — importa sobre todo en tema
+              oscuro, donde el círculo es navy.
+            */}
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
-              <Image src={paso.icono} alt="" width={24} height={24} />
+              <Image
+                src={paso.icono}
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-full bg-white p-1.5"
+              />
             </div>
             <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
               Paso {indice + 1}

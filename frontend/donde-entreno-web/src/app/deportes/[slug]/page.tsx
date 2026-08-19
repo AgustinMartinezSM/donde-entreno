@@ -174,7 +174,7 @@ export default async function DeporteLandingPage({ params }: DeporteLandingProps
 
               <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
                 {deporte.categoriaNombre ? (
-                  <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-primary)] shadow-sm">
+                  <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-brand)] shadow-sm">
                     {deporte.categoriaNombre}
                   </span>
                 ) : null}
@@ -290,7 +290,7 @@ export default async function DeporteLandingPage({ params }: DeporteLandingProps
 
           <SurfaceCard
             as="section"
-            className="mt-8 border-[var(--color-success-border)] bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-6 text-center sm:p-8"
+            className="mt-8 border-[var(--color-success-border)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-6 text-center sm:p-8"
           >
             <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
               ¿Enseñás {deporte.nombre} o tenés un espacio?

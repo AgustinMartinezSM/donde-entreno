@@ -90,7 +90,7 @@ export function CabeceraPerfil({
             */}
             <span
               aria-hidden="true"
-              className="relative z-10 -mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xl font-extrabold tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] ring-4 ring-white sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
+              className="relative z-10 -mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xl font-extrabold tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] ring-4 ring-white sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
             >
               {perfil.iniciales}
             </span>
@@ -228,7 +228,7 @@ function EstadisticaPerfil({
       className={`min-h-16 rounded-[18px] border px-3 py-3 text-center transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 ${
         activa
           ? "border-[var(--color-success-border)] bg-[var(--color-success-surface)]"
-          : "border-[var(--color-border-soft)] bg-white hover:border-[var(--color-border-accent)]"
+          : "border-[var(--color-border-soft)] bg-[var(--color-surface)] hover:border-[var(--color-border-accent)]"
       }`}
     >
       <span className="block text-2xl font-extrabold leading-none text-[var(--color-primary)]">

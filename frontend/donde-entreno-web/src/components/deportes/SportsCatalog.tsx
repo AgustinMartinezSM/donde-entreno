@@ -211,7 +211,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
 
   return (
     <div className="mt-10 space-y-12">
-      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white/85 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/85 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
           <div className="lg:col-span-3">
             <label
@@ -230,7 +230,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
             />
 
             {mostrarSugerenciasBusqueda && sugerenciasBusqueda.length > 0 ? (
-              <div className="mt-3 rounded-[18px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_14px_35px_rgba(12,52,80,0.10)]">
+              <div className="mt-3 rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-2 shadow-[0_14px_35px_rgba(12,52,80,0.10)]">
                 <p className="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
                   Sugerencias
                 </p>
@@ -305,7 +305,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
             type="button"
             onClick={limpiarFiltros}
             disabled={!hayFiltrosActivos}
-            className="min-h-12 rounded-[18px] border border-[var(--color-border-accent)] bg-white px-4 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="min-h-12 rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
             Limpiar filtros
           </button>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import type { UsuarioActual } from "../../types/auth";
+import { SelectorTema } from "../tema/SelectorTema";
 import { AppButton } from "../ui/AppButton";
 import {
   MenuDesplegable,
@@ -74,6 +75,13 @@ export function MenuAjustes({
               Datos de mi cuenta
             </OpcionMenu>
 
+            <SeparadorMenu />
+
+            {/* Elegir apariencia no cierra el menú: se comparan temas en vivo. */}
+            <div className="px-2 py-1">
+              <SelectorTema />
+            </div>
+
             {accesoDeRol ? (
               <>
                 <SeparadorMenu />
@@ -139,9 +147,9 @@ function DialogoDatosDeCuenta({
       ref={dialogoRef}
       onClose={onCerrar}
       aria-labelledby="datos-cuenta-titulo"
-      className="w-[min(28rem,calc(100vw-2rem))] rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white p-0 text-[var(--color-text)] shadow-[0_24px_60px_rgba(12,52,80,0.28)] backdrop:bg-[#0F3D5E]/40 backdrop:backdrop-blur-sm"
+      className="w-[min(28rem,calc(100vw-2rem))] rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-0 text-[var(--color-text)] shadow-[0_24px_60px_rgba(12,52,80,0.28)] backdrop:bg-[#0F3D5E]/40 backdrop:backdrop-blur-sm"
     >
-      <div className="flex items-start justify-between gap-4 border-b border-[#EDF3F8] px-5 py-4">
+      <div className="flex items-start justify-between gap-4 border-b border-[var(--color-divisor)] px-5 py-4">
         <h2
           id="datos-cuenta-titulo"
           className="text-lg font-extrabold text-[var(--color-primary)]"

@@ -203,7 +203,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
           <SurfaceCard
             as="section"
             variant="info"
-            className="decorative-orb decorative-dots relative overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-6"
+            className="decorative-orb decorative-dots relative overflow-hidden bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-6"
           >
             <p className="relative z-10 mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               EXPLORAR

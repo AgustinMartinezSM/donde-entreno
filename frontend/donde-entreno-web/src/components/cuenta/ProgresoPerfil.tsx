@@ -56,7 +56,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
           <button
             type="button"
             onClick={marcarOnboardingPerfilResuelto}
-            className="rounded-full px-2 py-1 text-xs font-bold text-[var(--color-muted)] transition duration-200 ease-out hover:bg-white hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+            className="rounded-full px-2 py-1 text-xs font-bold text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[var(--color-surface)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
           >
             Ahora no
           </button>
@@ -69,7 +69,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
         aria-valuemin={0}
         aria-valuemax={totalPasos}
         aria-label={`Progreso de tu perfil: ${perfil.pasosCompletados} de ${totalPasos} pasos`}
-        className="mt-4 h-2 overflow-hidden rounded-full bg-white"
+        className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--color-surface)]"
       >
         <div
           className="h-full rounded-full bg-[var(--color-secondary)] transition-[width] duration-500 ease-out motion-reduce:transition-none"
@@ -81,7 +81,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
         {perfil.pasos.map((paso) => (
           <li
             key={paso.clave}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-white/80 px-3 py-2.5"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-[var(--color-surface)]/80 px-3 py-2.5"
           >
             <span className="flex min-w-0 items-center gap-2.5">
               <MarcaPaso completado={paso.completado} />
@@ -136,7 +136,7 @@ function MarcaPaso({ completado }: { completado: boolean }) {
       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
         completado
           ? "bg-[var(--color-secondary)] text-white"
-          : "border-2 border-[var(--color-success-border)] bg-white"
+          : "border-2 border-[var(--color-success-border)] bg-[var(--color-surface)]"
       }`}
     >
       {completado ? (

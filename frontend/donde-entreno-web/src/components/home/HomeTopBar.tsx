@@ -27,7 +27,7 @@ export function HomeTopBar({ ciudadNombre, ciudadSlug }: HomeTopBarProps) {
       lo más importante de la home— no se distinguía de lo que venía
       abajo. El orbe y los puntos son decoración de CSS, sin peso extra.
     */
-    <section className="decorative-orb decorative-dots relative w-full min-w-0 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white/70 p-5 shadow-soft backdrop-blur-sm sm:p-6">
+    <section className="decorative-orb decorative-dots relative w-full min-w-0 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/70 p-5 shadow-soft backdrop-blur-sm sm:p-6">
       <div className="relative z-10">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--color-success)]">

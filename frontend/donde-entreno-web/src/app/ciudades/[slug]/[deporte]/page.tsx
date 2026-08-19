@@ -204,7 +204,7 @@ export default async function CiudadDeporteLandingPage({
 
               <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
                 {deporte.categoriaNombre ? (
-                  <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-primary)] shadow-sm">
+                  <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-brand)] shadow-sm">
                     {deporte.categoriaNombre}
                   </span>
                 ) : null}

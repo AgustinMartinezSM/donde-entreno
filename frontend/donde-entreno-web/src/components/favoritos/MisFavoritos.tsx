@@ -110,7 +110,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
             <div
               key={indice}
               aria-hidden="true"
-              className="animate-pulse overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-white p-3"
+              className="animate-pulse overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-3"
             >
               <div className="h-40 rounded-[var(--radius-md)] bg-[var(--color-info-soft)]" />
               <div className="p-2 pt-4">
@@ -194,7 +194,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                       {favorito.mostrarPrecio &&
                         favorito.precioReferencia !== undefined &&
                         favorito.precioReferencia !== null && (
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[var(--color-border-soft)]">
+                          <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[var(--color-border-soft)]">
                             Desde ${favorito.precioReferencia}
                           </span>
                         )}
@@ -222,7 +222,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                         type="button"
                         onClick={() => manejarQuitar(favorito)}
                         aria-label={`Quitar ${favorito.titulo} de favoritos`}
-                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-white active:scale-[0.98]"
+                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-[var(--color-surface)] active:scale-[0.98]"
                       >
                         Quitar
                       </button>

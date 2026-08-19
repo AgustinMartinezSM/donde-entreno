@@ -58,6 +58,20 @@
   --color-warning-border: #F6C56D;
   --color-danger: #9A3D3D;
 
+  /*
+    Marca como SUPERFICIE (avatares, badges, respaldo de botones).
+    Distinto de --color-primary, que es la TINTA principal: en claro
+    valen lo mismo, pero en oscuro la tinta se invierte a casi blanco y
+    la marca solo se aclara un paso para no fundirse con el fondo navy.
+    Sin esta separación, un avatar bg-primary con texto blanco quedaría
+    blanco sobre blanco al invertir la tinta.
+  */
+  --color-brand: #0F3D5E;
+  --color-brand-strong: #0B314D;
+
+  /* Divisores internos de menús y listas (más tenue que border-soft). */
+  --color-divisor: #EDF3F8;
+
   /* Radios */
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -71,6 +85,69 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* ===================================================================
+   Tema claro / oscuro.
+
+   El script anti-FOUC de layout.tsx resuelve la preferencia (sistema /
+   claro / oscuro, guardada POR DISPOSITIVO en localStorage) ANTES del
+   primer paint y deja SIEMPRE data-theme="light" o "dark" en <html>:
+   acá no hay media queries de tema, una sola fuente de verdad.
+
+   El oscuro NO usa negro puro: es el azul noche de la marca. Y no
+   redefine los gradientes de identidad (gradient-brand/deep/cta), que
+   ya son oscuros y funcionan igual en los dos temas.
+
+   color-scheme le avisa al navegador para que selects, inputs,
+   scrollbars y autofill nativos acompañen el tema.
+   =================================================================== */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Tintas: la jerarquía se invierte hacia claros con matiz frío. */
+  --color-primary: #E9F3FB;
+  --color-text: #D9E6F2;
+  --color-muted: #A3BACD;
+
+  /* Marca: el verde y el celeste suben apenas de luz para no apagarse. */
+  --color-secondary: #3BCE86;
+  --color-accent: #6AC6E9;
+  --color-brand: #1D5A85;
+  --color-brand-strong: #174A6E;
+
+  /* Superficies: elevación por luminancia (cada nivel un paso más claro). */
+  --color-bg: #0D2233;
+  --color-surface: #14304A;
+  --color-surface-soft: #1A3A57;
+
+  /* Bordes: visibles sobre navy sin volverse líneas luminosas. */
+  --color-border: #2A4A66;
+  --color-border-soft: #21405C;
+  --color-border-accent: #30587D;
+
+  /* Semánticos: texto claro sobre lavados oscuros del mismo matiz. */
+  --color-success: #74DCA9;
+  --color-success-soft: #123526;
+  --color-success-border: #1F4F3A;
+  --color-success-surface: #102E22;
+  --color-success-wash: #143A2B;
+  --color-info-deep: #82CBE6;
+  --color-info-soft: #14324B;
+  --color-warning: #F2B76F;
+  --color-warning-surface: #372711;
+  --color-warning-border: #7C5A24;
+  --color-danger: #F0A0A0;
+
+  --color-divisor: #1C3A54;
+
+  /* Las sombras azuladas desaparecen sobre navy: acá son negras. */
+  --shadow-card: 0 8px 24px rgba(2, 10, 18, 0.5);
+  --shadow-button: 0 6px 16px rgba(2, 10, 18, 0.55);
 }
 
 html {
@@ -191,6 +268,39 @@ body {
 }
 
 /*
+  El mismo fondo ambientado, en su versión nocturna: los halos de marca
+  bajan de intensidad (sobre navy, un halo fuerte se ve sucio) y la base
+  va del azul noche más profundo arriba a uno apenas más claro abajo.
+*/
+:root[data-theme="dark"] body {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(38rem 32rem at 88% 0%, rgba(106, 198, 233, 0.10), transparent 68%),
+    radial-gradient(34rem 30rem at 4% 96%, rgba(59, 206, 134, 0.08), transparent 68%),
+    radial-gradient(30rem 28rem at -8% 38%, rgba(106, 198, 233, 0.05), transparent 70%),
+    linear-gradient(180deg, #0A1B2C 0%, #0C2135 38%, #0E263D 100%);
+}
+
+/*
+  El wordmark del header es azul marino y sobre navy se pierde; no hay
+  asset horizontal claro (pendiente de marca). Hasta tenerlo, en oscuro
+  el logo va sobre una pastilla clara suave — legible sin tocar el PNG.
+*/
+:root[data-theme="dark"] .logo-marca {
+  background-color: rgba(244, 250, 254, 0.92);
+  border-radius: 14px;
+  padding: 0.3rem 0.65rem;
+}
+
+/*
+  El pie ya era navy: en oscuro se funde con el body, así que una línea
+  alta de acento le devuelve el límite que en claro ponía el contraste.
+*/
+:root[data-theme="dark"] footer {
+  box-shadow: 0 -1px 0 rgba(106, 198, 233, 0.22);
+}
+
+/*
   Superficie de vidrio: la usa la navegación inferior.
 
   Acá va SOLO el color. El desenfoque se aplica con las utilities de
@@ -201,6 +311,67 @@ body {
 */
 .surface-glass {
   background-color: rgba(255, 255, 255, 0.82);
+}
+
+:root[data-theme="dark"] .surface-glass {
+  background-color: rgba(13, 32, 50, 0.78);
+}
+
+/*
+  Borde de las barras de vidrio (header y navegación inferior). En claro
+  era border-white/60-70 escrito en el componente; como token puede
+  cambiar con el tema sin que un borde blanco al 70% se vuelva una línea
+  luminosa sobre navy.
+*/
+:root {
+  --color-borde-vidrio: rgba(255, 255, 255, 0.7);
+}
+
+:root[data-theme="dark"] {
+  --color-borde-vidrio: rgba(120, 180, 220, 0.16);
+}
+
+/* ===================================================================
+   Luz forzada: el área interna (administración, espacio de publicador y
+   el flujo de publicar) queda en claro en la V1 del modo oscuro — son
+   superficies densas con blancos aún sin barrer, y forzarlas evita
+   entregarlas rotas. Como las custom properties se heredan, redeclarar
+   los tokens en el wrapper gana para todo su subárbol sin pelear
+   especificidad. Cuando esas áreas se barran (tanda pendiente), este
+   bloque se borra.
+   =================================================================== */
+[data-fuerza-claro] {
+  color-scheme: light;
+  --color-primary: #0F3D5E;
+  --color-secondary: #2EB872;
+  --color-accent: #4FB3D9;
+  --color-brand: #0F3D5E;
+  --color-brand-strong: #0B314D;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-soft: #F8FCFE;
+  --color-text: #102A43;
+  --color-muted: #4E6A85;
+  --color-border: #D9E2EC;
+  --color-border-soft: #DDEAF3;
+  --color-border-accent: #BFDDEA;
+  --color-success: #1D7B4A;
+  --color-success-soft: #E6F7EF;
+  --color-success-border: #BDE8D0;
+  --color-success-surface: #F6FCF8;
+  --color-success-wash: #ECF9F2;
+  --color-info-deep: #0F6F8F;
+  --color-info-soft: #E8F6FB;
+  --color-warning: #8A4B00;
+  --color-warning-surface: #FFF4E5;
+  --color-warning-border: #F6C56D;
+  --color-danger: #9A3D3D;
+  --color-divisor: #EDF3F8;
+  --shadow-card: 0 8px 24px rgba(15, 61, 94, 0.08);
+  --shadow-button: 0 6px 16px rgba(15, 61, 94, 0.18);
+  /* El área pinta su propia base clara: el body de atrás puede ser navy. */
+  background: linear-gradient(180deg, #ffffff 0%, #f2f7fc 38%, #eaf1f8 100%);
+  color: var(--color-text);
 }
 
 /* Superficie tenue para bloques que no deben competir con una card. */

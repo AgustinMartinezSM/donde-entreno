@@ -100,7 +100,7 @@ export function HomePopularSports({ ciudadSlug }: HomePopularSportsProps) {
               <span className="text-xl font-extrabold text-[var(--color-primary)]">
                 {deporte.nombre}
               </span>
-              <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
+              <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-brand)] group-hover:text-white">
                 Ver actividades
               </span>
             </div>

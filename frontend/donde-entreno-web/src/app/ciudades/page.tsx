@@ -56,7 +56,7 @@ export default async function CiudadesPage() {
           <SurfaceCard
             as="section"
             variant="info"
-            className="overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-8 lg:p-10"
+            className="overflow-hidden bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-8 lg:p-10"
           >
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               CIUDADES
@@ -136,7 +136,7 @@ export default async function CiudadesPage() {
                   {ciudades.map((ciudad) => (
                     <article
                       key={ciudad.id}
-                      className="flex min-h-full flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-white p-5 shadow-[0_14px_34px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)]"
+                      className="flex min-h-full flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-5 shadow-[0_14px_34px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)]"
                     >
                       <span className="w-fit rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--color-success)]">
                         Disponible ahora

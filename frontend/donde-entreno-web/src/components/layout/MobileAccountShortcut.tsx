@@ -21,7 +21,7 @@ export function MobileAccountShortcut() {
       <div
         role="status"
         aria-label="Cargando cuenta"
-        className="h-11 w-11 animate-pulse rounded-full border border-[var(--color-border-soft)] bg-white"
+        className="h-11 w-11 animate-pulse rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface)]"
       />
     );
   }
@@ -31,7 +31,7 @@ export function MobileAccountShortcut() {
       <Link
         href="/login"
         aria-label="Iniciar sesión"
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] shadow-sm transition hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-[var(--color-primary)] shadow-sm transition hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
       >
         <IconoCuenta />
       </Link>
@@ -49,7 +49,7 @@ export function MobileAccountShortcut() {
         aria-haspopup="dialog"
         aria-expanded={menuAbierto}
         aria-label={`Abrir el menú de tu cuenta. Sesión de ${nombre || "usuario"}`}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition hover:bg-[#0B314D] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/40 active:scale-95"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-brand)] text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition hover:bg-[var(--color-brand-strong)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/40 active:scale-95"
       >
         {inicial}
       </button>

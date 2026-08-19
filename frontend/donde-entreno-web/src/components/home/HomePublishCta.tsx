@@ -20,7 +20,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
       punta a punta y este bloque queda como cierre, alternando con el
       claro de "Cómo funciona" que viene antes.
 
-      Antes pedía variant="success" y además bg-white por className: las
+      Antes pedía variant="success" y además bg-[var(--color-surface)] por className: las
       dos clases competían y la tinta verde nunca llegaba a verse.
     */
     <SurfaceCard

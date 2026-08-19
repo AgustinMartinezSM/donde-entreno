@@ -30,11 +30,17 @@ export function Header() {
       el hero es translúcido, el menú se veía "lavado" debajo suyo.
       Verificado con una sonda absoluta y elementFromPoint.
     */
-    <header className="surface-glass sticky top-0 z-40 -mx-4 border-b border-white/70 px-4 py-3 shadow-[0_6px_24px_rgba(15,61,94,0.06)] backdrop-blur-xl backdrop-saturate-150 sm:relative sm:mx-0 sm:rounded-[22px] sm:border sm:border-white/70 sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
+    <header className="surface-glass sticky top-0 z-40 -mx-4 border-b border-[var(--color-borde-vidrio)] px-4 py-3 shadow-[0_6px_24px_rgba(15,61,94,0.06)] backdrop-blur-xl backdrop-saturate-150 sm:relative sm:mx-0 sm:rounded-[22px] sm:border sm:border-[var(--color-borde-vidrio)] sm:px-4 sm:shadow-[0_10px_30px_rgba(15,61,94,0.07)]">
       <div className="flex min-w-0 items-center gap-3">
+        {/*
+          logo-marca: en tema oscuro el wordmark azul marino se pierde
+          sobre navy y no existe asset horizontal claro; globals.css le
+          pinta una pastilla clara suave solo en oscuro (pendiente de
+          marca: versión clara del wordmark).
+        */}
         <Link
           href="/"
-          className="mr-auto flex min-w-0 items-center transition hover:opacity-90"
+          className="logo-marca mr-auto flex min-w-0 items-center transition hover:opacity-90"
           aria-label="Ir al inicio de DondeEntreno"
         >
           {/*
@@ -71,7 +77,7 @@ export function Header() {
 
         <Link
           href="/publicar"
-          className="gradient-cta gradient-cta-hover hidden min-h-11 items-center rounded-[18px] bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 lg:inline-flex"
+          className="gradient-cta gradient-cta-hover hidden min-h-11 items-center rounded-[18px] bg-[var(--color-brand)] px-4 py-2 text-sm font-bold text-white shadow-[var(--shadow-button)] transition hover:-translate-y-0.5 lg:inline-flex"
         >
           Publicar
         </Link>

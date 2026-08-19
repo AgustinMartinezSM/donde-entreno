@@ -90,7 +90,7 @@ export function ComunidadSugerida({
         {sugeridos.map((publicador) => (
           <li
             key={publicador.id}
-            className="flex h-full flex-col rounded-[18px] border border-[var(--color-border-soft)] bg-white p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
+            className="flex h-full flex-col rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
           >
             <PublisherIdentity
               nombre={publicador.nombre}
@@ -129,7 +129,7 @@ function EsqueletoFila({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-[18px] border border-[var(--color-border-soft)] bg-white p-4 ${className}`}
+      className={`animate-pulse rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-4 ${className}`}
     >
       <div className="flex items-center gap-3">
         <span className="h-11 w-11 rounded-full bg-[var(--color-info-soft)]" />

@@ -8,6 +8,7 @@ import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import { obtenerSeccionesCuenta } from "../../lib/menuCuenta";
 import { useAuthSession } from "../auth/AuthSessionProvider";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
+import { SelectorTema } from "../tema/SelectorTema";
 
 type MenuCuentaMobileProps = {
   abierto: boolean;
@@ -126,7 +127,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
         }
       }}
       aria-label="Menú de mi cuenta"
-      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[85dvh] w-full max-w-none animate-[de-sheet_0.28s_ease-out] overflow-y-auto rounded-t-[28px] border border-b-0 border-[var(--color-border-soft)] bg-white p-0 text-[var(--color-text)] shadow-[0_-18px_50px_rgba(12,52,80,0.28)] backdrop:bg-[#0B314D]/40 backdrop:backdrop-blur-sm"
+      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[85dvh] w-full max-w-none animate-[de-sheet_0.28s_ease-out] overflow-y-auto rounded-t-[28px] border border-b-0 border-[var(--color-border-soft)] bg-[var(--color-surface)] p-0 text-[var(--color-text)] shadow-[0_-18px_50px_rgba(12,52,80,0.28)] backdrop:bg-[#0B314D]/40 backdrop:backdrop-blur-sm"
     >
       <div
         className="mx-auto w-full max-w-lg px-5 pt-3"
@@ -143,7 +144,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
         <div className="mt-4 flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-base font-extrabold text-white"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-base font-extrabold text-white"
           >
             {inicial}
           </span>
@@ -210,7 +211,13 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
             </Fragment>
           ))}
 
-          <hr className="my-3 border-t border-[#EDF3F8]" />
+          <hr className="my-3 border-t border-[var(--color-divisor)]" />
+
+          <div className="px-1">
+            <SelectorTema />
+          </div>
+
+          <hr className="my-3 border-t border-[var(--color-divisor)]" />
 
           <FilaMenuCuenta icono="salir" onElegir={manejarCerrarSesion} apagada>
             Cerrar sesión

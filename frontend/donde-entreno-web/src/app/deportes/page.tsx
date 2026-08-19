@@ -30,7 +30,7 @@ function EstadoCatalogo({
   linkTexto,
 }: EstadoCatalogoProps) {
   return (
-    <section className="mt-10 rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white/85 p-6 text-center shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-8">
+    <section className="mt-10 rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/85 p-6 text-center shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-8">
       <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
         {titulo}
       </h2>
@@ -60,7 +60,7 @@ export default async function DeportesPage() {
         <Header />
 
         <div className="py-8 sm:py-10">
-          <section className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 shadow-[0_24px_60px_rgba(12,52,80,0.12)] sm:p-8 lg:p-10">
+          <section className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 shadow-[0_24px_60px_rgba(12,52,80,0.12)] sm:p-8 lg:p-10">
             <div className="max-w-3xl">
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
                 DEPORTES

@@ -48,7 +48,7 @@ export function HomePreferenciasChips({
           <Link
             key={deporte.slug}
             href={`/explorar?deporteSlug=${encodeURIComponent(deporte.slug)}&ciudadSlug=${encodeURIComponent(ciudadSlug)}&page=0`}
-            className="shrink-0 rounded-full border border-[var(--color-success-border)] bg-white px-3.5 py-2 text-sm font-bold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] active:scale-[0.98]"
+            className="shrink-0 rounded-full border border-[var(--color-success-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm font-bold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] active:scale-[0.98]"
           >
             {deporte.nombre}
           </Link>

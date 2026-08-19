@@ -211,7 +211,7 @@ function EsqueletoCard({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse overflow-hidden rounded-[20px] border border-[var(--color-border)] bg-white p-3.5 ${className}`}
+      className={`animate-pulse overflow-hidden rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 ${className}`}
     >
       <div className="flex items-center gap-2">
         <span className="h-8 w-8 rounded-full bg-[var(--color-info-soft)]" />

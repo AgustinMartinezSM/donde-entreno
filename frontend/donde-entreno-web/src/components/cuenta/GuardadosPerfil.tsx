@@ -20,7 +20,7 @@ export function GuardadosPerfil({ perfil, onIrATab }: GuardadosPerfilProps) {
   return (
     <MisFavoritos
       accionesVacio={
-        <div className="mt-1 w-full border-t border-[#EDF3F8] pt-5">
+        <div className="mt-1 w-full border-t border-[var(--color-divisor)] pt-5">
           {perfil.deportesSlugs.length > 0 ? (
             <>
               <p className="text-sm font-bold text-[var(--color-primary)]">

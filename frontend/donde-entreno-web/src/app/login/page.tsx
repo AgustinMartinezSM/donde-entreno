@@ -110,7 +110,7 @@ function TarjetaCuenta({
   return (
     <Link
       href={href}
-      className={`group flex items-start gap-3 rounded-[20px] border p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_32px_rgba(12,52,80,0.10)] ${
+      className={`group flex items-start gap-3 rounded-[20px] border p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_14px_32px_rgba(12,52,80,0.10)] ${
         esExito
           ? "border-[var(--color-success-border)] bg-[var(--color-success-wash)] hover:border-[var(--color-secondary)]"
           : "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] hover:border-[var(--color-primary)]"

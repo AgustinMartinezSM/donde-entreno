@@ -127,7 +127,7 @@ export function HomeFeedSeguidos({
           {publicadoresSugeridos.map((publicador) => (
             <li
               key={publicador.id}
-              className="flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-4"
+              className="flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
             >
               <PublisherIdentity
                 nombre={publicador.nombre}
@@ -168,7 +168,7 @@ function EsqueletoCard({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-white p-4 ${className}`}
+      className={`animate-pulse overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 ${className}`}
     >
       <div className="flex items-center gap-3">
         <span className="h-11 w-11 rounded-full bg-[var(--color-info-soft)]" />

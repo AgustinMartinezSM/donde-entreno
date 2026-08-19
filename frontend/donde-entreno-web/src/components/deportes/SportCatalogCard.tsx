@@ -28,7 +28,7 @@ export function SportCatalogCard({ deporte }: SportCatalogCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F3D5E]/45 via-[#0F3D5E]/8 to-transparent" />
 
         {deporte.categoriaNombre ? (
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-primary)] shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[var(--color-brand)] shadow-sm">
             {deporte.categoriaNombre}
           </span>
         ) : null}
@@ -45,7 +45,7 @@ export function SportCatalogCard({ deporte }: SportCatalogCardProps) {
           </p>
         ) : null}
 
-        <div className="mt-4 inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
+        <div className="mt-4 inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-brand)] group-hover:text-white">
           Ver actividades
         </div>
       </div>

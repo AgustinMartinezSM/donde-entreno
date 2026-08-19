@@ -37,7 +37,7 @@ export function HomePublicadoresSugeridos({
         {publicadores.map((publicador) => (
           <article
             key={publicador.id}
-            className="flex h-full flex-col rounded-[20px] border border-[var(--color-border)] bg-white p-5 shadow-[0_8px_24px_rgba(15,61,94,0.07)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] hover:shadow-[0_16px_40px_rgba(15,61,94,0.12)]"
+            className="flex h-full flex-col rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_8px_24px_rgba(15,61,94,0.07)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] hover:shadow-[0_16px_40px_rgba(15,61,94,0.12)]"
           >
             <PublisherIdentity
               nombre={publicador.nombre}

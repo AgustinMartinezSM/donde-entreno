@@ -74,7 +74,7 @@ export function FavoritoButton({
         className={`inline-flex min-h-11 items-center justify-center gap-0 rounded-[18px] px-3 py-2.5 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] sm:gap-2 sm:px-4 ${
           guardada
             ? "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)]"
-            : "border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
+            : "border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
         }`}
       >
         <span
@@ -106,7 +106,7 @@ export function FavoritoButton({
       className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-[0_6px_16px_rgba(15,61,94,0.22)] backdrop-blur transition duration-200 ease-out hover:scale-110 active:scale-95 ${
         guardada
           ? "bg-[var(--color-secondary)] text-white"
-          : "bg-white/95 text-[var(--color-primary)] hover:bg-white"
+          : "bg-white/95 text-[var(--color-brand)] hover:bg-white"
       }`}
     >
       <span

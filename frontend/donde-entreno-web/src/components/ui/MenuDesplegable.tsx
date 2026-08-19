@@ -105,7 +105,7 @@ export function MenuDesplegable({
       {abierto ? (
         <div
           id={idPanel}
-          className={`absolute top-[calc(100%+0.5rem)] z-50 min-w-56 overflow-hidden rounded-[18px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_22px_55px_rgba(12,52,80,0.18)] ${
+          className={`absolute top-[calc(100%+0.5rem)] z-50 min-w-56 overflow-hidden rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-2 shadow-[0_22px_55px_rgba(12,52,80,0.18)] ${
             alineacion === "derecha" ? "right-0" : "left-0"
           }`}
         >
@@ -153,5 +153,5 @@ export function OpcionMenu({
 }
 
 export function SeparadorMenu() {
-  return <hr className="my-1.5 border-t border-[#EDF3F8]" />;
+  return <hr className="my-1.5 border-t border-[var(--color-divisor)]" />;
 }

@@ -16,7 +16,7 @@ const variantClassNames: Record<NonNullable<AppButtonProps["variant"]>, string> 
     texto blanco, nunca transparente.
   */
   primary:
-    "gradient-cta gradient-cta-hover bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)]",
+    "gradient-cta gradient-cta-hover bg-[var(--color-brand)] text-white shadow-[var(--shadow-button)]",
   secondary:
     "border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]",
   outline:

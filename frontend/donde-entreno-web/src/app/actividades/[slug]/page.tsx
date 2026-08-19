@@ -383,7 +383,7 @@ export default async function ActividadDetallePage({
                       {actividad.horarios.map((horario) => (
                         <div
                           key={horario.id}
-                          className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-white hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface)] hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
                         >
                           <p className="font-bold text-[var(--color-primary)]">
                             {horario.diaSemana}
@@ -419,7 +419,7 @@ export default async function ActividadDetallePage({
 
             {/* Columna lateral */}
             <aside className="h-fit lg:sticky lg:top-8">
-              <SurfaceCard className="bg-white/95 p-5 transition duration-200 ease-out sm:p-6">
+              <SurfaceCard className="bg-[var(--color-surface)]/95 p-5 transition duration-200 ease-out sm:p-6">
                 <SectionHeader
                   eyebrow="Información clave"
                   title="Datos para entrenar"
@@ -568,7 +568,7 @@ export default async function ActividadDetallePage({
 
       {/* Barra sticky de contacto en mobile: el paso de conversión principal
           queda siempre a mano, por encima de la navegación inferior. */}
-      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 border-t border-[var(--color-border)] bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden">
         {/*
           pr deja libre la esquina donde flota el asistente (56px + su
           margen): sin eso el botón del asistente quedaba encima del

@@ -27,7 +27,7 @@ const variantClassNames: Record<NonNullable<SurfaceCardProps["variant"]>, string
     info: "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
     /* Superficie oscura de marca, para los bloques que cortan el blanco. */
     brand:
-      "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)]",
+      "border-[var(--color-brand)] bg-[var(--color-brand)] text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)]",
   };
 
 function unirClases(...clases: Array<string | undefined | false>) {

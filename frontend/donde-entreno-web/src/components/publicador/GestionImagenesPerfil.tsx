@@ -180,27 +180,44 @@ export function GestionImagenesPerfil() {
       return;
     }
 
+    const aprobada = imagen.estadoModeracion === "APROBADA";
+
+    /* Eliminar una aprobada saca la identidad visible del perfil. */
+    if (
+      aprobada &&
+      !window.confirm(
+        "¿Eliminar esta imagen? Deja de verse en tu perfil público y no se puede deshacer."
+      )
+    ) {
+      return;
+    }
+
     setMensaje(null);
     setError(null);
 
     try {
       await eliminarImagenPerfil(imagen.id, accessToken);
       setImagenes((previas) => previas.filter((item) => item.id !== imagen.id));
-      setMensaje("Imagen retirada.");
+      setMensaje(aprobada ? "Imagen eliminada." : "Imagen retirada.");
     } catch (fallo: unknown) {
       setError(
         fallo instanceof PublicadorApiError
           ? fallo.message
-          : "No pudimos retirar la imagen. Probá nuevamente."
+          : "No pudimos eliminar la imagen. Probá nuevamente."
       );
     }
   }
 
-  /* La vigente de cada tipo es la más reciente que no fue rechazada. */
+  /*
+    La vigente de cada tipo es la más reciente que no fue rechazada NI
+    eliminada (aprobada inactiva = eliminada o reemplazada; fase 2).
+  */
   function vigenteDe(tipo: TipoPerfil) {
     return imagenes.find(
       (imagen) =>
-        imagen.tipoImagen === tipo && imagen.estadoModeracion !== "RECHAZADA"
+        imagen.tipoImagen === tipo &&
+        imagen.estadoModeracion !== "RECHAZADA" &&
+        !(imagen.estadoModeracion === "APROBADA" && !imagen.activa)
     );
   }
 
@@ -323,14 +340,15 @@ export function GestionImagenesPerfil() {
                       {vigente ? "Cambiar" : `Subir ${ranura.titulo.toLowerCase()}`}
                     </label>
 
-                    {pendiente && vigente ? (
+                    {vigente &&
+                    (pendiente || vigente.estadoModeracion === "APROBADA") ? (
                       <button
                         type="button"
                         onClick={() => retirar(vigente)}
                         disabled={subiendo}
-                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-white disabled:opacity-50"
+                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-[var(--color-surface)] disabled:opacity-50"
                       >
-                        Retirar
+                        {pendiente ? "Retirar" : "Eliminar"}
                       </button>
                     ) : null}
                   </div>

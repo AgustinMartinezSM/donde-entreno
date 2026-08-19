@@ -288,5 +288,13 @@ export type ImagenActividadPublicador = {
   estadoModeracion: "PENDIENTE" | "APROBADA" | "RECHAZADA" | string;
   motivoRechazo: string | null;
   activa: boolean;
+  /*
+    Fase 2 (controles del publicador): orden manual y alt/epígrafe.
+    Opcionales para tolerar el orden de los deploys: un backend viejo
+    simplemente no los manda.
+  */
+  orden?: number | null;
+  titulo?: string | null;
+  descripcion?: string | null;
   createdAt: string | null;
 };

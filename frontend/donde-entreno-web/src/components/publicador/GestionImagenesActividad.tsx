@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
 import { useAuthSession } from "../auth/AuthSessionProvider";
@@ -14,8 +14,11 @@ import { ENCUADRE_INICIAL, recortarImagen } from "../../lib/recorteImagen";
 import { EditorRecorteImagen } from "../imagenes/EditorRecorteImagen";
 import {
   PublicadorApiError,
+  actualizarTextoImagen,
+  elegirImagenPrincipal,
   eliminarImagenActividad,
   listarImagenesActividad,
+  ordenarImagenesActividad,
   subirImagenActividad,
 } from "../../services/publicadorService";
 import type { ImagenActividadPublicador } from "../../types/publicador";
@@ -339,8 +342,41 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
     setSubiendo(false);
   }
 
+  /*
+    Refetch tras las acciones de fase 2 (ordenar, hacer principal): el
+    backend recalcula orden y tipos, así que releer es más simple y más
+    fiel que reconstruir el estado a mano.
+  */
+  const recargarImagenes = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    try {
+      setImagenes(await listarImagenesActividad(actividadId, accessToken));
+    } catch {
+      /* La próxima acción o recarga de página lo reintenta. */
+    }
+  }, [accessToken, actividadId]);
+
   async function manejarQuitar(imagen: ImagenActividadPublicador) {
     if (!accessToken) {
+      return;
+    }
+
+    const aprobada = imagen.estadoModeracion === "APROBADA";
+
+    /*
+      Retirar una pendiente es reversible (se vuelve a subir en un
+      minuto); eliminar una aprobada saca una foto que ya estaba en la
+      página pública — eso sí merece confirmación.
+    */
+    if (
+      aprobada &&
+      !window.confirm(
+        "¿Eliminar esta foto? Deja de verse en la página pública y no se puede deshacer."
+      )
+    ) {
       return;
     }
 
@@ -350,22 +386,131 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
     try {
       await eliminarImagenActividad(actividadId, imagen.id, accessToken);
       setImagenes((previas) => previas.filter((item) => item.id !== imagen.id));
-      setMensaje("Imagen retirada.");
+      setMensaje(aprobada ? "Foto eliminada." : "Imagen retirada.");
     } catch (error: unknown) {
       setErrorSubida(
         error instanceof PublicadorApiError
           ? error.message
-          : "No pudimos retirar la imagen. Probá nuevamente."
+          : "No pudimos eliminar la imagen. Probá nuevamente."
       );
     }
   }
 
+  /* Mueve una foto un lugar dentro de la galería aprobada. */
+  async function manejarMover(
+    imagen: ImagenActividadPublicador,
+    direccion: -1 | 1
+  ) {
+    if (!accessToken) {
+      return;
+    }
+
+    const ids = galeriaAprobada.map((item) => item.id);
+    const desde = ids.indexOf(imagen.id);
+    const hasta = desde + direccion;
+
+    if (desde < 0 || hasta < 0 || hasta >= ids.length) {
+      return;
+    }
+
+    [ids[desde], ids[hasta]] = [ids[hasta], ids[desde]];
+
+    setMensaje(null);
+    setErrorSubida(null);
+
+    try {
+      await ordenarImagenesActividad(actividadId, ids, accessToken);
+      await recargarImagenes();
+    } catch (error: unknown) {
+      setErrorSubida(
+        error instanceof PublicadorApiError
+          ? error.message
+          : "No pudimos reordenar la galería. Probá nuevamente."
+      );
+    }
+  }
+
+  async function manejarHacerPrincipal(imagen: ImagenActividadPublicador) {
+    if (!accessToken) {
+      return;
+    }
+
+    setMensaje(null);
+    setErrorSubida(null);
+
+    try {
+      await elegirImagenPrincipal(actividadId, imagen.id, accessToken);
+      await recargarImagenes();
+      setMensaje(
+        "Listo: esa foto ahora es la principal. La anterior pasó a la galería."
+      );
+    } catch (error: unknown) {
+      setErrorSubida(
+        error instanceof PublicadorApiError
+          ? error.message
+          : "No pudimos cambiar la imagen principal. Probá nuevamente."
+      );
+    }
+  }
+
+  async function manejarGuardarTexto(
+    imagen: ImagenActividadPublicador,
+    titulo: string,
+    descripcion: string
+  ) {
+    if (!accessToken) {
+      return;
+    }
+
+    setMensaje(null);
+    setErrorSubida(null);
+
+    try {
+      const actualizada = await actualizarTextoImagen(
+        actividadId,
+        imagen.id,
+        /* Siempre los dos: el string vacío limpia (semántica PATCH). */
+        { titulo, descripcion },
+        accessToken
+      );
+      setImagenes((previas) =>
+        previas.map((item) => (item.id === actualizada.id ? actualizada : item))
+      );
+      setMensaje("Texto de la foto guardado.");
+    } catch (error: unknown) {
+      setErrorSubida(
+        error instanceof PublicadorApiError
+          ? error.message
+          : "No pudimos guardar el texto. Probá nuevamente."
+      );
+      throw error;
+    }
+  }
+
   const editandoElegido = seleccion.find((elegido) => elegido.url === editando);
-  const principales = imagenes.filter(
+  /*
+    Las aprobadas inactivas son historia (reemplazadas o eliminadas): no
+    se listan. Antes una principal reemplazada seguía apareciendo como
+    "Aprobada" y confundía.
+  */
+  const visibles = imagenes.filter(
+    (imagen) => !(imagen.estadoModeracion === "APROBADA" && !imagen.activa)
+  );
+  const principales = visibles.filter(
     (imagen) => imagen.tipoImagen === "PRINCIPAL"
   );
-  const galeria = imagenes.filter((imagen) => imagen.tipoImagen !== "PRINCIPAL");
-  const sinImagenes = !cargando && !errorCarga && imagenes.length === 0;
+  const galeriaAprobada = visibles
+    .filter(
+      (imagen) =>
+        imagen.tipoImagen === "GALERIA" && imagen.estadoModeracion === "APROBADA"
+    )
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+  const galeriaEnRevision = visibles.filter(
+    (imagen) =>
+      imagen.tipoImagen !== "PRINCIPAL" && imagen.estadoModeracion !== "APROBADA"
+  );
+  const galeria = [...galeriaAprobada, ...galeriaEnRevision];
+  const sinImagenes = !cargando && !errorCarga && visibles.length === 0;
 
   return (
     <SurfaceCard className="p-6 sm:p-8">
@@ -581,15 +726,20 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
           ayuda="Portada de la actividad y de sus tarjetas públicas."
           imagenes={principales}
           onQuitar={manejarQuitar}
+          onGuardarTexto={manejarGuardarTexto}
         />
       ) : null}
 
       {galeria.length > 0 ? (
         <GrupoImagenes
           titulo="Galería"
-          ayuda="Fotos adicionales de la actividad."
+          ayuda="Fotos adicionales de la actividad. Las aprobadas se muestran en este orden."
           imagenes={galeria}
           onQuitar={manejarQuitar}
+          onGuardarTexto={manejarGuardarTexto}
+          idsOrdenables={galeriaAprobada.map((imagen) => imagen.id)}
+          onMover={manejarMover}
+          onHacerPrincipal={manejarHacerPrincipal}
         />
       ) : null}
     </SurfaceCard>
@@ -601,18 +751,32 @@ type GrupoImagenesProps = {
   ayuda: string;
   imagenes: ImagenActividadPublicador[];
   onQuitar: (imagen: ImagenActividadPublicador) => void;
+  onGuardarTexto: (
+    imagen: ImagenActividadPublicador,
+    titulo: string,
+    descripcion: string
+  ) => Promise<void>;
+  /* Solo la galería aprobada se ordena y puede pasar a principal. */
+  idsOrdenables?: number[];
+  onMover?: (imagen: ImagenActividadPublicador, direccion: -1 | 1) => void;
+  onHacerPrincipal?: (imagen: ImagenActividadPublicador) => void;
 };
 
 /*
   Listado de un tipo de imagen. Separar principal de galería evita que
   el publicador tenga que deducir el destino leyendo la etiqueta de
-  cada fila.
+  cada fila. Desde la fase 2, las aprobadas de la galería suman orden
+  (flechas), promoción a principal, texto y eliminación.
 */
 function GrupoImagenes({
   titulo,
   ayuda,
   imagenes,
   onQuitar,
+  onGuardarTexto,
+  idsOrdenables,
+  onMover,
+  onHacerPrincipal,
 }: GrupoImagenesProps) {
   return (
     <section className="mt-6">
@@ -624,62 +788,226 @@ function GrupoImagenes({
       <ul className="mt-3 grid gap-3">
         {imagenes.map((imagen) => {
           const urlAbsoluta = construirUrlImagenBackend(imagen.url);
+          const aprobada = imagen.estadoModeracion === "APROBADA";
+          const pendiente = imagen.estadoModeracion === "PENDIENTE";
+          const posicionOrden = idsOrdenables?.indexOf(imagen.id) ?? -1;
+          const ordenable = aprobada && posicionOrden >= 0;
 
           return (
             <li
               key={imagen.id}
-              className="flex flex-wrap items-center gap-4 rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-3"
+              className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/80 p-3"
             >
-              {urlAbsoluta ? (
-                <Image
-                  src={urlAbsoluta}
-                  alt={`Imagen ${imagen.tipoImagen.toLowerCase()} de la actividad`}
-                  width={112}
-                  height={80}
-                  className="h-20 w-28 shrink-0 rounded-[12px] object-cover"
-                />
-              ) : (
-                /* Sin url: imagen rechazada (el archivo ya no existe). */
-                <span
-                  aria-hidden="true"
-                  className="flex h-20 w-28 shrink-0 items-center justify-center rounded-[12px] bg-[#F1F5F9] text-xs font-bold text-[var(--color-muted)]"
-                >
-                  Sin vista previa
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-4">
+                {urlAbsoluta ? (
+                  <Image
+                    src={urlAbsoluta}
+                    alt={`Imagen ${imagen.tipoImagen.toLowerCase()} de la actividad`}
+                    width={112}
+                    height={80}
+                    className="h-20 w-28 shrink-0 rounded-[12px] object-cover"
+                  />
+                ) : (
+                  /* Sin url: imagen rechazada (el archivo ya no existe). */
+                  <span
+                    aria-hidden="true"
+                    className="flex h-20 w-28 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-bg)] text-xs font-bold text-[var(--color-muted)]"
+                  >
+                    Sin vista previa
+                  </span>
+                )}
 
-              <div className="min-w-0 flex-1">
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${
-                    ESTILOS_ESTADO[imagen.estadoModeracion] ??
-                    "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
-                  }`}
-                >
-                  {formatearEstado(imagen.estadoModeracion)}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${
+                      ESTILOS_ESTADO[imagen.estadoModeracion] ??
+                      "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
+                    }`}
+                  >
+                    {formatearEstado(imagen.estadoModeracion)}
+                  </span>
 
-                {imagen.motivoRechazo ? (
-                  <p className="mt-2 text-sm leading-6 text-red-700">
-                    <span className="font-bold">Motivo:</span>{" "}
-                    {imagen.motivoRechazo}
-                  </p>
-                ) : null}
+                  {imagen.titulo || imagen.descripcion ? (
+                    <p className="mt-2 truncate text-sm leading-6 text-[var(--color-muted)]">
+                      {[imagen.titulo, imagen.descripcion]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
+
+                  {imagen.motivoRechazo ? (
+                    <p className="mt-2 text-sm leading-6 text-red-700">
+                      <span className="font-bold">Motivo:</span>{" "}
+                      {imagen.motivoRechazo}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {ordenable && onMover ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onMover(imagen, -1)}
+                        disabled={posicionOrden === 0}
+                        aria-label="Mover la foto un lugar hacia adelante"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onMover(imagen, 1)}
+                        disabled={
+                          posicionOrden === (idsOrdenables?.length ?? 0) - 1
+                        }
+                        aria-label="Mover la foto un lugar hacia atrás"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        ↓
+                      </button>
+                    </>
+                  ) : null}
+
+                  {ordenable && onHacerPrincipal ? (
+                    <button
+                      type="button"
+                      onClick={() => onHacerPrincipal(imagen)}
+                      className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
+                    >
+                      Hacer principal
+                    </button>
+                  ) : null}
+
+                  {pendiente || aprobada ? (
+                    <button
+                      type="button"
+                      onClick={() => onQuitar(imagen)}
+                      aria-label={
+                        pendiente
+                          ? "Retirar imagen pendiente"
+                          : "Eliminar foto aprobada"
+                      }
+                      className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-[var(--color-surface)] active:scale-[0.98]"
+                    >
+                      {pendiente ? "Retirar" : "Eliminar"}
+                    </button>
+                  ) : null}
+                </div>
               </div>
 
-              {imagen.estadoModeracion === "PENDIENTE" ? (
-                <button
-                  type="button"
-                  onClick={() => onQuitar(imagen)}
-                  aria-label="Retirar imagen pendiente"
-                  className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-white active:scale-[0.98]"
-                >
-                  Retirar
-                </button>
+              {pendiente || aprobada ? (
+                <EditorTextoImagen imagen={imagen} onGuardar={onGuardarTexto} />
               ) : null}
             </li>
           );
         })}
       </ul>
     </section>
+  );
+}
+
+/*
+  Texto de la foto (título y descripción): alimenta el texto alternativo
+  y el epígrafe públicos. Colapsado por defecto para no volver cada fila
+  un formulario.
+*/
+function EditorTextoImagen({
+  imagen,
+  onGuardar,
+}: {
+  imagen: ImagenActividadPublicador;
+  onGuardar: (
+    imagen: ImagenActividadPublicador,
+    titulo: string,
+    descripcion: string
+  ) => Promise<void>;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [titulo, setTitulo] = useState(imagen.titulo ?? "");
+  const [descripcion, setDescripcion] = useState(imagen.descripcion ?? "");
+  const [guardando, setGuardando] = useState(false);
+
+  async function manejarGuardar() {
+    if (guardando) {
+      return;
+    }
+
+    setGuardando(true);
+
+    try {
+      await onGuardar(imagen, titulo, descripcion);
+      setAbierto(false);
+    } catch {
+      /* El error ya lo mostró el contenedor; el formulario queda abierto. */
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setTitulo(imagen.titulo ?? "");
+          setDescripcion(imagen.descripcion ?? "");
+          setAbierto(true);
+        }}
+        className="mt-2 text-xs font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
+      >
+        {imagen.titulo || imagen.descripcion
+          ? "Editar texto de la foto"
+          : "Agregar texto a la foto"}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 grid gap-3 rounded-[14px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3 sm:grid-cols-2">
+      <label className="block">
+        <span className="text-xs font-bold text-[var(--color-primary)]">
+          Título
+        </span>
+        <input
+          type="text"
+          value={titulo}
+          maxLength={150}
+          onChange={(evento) => setTitulo(evento.target.value)}
+          disabled={guardando}
+          placeholder="Ej: Sala de musculación"
+          className="mt-1.5 min-h-10 w-full rounded-[12px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:opacity-60"
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-xs font-bold text-[var(--color-primary)]">
+          Descripción
+        </span>
+        <input
+          type="text"
+          value={descripcion}
+          maxLength={255}
+          onChange={(evento) => setDescripcion(evento.target.value)}
+          disabled={guardando}
+          placeholder="Se usa como texto alternativo de la foto"
+          className="mt-1.5 min-h-10 w-full rounded-[12px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:opacity-60"
+        />
+      </label>
+
+      <div className="flex gap-2 sm:col-span-2">
+        <AppButton size="sm" onClick={manejarGuardar} disabled={guardando}>
+          {guardando ? "Guardando..." : "Guardar texto"}
+        </AppButton>
+        <AppButton
+          size="sm"
+          variant="secondary"
+          onClick={() => setAbierto(false)}
+          disabled={guardando}
+        >
+          Cancelar
+        </AppButton>
+      </div>
+    </div>
   );
 }

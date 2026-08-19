@@ -800,6 +800,107 @@ export async function eliminarImagenActividad(
   );
 }
 
+/**
+ * Orden manual de la galería (fase 2): la lista trae TODAS las fotos
+ * GALERIA activas de la actividad en el orden deseado.
+ */
+export async function ordenarImagenesActividad(
+  actividadId: number,
+  imagenIds: number[],
+  accessToken: string
+): Promise<void> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+
+  await ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes/orden`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify({ imagenIds }),
+    },
+    esCuerpoVacioImagen
+  );
+}
+
+/**
+ * Promueve una foto aprobada de la galería a imagen principal (fase 2),
+ * sin re-moderación: es un swap con la principal vigente.
+ */
+export async function elegirImagenPrincipal(
+  actividadId: number,
+  imagenId: number,
+  accessToken: string
+): Promise<void> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+  const imagenIdSeguro = validarIdPositivo(
+    imagenId,
+    () => new PublicadorApiError("El id de la imagen es invalido.")
+  );
+
+  await ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes/${encodeURIComponent(String(imagenIdSeguro))}/principal`,
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+    },
+    esCuerpoVacioImagen
+  );
+}
+
+/**
+ * Título y descripción de una imagen (fase 2): alimentan el texto
+ * alternativo/epígrafe públicos. Semántica PATCH: null no toca, vacío
+ * limpia.
+ */
+export async function actualizarTextoImagen(
+  actividadId: number,
+  imagenId: number,
+  cambios: { titulo?: string; descripcion?: string },
+  accessToken: string
+): Promise<ImagenActividadPublicador> {
+  const idSeguro = validarIdPositivo(
+    actividadId,
+    () => new PublicadorApiError("El id de la actividad es invalido.")
+  );
+  const imagenIdSeguro = validarIdPositivo(
+    imagenId,
+    () => new PublicadorApiError("El id de la imagen es invalido.")
+  );
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/imagenes/${encodeURIComponent(String(imagenIdSeguro))}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify(cambios),
+    },
+    esImagenActividadPublicador
+  );
+}
+
 /*
   Logo y portada del perfil. Mismo circuito de moderación que las
   imágenes de actividad, pero cuelgan del perfil: el backend las resuelve
@@ -880,6 +981,12 @@ export function esImagenActividadPublicador(
     typeof valor.estadoModeracion === "string" &&
     esStringONull(valor.motivoRechazo) &&
     typeof valor.activa === "boolean" &&
+    /* Campos de fase 2: se validan solo si el backend ya los manda. */
+    (valor.orden === undefined ||
+      valor.orden === null ||
+      typeof valor.orden === "number") &&
+    (valor.titulo === undefined || esStringONull(valor.titulo)) &&
+    (valor.descripcion === undefined || esStringONull(valor.descripcion)) &&
     esStringONull(valor.createdAt)
   );
 }

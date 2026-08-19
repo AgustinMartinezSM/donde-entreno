@@ -18,7 +18,7 @@ import org.springframework.web.client.RestClient;
  * después configurarse el panel, o al revés.
  */
 @Configuration
-@EnableConfigurationProperties(AlmacenArchivosProperties.class)
+@EnableConfigurationProperties({AlmacenArchivosProperties.class, MediaProperties.class})
 public class AlmacenamientoConfig {
 
     @Bean

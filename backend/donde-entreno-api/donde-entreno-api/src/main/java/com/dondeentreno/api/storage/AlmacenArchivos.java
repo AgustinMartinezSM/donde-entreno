@@ -58,4 +58,15 @@ public interface AlmacenArchivos {
      * baja lógica con motivo; el archivo no se conserva.
      */
     void eliminar(String rutaObjeto);
+
+    /**
+     * Elimina físicamente un objeto del espacio PÚBLICO a partir de la
+     * URL pública que quedó guardada al aprobarse (imagen.url). Lo usa
+     * la eliminación de imágenes aprobadas por el publicador; el caller
+     * lo trata como best-effort (la baja lógica en la base avanza
+     * aunque esto falle) y el CDN puede retener la copia un tiempo.
+     * Si la URL no pertenece a este almacenamiento, lanza
+     * IllegalArgumentException.
+     */
+    void eliminarPublicoPorUrl(String urlPublica);
 }

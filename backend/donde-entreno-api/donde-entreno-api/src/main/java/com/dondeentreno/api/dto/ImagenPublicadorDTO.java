@@ -16,6 +16,10 @@ public class ImagenPublicadorDTO {
     private String estadoModeracion;
     private String motivoRechazo;
     private Boolean activa;
+    /* Para el orden manual y la edición de alt/epígrafe (fase 2). */
+    private Integer orden;
+    private String titulo;
+    private String descripcion;
     private OffsetDateTime createdAt;
 
     public static ImagenPublicadorDTO desdeEntidad(Imagen imagen) {
@@ -26,8 +30,35 @@ public class ImagenPublicadorDTO {
         dto.setEstadoModeracion(imagen.getEstadoModeracion());
         dto.setMotivoRechazo(imagen.getMotivoRechazo());
         dto.setActiva(imagen.getActiva());
+        dto.setOrden(imagen.getOrden());
+        dto.setTitulo(imagen.getTitulo());
+        dto.setDescripcion(imagen.getDescripcion());
         dto.setCreatedAt(imagen.getCreatedAt());
         return dto;
+    }
+
+    public Integer getOrden() {
+        return orden;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Long getId() {

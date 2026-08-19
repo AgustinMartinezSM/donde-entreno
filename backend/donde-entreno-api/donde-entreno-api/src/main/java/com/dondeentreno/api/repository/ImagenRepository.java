@@ -137,4 +137,34 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
             String estadoModeracion,
             Long perfilPublicadorId
     );
+
+    /**
+     * Cuenta de GALERIA "que van a existir" en una actividad (activas
+     * aprobadas + pendientes de moderación): es la base del límite de
+     * fotos por actividad en la subida.
+     */
+    long countByActividad_IdAndTipoImagenAndActivaTrue(Long actividadId, String tipoImagen);
+
+    long countByActividad_IdAndTipoImagenAndEstadoModeracion(
+            Long actividadId,
+            String tipoImagen,
+            String estadoModeracion
+    );
+
+    /**
+     * Pendientes totales de una actividad (anti-flood de la cola de
+     * moderación).
+     */
+    long countByActividad_IdAndEstadoModeracion(Long actividadId, String estadoModeracion);
+
+    /**
+     * Un LOGO/PORTADA pendiente por vez: mientras hay uno en la cola,
+     * no se acepta otro del mismo tipo (reemplazarlo = retirar el
+     * pendiente y subir de nuevo).
+     */
+    boolean existsByPerfilPublicador_IdAndTipoImagenAndEstadoModeracion(
+            Long perfilPublicadorId,
+            String tipoImagen,
+            String estadoModeracion
+    );
 }

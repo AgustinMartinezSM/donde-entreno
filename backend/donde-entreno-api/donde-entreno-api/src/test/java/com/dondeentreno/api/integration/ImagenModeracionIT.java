@@ -46,9 +46,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -118,6 +121,21 @@ class ImagenModeracionIT {
                 @Override
                 public void eliminar(String rutaObjeto) {
                     pendientes.remove(rutaObjeto);
+                }
+
+                @Override
+                public void eliminarPublicoPorUrl(String urlPublica) {
+                    /*
+                      Espejo del contrato real: acepta solo URLs del
+                      espacio público en memoria. El "borrado" es no-op
+                      porque publicar() no conserva los bytes públicos.
+                    */
+                    if (urlPublica == null
+                            || !urlPublica.startsWith("https://storage.test/publicas/")) {
+                        throw new IllegalArgumentException(
+                                "La URL no pertenece al bucket publico de este almacenamiento."
+                        );
+                    }
                 }
             };
         }
@@ -351,6 +369,127 @@ class ImagenModeracionIT {
                                 .param("tipo", "GALERIA")
                                 .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
                 .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Fase 2 del bloque visual: el publicador ordena su galería, elige
+     * la principal entre las aprobadas, escribe el alt y elimina una
+     * aprobada — todo contra la base real y con la visibilidad pública
+     * verificada en cada paso.
+     */
+    @Test
+    void controlesDelPublicadorSobreImagenesAprobadas() throws Exception {
+        Referencias referencias = obtenerReferenciasActivas();
+        String marcador = marcadorUnico();
+        Publicador publicador = crearPublicador(marcador, referencias.ciudad());
+        Usuario admin = crearAdmin(marcador);
+        Actividad actividad = crearActividadPublicada(marcador, publicador.perfil(), referencias);
+
+        // 1) Tres GALERIA + una PRINCIPAL, todas aprobadas.
+        long galeria1 = subirYAprobar(actividad, publicador, admin, "GALERIA");
+        long galeria2 = subirYAprobar(actividad, publicador, admin, "GALERIA");
+        long galeria3 = subirYAprobar(actividad, publicador, admin, "GALERIA");
+        long principalOriginal = subirYAprobar(actividad, publicador, admin, "PRINCIPAL");
+
+        // 2) Orden inválido (falta una foto): 400 sin tocar nada.
+        mockMvc.perform(put("/api/publicador/actividades/" + actividad.getId() + "/imagenes/orden")
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"imagenIds\":[" + galeria1 + "," + galeria2 + "]}"))
+                .andExpect(status().isBadRequest());
+
+        // 3) Orden válido: 3-1-2 queda persistido como orden 1..3.
+        mockMvc.perform(put("/api/publicador/actividades/" + actividad.getId() + "/imagenes/orden")
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"imagenIds\":[" + galeria3 + "," + galeria1 + "," + galeria2 + "]}"))
+                .andExpect(status().isNoContent());
+
+        assertEquals(1, imagenRepository.findById(galeria3).orElseThrow().getOrden());
+        assertEquals(2, imagenRepository.findById(galeria1).orElseThrow().getOrden());
+        assertEquals(3, imagenRepository.findById(galeria2).orElseThrow().getOrden());
+
+        // 4) galeria1 pasa a PRINCIPAL sin re-moderación; la vieja baja a la galería.
+        mockMvc.perform(put("/api/publicador/actividades/" + actividad.getId()
+                        + "/imagenes/" + galeria1 + "/principal")
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isNoContent());
+
+        Imagen promovida = imagenRepository.findById(galeria1).orElseThrow();
+        assertEquals("PRINCIPAL", promovida.getTipoImagen());
+        assertEquals("APROBADA", promovida.getEstadoModeracion());
+        assertTrue(promovida.getActiva());
+
+        Imagen degradada = imagenRepository.findById(principalOriginal).orElseThrow();
+        assertEquals("GALERIA", degradada.getTipoImagen());
+        assertTrue(degradada.getActiva(), "El swap no desactiva a la principal anterior.");
+
+        // 5) Alt/epígrafe editable; el público lo refleja.
+        mockMvc.perform(patch("/api/publicador/actividades/" + actividad.getId()
+                        + "/imagenes/" + galeria2)
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"titulo\":\"  Sala de musculacion  \",\"descripcion\":\"Vista general\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.titulo").value("Sala de musculacion"))
+                .andExpect(jsonPath("$.descripcion").value("Vista general"));
+
+        // 6) Eliminar una aprobada: baja lógica y desaparece del público.
+        mockMvc.perform(delete("/api/publicador/actividades/" + actividad.getId()
+                        + "/imagenes/" + galeria3)
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isNoContent());
+
+        Imagen eliminada = imagenRepository.findById(galeria3).orElseThrow();
+        assertEquals("APROBADA", eliminada.getEstadoModeracion());
+        assertFalse(eliminada.getActiva());
+
+        JsonNode publicas = leerJson(
+                mockMvc.perform(get("/api/actividades/" + actividad.getSlug() + "/imagenes"))
+                        .andExpect(status().isOk())
+        );
+        assertFalse(listaContieneId(publicas, galeria3),
+                "Una aprobada eliminada por el publicador no debe verse en publico.");
+        assertTrue(listaContieneId(publicas, galeria1));
+
+        // 7) Un segundo LOGO pendiente del mismo tipo se rechaza (límite de perfil).
+        ResultActions primerLogo = mockMvc.perform(
+                        multipart("/api/publicador/perfil/imagenes")
+                                .file(new MockMultipartFile("archivo", "logo.jpg", "image/jpeg", BYTES_JPEG))
+                                .param("tipo", "LOGO")
+                                .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isCreated());
+        imagenIds.add(leerJson(primerLogo).path("id").asLong());
+
+        mockMvc.perform(multipart("/api/publicador/perfil/imagenes")
+                        .file(new MockMultipartFile("archivo", "logo2.jpg", "image/jpeg", BYTES_JPEG))
+                        .param("tipo", "LOGO")
+                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isBadRequest());
+    }
+
+    /* Sube una imagen del tipo dado y la aprueba como admin. */
+    private long subirYAprobar(
+            Actividad actividad,
+            Publicador publicador,
+            Usuario admin,
+            String tipo
+    ) throws Exception {
+        ResultActions subida = mockMvc.perform(
+                        multipart("/api/publicador/actividades/" + actividad.getId() + "/imagenes")
+                                .file(new MockMultipartFile("archivo", "foto.jpg", "image/jpeg", BYTES_JPEG))
+                                .param("tipo", tipo)
+                                .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isCreated());
+
+        long imagenId = leerJson(subida).path("id").asLong();
+        imagenIds.add(imagenId);
+
+        mockMvc.perform(post("/api/admin/imagenes/" + imagenId + "/aprobar")
+                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
+                .andExpect(status().isOk());
+
+        return imagenId;
     }
 
     @Test

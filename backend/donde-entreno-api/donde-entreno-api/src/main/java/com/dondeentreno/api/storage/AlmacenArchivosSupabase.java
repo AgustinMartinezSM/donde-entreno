@@ -184,6 +184,41 @@ public class AlmacenArchivosSupabase implements AlmacenArchivos {
         }
     }
 
+    @Override
+    public void eliminarPublicoPorUrl(String urlPublica) {
+        exigirConfigurado();
+
+        /*
+          La URL pública la construyó urlPublica(): el prefijo es
+          conocido y de él se recupera la ruta del objeto. Cualquier URL
+          que no lo tenga no es nuestra y no se intenta borrar.
+        */
+        String prefijo = propiedades.getUrl() + "/storage/v1/object/public/"
+                + propiedades.getBucketPublicas() + "/";
+
+        if (urlPublica == null || !urlPublica.startsWith(prefijo)) {
+            throw new IllegalArgumentException(
+                    "La URL no pertenece al bucket publico de este almacenamiento."
+            );
+        }
+
+        String rutaObjeto = urlPublica.substring(prefijo.length());
+        validarRutaObjeto(rutaObjeto);
+
+        try {
+            restClient.delete()
+                    .uri(urlObjeto(propiedades.getBucketPublicas(), rutaObjeto))
+                    .headers(this::agregarAutenticacion)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException exception) {
+            throw new IllegalStateException(
+                    "No se pudo eliminar el archivo del bucket publico.",
+                    exception
+            );
+        }
+    }
+
     private void exigirConfigurado() {
         if (!estaConfigurado()) {
             throw new AlmacenNoConfiguradoException();

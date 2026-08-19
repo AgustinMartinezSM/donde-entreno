@@ -1,5 +1,6 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.config.MediaProperties;
 import com.dondeentreno.api.dto.ImagenPublicadorDTO;
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.Imagen;
@@ -49,21 +50,27 @@ public class ImagenPublicadorService {
             "Eliminada por el publicador antes de la revision.";
     private static final Duration VALIDEZ_URL_FIRMADA = Duration.ofMinutes(10);
 
+    private static final String TIPO_PRINCIPAL = "PRINCIPAL";
+    private static final String TIPO_GALERIA = "GALERIA";
+
     private final ImagenRepository imagenRepository;
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final ActividadRepository actividadRepository;
     private final AlmacenArchivos almacenArchivos;
+    private final MediaProperties mediaProperties;
 
     public ImagenPublicadorService(
             ImagenRepository imagenRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
             ActividadRepository actividadRepository,
-            AlmacenArchivos almacenArchivos
+            AlmacenArchivos almacenArchivos,
+            MediaProperties mediaProperties
     ) {
         this.imagenRepository = imagenRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
         this.almacenArchivos = almacenArchivos;
+        this.mediaProperties = mediaProperties;
     }
 
     /**
@@ -82,6 +89,7 @@ public class ImagenPublicadorService {
         Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
 
         String tipoNormalizado = validarTipo(tipo);
+        validarLimitesDeActividad(actividad.getId(), tipoNormalizado);
         byte[] contenido = leerArchivoValidado(archivo);
         String extension = detectarExtension(contenido);
 
@@ -130,6 +138,20 @@ public class ImagenPublicadorService {
         PerfilPublicador perfil = buscarPerfil(userId);
 
         String tipoNormalizado = validarTipoDePerfil(tipo);
+
+        /*
+          Un LOGO/PORTADA pendiente por vez: con uno en la cola, subir
+          otro del mismo tipo solo duplica trabajo de moderación. Para
+          reemplazarlo: retirar el pendiente y subir de nuevo.
+        */
+        if (imagenRepository.existsByPerfilPublicador_IdAndTipoImagenAndEstadoModeracion(
+                perfil.getId(), tipoNormalizado, ESTADO_PENDIENTE)) {
+            throw new ImagenInvalidaException(
+                    "Ya tenes una imagen de tipo " + tipoNormalizado
+                            + " pendiente de revision. Retirala o espera la moderacion."
+            );
+        }
+
         byte[] contenido = leerArchivoValidado(archivo);
         String extension = detectarExtension(contenido);
 
@@ -165,7 +187,8 @@ public class ImagenPublicadorService {
     }
 
     /**
-     * Retiro de una imagen propia del perfil que todavía está pendiente.
+     * Eliminación de una imagen propia del perfil: pendiente (retiro
+     * antes de la moderación) o aprobada (baja lógica, fase 2).
      */
     @Transactional
     public void eliminarMiaDePerfil(Long userId, Long imagenId) {
@@ -177,7 +200,7 @@ public class ImagenPublicadorService {
                         "No se encontro la imagen para este perfil."
                 ));
 
-        retirarPendiente(imagen);
+        eliminarImagenPropia(imagen);
     }
 
     @Transactional(readOnly = true)
@@ -192,9 +215,8 @@ public class ImagenPublicadorService {
     }
 
     /**
-     * Retiro de una imagen propia PENDIENTE: el archivo se elimina del
-     * bucket privado y la fila queda como baja lógica con motivo (la
-     * tabla imagen no tiene deleted_at).
+     * Eliminación de una imagen propia de actividad: pendiente (retiro
+     * antes de la moderación) o aprobada (baja lógica, fase 2).
      */
     @Transactional
     public void eliminarMia(Long userId, Long actividadId, Long imagenId) {
@@ -206,21 +228,65 @@ public class ImagenPublicadorService {
                         "No se encontro la imagen para esta actividad."
                 ));
 
-        retirarPendiente(imagen);
+        eliminarImagenPropia(imagen);
     }
 
     /*
-      Retiro común a imágenes de actividad y de perfil: solo aplica a
-      pendientes y deja la fila como baja lógica con motivo (la tabla
-      imagen no tiene deleted_at).
+      Eliminación común a imágenes de actividad y de perfil. Dos casos
+      con destinos distintos:
+      - PENDIENTE: retiro antes de la moderación (comportamiento
+        histórico) — el archivo sale del bucket privado y la fila queda
+        RECHAZADA con motivo.
+      - APROBADA y activa: baja lógica (fase 2) — la fila queda APROBADA
+        con activa=false (las vistas públicas filtran por activa) y el
+        archivo del bucket público se borra best-effort.
+      Rechazadas o ya eliminadas: no hay nada que eliminar.
     */
-    private void retirarPendiente(Imagen imagen) {
-        if (!ESTADO_PENDIENTE.equals(imagen.getEstadoModeracion())) {
-            throw new ImagenInvalidaException(
-                    "Solo se pueden eliminar imagenes pendientes de revision."
+    private void eliminarImagenPropia(Imagen imagen) {
+        if (ESTADO_PENDIENTE.equals(imagen.getEstadoModeracion())) {
+            retirarPendiente(imagen);
+            return;
+        }
+
+        if (ESTADO_APROBADA.equals(imagen.getEstadoModeracion())
+                && Boolean.TRUE.equals(imagen.getActiva())) {
+            eliminarAprobada(imagen);
+            return;
+        }
+
+        throw new ImagenInvalidaException(
+                "La imagen ya fue eliminada o rechazada: no hay nada que eliminar."
+        );
+    }
+
+    /*
+      Baja lógica de una aprobada. El borrado del archivo público es
+      best-effort a propósito (decisión del plan de fase 2): si el
+      storage falla, la imagen igual deja de verse (activa=false) y el
+      objeto huérfano se loguea; el CDN puede retener la copia un rato.
+    */
+    private void eliminarAprobada(Imagen imagen) {
+        try {
+            almacenArchivos.eliminarPublicoPorUrl(imagen.getUrl());
+        } catch (RuntimeException exception) {
+            log.warn(
+                    "No se pudo eliminar del bucket publico la imagen {} ({}).",
+                    imagen.getId(),
+                    imagen.getUrl(),
+                    exception
             );
         }
 
+        imagen.setActiva(false);
+        imagen.setUpdatedAt(OffsetDateTime.now());
+        imagenRepository.save(imagen);
+    }
+
+    /*
+      Retiro de pendientes: deja la fila como baja lógica con motivo (la
+      tabla imagen no tiene deleted_at).
+    */
+    private void retirarPendiente(Imagen imagen) {
         /*
           Borrado físico best-effort: si el storage falla, la baja
           lógica avanza igual (el objeto queda en el bucket privado,
@@ -243,6 +309,188 @@ public class ImagenPublicadorService {
         imagen.setMotivoRechazo(MOTIVO_ELIMINADA_POR_PUBLICADOR);
         imagen.setUpdatedAt(ahora);
         imagenRepository.save(imagen);
+    }
+
+    /**
+     * Orden manual de la galería (fase 2): la lista debe traer
+     * EXACTAMENTE los ids de todas las GALERIA activas de la actividad,
+     * en el orden deseado; se asigna orden 1..n. Las vistas públicas ya
+     * ordenan por este campo, así que no hay nada más que tocar.
+     */
+    @Transactional
+    public void ordenarGaleria(Long userId, Long actividadId, List<Long> imagenIds) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+        Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
+
+        List<Imagen> galeria = imagenRepository
+                .findByActividad_IdAndTipoImagenAndActivaTrue(actividad.getId(), TIPO_GALERIA);
+
+        java.util.Set<Long> idsActuales = new java.util.HashSet<>();
+        for (Imagen imagen : galeria) {
+            idsActuales.add(imagen.getId());
+        }
+
+        if (imagenIds == null
+                || imagenIds.size() != galeria.size()
+                || !idsActuales.equals(new java.util.HashSet<>(imagenIds))) {
+            throw new ImagenInvalidaException(
+                    "La lista debe incluir exactamente todas las fotos de la galeria, sin repetir."
+            );
+        }
+
+        OffsetDateTime ahora = OffsetDateTime.now();
+
+        for (Imagen imagen : galeria) {
+            int posicion = imagenIds.indexOf(imagen.getId()) + 1;
+            imagen.setOrden(posicion);
+            imagen.setUpdatedAt(ahora);
+        }
+
+        imagenRepository.saveAll(galeria);
+    }
+
+    /**
+     * Promueve una foto APROBADA de la galería a PRINCIPAL (fase 2), sin
+     * re-moderación: el archivo ya fue aprobado y cambiarle el rol no
+     * cambia su contenido. Es un swap: la PRINCIPAL vigente baja a la
+     * galería (al final del orden) — nada se desactiva ni se pierde.
+     */
+    @Transactional
+    public void elegirPrincipal(Long userId, Long actividadId, Long imagenId) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+        Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
+
+        Imagen elegida = imagenRepository.findByIdAndActividad_Id(imagenId, actividad.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontro la imagen para esta actividad."
+                ));
+
+        if (!ESTADO_APROBADA.equals(elegida.getEstadoModeracion())
+                || !Boolean.TRUE.equals(elegida.getActiva())
+                || !TIPO_GALERIA.equals(elegida.getTipoImagen())) {
+            throw new ImagenInvalidaException(
+                    "Solo una foto aprobada de la galeria puede pasar a ser la principal."
+            );
+        }
+
+        List<Imagen> galeriaActiva = imagenRepository
+                .findByActividad_IdAndTipoImagenAndActivaTrue(actividad.getId(), TIPO_GALERIA);
+        int colaDeGaleria = 1;
+        for (Imagen imagen : galeriaActiva) {
+            if (imagen.getOrden() != null && imagen.getOrden() >= colaDeGaleria) {
+                colaDeGaleria = imagen.getOrden() + 1;
+            }
+        }
+
+        OffsetDateTime ahora = OffsetDateTime.now();
+
+        List<Imagen> principalesVigentes = imagenRepository
+                .findByActividad_IdAndTipoImagenAndActivaTrue(actividad.getId(), TIPO_PRINCIPAL);
+        for (Imagen anterior : principalesVigentes) {
+            anterior.setTipoImagen(TIPO_GALERIA);
+            anterior.setOrden(colaDeGaleria++);
+            anterior.setUpdatedAt(ahora);
+        }
+        imagenRepository.saveAll(principalesVigentes);
+
+        elegida.setTipoImagen(TIPO_PRINCIPAL);
+        elegida.setOrden(0);
+        elegida.setUpdatedAt(ahora);
+        imagenRepository.save(elegida);
+    }
+
+    /**
+     * Título y descripción de una imagen propia (fase 2): alimentan el
+     * texto alternativo/epígrafe de las vistas públicas. Sin moderación
+     * (decisión del plan): texto plano que nunca se renderiza como
+     * link, con el mismo nivel de confianza que la descripción del
+     * perfil. Semántica PATCH: null no toca, vacío limpia.
+     */
+    @Transactional
+    public ImagenPublicadorDTO actualizarTexto(
+            Long userId,
+            Long actividadId,
+            Long imagenId,
+            String titulo,
+            String descripcion
+    ) {
+        PerfilPublicador perfil = buscarPerfil(userId);
+        Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
+
+        Imagen imagen = imagenRepository.findByIdAndActividad_Id(imagenId, actividad.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontro la imagen para esta actividad."
+                ));
+
+        boolean eliminada = ESTADO_APROBADA.equals(imagen.getEstadoModeracion())
+                && !Boolean.TRUE.equals(imagen.getActiva());
+
+        if (ESTADO_RECHAZADA.equals(imagen.getEstadoModeracion()) || eliminada) {
+            throw new ImagenInvalidaException(
+                    "La imagen fue rechazada o eliminada: no tiene texto que editar."
+            );
+        }
+
+        if (titulo != null) {
+            imagen.setTitulo(normalizarTextoDeImagen(titulo, 150));
+        }
+
+        if (descripcion != null) {
+            imagen.setDescripcion(normalizarTextoDeImagen(descripcion, 255));
+        }
+
+        imagen.setUpdatedAt(OffsetDateTime.now());
+
+        return aDTO(imagenRepository.save(imagen));
+    }
+
+    /* Trim + vacío→null; el largo ya lo acota Bean Validation en el DTO. */
+    private String normalizarTextoDeImagen(String valor, int maximo) {
+        String limpio = valor.trim();
+
+        if (limpio.isEmpty()) {
+            return null;
+        }
+
+        if (limpio.length() > maximo) {
+            throw new ImagenInvalidaException(
+                    "El texto supera el maximo de " + maximo + " caracteres."
+            );
+        }
+
+        return limpio;
+    }
+
+    /*
+      Límites de subida por actividad (fase 2; antes no había NINGUNO):
+      un tope anti-flood de pendientes en la cola y un máximo de fotos
+      de galería "que van a existir" (activas + pendientes).
+    */
+    private void validarLimitesDeActividad(Long actividadId, String tipoNormalizado) {
+        long pendientes = imagenRepository
+                .countByActividad_IdAndEstadoModeracion(actividadId, ESTADO_PENDIENTE);
+
+        if (pendientes >= mediaProperties.getMaxPendientesPorActividad()) {
+            throw new ImagenInvalidaException(
+                    "Esta actividad ya tiene " + pendientes
+                            + " imagenes esperando revision. Espera la moderacion antes de subir mas."
+            );
+        }
+
+        if (TIPO_GALERIA.equals(tipoNormalizado)) {
+            long galeriaExistente = imagenRepository
+                    .countByActividad_IdAndTipoImagenAndActivaTrue(actividadId, TIPO_GALERIA)
+                    + imagenRepository.countByActividad_IdAndTipoImagenAndEstadoModeracion(
+                            actividadId, TIPO_GALERIA, ESTADO_PENDIENTE);
+
+            if (galeriaExistente >= mediaProperties.getMaxGaleriaPorActividad()) {
+                throw new ImagenInvalidaException(
+                        "La galeria admite hasta "
+                                + mediaProperties.getMaxGaleriaPorActividad()
+                                + " fotos por actividad. Elimina alguna para subir otra."
+                );
+            }
+        }
     }
 
     /**
@@ -413,7 +661,20 @@ public class ImagenPublicadorService {
                 && contenido[11] == 'P';
     }
 
+    /*
+      Contador monotónico: max(orden)+1 sobre TODAS las filas de la
+      actividad. Antes era size()+1, que tras retirar filas intermedias
+      podía repetir valores y romper el orden estable de la galería.
+    */
     private Integer calcularSiguienteOrden(Long actividadId) {
-        return imagenRepository.findByActividad_IdOrderByCreatedAtDesc(actividadId).size() + 1;
+        int maximo = 0;
+
+        for (Imagen imagen : imagenRepository.findByActividad_IdOrderByCreatedAtDesc(actividadId)) {
+            if (imagen.getOrden() != null && imagen.getOrden() > maximo) {
+                maximo = imagen.getOrden();
+            }
+        }
+
+        return maximo + 1;
     }
 }

@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthApiError, registrarPublicador } from "../../services/authService";
 import { obtenerCiudades } from "../../services/ciudadService";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
+import {
+  obtenerRutaInicialPorRol,
+  obtenerRutaPostLogin,
+} from "../../lib/authRedirects";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
@@ -119,7 +122,12 @@ export function RegisterPublisherForm() {
       return;
     }
 
-    router.replace(obtenerRutaInicialPorRol(rolActual));
+    /*
+      Ya está adentro: pisó el registro con sesión, sale al inicio. El
+      redirect de la cuenta RECIÉN creada (más abajo) sí va a /publicador:
+      quien se registra para publicar arranca armando su espacio.
+    */
+    router.replace(obtenerRutaPostLogin(rolActual));
   }, [router, sesion, status, usuario]);
 
   useEffect(() => {

@@ -1,9 +1,9 @@
-# Roadmap de próximos bloques (definido por Agustín, 2026-08-19)
+# Roadmap oficial de bloques (Agustín, 2026-08-19 — v2, 15 bloques)
 
-> **Este documento orienta, no dispara trabajo**: ningún bloque de esta
-> lista se implementa sin pedido explícito. Sirve para que cada bloque
-> nuevo se elija con dirección y para chequear que ningún cambio vaya
-> en contra de ella.
+> **Este es el orden oficial de trabajo.** Se trabaja sobre estos 15
+> puntos antes de abrir frentes nuevos, salvo urgencia técnica o bug
+> productivo. Ningún bloque se implementa sin pedido explícito. La v1
+> de este doc (10 ítems) queda reemplazada por esta.
 
 ## El criterio estratégico
 
@@ -12,49 +12,60 @@ DondeEntreno **no** es una red social genérica. La dirección es:
 asistente IA**, siempre al servicio de una única acción principal:
 **encontrar dónde entrenar**.
 
-Antes de funciones sociales grandes (comentarios, mensajes privados,
-publicaciones libres), priorizar: navegación clara, perfiles
-confiables, guardados útiles, publicadores fuertes, contenido visual,
-recomendaciones, sesión persistente, confianza y descubrimiento local.
+No sumar comentarios, mensajes privados ni publicaciones libres hasta
+que estén sólidos: navegación, perfiles, fotos, guardados, sesiones,
+publicadores, confianza, detalle, Home y señales sociales básicas.
 
 ## El ranking
 
-1. **Mi Perfil / navegación por rol V2** — ✅ hecho en este bloque
-   (`docs/mi-perfil-navegacion-v2.md`). "Mi perfil" es el espacio
-   personal; "Espacio publicador" es una opción separada.
-2. **Refresh token completo frontend + producción** — sesión
-   persistente sin pérdidas molestas, con logout real y seguridad.
-   *Nota de estado: el grueso ya está en producción con smoke cerrado
-   (`docs/plan-refresh-token.md`); lo que quede acá es pulido fino de
-   la experiencia de sesión, no arquitectura nueva.*
-3. **Publicador UX V2** — espacio publicador más claro, guiado y
-   profesional: perfil público, mis actividades, solicitudes, imágenes,
-   métricas, checklist de presencia, guías para publicar mejor.
-4. **Detalle de actividad premium** — imagen principal fuerte, galería,
-   horarios claros, precio, publicador destacado, seguir, guardar,
-   contactar, actividades similares, referencias futuras.
-5. **Perfil público de publicador premium** — portada, logo,
-   descripción, actividades, galería, seguir, WhatsApp, métricas
-   reales, confianza/verificación.
-6. **Home feed con más contenido real** — actividades nuevas,
-   publicadores para seguir, deportes destacados, recomendaciones por
-   ciudad, contenido visual real, menos sensación de landing.
-7. **Guardados avanzados / colecciones** — "Para probar", "Cerca de
-   casa", "Con amigos"; notas personales; comparar; ordenar por
-   deporte, barrio o precio.
-8. **Valoraciones y "Estoy entrenando acá"** — señales sociales propias
-   de DondeEntreno: referencias, valoración simple, confianza
-   comunitaria. Sin comentarios libres todavía.
-9. **Slugs amigables + SEO** — `/publicadores/club-atletico-sur` en vez
-   de `/publicadores/8` (necesita migración), corregir soft-404,
-   mejorar SEO por deporte/ciudad/publicador, sitemap limpio.
-10. **Mapa / cercanía / distancia** — mapa, actividades cerca,
-    distancia aproximada, filtros por zona, eventualmente cómo llegar.
+1. **Mi Perfil / navegación por rol V2** — ✅ **CERRADO en producción**
+   (`7099d14`, smoke OK; `docs/mi-perfil-navegacion-v2.md`). "Mi
+   perfil" = espacio personal; "Espacio publicador" = opción separada.
+2. **Refresh token completo frontend + producción** — ✅ grueso **en
+   producción con smoke cerrado** (`75fa5c4`;
+   `docs/plan-refresh-token.md`). Queda pulido fino de experiencia de
+   sesión, no arquitectura.
+3. **Contenido visual / Media Center / Fotos reales V1** — logos,
+   portada, imagen principal, galerías por actividad, orden, estados,
+   aprobación, previews, fallbacks. *Diagnóstico hecho en
+   `docs/bloque-contenido-visual-v1.md` (Fase 0).*
+4. **Modo oscuro base** — apariencia Sistema/Claro/Oscuro, azul noche
+   de marca, sin negro puro.
+5. **Login UX V1** — redirección a Home para usuario/publicador,
+   placeholders, ojito mostrar/ocultar, errores humanos. *Implementado
+   como Fase 1 del bloque visual (ver doc del bloque).*
+6. **Perfil usuario editable** — foto de perfil, nombre visible,
+   ciudad/preferencias, deportes, apariencia. *Incluye el sub-bloque de
+   seguridad de cuenta: verificación de email, cambiar contraseña,
+   recuperar contraseña (diagnóstico en el doc del bloque, §4 BIS).*
+7. **Perfil publicador editable** — nombre visible, descripción, logo,
+   portada, contacto, preview pública, identidad.
+8. **Gestión de actividades por publicador** — editar título/
+   descripción, imagen principal, galería, horarios/precio,
+   ocultar/pausar/mostrar/archivar, sin borrado destructivo sin diseño.
+9. **Publicador UX V2** — espacio claro, guiado y profesional: perfil
+   público, actividades, solicitudes, imágenes, métricas, checklist,
+   guías.
+10. **Detalle de actividad premium** — imagen fuerte, galería, horarios
+    claros, precio, publicador destacado, seguir, guardar, contactar,
+    similares, referencias futuras.
+11. **Perfil público de publicador premium** — portada, logo,
+    descripción, actividades, galería, seguir, WhatsApp, métricas,
+    confianza/verificación.
+12. **Home feed con contenido real** — actividades nuevas, publicadores
+    para seguir, deportes destacados, recomendaciones por ciudad,
+    contenido visual real, menos landing.
+13. **Guardados avanzados / colecciones** — colecciones, notas,
+    ordenar, comparar, "para probar", "cerca de casa".
+14. **Likes en fotos / señales sociales** — likes en fotos, ordenar por
+    populares, reportar foto, compartir. Sin comentarios abiertos.
+15. **Valoraciones, "Estoy entrenando acá", SEO, mapa y futuros** —
+    valoraciones/referencias, slugs amigables, SEO, mapa/cercanía,
+    videos; comentarios solo cuando haya moderación.
 
-## Cruce con los pendientes técnicos ya conocidos
+## Cruce con pendientes técnicos
 
-El ranking convive con los pendientes de CLAUDE.md que no son bloques
-de producto: el motor local del asistente que no cede ante
-barrios/días (A3), el contenido/imágenes reales (bloqueo del feed
-visual, toca a los bloques 4–6), el hero con foto real, y el backend de
-editar perfil de usuario. Al elegir bloque, mirar los dos listados.
+Siguen vivos fuera del ranking: el motor local del asistente que no
+cede ante barrios/días (A3 de CLAUDE.md), el hero con foto real de Mar
+del Plata (necesita asset aprobado), y las deudas menores de CLAUDE.md
+§E. Al elegir bloque, mirar los dos listados.

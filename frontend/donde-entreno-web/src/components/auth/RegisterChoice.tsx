@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
+import { obtenerRutaPostLogin } from "../../lib/authRedirects";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
@@ -25,7 +25,8 @@ export function RegisterChoice() {
       return;
     }
 
-    router.replace(obtenerRutaInicialPorRol(rolActual));
+    /* Ya está adentro: pisó /registro por error, lo devolvemos al inicio. */
+    router.replace(obtenerRutaPostLogin(rolActual));
   }, [router, sesion, status, usuario]);
 
   return (

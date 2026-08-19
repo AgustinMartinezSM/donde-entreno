@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthApiError, registrarUsuario } from "../../services/authService";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
+import {
+  obtenerRutaInicialPorRol,
+  obtenerRutaPostLogin,
+} from "../../lib/authRedirects";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
@@ -57,7 +60,12 @@ export function RegisterUserForm() {
       return;
     }
 
-    router.replace(obtenerRutaInicialPorRol(rolActual));
+    /*
+      Ya está adentro: pisó /registro con sesión, sale al inicio. El
+      redirect de la cuenta RECIÉN creada (más abajo) sí va al primer
+      paso por rol: estrenar cuenta amerita el onboarding.
+    */
+    router.replace(obtenerRutaPostLogin(rolActual));
   }, [router, sesion, status, usuario]);
 
   function manejarCambio(

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { CATALOGO_DEPORTES_ASISTENTE } from "../../lib/asistente/conocimiento";
 import { useDeportesFavoritos } from "../../lib/preferenciasDeportivas";
+import { useAuthSession } from "../auth/AuthSessionProvider";
 
 type HomePreferenciasChipsProps = {
   ciudadSlug: string;
@@ -14,17 +15,26 @@ type HomePreferenciasChipsProps = {
   favoritos (en /mi-cuenta), le mostramos accesos directos arriba del
   feed. Sin preferencias guardadas no se renderiza nada — la home queda
   igual para quien llega por primera vez.
+
+  SOLO para sesiones iniciadas: elegir deportes vive en /mi-cuenta
+  (detrás del login), así que un visitante no puede armar esta lista —
+  pero el scope de invitado conserva la clave histórica de localStorage
+  y guardaba elecciones viejas de esta computadora. Un visitante veía
+  "TUS DEPORTES" de otra persona (visto en producción, 2026-08-19).
+  Mientras la sesión resuelve tampoco se dibuja: mostrar y sacar el
+  bloque era peor que aparecer medio segundo después.
 */
 export function HomePreferenciasChips({
   ciudadSlug,
 }: HomePreferenciasChipsProps) {
+  const { status } = useAuthSession();
   const favoritos = useDeportesFavoritos();
 
   const deportesFavoritos = CATALOGO_DEPORTES_ASISTENTE.filter((deporte) =>
     favoritos.includes(deporte.slug)
   );
 
-  if (deportesFavoritos.length === 0) {
+  if (status !== "authenticated" || deportesFavoritos.length === 0) {
     return null;
   }
 

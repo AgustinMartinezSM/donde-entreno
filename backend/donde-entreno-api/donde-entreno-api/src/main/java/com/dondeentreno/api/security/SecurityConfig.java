@@ -107,6 +107,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/publicador").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/publicador/**").hasRole("PUBLICADOR")
+                        /*
+                          Explicita y no via anyRequest(): el espacio del
+                          usuario comun (favoritos, deportes, seguimientos,
+                          feed) requiere sesion pero NINGUN rol especial —
+                          que quede escrito y no dependa del fallback.
+                          (Deuda registrada desde la capa social; saldada
+                          con el bloque de sync, que es su "plan previo".)
+                        */
+                        .requestMatchers("/api/usuario/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .build();

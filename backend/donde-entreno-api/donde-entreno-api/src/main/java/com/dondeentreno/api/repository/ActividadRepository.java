@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +103,26 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
      */
     Optional<Actividad> findBySlugAndActivaTrueAndEstadoPublicacion(
             String slug,
+            String estadoPublicacion
+    );
+
+    /**
+     * Actividades publicables de un conjunto de ids (los favoritos del
+     * usuario): mismo criterio de visibilidad y mismo grafo que el feed,
+     * así un favorito se ve idéntico a cualquier card pública. Una
+     * actividad despublicada simplemente no vuelve (el favorito queda en
+     * su tabla por si se republica).
+     */
+    @EntityGraph(attributePaths = {
+            "perfilPublicador",
+            "deporte",
+            "deporte.categoriaDeportiva",
+            "ubicacion",
+            "ubicacion.ciudad",
+            "ubicacion.barrio"
+    })
+    List<Actividad> findByIdInAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+            Collection<Long> ids,
             String estadoPublicacion
     );
 

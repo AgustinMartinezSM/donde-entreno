@@ -92,19 +92,26 @@ reemplazar — los componentes consumen los hooks".
   dispositivos. Se suma el deep-link real: solapa por URL en `/mi-cuenta`
   (`?tab=deportes`) y "Editar preferencias" apunta ahí.
 
-## 5. Decisiones para Agustín
+## 5. Decisiones (aprobadas por Agustín, 2026-08-19)
 
-1. **¿Deportes preferidos entran en este bloque?** Recomendación: **sí**
-   — mismo mecanismo, una migración, y cierra la historia de los chips
-   que encontraste hoy. (Si no, el plan se recorta a favoritos solo.)
-2. **Lo guardado como CUENTA antes del sync** (scope local `u<id>` de
-   quien ya usaba la app logueado): ¿se sube al backend en el primer
-   login post-deploy? Recomendación: **sí, una única vez por
-   dispositivo** — es la propia lista de esa cuenta (la prohibición de
-   migrar es del scope de invitado, no del propio). Marca local de
-   "ya subido" para no re-subir borrados.
-3. **El visitante sigue sin poder guardar** (hoy el botón manda a
-   login). Recomendación: mantener.
+1. **Deportes preferidos entran en el bloque.** ✔
+2. **Siembra única de lo guardado como cuenta antes del sync.** ✔ El
+   criterio "óptimo y cómodo": en el primer boot autenticado post-deploy,
+   si la cuenta **no tiene nada en el backend** y el scope local `u<id>`
+   sí, se sube lo local (favoritos y deportes) y se marca en local como
+   sembrado. Si el backend YA tiene datos, gana el backend y no se sube
+   nada: así un borrado hecho en otro dispositivo no resucita. La
+   prohibición de migrar sigue siendo solo del scope de invitado.
+3. **El visitante sigue sin poder guardar.** ✔
+
+## 5b. Refinamiento de contrato (surgido del código real)
+
+Los endpoints de favoritos van **por slug**, no por id:
+`PUT/DELETE /api/usuario/favoritos/{slug}`. El snapshot local
+(`FavoritoGuardado`) guarda slug y no id — con id, la siembra del punto
+2 necesitaría resolver slugs primero. El slug ya es la identidad pública
+de la actividad en todo el frontend. `PUT` con slug inexistente o no
+publicado → 404; `DELETE` → 204 idempotente siempre.
 
 ## 6. Orden de deploy (reglas 2, 12 y dos pushes)
 

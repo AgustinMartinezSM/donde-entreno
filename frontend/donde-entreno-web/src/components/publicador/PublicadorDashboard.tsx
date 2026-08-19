@@ -202,6 +202,22 @@ export function PublicadorDashboard() {
                 >
                   Editar mi perfil
                 </AppLinkButton>
+                {/*
+                  El espejo que faltaba: cómo te ve la gente. Solo si el
+                  perfil está activo — la ruta pública devuelve 404 para
+                  perfiles inactivos y un link a un 404 es peor que nada.
+                  Es la vista PUBLICADA: lo pendiente de moderación no
+                  aparece ahí todavía.
+                */}
+                {perfil?.activo ? (
+                  <AppLinkButton
+                    href={`/publicadores/${perfil.id}`}
+                    variant="outline"
+                    fullWidth
+                  >
+                    Ver mi perfil público
+                  </AppLinkButton>
+                ) : null}
                 <StatusMessage variant="info">
                   Revisá las actividades que ya fueron aprobadas y publicadas.
                   También podés enviar una nueva solicitud o seguir el estado de

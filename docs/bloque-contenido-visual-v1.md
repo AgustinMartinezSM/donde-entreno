@@ -33,7 +33,7 @@ premium, Perfil público premium y Home feed (bloques 9–12 del roadmap).
 |---|---|---|
 | **0** | Diagnóstico técnico y UX completo | ✅ **HECHA** (2026-08-19, este doc) |
 | **1** | Login UX V1 (frontend-only) | ✅ **EN PRODUCCIÓN** (`151960d`, deploy Vercel verificado por marcador; falta el smoke autenticado de Agustín) |
-| **2** | Controles del publicador sin migración (backend + plan previo) | Pendiente — diseño abajo |
+| **2** | Controles del publicador sin migración (backend + plan previo) | **PLAN PRESENTADO** (`docs/plan-fase2-controles-publicador.md`, esperando aprobación de Agustín + sus 4 decisiones); el ítem frontend-only ya está: **preview pública del perfil** en dashboard y editor (solo perfil activo) |
 | **3** | Media Center publicador V1 (frontend sobre F2) | Pendiente |
 | **4** | Vista pública de galerías V1 (frontend + endpoint agregado) | Pendiente |
 | **5** | Perfiles editables + seguridad de cuenta (ver sub-fases) | Pendiente — 5a entregable ya; 5b/5c bloqueadas por proveedor de email; 5d necesita migración |

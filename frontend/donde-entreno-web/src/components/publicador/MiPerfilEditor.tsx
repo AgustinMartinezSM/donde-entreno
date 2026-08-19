@@ -166,9 +166,25 @@ export function MiPerfilEditor() {
           title="Mi perfil publicador"
           description="Mantené actualizada la información que ven las personas cuando publicás actividades."
           action={
-            <AppLinkButton href="/publicador" variant="secondary" fullWidth>
-              Volver al panel
-            </AppLinkButton>
+            <div className="grid gap-2">
+              {/*
+                Preview del perfil PUBLICADO (lo pendiente de moderación
+                todavía no se ve ahí). Solo con perfil activo: la ruta
+                pública devuelve 404 para inactivos.
+              */}
+              {perfil?.activo ? (
+                <AppLinkButton
+                  href={`/publicadores/${perfil.id}`}
+                  variant="outline"
+                  fullWidth
+                >
+                  Ver mi perfil público
+                </AppLinkButton>
+              ) : null}
+              <AppLinkButton href="/publicador" variant="secondary" fullWidth>
+                Volver al panel
+              </AppLinkButton>
+            </div>
           }
         />
 

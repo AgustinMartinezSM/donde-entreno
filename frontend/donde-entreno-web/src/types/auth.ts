@@ -47,6 +47,14 @@ export type LoginResponse = {
   // expiresIn se interpreta en segundos segun el LoginResponseDTO/JwtService.
   expiresIn: number;
 
+  /*
+    Refresh token opaco (sesion persistente, script 19). Opcionales para
+    tolerar cualquier orden de llegada de los deploys: un backend sin el
+    campo simplemente no persiste la sesion.
+  */
+  refreshToken?: string;
+  refreshExpiresIn?: number;
+
   usuario: AuthUsuario;
 };
 

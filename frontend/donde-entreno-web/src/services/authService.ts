@@ -26,6 +26,23 @@ const ADMIN_SESSION_STORAGE_LEGACY_KEY = "donde_entreno_admin_session";
 const LOGOUT_MARKER_STORAGE_KEY = "donde_entreno_logout_at";
 const LOGOUT_RECIENTE_MS = 15_000;
 
+/*
+  El refresh token vive en localStorage A PROPOSITO (decision del
+  2026-08-19, docs/plan-refresh-token.md): la cookie HttpOnly seria de
+  terceros entre Vercel y Render y los navegadores la bloquean. Es lo
+  UNICO que cruza de sessionStorage a localStorage: la sesion (access
+  token) sigue siendo por pestaña como siempre.
+
+  La clave se exporta para que el provider escuche el evento `storage`:
+  cuando otra pestaña la borra (logout), esta tambien cierra sesion.
+*/
+export const REFRESH_TOKEN_STORAGE_KEY = "donde_entreno_refresh_token";
+
+type RefreshTokenGuardado = {
+  token: string;
+  expiresAt: number;
+};
+
 type AuthApiErrorOpciones = {
   status?: number | null;
   respuesta?: AuthErrorResponse | null;
@@ -141,7 +158,151 @@ export function guardarSesionAuth(respuesta: LoginResponse): SesionAuth {
     window.sessionStorage.removeItem(LOGOUT_MARKER_STORAGE_KEY);
   }
 
+  /*
+    Todos los caminos que crean sesion (login, registros, admin y el
+    propio refresh) pasan por aca: es el unico punto donde el refresh
+    token se persiste o se renueva.
+  */
+  guardarRefreshTokenGuardado(respuesta);
+
   return sesion;
+}
+
+/**
+ * Rota el refresh token contra el backend y devuelve la sesion nueva
+ * completa (misma forma que el login).
+ */
+export async function refrescarSesion(
+  refreshToken: string
+): Promise<LoginResponse> {
+  return ejecutarAuthRequest(
+    `${API_BASE_URL}/api/auth/refresh`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+    },
+    esLoginResponse,
+    "Tu sesion expiro o no es valida."
+  );
+}
+
+/**
+ * Revoca la familia del refresh token en el servidor (logout real).
+ *
+ * Best effort a proposito: el logout local nunca debe fallar porque el
+ * backend no conteste, y `keepalive` deja que el request sobreviva a la
+ * navegacion que el logout dispara inmediatamente despues.
+ */
+export function revocarRefreshToken(refreshToken: string): void {
+  try {
+    void fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+      keepalive: true,
+    }).catch(() => {
+      /* Sin red no hay revocacion remota; el token local igual se borra. */
+    });
+  } catch {
+    /* fetch puede no existir en SSR: no hay nada que revocar ahi. */
+  }
+}
+
+/** El refresh token persistido, o null si no hay, esta vencido o es ilegible. */
+export function obtenerRefreshTokenGuardado(): string | null {
+  if (!puedeUsarLocalStorage()) {
+    return null;
+  }
+
+  const crudo = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
+  if (!crudo) {
+    return null;
+  }
+
+  try {
+    const guardado: unknown = JSON.parse(crudo) as unknown;
+
+    if (!esRefreshTokenGuardado(guardado) || guardado.expiresAt <= Date.now()) {
+      window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+      return null;
+    }
+
+    return guardado.token;
+  } catch {
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    return null;
+  }
+}
+
+/*
+  Vencimiento del refresh persistido: es el horizonte de la cookie
+  liviana del proxy. Si la cookie venciera con el ACCESS token (60 min),
+  el proxy redirigiria a login manana a la mañana antes de que el
+  provider pudiera refrescar.
+*/
+export function obtenerVencimientoRefreshGuardado(): number | null {
+  if (!puedeUsarLocalStorage()) {
+    return null;
+  }
+
+  const crudo = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
+  if (!crudo) {
+    return null;
+  }
+
+  try {
+    const guardado: unknown = JSON.parse(crudo) as unknown;
+
+    if (!esRefreshTokenGuardado(guardado) || guardado.expiresAt <= Date.now()) {
+      return null;
+    }
+
+    return guardado.expiresAt;
+  } catch {
+    return null;
+  }
+}
+
+export function borrarRefreshTokenGuardado(): void {
+  if (puedeUsarLocalStorage()) {
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+  }
+}
+
+function guardarRefreshTokenGuardado(respuesta: LoginResponse): void {
+  if (!puedeUsarLocalStorage()) {
+    return;
+  }
+
+  const token = respuesta.refreshToken?.trim();
+
+  /*
+    Sin refresh en la respuesta (backend viejo) el registro guardado se
+    borra igual: pertenece a la sesion ANTERIOR, y dejarlo vivo podria
+    resucitar mas tarde una cuenta que ya no es la logueada.
+  */
+  if (!token || !Number.isFinite(respuesta.refreshExpiresIn)) {
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    return;
+  }
+
+  const guardado: RefreshTokenGuardado = {
+    token,
+    expiresAt: Date.now() + (respuesta.refreshExpiresIn as number) * 1000,
+  };
+
+  window.localStorage.setItem(
+    REFRESH_TOKEN_STORAGE_KEY,
+    JSON.stringify(guardado)
+  );
 }
 
 export function obtenerSesionAuth(): SesionAuth | null {
@@ -230,6 +391,13 @@ export function obtenerAccessTokenAdmin(): string | null {
 
 export function cerrarSesionAdmin(): void {
   cerrarSesionAuth();
+  /*
+    El shim de admin no pasa por el provider: si algun caller futuro lo
+    usa, el refresh persistido no puede quedar vivo resucitando la
+    sesion en el proximo boot. (Hoy todos los logout de admin van por el
+    context, que ademas revoca en el servidor.)
+  */
+  borrarRefreshTokenGuardado();
 }
 
 export function esSesionAdminVigente(sesion: AdminSesion | null): boolean {
@@ -311,6 +479,25 @@ function obtenerMensajeErrorAuth(
 
 function puedeUsarSessionStorage(): boolean {
   return typeof window !== "undefined" && "sessionStorage" in window;
+}
+
+function puedeUsarLocalStorage(): boolean {
+  try {
+    return typeof window !== "undefined" && "localStorage" in window;
+  } catch {
+    /* localStorage bloqueado por el navegador: la sesion no persiste. */
+    return false;
+  }
+}
+
+function esRefreshTokenGuardado(valor: unknown): valor is RefreshTokenGuardado {
+  return (
+    esObjeto(valor) &&
+    typeof valor.token === "string" &&
+    valor.token.trim().length > 0 &&
+    typeof valor.expiresAt === "number" &&
+    Number.isFinite(valor.expiresAt)
+  );
 }
 
 function esAuthUsuario(valor: unknown): valor is AuthUsuario {

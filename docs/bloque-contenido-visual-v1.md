@@ -32,7 +32,7 @@ premium, Perfil público premium y Home feed (bloques 9–12 del roadmap).
 | Fase | Contenido | Estado |
 |---|---|---|
 | **0** | Diagnóstico técnico y UX completo | ✅ **HECHA** (2026-08-19, este doc) |
-| **1** | Login UX V1 (frontend-only) | ✅ **IMPLEMENTADA** — commit en `feat/login-ux-v1`, pendiente push |
+| **1** | Login UX V1 (frontend-only) | ✅ **EN PRODUCCIÓN** (`151960d`, deploy Vercel verificado por marcador; falta el smoke autenticado de Agustín) |
 | **2** | Controles del publicador sin migración (backend + plan previo) | Pendiente — diseño abajo |
 | **3** | Media Center publicador V1 (frontend sobre F2) | Pendiente |
 | **4** | Vista pública de galerías V1 (frontend + endpoint agregado) | Pendiente |

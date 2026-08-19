@@ -97,8 +97,15 @@ public class RefreshTokenService {
      * familia caida no se rehabilita), el reuso se evalua antes que el
      * vencimiento (un token robado viejo sigue delatando el robo), y
      * recien despues la expiracion.
+     *
+     * noRollbackFor es la pieza que hace real la garantia del reuso: el
+     * 401 se señala tirando CredencialesInvalidas DESPUES de revocar la
+     * familia, y sin esta clausula el rollback de la transaccion
+     * deshacia la revocacion — el 401 salia igual, pero el token
+     * "legitimo" del ladron seguia vivo. Lo descubrio RefreshTokenIT:
+     * con el repositorio mockeado del unit test era invisible.
      */
-    @Transactional
+    @Transactional(noRollbackFor = CredencialesInvalidasException.class)
     public Rotacion rotar(String tokenPlano) {
         RefreshToken token = buscarPorTokenPlano(tokenPlano)
                 .orElseThrow(() -> new CredencialesInvalidasException(MENSAJE_SESION_INVALIDA));

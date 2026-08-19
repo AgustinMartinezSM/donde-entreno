@@ -19,6 +19,8 @@
 
 import { useSyncExternalStore } from "react";
 import { crearAlmacenLocal } from "./almacenLocal";
+import { obtenerAccessTokenAuth } from "../services/authService";
+import { reemplazarDeportesCuenta } from "../services/cuentaSyncService";
 
 function esSlug(valor: unknown): valor is string {
   return typeof valor === "string" && valor.length > 0;
@@ -30,16 +32,38 @@ const almacen = crearAlmacenLocal<string>(
   { porUsuario: true }
 );
 
+/*
+  Con sesión, cada toggle empuja el CONJUNTO completo al backend (el
+  contrato de /api/usuario/deportes es reemplazo total). Optimista con
+  reversa: si el backend rechaza, el conjunto local vuelve al anterior.
+*/
 export function alternarDeporteFavorito(slug: string): boolean {
   const actuales = almacen.leer();
+  const quedoElegido = !actuales.includes(slug);
+  const nuevos = quedoElegido
+    ? [...actuales, slug]
+    : actuales.filter((item) => item !== slug);
 
-  if (actuales.includes(slug)) {
-    almacen.escribir(actuales.filter((item) => item !== slug));
-    return false;
+  almacen.escribir(nuevos);
+
+  const token = obtenerAccessTokenAuth();
+
+  if (token) {
+    void reemplazarDeportesCuenta(token, nuevos).catch(() => {
+      almacen.escribir(actuales);
+    });
   }
 
-  almacen.escribir([...actuales, slug]);
-  return true;
+  return quedoElegido;
+}
+
+export function leerDeportesFavoritos(): string[] {
+  return almacen.leer();
+}
+
+/* Solo para el sincronizador de cuenta: pisa la cache con el backend. */
+export function reemplazarDeportesDesdeCuenta(slugs: string[]) {
+  almacen.escribir(slugs);
 }
 
 export function useDeportesFavoritos(): string[] {

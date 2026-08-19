@@ -19,6 +19,11 @@
 import { useSyncExternalStore } from "react";
 import { crearAlmacenLocal } from "./almacenLocal";
 import { obtenerScopeAlmacen, suscribirScopeAlmacen } from "./scopeAlmacen";
+import { obtenerAccessTokenAuth } from "../services/authService";
+import {
+  guardarFavoritoCuenta,
+  quitarFavoritoCuenta,
+} from "../services/cuentaSyncService";
 
 export type FavoritoGuardado = {
   slug: string;
@@ -99,14 +104,21 @@ export function esFavorito(slug: string): boolean {
 /*
   Alterna el estado de favorito y devuelve el estado final:
   true = quedó guardado, false = quedó quitado.
+
+  Con sesión iniciada, el cambio también viaja al backend (la fuente de
+  verdad desde el script 20). Optimista con reversa: la UI responde al
+  toque y, si el backend rechaza, el cambio local se deshace — la
+  próxima sincronización de todos modos pisa lo local con la cuenta.
 */
 export function alternarFavorito(datos: DatosFavorito): boolean {
   const actuales = almacen.leer();
 
   if (actuales.some((favorito) => favorito.slug === datos.slug)) {
+    const quitado = actuales.find((favorito) => favorito.slug === datos.slug);
     almacen.escribir(
       actuales.filter((favorito) => favorito.slug !== datos.slug)
     );
+    empujarQuitarACuenta(datos.slug, quitado ?? null);
     return false;
   }
 
@@ -116,13 +128,55 @@ export function alternarFavorito(datos: DatosFavorito): boolean {
   };
 
   almacen.escribir([nuevo, ...actuales]);
+  empujarGuardarACuenta(datos.slug);
   return true;
 }
 
 export function quitarFavorito(slug: string) {
-  almacen.escribir(
-    almacen.leer().filter((favorito) => favorito.slug !== slug)
-  );
+  const actuales = almacen.leer();
+  const quitado = actuales.find((favorito) => favorito.slug === slug);
+
+  almacen.escribir(actuales.filter((favorito) => favorito.slug !== slug));
+  empujarQuitarACuenta(slug, quitado ?? null);
+}
+
+/*
+  El sincronizador de cuenta pisa la cache local con lo que dice el
+  backend (snapshots vivos). Solo él debe llamarlo: los componentes
+  siguen usando los toggles de arriba.
+*/
+export function reemplazarFavoritosDesdeCuenta(lista: FavoritoGuardado[]) {
+  almacen.escribir(lista);
+}
+
+function empujarGuardarACuenta(slug: string) {
+  const token = obtenerAccessTokenAuth();
+
+  if (!token) {
+    return;
+  }
+
+  void guardarFavoritoCuenta(token, slug).catch(() => {
+    /* El backend lo rechazó: el guardado local se deshace. */
+    almacen.escribir(
+      almacen.leer().filter((favorito) => favorito.slug !== slug)
+    );
+  });
+}
+
+function empujarQuitarACuenta(slug: string, respaldo: FavoritoGuardado | null) {
+  const token = obtenerAccessTokenAuth();
+
+  if (!token) {
+    return;
+  }
+
+  void quitarFavoritoCuenta(token, slug).catch(() => {
+    /* No se pudo quitar en la cuenta: vuelve a la lista local. */
+    if (respaldo && !almacen.leer().some((favorito) => favorito.slug === slug)) {
+      almacen.escribir([respaldo, ...almacen.leer()]);
+    }
+  });
 }
 
 export function useFavoritos(): FavoritoGuardado[] {

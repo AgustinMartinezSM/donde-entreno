@@ -3,6 +3,7 @@ import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { AsistenteWidget } from "../components/asistente/AsistenteWidget";
 import { AuthSessionProvider } from "../components/auth/AuthSessionProvider";
+import { SincronizadorCuenta } from "../components/auth/SincronizadorCuenta";
 import { ScrollToTopButton } from "../components/layout/ScrollToTopButton";
 import { Footer } from "../components/layout/Footer";
 import { MobileNavigation } from "../components/layout/MobileNavigation";
@@ -91,6 +92,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthSessionProvider>
+          {/* Sincroniza favoritos y deportes con la cuenta al loguearse. */}
+          <SincronizadorCuenta />
           {children}
           <Footer />
           <MobileNavigation />

@@ -110,7 +110,7 @@ export function PublicadorActividadDetail() {
   const slugPublico = actividad ? obtenerSlugPublico(actividad) : null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Detalle de actividad"
@@ -195,7 +195,7 @@ function ActividadDetalleContenido({
 
   return (
     <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-      <SurfaceCard className="overflow-hidden border-[#BFDDEA] bg-gradient-to-br from-white via-white to-[#F8FCFE]">
+      <SurfaceCard className="overflow-hidden border-[var(--color-border-accent)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)]">
         <ActivityImage
           src={imagenUrl}
           fallbackSrc={imagenFallbackUrl}
@@ -339,7 +339,7 @@ function ActividadDetalleContenido({
               {actividad.horarios.map((horario) => (
                 <div
                   key={horario.id}
-                  className="rounded-[18px] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-4 transition duration-200 ease-out hover:border-[#BDE8D0]"
+                  className="rounded-[18px] border border-[var(--color-border-soft)] bg-gradient-to-br from-white to-[var(--color-surface-soft)] p-4 transition duration-200 ease-out hover:border-[var(--color-success-border)]"
                 >
                   <p className="text-sm font-extrabold text-[var(--color-primary)]">
                     {formatearCatalogoONull(horario.diaSemana)}
@@ -379,7 +379,7 @@ function SeccionDetalle({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[22px] border border-[#DDEAF3] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
+    <section className="rounded-[22px] border border-[var(--color-border-soft)] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
       <h3 className="text-lg font-extrabold text-[var(--color-primary)]">
         {titulo}
       </h3>

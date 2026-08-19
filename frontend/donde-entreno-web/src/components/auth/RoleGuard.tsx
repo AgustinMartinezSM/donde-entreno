@@ -105,7 +105,7 @@ function obtenerRutaLoginProtegida(rutaRetorno: string): string {
 
 function RoleGuardShell({ children }: { children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)]">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)]">
       <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
         <SurfaceCard className="w-full p-6 sm:p-7">{children}</SurfaceCard>
       </section>

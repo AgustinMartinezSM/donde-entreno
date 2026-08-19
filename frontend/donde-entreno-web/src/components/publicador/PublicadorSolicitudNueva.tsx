@@ -10,7 +10,7 @@ export function PublicadorSolicitudNueva() {
   const { accessToken } = useAuthSession();
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Nueva solicitud"

@@ -18,7 +18,7 @@ import { obtenerCiudades } from "../../services/ciudadService";
 import type { Ciudad } from "../../types/ciudad";
 
 const selectorContenedorClassName =
-  "flex h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[#BFDDEA] bg-white/95 px-3 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#4FB3D9]/25 sm:w-auto";
+  "flex h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[var(--color-border-accent)] bg-white/95 px-3 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#4FB3D9]/25 sm:w-auto";
 
 export function CitySelectorFallback() {
   return (

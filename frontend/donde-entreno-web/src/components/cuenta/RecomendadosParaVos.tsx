@@ -211,15 +211,15 @@ function EsqueletoCard({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse overflow-hidden rounded-[20px] border border-[#D9E2EC] bg-white p-3.5 ${className}`}
+      className={`animate-pulse overflow-hidden rounded-[20px] border border-[var(--color-border)] bg-white p-3.5 ${className}`}
     >
       <div className="flex items-center gap-2">
-        <span className="h-8 w-8 rounded-full bg-[#E8F6FB]" />
-        <div className="h-3 w-1/3 rounded-full bg-[#E8F6FB]" />
+        <span className="h-8 w-8 rounded-full bg-[var(--color-info-soft)]" />
+        <div className="h-3 w-1/3 rounded-full bg-[var(--color-info-soft)]" />
       </div>
-      <div className="mt-3 h-48 rounded-[16px] bg-[#E8F6FB]" />
-      <div className="mt-4 h-4 w-2/3 rounded-full bg-[#E8F6FB]" />
-      <div className="mt-3 h-3 w-1/2 rounded-full bg-[#F8FAFC]" />
+      <div className="mt-3 h-48 rounded-[16px] bg-[var(--color-info-soft)]" />
+      <div className="mt-4 h-4 w-2/3 rounded-full bg-[var(--color-info-soft)]" />
+      <div className="mt-3 h-3 w-1/2 rounded-full bg-[var(--color-bg)]" />
     </div>
   );
 }

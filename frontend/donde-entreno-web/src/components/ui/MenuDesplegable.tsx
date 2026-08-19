@@ -105,7 +105,7 @@ export function MenuDesplegable({
       {abierto ? (
         <div
           id={idPanel}
-          className={`absolute top-[calc(100%+0.5rem)] z-50 min-w-56 overflow-hidden rounded-[18px] border border-[#DDEAF3] bg-white p-2 shadow-[0_22px_55px_rgba(12,52,80,0.18)] ${
+          className={`absolute top-[calc(100%+0.5rem)] z-50 min-w-56 overflow-hidden rounded-[18px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_22px_55px_rgba(12,52,80,0.18)] ${
             alineacion === "derecha" ? "right-0" : "left-0"
           }`}
         >
@@ -133,8 +133,8 @@ export function OpcionMenu({
 }) {
   const clase = `flex w-full min-h-11 items-center gap-2.5 rounded-[12px] px-3 py-2.5 text-left text-sm font-bold transition duration-200 ease-out ${
     destacada
-      ? "text-[var(--color-primary)] hover:bg-[#F8FCFE]"
-      : "text-[var(--color-muted)] hover:bg-[#F8FAFC] hover:text-[var(--color-primary)]"
+      ? "text-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
+      : "text-[var(--color-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-primary)]"
   }`;
 
   if (href) {

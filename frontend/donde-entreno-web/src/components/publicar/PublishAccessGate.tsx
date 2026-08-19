@@ -117,10 +117,10 @@ function PublicarGateCard({
   actions: ReactNode;
 }) {
   return (
-    <SurfaceCard className="mt-6 overflow-hidden border-[#BDE8D0] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-6 sm:p-8">
+    <SurfaceCard className="mt-6 overflow-hidden border-[var(--color-success-border)] bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-6 sm:p-8">
       <div className="grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-center">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#1D7B4A]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-success)]">
             {eyebrow}
           </p>
           <h2 className="mt-3 text-3xl font-extrabold text-[var(--color-primary)] sm:text-4xl">
@@ -132,7 +132,7 @@ function PublicarGateCard({
           <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
             <BrandName className="inline" />
           </p>
-          <div className="mt-5 rounded-[20px] border border-[#BDE8D0] bg-white/75 p-4 text-sm leading-6 text-[#1D7B4A]">
+          <div className="mt-5 rounded-[20px] border border-[var(--color-success-border)] bg-white/75 p-4 text-sm leading-6 text-[var(--color-success)]">
             La revisión previa ayuda a que cada actividad tenga información
             clara de horarios, ubicación y contacto antes de publicarse.
           </div>

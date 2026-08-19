@@ -158,7 +158,7 @@ export function CabeceraPerfil({
           ) : null}
 
           {perfil.ciudadNombre && deportesVisibles.length > 0 ? (
-            <span aria-hidden="true" className="text-[#BFDDEA]">
+            <span aria-hidden="true" className="text-[var(--color-border-accent)]">
               ·
             </span>
           ) : null}
@@ -227,8 +227,8 @@ function EstadisticaPerfil({
       aria-label={`Ver ${etiqueta}${valor === null ? "" : `: ${valor}`}`}
       className={`min-h-16 rounded-[18px] border px-3 py-3 text-center transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 ${
         activa
-          ? "border-[#BDE8D0] bg-[#F6FCF8]"
-          : "border-[#DDEAF3] bg-white hover:border-[#BFDDEA]"
+          ? "border-[var(--color-success-border)] bg-[var(--color-success-surface)]"
+          : "border-[var(--color-border-soft)] bg-white hover:border-[var(--color-border-accent)]"
       }`}
     >
       <span className="block text-2xl font-extrabold leading-none text-[var(--color-primary)]">

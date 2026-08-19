@@ -139,7 +139,7 @@ export function PublicadorSolicitudesList() {
     !cargando && Boolean(paginaSolicitudes) && !paginaSolicitudes?.ultima;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Seguimiento de solicitudes"
@@ -156,7 +156,7 @@ export function PublicadorSolicitudesList() {
           }
         />
 
-        <SurfaceCard className="mt-6 border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-5 sm:p-6">
+        <SurfaceCard className="mt-6 border-[var(--color-success-border)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-5 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
               eyebrow="Solicitudes"
@@ -176,7 +176,7 @@ export function PublicadorSolicitudesList() {
                 value={filtroEstado}
                 onChange={cambiarFiltroEstado}
                 disabled={cargando}
-                className="mt-2 min-h-11 w-full rounded-[16px] border border-[#BFDDEA] bg-white px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 min-h-11 w-full rounded-[16px] border border-[var(--color-border-accent)] bg-white px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {FILTROS_ESTADO.map((opcion) => (
                   <option key={opcion.valor || "todas"} value={opcion.valor}>
@@ -200,7 +200,7 @@ export function PublicadorSolicitudesList() {
           ) : null}
 
           {!cargando && !error && solicitudes.length === 0 ? (
-            <div className="mt-6 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#1D7B4A]">
+            <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-4 text-sm leading-6 text-[var(--color-success)]">
               <p className="font-extrabold text-[var(--color-primary)]">
                 No hay solicitudes para mostrar.
               </p>
@@ -227,7 +227,7 @@ export function PublicadorSolicitudesList() {
           ) : null}
 
           {paginaSolicitudes ? (
-            <div className="mt-6 flex flex-col gap-3 border-t border-[#DDEAF3] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-3 border-t border-[var(--color-border-soft)] pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-bold text-[var(--color-muted)]">
                 Página {paginaSolicitudes.paginaActual + 1} de{" "}
                 {Math.max(paginaSolicitudes.totalPaginas, 1)}
@@ -264,7 +264,7 @@ function SolicitudCard({
   solicitud: SolicitudPublicadorResumen;
 }) {
   return (
-    <article className="rounded-[22px] border border-[#DDEAF3] bg-gradient-to-br from-white to-[#F8FCFE] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BDE8D0] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
+    <article className="rounded-[22px] border border-[var(--color-border-soft)] bg-gradient-to-br from-white to-[var(--color-surface-soft)] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-success-border)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -292,7 +292,7 @@ function SolicitudCard({
         </p>
         <Link
           href={`/publicador/solicitudes/${solicitud.id}`}
-          className="inline-flex items-center justify-center rounded-[18px] border border-[#BDE8D0] bg-[#E6F7EF] px-4 py-2 text-sm font-extrabold text-[#1D7B4A] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#2EB872] hover:bg-white"
+          className="inline-flex items-center justify-center rounded-[18px] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-4 py-2 text-sm font-extrabold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] hover:bg-white"
         >
           Ver detalle
         </Link>

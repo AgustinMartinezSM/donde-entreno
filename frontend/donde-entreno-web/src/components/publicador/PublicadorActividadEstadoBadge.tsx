@@ -55,18 +55,18 @@ export function formatearEstadoActividad(estado: string): string {
 
 function obtenerClasesEstado(estado: string, activa?: boolean | null): string {
   if (activa === false) {
-    return "border-[#BFDDEA] bg-[#F8FCFE] text-[var(--color-muted)]";
+    return "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] text-[var(--color-muted)]";
   }
 
   if (estado === "PUBLICADA") {
-    return "border-[#BDE8D0] bg-[#F6FCF8] text-[#1D7B4A]";
+    return "border-[var(--color-success-border)] bg-[var(--color-success-surface)] text-[var(--color-success)]";
   }
 
   if (estado === "INACTIVA") {
-    return "border-[#BFDDEA] bg-[#F8FCFE] text-[var(--color-muted)]";
+    return "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] text-[var(--color-muted)]";
   }
 
-  return "border-[#8CCCE6] bg-[#E8F6FB] text-[#0F3D5E]";
+  return "border-[#8CCCE6] bg-[var(--color-info-soft)] text-[var(--color-primary)]";
 }
 
 function obtenerClasesPunto(estado: string, activa?: boolean | null): string {
@@ -75,8 +75,8 @@ function obtenerClasesPunto(estado: string, activa?: boolean | null): string {
   }
 
   if (estado === "PUBLICADA") {
-    return "bg-[#2EB872]";
+    return "bg-[var(--color-secondary)]";
   }
 
-  return "bg-[#4FB3D9]";
+  return "bg-[var(--color-accent)]";
 }

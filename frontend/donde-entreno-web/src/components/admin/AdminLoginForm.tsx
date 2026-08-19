@@ -80,8 +80,8 @@ export function AdminLoginForm() {
 
   return (
     <SurfaceCard className="grid w-full max-w-5xl overflow-hidden rounded-[28px] shadow-[0_30px_80px_rgba(12,52,80,0.16)] lg:grid-cols-[0.95fr_1.05fr]">
-      <aside className="bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872] p-6 text-white sm:p-8 lg:p-10">
-        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#BDE8D0]">
+      <aside className="bg-gradient-to-br from-[var(--color-primary)] via-[#145276] to-[var(--color-secondary)] p-6 text-white sm:p-8 lg:p-10">
+        <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[var(--color-success-border)]">
           <BrandName className="inline" onDark />
         </p>
         <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">
@@ -137,7 +137,7 @@ export function AdminLoginForm() {
               value={email}
               onChange={(evento) => setEmail(evento.target.value)}
               disabled={cargando}
-              className="mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 
@@ -156,7 +156,7 @@ export function AdminLoginForm() {
               value={password}
               onChange={(evento) => setPassword(evento.target.value)}
               disabled={cargando}
-              className="mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 

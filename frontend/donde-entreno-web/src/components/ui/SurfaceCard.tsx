@@ -21,13 +21,13 @@ type SurfaceCardProps = {
 */
 const variantClassNames: Record<NonNullable<SurfaceCardProps["variant"]>, string> =
   {
-    default: "border-[#DDEAF3] bg-white shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
-    soft: "border-[#DDEAF3] bg-white/75 shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
-    success: "border-[#BDE8D0] bg-[#F6FCF8] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
-    info: "border-[#BFDDEA] bg-[#F8FCFE] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
+    default: "border-[var(--color-border-soft)] bg-[var(--color-surface)] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
+    soft: "border-[var(--color-border-soft)] bg-[var(--color-surface)]/75 shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
+    success: "border-[var(--color-success-border)] bg-[var(--color-success-surface)] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
+    info: "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] shadow-[0_16px_40px_rgba(12,52,80,0.08)]",
     /* Superficie oscura de marca, para los bloques que cortan el blanco. */
     brand:
-      "border-[#0F3D5E] bg-[#0F3D5E] text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)]",
+      "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-[0_18px_45px_rgba(15,61,94,0.18)]",
   };
 
 function unirClases(...clases: Array<string | undefined | false>) {

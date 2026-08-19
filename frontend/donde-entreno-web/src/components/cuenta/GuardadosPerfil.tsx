@@ -65,7 +65,7 @@ export function GuardadosPerfil({ perfil, onIrATab }: GuardadosPerfilProps) {
               onClick={() =>
                 window.dispatchEvent(new Event("donde-entreno:abrir-asistente"))
               }
-              className="rounded-sm font-bold text-[var(--color-primary)] underline decoration-[#BFDDEA] decoration-2 underline-offset-2 transition hover:decoration-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+              className="rounded-sm font-bold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] decoration-2 underline-offset-2 transition hover:decoration-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
             >
               Pedile una recomendación al asistente
             </button>

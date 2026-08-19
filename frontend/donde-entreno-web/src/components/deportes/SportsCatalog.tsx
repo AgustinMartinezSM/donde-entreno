@@ -211,7 +211,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
 
   return (
     <div className="mt-10 space-y-12">
-      <section className="rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white/85 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white/85 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6">
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
           <div className="lg:col-span-3">
             <label
@@ -226,11 +226,11 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
               value={busqueda}
               onChange={(evento) => setBusqueda(evento.target.value)}
               placeholder="Buscá por deporte, estilo o alias: bjj, gym, pileta..."
-              className="mt-3 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3]"
+              className="mt-3 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)]"
             />
 
             {mostrarSugerenciasBusqueda && sugerenciasBusqueda.length > 0 ? (
-              <div className="mt-3 rounded-[18px] border border-[#DDEAF3] bg-white p-2 shadow-[0_14px_35px_rgba(12,52,80,0.10)]">
+              <div className="mt-3 rounded-[18px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_14px_35px_rgba(12,52,80,0.10)]">
                 <p className="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
                   Sugerencias
                 </p>
@@ -240,12 +240,12 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
                       key={sugerencia.id}
                       type="button"
                       onClick={() => seleccionarSugerencia(sugerencia)}
-                      className="flex items-center justify-between gap-3 rounded-[14px] border border-transparent bg-[#F8FAFC] px-3 py-3 text-left transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                      className="flex items-center justify-between gap-3 rounded-[14px] border border-transparent bg-[var(--color-bg)] px-3 py-3 text-left transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
                     >
                       <span className="text-sm font-bold text-[var(--color-primary)]">
                         {sugerencia.label}
                       </span>
-                      <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#1D7B4A]">
+                      <span className="shrink-0 rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)]">
                         {sugerencia.tipo === "deporte" ? "Deporte" : "Estilo"}
                       </span>
                     </button>
@@ -268,7 +268,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
               onChange={(evento) =>
                 setCategoriaSeleccionada(evento.target.value)
               }
-              className="mt-3 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3]"
+              className="mt-3 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)]"
             >
               <option value="">Todas</option>
               {categorias.map((categoria) => (
@@ -290,7 +290,7 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
               id="filtro-deporte"
               value={deporteSeleccionado}
               onChange={(evento) => setDeporteSeleccionado(evento.target.value)}
-              className="mt-3 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3]"
+              className="mt-3 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)]"
             >
               <option value="">Todos</option>
               {deportes.map((deporte) => (
@@ -305,14 +305,14 @@ export function SportsCatalog({ deportes }: SportsCatalogProps) {
             type="button"
             onClick={limpiarFiltros}
             disabled={!hayFiltrosActivos}
-            className="min-h-12 rounded-[18px] border border-[#BFDDEA] bg-white px-4 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="min-h-12 rounded-[18px] border border-[var(--color-border-accent)] bg-white px-4 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
             Limpiar filtros
           </button>
         </div>
 
         {hayFiltrosActivos ? (
-          <p className="mt-4 text-sm font-bold text-[#1D7B4A]" role="status">
+          <p className="mt-4 text-sm font-bold text-[var(--color-success)]" role="status">
             Mostrando {deportesFiltrados.length}{" "}
             {deportesFiltrados.length === 1 ? "deporte" : "deportes"}
           </p>

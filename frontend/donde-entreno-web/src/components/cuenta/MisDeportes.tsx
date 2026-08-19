@@ -45,7 +45,7 @@ export function MisDeportes({ perfil }: MisDeportesProps) {
 
         {elegidos.length > 0 ? (
           <SurfaceCard variant="success" className="mt-5 p-5 sm:p-6">
-            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#1D7B4A]">
+            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-success)]">
               Accesos rápidos a tus deportes
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -95,7 +95,7 @@ export function MisDeportes({ perfil }: MisDeportesProps) {
                       className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] ${
                         seleccionado
                           ? "bg-[var(--color-secondary)] text-white"
-                          : "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+                          : "border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
                       }`}
                     >
                       {/*

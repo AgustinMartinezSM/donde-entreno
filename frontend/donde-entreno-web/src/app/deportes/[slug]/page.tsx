@@ -290,7 +290,7 @@ export default async function DeporteLandingPage({ params }: DeporteLandingProps
 
           <SurfaceCard
             as="section"
-            className="mt-8 border-[#BDE8D0] bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-6 text-center sm:p-8"
+            className="mt-8 border-[var(--color-success-border)] bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-6 text-center sm:p-8"
           >
             <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">
               ¿Enseñás {deporte.nombre} o tenés un espacio?

@@ -257,7 +257,7 @@ export function GestionImagenesPerfil() {
             return (
               <div
                 key={ranura.tipo}
-                className="rounded-[18px] border border-[#DDEAF3] bg-white/80 p-4"
+                className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -277,7 +277,7 @@ export function GestionImagenesPerfil() {
                       En revisión
                     </span>
                   ) : vigente ? (
-                    <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#1D7B4A] ring-1 ring-[#BDE8D0]">
+                    <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-extrabold text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]">
                       Publicada
                     </span>
                   ) : null}
@@ -285,7 +285,7 @@ export function GestionImagenesPerfil() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                   <div
-                    className={`relative shrink-0 overflow-hidden border border-[#DDEAF3] bg-[#F1F5F9] ${ranura.marco} ${
+                    className={`relative shrink-0 overflow-hidden border border-[var(--color-border-soft)] bg-[#F1F5F9] ${ranura.marco} ${
                       ranura.tipo === "PORTADA" ? "max-w-sm" : ""
                     }`}
                   >
@@ -318,7 +318,7 @@ export function GestionImagenesPerfil() {
                     />
                     <label
                       htmlFor={idInput}
-                      className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                      className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
                     >
                       {vigente ? "Cambiar" : `Subir ${ranura.titulo.toLowerCase()}`}
                     </label>

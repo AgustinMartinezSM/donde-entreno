@@ -73,8 +73,8 @@ export function FavoritoButton({
         /* Ver MeGustaButton: en mobile la barra de acciones va sin texto. */
         className={`inline-flex min-h-11 items-center justify-center gap-0 rounded-[18px] px-3 py-2.5 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] sm:gap-2 sm:px-4 ${
           guardada
-            ? "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872]"
-            : "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+            ? "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)]"
+            : "border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
         }`}
       >
         <span

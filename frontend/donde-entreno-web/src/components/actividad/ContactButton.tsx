@@ -67,7 +67,7 @@ export function ContactButton({
 
   return (
     <div
-      className={`rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-center text-sm font-bold leading-6 text-[var(--color-muted)] ${className}`}
+      className={`rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-4 py-3 text-center text-sm font-bold leading-6 text-[var(--color-muted)] ${className}`}
     >
       Esta actividad todavía no cargó un canal de contacto.
     </div>

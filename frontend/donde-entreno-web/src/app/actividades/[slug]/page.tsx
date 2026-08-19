@@ -342,19 +342,19 @@ export default async function ActividadDetallePage({
 
                 <div className="mt-5 flex flex-wrap gap-2.5">
                   {actividad.nivel && (
-                    <span className="rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
+                    <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-2 text-sm font-bold text-[var(--color-success)]">
                       {formatearEtiquetaCatalogo(actividad.nivel)}
                     </span>
                   )}
 
                   {actividad.modalidad && (
-                    <span className="rounded-full bg-[#E8F6FB] px-3 py-2 text-sm font-bold text-[#0F6F8F]">
+                    <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-2 text-sm font-bold text-[var(--color-info-deep)]">
                       {formatearEtiquetaCatalogo(actividad.modalidad)}
                     </span>
                   )}
 
                   {actividad.enfoque && (
-                    <span className="rounded-full bg-[#E8F6FB] px-3 py-2 text-sm font-bold text-[#0F6F8F]">
+                    <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-2 text-sm font-bold text-[var(--color-info-deep)]">
                       {formatearEtiquetaCatalogo(actividad.enfoque)}
                     </span>
                   )}
@@ -366,7 +366,7 @@ export default async function ActividadDetallePage({
                   )}
 
                   {actividad.requiereInscripcion && (
-                    <span className="rounded-full bg-[#F8FAFC] px-3 py-2 text-sm font-bold text-[var(--color-muted)] ring-1 ring-[#DDEAF3]">
+                    <span className="rounded-full bg-[var(--color-bg)] px-3 py-2 text-sm font-bold text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]">
                       Requiere inscripción
                     </span>
                   )}
@@ -383,7 +383,7 @@ export default async function ActividadDetallePage({
                       {actividad.horarios.map((horario) => (
                         <div
                           key={horario.id}
-                          className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-white hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-white hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
                         >
                           <p className="font-bold text-[var(--color-primary)]">
                             {horario.diaSemana}
@@ -426,7 +426,7 @@ export default async function ActividadDetallePage({
                 />
 
                 <div className="mt-5 space-y-3 text-sm">
-                  <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                  <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
                     <p className="font-bold text-[var(--color-text)]">Lugar</p>
 
                     <p className="mt-1 text-[var(--color-muted)]">
@@ -434,7 +434,7 @@ export default async function ActividadDetallePage({
                     </p>
                   </div>
 
-                  <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                  <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
                     <p className="font-bold text-[var(--color-text)]">
                       Ubicación
                     </p>
@@ -448,7 +448,7 @@ export default async function ActividadDetallePage({
                   </div>
 
                   {actividad.direccion && (
-                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
                       <p className="font-bold text-[var(--color-text)]">
                         Dirección
                       </p>
@@ -460,7 +460,7 @@ export default async function ActividadDetallePage({
                   )}
 
                   {precioVisible && (
-                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
                       <p className="font-bold text-[var(--color-text)]">
                         Precio de referencia
                       </p>
@@ -472,7 +472,7 @@ export default async function ActividadDetallePage({
                   )}
 
                   {rangoEdad && (
-                    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
                       <p className="font-bold text-[var(--color-text)]">
                         Edades
                       </p>
@@ -568,7 +568,7 @@ export default async function ActividadDetallePage({
 
       {/* Barra sticky de contacto en mobile: el paso de conversión principal
           queda siempre a mano, por encima de la navegación inferior. */}
-      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 border-t border-[#D9E2EC] bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 border-t border-[var(--color-border)] bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,61,94,0.10)] backdrop-blur-lg lg:hidden">
         {/*
           pr deja libre la esquina donde flota el asistente (56px + su
           margen): sin eso el botón del asistente quedaba encima del

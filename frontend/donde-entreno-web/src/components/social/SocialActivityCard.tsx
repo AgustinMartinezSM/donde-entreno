@@ -92,7 +92,7 @@ export function SocialActivityCard({
         />
 
         {actividad.deporteNombre ? (
-          <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold text-[#1D7B4A]">
+          <span className="shrink-0 rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-success)]">
             {actividad.deporteNombre}
           </span>
         ) : null}
@@ -154,7 +154,7 @@ export function SocialActivityCard({
           </div>
 
           {precioVisible ? (
-            <span className="shrink-0 rounded-[14px] bg-[#F8FAFC] px-3 py-2 text-right text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[#D9E2EC]">
+            <span className="shrink-0 rounded-[14px] bg-[var(--color-bg)] px-3 py-2 text-right text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[var(--color-border)]">
               Desde
               <strong className="block text-sm">{precioVisible}</strong>
             </span>
@@ -215,7 +215,7 @@ export function SocialActivityCard({
 
 function Etiqueta({ children }: { children: string }) {
   return (
-    <span className="rounded-full bg-[#E8F6FB] px-3 py-1.5 text-xs font-bold text-[#0F6F8F]">
+    <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-1.5 text-xs font-bold text-[var(--color-info-deep)]">
       {children}
     </span>
   );

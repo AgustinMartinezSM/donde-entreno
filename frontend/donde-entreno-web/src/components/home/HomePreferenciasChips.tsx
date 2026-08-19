@@ -39,8 +39,8 @@ export function HomePreferenciasChips({
   }
 
   return (
-    <div className="mt-8 rounded-[20px] border border-[#BDE8D0] bg-[#F6FCF8] p-4 sm:p-5">
-      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#1D7B4A]">
+    <div className="mt-8 rounded-[20px] border border-[var(--color-success-border)] bg-[var(--color-success-surface)] p-4 sm:p-5">
+      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-success)]">
         Tus deportes
       </p>
       <div className="mt-3 flex min-w-0 gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
@@ -48,7 +48,7 @@ export function HomePreferenciasChips({
           <Link
             key={deporte.slug}
             href={`/explorar?deporteSlug=${encodeURIComponent(deporte.slug)}&ciudadSlug=${encodeURIComponent(ciudadSlug)}&page=0`}
-            className="shrink-0 rounded-full border border-[#BDE8D0] bg-white px-3.5 py-2 text-sm font-bold text-[#1D7B4A] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] active:scale-[0.98]"
+            className="shrink-0 rounded-full border border-[var(--color-success-border)] bg-white px-3.5 py-2 text-sm font-bold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] active:scale-[0.98]"
           >
             {deporte.nombre}
           </Link>

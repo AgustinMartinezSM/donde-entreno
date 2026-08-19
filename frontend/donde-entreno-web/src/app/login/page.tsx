@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <LoginForm />
               </Suspense>
 
-              <div className="mt-7 grid gap-3 border-t border-[#DDEAF3] pt-5 sm:grid-cols-2">
+              <div className="mt-7 grid gap-3 border-t border-[var(--color-border-soft)] pt-5 sm:grid-cols-2">
                 <TarjetaCuenta
                   href="/registro"
                   titulo="Crear cuenta"
@@ -112,13 +112,13 @@ function TarjetaCuenta({
       href={href}
       className={`group flex items-start gap-3 rounded-[20px] border p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_32px_rgba(12,52,80,0.10)] ${
         esExito
-          ? "border-[#BDE8D0] bg-[#ECF9F2] hover:border-[var(--color-secondary)]"
-          : "border-[#BFDDEA] bg-[#F8FCFE] hover:border-[var(--color-primary)]"
+          ? "border-[var(--color-success-border)] bg-[var(--color-success-wash)] hover:border-[var(--color-secondary)]"
+          : "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] hover:border-[var(--color-primary)]"
       }`}
     >
       <span
         className={`icon-tile mt-0.5 ${
-          esExito ? "text-[#1D7B4A]" : "text-[var(--color-primary)]"
+          esExito ? "text-[var(--color-success)]" : "text-[var(--color-primary)]"
         }`}
       >
         {icono}
@@ -127,7 +127,7 @@ function TarjetaCuenta({
       <span className="min-w-0 flex-1">
         <span
           className={`block font-extrabold ${
-            esExito ? "text-[#1D7B4A]" : "text-[var(--color-primary)]"
+            esExito ? "text-[var(--color-success)]" : "text-[var(--color-primary)]"
           }`}
         >
           {titulo}

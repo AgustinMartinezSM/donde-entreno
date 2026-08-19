@@ -21,7 +21,7 @@ export function MobileAccountShortcut() {
       <div
         role="status"
         aria-label="Cargando cuenta"
-        className="h-11 w-11 animate-pulse rounded-full border border-[#DDEAF3] bg-white"
+        className="h-11 w-11 animate-pulse rounded-full border border-[var(--color-border-soft)] bg-white"
       />
     );
   }
@@ -31,7 +31,7 @@ export function MobileAccountShortcut() {
       <Link
         href="/login"
         aria-label="Iniciar sesión"
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-[#BFDDEA] bg-white text-[var(--color-primary)] shadow-sm transition hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] shadow-sm transition hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
       >
         <IconoCuenta />
       </Link>

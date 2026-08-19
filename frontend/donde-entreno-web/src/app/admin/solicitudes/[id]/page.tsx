@@ -301,10 +301,10 @@ function AdminSolicitudDetalle() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -349,10 +349,10 @@ function AdminSolicitudDetalle() {
         {cargandoDetalle && (
           <div
             role="status"
-            className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[var(--color-border-soft)] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#BFDDEA] border-t-[var(--color-secondary)]" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
             </div>
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
               Cargando solicitud...
@@ -432,7 +432,7 @@ function DetalleSolicitud({
         as="section"
         className="overflow-hidden rounded-[28px] shadow-[0_18px_45px_rgba(12,52,80,0.10)]"
       >
-        <div className="bg-gradient-to-br from-[#F8FCFE] to-white p-5 sm:p-6">
+        <div className="bg-gradient-to-br from-[var(--color-surface-soft)] to-white p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
@@ -651,10 +651,10 @@ function AccionesRevision({
       <SectionHeader
         eyebrow="Revisión"
         title="Acciones de revisión"
-        className="border-b border-[#DDEAF3] pb-3"
+        className="border-b border-[var(--color-border-soft)] pb-3"
       />
 
-      <div className="mt-4 rounded-[18px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
+      <div className="mt-4 rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface-soft)] p-4">
         <CampoDetalleEstado
           etiqueta="Estado actual"
           estado={solicitud.estado}
@@ -676,7 +676,7 @@ function AccionesRevision({
       )}
 
       {puedeAprobar && (
-        <div className="mt-5 grid gap-4 rounded-[20px] border border-[#BDE8D0] bg-[#F6FCF8] p-4">
+        <div className="mt-5 grid gap-4 rounded-[20px] border border-[var(--color-success-border)] bg-[var(--color-success-surface)] p-4">
           <div>
             <h3 className="text-base font-extrabold text-[var(--color-primary)]">
               Aprobar publicación
@@ -732,7 +732,7 @@ function AccionesRevision({
       )}
 
       {puedeRechazar && (
-        <div className="mt-5 grid gap-5 rounded-[20px] border border-[#DDEAF3] bg-[#F8FCFE] p-4">
+        <div className="mt-5 grid gap-5 rounded-[20px] border border-[var(--color-border-soft)] bg-[var(--color-surface-soft)] p-4">
           {estaEnRevision && (
             <StatusMessage variant="info" className="font-bold">
               La solicitud ya está en revisión. Podés rechazarla si detectás
@@ -780,7 +780,7 @@ function AccionesRevision({
               }
               disabled={accionEnCurso}
               rows={4}
-              className="mt-3 w-full resize-y rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-3 w-full resize-y rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-sm leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
 
@@ -846,7 +846,7 @@ function DetalleCard({
       as="section"
       className="rounded-[24px] p-5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(12,52,80,0.12)]"
     >
-      <div className="border-b border-[#DDEAF3] pb-3">
+      <div className="border-b border-[var(--color-border-soft)] pb-3">
         <SectionHeader title={titulo} description={descripcion} />
       </div>
       <dl className="mt-4 grid gap-3">{children}</dl>
@@ -862,7 +862,7 @@ function CampoDetalle({
   valor: string | number | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#EDF4F8] bg-[#F8FCFE] px-4 py-3">
+    <div className="rounded-[18px] border border-[#EDF4F8] bg-[var(--color-surface-soft)] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>
@@ -881,7 +881,7 @@ function CampoDetalleEstado({
   estado: EstadoSolicitudAdmin;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#EDF4F8] bg-[#F8FCFE] px-4 py-3">
+    <div className="rounded-[18px] border border-[#EDF4F8] bg-[var(--color-surface-soft)] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>
@@ -903,7 +903,7 @@ function HorarioCard({
       variant="info"
       className="rounded-[20px] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
     >
-      <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#1D7B4A]">
+      <p className="inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-sm font-extrabold text-[var(--color-success)]">
         {horario.diaSemana}
       </p>
       <dl className="mt-3 grid gap-3 text-sm">

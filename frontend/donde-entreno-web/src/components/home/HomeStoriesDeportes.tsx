@@ -62,7 +62,7 @@ export function HomeStoriesDeportes({
                           al hover reemplaza el cambio de color del ring.
                         */
                         "group-hover:-translate-y-0.5 group-hover:drop-shadow-[0_6px_14px_rgba(15,61,94,0.25)]"
-                      : "bg-[#E8F6FB] ring-2 ring-[var(--color-secondary)] ring-offset-2 ring-offset-[var(--color-bg)] group-hover:ring-[var(--color-primary)]"
+                      : "bg-[var(--color-info-soft)] ring-2 ring-[var(--color-secondary)] ring-offset-2 ring-offset-[var(--color-bg)] group-hover:ring-[var(--color-primary)]"
                   }`}
                 >
                   {badge ? (

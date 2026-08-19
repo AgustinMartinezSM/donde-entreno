@@ -42,6 +42,21 @@
   --color-info-soft: #E8F6FB;
   --color-border-soft: #DDEAF3;
   --color-border-accent: #BFDDEA;
+  /*
+    Sumados en la higiene visual (fase 7a del bloque visual): la
+    superficie celeste casi blanca que se repetía 63 veces como #F8FCFE
+    sin token, y el borde del verde de éxito que acompaña a
+    success-soft. Con esto, TODA la paleta clara vive acá y el modo
+    oscuro se define pisando estos valores, no cazando hexes.
+  */
+  --color-surface-soft: #F8FCFE;
+  --color-success-border: #BDE8D0;
+  --color-success-surface: #F6FCF8;
+  --color-success-wash: #ECF9F2;
+  --color-warning: #8A4B00;
+  --color-warning-surface: #FFF4E5;
+  --color-warning-border: #F6C56D;
+  --color-danger: #9A3D3D;
 
   /* Radios */
   --radius-sm: 10px;

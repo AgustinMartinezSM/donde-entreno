@@ -32,8 +32,8 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
-  EN_REVISION: "bg-[#E8F6FB] text-[#0F6F8F] ring-1 ring-[#BFDDEA]",
-  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
+  EN_REVISION: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
+  APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -214,7 +214,7 @@ function AdminSolicitudCambioDetalle() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-4xl">
         <div className="mb-5">
           <AppLinkButton
@@ -257,7 +257,7 @@ function AdminSolicitudCambioDetalle() {
               <span
                 className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
                   ESTILOS_ESTADO[solicitud.estado] ??
-                  "bg-[#F8FAFC] text-[var(--color-muted)] ring-1 ring-[#DDEAF3]"
+                  "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
                 }`}
               >
                 {formatearEstado(solicitud.estado)}
@@ -288,13 +288,13 @@ function AdminSolicitudCambioDetalle() {
                 <table className="w-full min-w-[560px] border-separate border-spacing-0 text-sm">
                   <thead>
                     <tr>
-                      <th className="rounded-tl-[14px] border border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-left font-extrabold text-[var(--color-primary)]">
+                      <th className="rounded-tl-[14px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-4 py-3 text-left font-extrabold text-[var(--color-primary)]">
                         Campo
                       </th>
-                      <th className="border-y border-r border-[#DDEAF3] bg-[#F8FAFC] px-4 py-3 text-left font-extrabold text-[var(--color-primary)]">
+                      <th className="border-y border-r border-[var(--color-border-soft)] bg-[var(--color-bg)] px-4 py-3 text-left font-extrabold text-[var(--color-primary)]">
                         Publicado hoy
                       </th>
-                      <th className="rounded-tr-[14px] border-y border-r border-[#DDEAF3] bg-[#E6F7EF] px-4 py-3 text-left font-extrabold text-[#1D7B4A]">
+                      <th className="rounded-tr-[14px] border-y border-r border-[var(--color-border-soft)] bg-[var(--color-success-soft)] px-4 py-3 text-left font-extrabold text-[var(--color-success)]">
                         Propuesto
                       </th>
                     </tr>
@@ -302,13 +302,13 @@ function AdminSolicitudCambioDetalle() {
                   <tbody>
                     {solicitud.cambios.map((cambio) => (
                       <tr key={cambio.campo}>
-                        <td className="border-x border-b border-[#DDEAF3] px-4 py-3 font-bold text-[var(--color-primary)]">
+                        <td className="border-x border-b border-[var(--color-border-soft)] px-4 py-3 font-bold text-[var(--color-primary)]">
                           {ETIQUETAS_CAMPOS[cambio.campo] ?? cambio.campo}
                         </td>
-                        <td className="border-b border-r border-[#DDEAF3] px-4 py-3 text-[var(--color-muted)]">
+                        <td className="border-b border-r border-[var(--color-border-soft)] px-4 py-3 text-[var(--color-muted)]">
                           {cambio.valorActual || "Sin valor"}
                         </td>
-                        <td className="border-b border-r border-[#DDEAF3] bg-[#F4FBF7] px-4 py-3 font-bold text-[#1D7B4A]">
+                        <td className="border-b border-r border-[var(--color-border-soft)] bg-[#F4FBF7] px-4 py-3 font-bold text-[var(--color-success)]">
                           {cambio.valorPropuesto}
                         </td>
                       </tr>
@@ -338,7 +338,7 @@ function AdminSolicitudCambioDetalle() {
             ) : null}
 
             {estaAbierta ? (
-              <div className="mt-6 border-t border-[#DDEAF3] pt-6">
+              <div className="mt-6 border-t border-[var(--color-border-soft)] pt-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                   {solicitud.estado === "PENDIENTE" ? (
                     <AppButton
@@ -388,7 +388,7 @@ function AdminSolicitudCambioDetalle() {
                       value={motivoRechazo}
                       onChange={(evento) => setMotivoRechazo(evento.target.value)}
                       disabled={accionEnCurso}
-                      className="mt-2 min-h-24 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-base leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+                      className="mt-2 min-h-24 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-base leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
                     />
                     <AppButton
                       type="button"

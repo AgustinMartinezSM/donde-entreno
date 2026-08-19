@@ -88,7 +88,7 @@ export function HomeCrearCuentaCta() {
           <h2 className="mt-2 text-2xl font-extrabold leading-tight sm:text-3xl">
             Guardá lo que te gusta y armá tu espacio deportivo
           </h2>
-          <p className="mt-3 max-w-xl text-base leading-7 text-[#BFDDEA]">
+          <p className="mt-3 max-w-xl text-base leading-7 text-[var(--color-border-accent)]">
             Explorar es libre. Con una cuenta, además, guardás tus actividades
             favoritas, seguís clubes y profes, y elegís los deportes que más te
             interesan.
@@ -114,12 +114,12 @@ export function HomeCrearCuentaCta() {
               key={beneficio.titulo}
               className="flex items-start gap-4 rounded-[18px] border border-white/15 bg-white/10 p-4"
             >
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2EB872] text-white">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-white">
                 <IconoBeneficio tipo={beneficio.icono} />
               </span>
               <div>
                 <p className="font-extrabold">{beneficio.titulo}</p>
-                <p className="mt-1 text-sm leading-6 text-[#BFDDEA]">
+                <p className="mt-1 text-sm leading-6 text-[var(--color-border-accent)]">
                   {beneficio.detalle}
                 </p>
               </div>

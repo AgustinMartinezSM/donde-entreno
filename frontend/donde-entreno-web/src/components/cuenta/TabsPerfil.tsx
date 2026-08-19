@@ -34,7 +34,7 @@ type TabsPerfilProps = {
 export function TabsPerfil({ tabActiva, onCambiar }: TabsPerfilProps) {
   return (
     <nav
-      className="mt-8 grid grid-cols-4 border-b border-[#D9E2EC] pb-px sm:flex sm:gap-2"
+      className="mt-8 grid grid-cols-4 border-b border-[var(--color-border)] pb-px sm:flex sm:gap-2"
       aria-label="Secciones de mi espacio deportivo"
     >
       {TABS.map((tab) => {
@@ -49,7 +49,7 @@ export function TabsPerfil({ tabActiva, onCambiar }: TabsPerfilProps) {
             className={`-mb-px min-h-12 shrink-0 border-b-2 px-1 py-3 text-xs font-extrabold transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 sm:px-4 sm:text-sm ${
               activa
                 ? "border-[var(--color-secondary)] text-[var(--color-primary)]"
-                : "border-transparent text-[var(--color-muted)] hover:border-[#BFDDEA] hover:text-[var(--color-primary)]"
+                : "border-transparent text-[var(--color-muted)] hover:border-[var(--color-border-accent)] hover:text-[var(--color-primary)]"
             }`}
           >
             {tab.etiqueta}

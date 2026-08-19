@@ -418,7 +418,7 @@ export function AsistenteWidget() {
             <p className="font-display text-base font-bold leading-tight text-white">
               Dondi
             </p>
-            <p className="mt-0.5 truncate text-xs font-medium leading-4 text-[#BFDDEA]">
+            <p className="mt-0.5 truncate text-xs font-medium leading-4 text-[var(--color-border-accent)]">
               Tu asistente deportivo de DondeEntreno
             </p>
           </div>

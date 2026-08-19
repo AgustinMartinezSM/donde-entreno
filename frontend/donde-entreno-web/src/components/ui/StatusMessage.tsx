@@ -10,9 +10,9 @@ type StatusMessageProps = {
 
 const variantClassNames: Record<NonNullable<StatusMessageProps["variant"]>, string> =
   {
-    info: "border-[#BFDDEA] bg-[#E8F6FB] text-[#0F6F8F]",
-    success: "border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A]",
-    warning: "border-[#F6C56D] bg-[#FFF4E5] text-[#8A4B00]",
+    info: "border-[var(--color-border-accent)] bg-[var(--color-info-soft)] text-[var(--color-info-deep)]",
+    success: "border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)]",
+    warning: "border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] text-[var(--color-warning)]",
     error: "border-red-200 bg-red-50 text-red-700",
   };
 

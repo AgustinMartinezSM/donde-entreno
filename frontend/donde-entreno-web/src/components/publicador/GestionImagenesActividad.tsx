@@ -25,7 +25,7 @@ const TIPOS_ARCHIVO_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
 
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
-  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
+  APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -391,7 +391,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                   className={`flex cursor-pointer flex-col rounded-[18px] border p-4 transition duration-200 ease-out has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-[#4FB3D9]/30 ${
                     seleccionada
                       ? "border-[var(--color-primary)] bg-[#F1F8FC] shadow-sm"
-                      : "border-[#DDEAF3] bg-white hover:border-[#BFDDEA] hover:bg-[#F8FAFC]"
+                      : "border-[var(--color-border-soft)] bg-white hover:border-[var(--color-border-accent)] hover:bg-[var(--color-bg)]"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -441,7 +441,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
             />
             <label
               htmlFor={idArchivo}
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
             >
               {seleccion.length > 0
                 ? "Cambiar selección"
@@ -462,7 +462,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
         </div>
 
         {seleccion.length > 0 ? (
-          <div className="rounded-[18px] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+          <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
             <p className="text-sm text-[var(--color-muted)]">
               Se {seleccion.length === 1 ? "va" : "van"} a subir como{" "}
               <span className="font-bold text-[var(--color-primary)]">
@@ -486,7 +486,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                     onClick={() => quitarDeLaSeleccion(elegido.url)}
                     disabled={subiendo}
                     aria-label={`Quitar ${elegido.archivo.name} de la selección`}
-                    className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#DDEAF3] bg-white text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-red-300 hover:text-red-700 disabled:opacity-50"
+                    className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border-soft)] bg-white text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-red-300 hover:text-red-700 disabled:opacity-50"
                   >
                     ×
                   </button>
@@ -498,7 +498,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                       )
                     }
                     disabled={subiendo}
-                    className="mt-1.5 w-full text-xs font-extrabold text-[var(--color-primary)] underline decoration-[#BFDDEA] underline-offset-4 hover:decoration-[var(--color-primary)] disabled:opacity-50"
+                    className="mt-1.5 w-full text-xs font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 hover:decoration-[var(--color-primary)] disabled:opacity-50"
                   >
                     {elegido.ajustado ? "Reencuadrar" : "Ajustar"}
                   </button>
@@ -628,7 +628,7 @@ function GrupoImagenes({
           return (
             <li
               key={imagen.id}
-              className="flex flex-wrap items-center gap-4 rounded-[18px] border border-[#DDEAF3] bg-white/80 p-3"
+              className="flex flex-wrap items-center gap-4 rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-3"
             >
               {urlAbsoluta ? (
                 <Image
@@ -652,7 +652,7 @@ function GrupoImagenes({
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${
                     ESTILOS_ESTADO[imagen.estadoModeracion] ??
-                    "bg-[#F8FAFC] text-[var(--color-muted)] ring-1 ring-[#DDEAF3]"
+                    "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
                   }`}
                 >
                   {formatearEstado(imagen.estadoModeracion)}

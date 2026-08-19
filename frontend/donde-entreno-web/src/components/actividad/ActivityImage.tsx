@@ -57,7 +57,7 @@ export function ActivityImage({
   if (!imagenActual) {
     return (
       <div
-        className={`flex ${heightClassName} items-center justify-center rounded-[var(--radius-lg)] bg-gradient-to-br from-[#E8F6FB] to-[#E6F7EF] px-4 text-center`}
+        className={`flex ${heightClassName} items-center justify-center rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-info-soft)] to-[var(--color-success-soft)] px-4 text-center`}
       >
         <span className="text-sm font-extrabold uppercase tracking-[0.18em] text-[var(--color-primary)]">
           {fallbackText}

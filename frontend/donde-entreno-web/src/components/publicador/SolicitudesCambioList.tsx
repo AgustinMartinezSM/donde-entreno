@@ -28,8 +28,8 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
-  EN_REVISION: "bg-[#E8F6FB] text-[#0F6F8F] ring-1 ring-[#BFDDEA]",
-  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
+  EN_REVISION: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
+  APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -120,7 +120,7 @@ export function SolicitudesCambioList() {
   }, [accessToken, cerrarSesion, router]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Mis solicitudes de cambio"
@@ -179,7 +179,7 @@ export function SolicitudesCambioList() {
                   <span
                     className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
                       ESTILOS_ESTADO[solicitud.estado] ??
-                      "bg-[#F8FAFC] text-[var(--color-muted)] ring-1 ring-[#DDEAF3]"
+                      "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
                     }`}
                   >
                     {formatearEstado(solicitud.estado)}
@@ -190,7 +190,7 @@ export function SolicitudesCambioList() {
                   {solicitud.camposPropuestos.map((campo) => (
                     <span
                       key={campo}
-                      className="rounded-full bg-[#E8F6FB] px-3 py-1 text-xs font-bold text-[#0F6F8F]"
+                      className="rounded-full bg-[var(--color-info-soft)] px-3 py-1 text-xs font-bold text-[var(--color-info-deep)]"
                     >
                       {ETIQUETAS_CAMPOS[campo] ?? campo}
                     </span>

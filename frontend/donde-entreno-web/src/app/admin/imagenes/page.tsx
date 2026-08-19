@@ -23,7 +23,7 @@ import {
 
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
-  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
+  APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -209,10 +209,10 @@ function AdminImagenesListado() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -251,7 +251,7 @@ function AdminImagenesListado() {
             value={filtroEstado}
             onChange={cambiarFiltroEstado}
             disabled={cargando}
-            className="mt-2 min-h-12 w-full max-w-sm rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-2 min-h-12 w-full max-w-sm rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {FILTROS_ESTADO.map((opcion) => (
               <option key={opcion.etiqueta} value={opcion.valor}>
@@ -327,12 +327,12 @@ function AdminImagenesListado() {
                         <span
                           className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
                             ESTILOS_ESTADO[imagen.estadoModeracion] ??
-                            "bg-[#F8FAFC] text-[var(--color-muted)] ring-1 ring-[#DDEAF3]"
+                            "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
                           }`}
                         >
                           {formatearEstado(imagen.estadoModeracion)}
                         </span>
-                        <span className="rounded-full bg-[#E8F6FB] px-3 py-1 text-xs font-bold text-[#0F6F8F]">
+                        <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-1 text-xs font-bold text-[var(--color-info-deep)]">
                           {imagen.tipoImagen === "PRINCIPAL"
                             ? "Principal"
                             : "Galería"}
@@ -391,7 +391,7 @@ function AdminImagenesListado() {
                   </div>
 
                   {rechazoAbierto === imagen.id ? (
-                    <div className="mt-4 border-t border-[#DDEAF3] pt-4">
+                    <div className="mt-4 border-t border-[var(--color-border-soft)] pt-4">
                       <label
                         htmlFor={`motivo-rechazo-${imagen.id}`}
                         className="text-sm font-bold text-[var(--color-primary)]"
@@ -405,7 +405,7 @@ function AdminImagenesListado() {
                         value={motivoRechazo}
                         onChange={(evento) => setMotivoRechazo(evento.target.value)}
                         disabled={imagenEnAccion !== null}
-                        className="mt-2 min-h-20 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-base leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+                        className="mt-2 min-h-20 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-base leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
                       />
                       <AppButton
                         type="button"

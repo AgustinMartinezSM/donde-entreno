@@ -45,8 +45,8 @@ export function HeaderNavLinks() {
             aria-current={activo ? "page" : undefined}
             className={`rounded-full px-3 py-2 text-sm font-extrabold transition ${
               activo
-                ? "bg-[#E6F7EF] text-[#1D7B4A]"
-                : "text-[var(--color-muted)] hover:bg-[#F8FCFE] hover:text-[var(--color-primary)]"
+                ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
+                : "text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-primary)]"
             }`}
           >
             {link.label}

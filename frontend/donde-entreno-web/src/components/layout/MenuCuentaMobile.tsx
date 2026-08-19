@@ -126,7 +126,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
         }
       }}
       aria-label="Menú de mi cuenta"
-      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[85dvh] w-full max-w-none animate-[de-sheet_0.28s_ease-out] overflow-y-auto rounded-t-[28px] border border-b-0 border-[#DDEAF3] bg-white p-0 text-[var(--color-text)] shadow-[0_-18px_50px_rgba(12,52,80,0.28)] backdrop:bg-[#0B314D]/40 backdrop:backdrop-blur-sm"
+      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[85dvh] w-full max-w-none animate-[de-sheet_0.28s_ease-out] overflow-y-auto rounded-t-[28px] border border-b-0 border-[var(--color-border-soft)] bg-white p-0 text-[var(--color-text)] shadow-[0_-18px_50px_rgba(12,52,80,0.28)] backdrop:bg-[#0B314D]/40 backdrop:backdrop-blur-sm"
     >
       <div
         className="mx-auto w-full max-w-lg px-5 pt-3"
@@ -137,7 +137,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
         {/* Manija visual del sheet: señal de "esto se desliza desde abajo". */}
         <div
           aria-hidden="true"
-          className="mx-auto h-1.5 w-10 rounded-full bg-[#D9E2EC]"
+          className="mx-auto h-1.5 w-10 rounded-full bg-[var(--color-border)]"
         />
 
         <div className="mt-4 flex items-center gap-3">
@@ -157,7 +157,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
                 {usuario?.email ?? "Tu espacio en DondeEntreno"}
               </span>
               {chipRol ? (
-                <span className="shrink-0 rounded-full bg-[#E6F7EF] px-2 py-0.5 text-[11px] font-extrabold text-[#1D7B4A]">
+                <span className="shrink-0 rounded-full bg-[var(--color-success-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-success)]">
                   {chipRol}
                 </span>
               ) : null}
@@ -168,7 +168,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar el menú de mi cuenta"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[#F8FAFC] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-95"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[var(--color-bg)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-95"
           >
             <svg
               viewBox="0 0 24 24"
@@ -241,8 +241,8 @@ function FilaMenuCuenta({
 }) {
   const clase = `flex min-h-12 w-full items-center gap-3 rounded-[16px] px-2.5 py-2 text-left text-[15px] font-bold transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 ${
     apagada
-      ? "text-[var(--color-muted)] hover:bg-[#F8FAFC] hover:text-[var(--color-primary)]"
-      : "text-[var(--color-primary)] hover:bg-[#F8FCFE]"
+      ? "text-[var(--color-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-primary)]"
+      : "text-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
   }`;
 
   const ficha = (
@@ -250,7 +250,7 @@ function FilaMenuCuenta({
       aria-hidden="true"
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] ${
         apagada
-          ? "bg-[#F8FAFC] text-[var(--color-muted)]"
+          ? "bg-[var(--color-bg)] text-[var(--color-muted)]"
           : "bg-[#EAF6FB] text-[var(--color-accent)]"
       }`}
     >
@@ -285,7 +285,7 @@ function IconoFlecha() {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4 shrink-0 text-[#BFDDEA]"
+      className="h-4 w-4 shrink-0 text-[var(--color-border-accent)]"
       aria-hidden="true"
     >
       <path d="m9 6 6 6-6 6" />

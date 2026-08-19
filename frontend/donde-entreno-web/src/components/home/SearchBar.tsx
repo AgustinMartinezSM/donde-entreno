@@ -139,7 +139,7 @@ export function SearchBar({
   return (
     <form
       onSubmit={manejarBusqueda}
-      className="mt-8 w-full min-w-0 rounded-[24px] border border-[#BFDDEA] bg-white/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[#DDEAF3] sm:p-3"
+      className="mt-8 w-full min-w-0 rounded-[24px] border border-[var(--color-border-accent)] bg-white/95 p-2.5 shadow-[0_18px_45px_rgba(12,52,80,0.12)] transition duration-200 ease-out focus-within:border-[var(--color-accent)] focus-within:ring-4 focus-within:ring-[var(--color-border-soft)] sm:p-3"
     >
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
         <input
@@ -149,7 +149,7 @@ export function SearchBar({
           onFocus={() => setSugerenciasAbiertas(true)}
           aria-label="Buscar deporte, actividad o club"
           placeholder="Buscar deporte, actividad o club"
-          className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/30 sm:min-h-14"
+          className="min-h-12 w-full min-w-0 flex-1 rounded-[18px] border border-transparent bg-[var(--color-bg)] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[var(--color-border-accent)] focus:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/30 sm:min-h-14"
         />
 
         <button
@@ -167,7 +167,7 @@ export function SearchBar({
       </div>
 
       {mostrarSugerencias ? (
-        <div className="mt-2 min-w-0 rounded-[20px] border border-[#DDEAF3] bg-white p-2 shadow-[0_16px_38px_rgba(12,52,80,0.14)]">
+        <div className="mt-2 min-w-0 rounded-[20px] border border-[var(--color-border-soft)] bg-white p-2 shadow-[0_16px_38px_rgba(12,52,80,0.14)]">
           <p className="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
             Sugerencias
           </p>
@@ -177,7 +177,7 @@ export function SearchBar({
                 key={sugerencia.id}
                 type="button"
                 onClick={() => seleccionarSugerencia(sugerencia)}
-                className="flex min-w-0 items-start justify-between gap-3 rounded-[16px] border border-transparent bg-[#F8FAFC] px-3 py-3 text-left transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                className="flex min-w-0 items-start justify-between gap-3 rounded-[16px] border border-transparent bg-[var(--color-bg)] px-3 py-3 text-left transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
               >
                 <span className="min-w-0">
                   <span className="block text-sm font-extrabold text-[var(--color-primary)]">
@@ -187,7 +187,7 @@ export function SearchBar({
                     {sugerencia.textoAyuda}
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#1D7B4A]">
+                <span className="shrink-0 rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)]">
                   {sugerencia.tipo === "deporte" ? "Deporte" : "Estilo"}
                 </span>
               </button>

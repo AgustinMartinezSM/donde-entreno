@@ -110,11 +110,11 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
             <div
               key={indice}
               aria-hidden="true"
-              className="animate-pulse overflow-hidden rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-3"
+              className="animate-pulse overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-white p-3"
             >
-              <div className="h-40 rounded-[var(--radius-md)] bg-[#E8F6FB]" />
+              <div className="h-40 rounded-[var(--radius-md)] bg-[var(--color-info-soft)]" />
               <div className="p-2 pt-4">
-                <div className="h-4 w-24 rounded-full bg-[#E8F6FB]" />
+                <div className="h-4 w-24 rounded-full bg-[var(--color-info-soft)]" />
                 <div className="mt-3 h-5 w-3/4 rounded-full bg-[#F1F5F9]" />
                 <div className="mt-2 h-4 w-1/2 rounded-full bg-[#F1F5F9]" />
               </div>
@@ -125,7 +125,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
         <SurfaceCard className="mt-6 flex flex-col items-center gap-4 p-10 text-center">
           <span
             aria-hidden="true"
-            className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB] text-[var(--color-primary)]"
+            className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)] text-[var(--color-primary)]"
           >
             <IconoGuardar className="h-7 w-7" />
           </span>
@@ -167,7 +167,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                 <SurfaceCard
                   key={favorito.slug}
                   as="article"
-                  className="group overflow-hidden p-3 transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)]"
+                  className="group overflow-hidden p-3 transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] hover:shadow-[0_22px_55px_rgba(12,52,80,0.14)]"
                 >
                   <Link
                     href={`/actividades/${favorito.slug}`}
@@ -186,7 +186,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                   <div className="p-2 pt-4">
                     <div className="mb-2 flex flex-wrap gap-2">
                       {favorito.deporteNombre && (
-                        <span className="rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#1D7B4A]">
+                        <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-extrabold text-[var(--color-success)]">
                           {favorito.deporteNombre}
                         </span>
                       )}
@@ -194,7 +194,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                       {favorito.mostrarPrecio &&
                         favorito.precioReferencia !== undefined &&
                         favorito.precioReferencia !== null && (
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[#DDEAF3]">
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--color-primary)] ring-1 ring-[var(--color-border-soft)]">
                             Desde ${favorito.precioReferencia}
                           </span>
                         )}

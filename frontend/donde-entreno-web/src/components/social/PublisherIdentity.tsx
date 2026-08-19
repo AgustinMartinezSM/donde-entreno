@@ -61,7 +61,7 @@ export function PublisherIdentity({
     <div className={`flex min-w-0 items-center ${compacta ? "gap-2" : "gap-3"}`}>
       {avatarUrl ? (
         <span
-          className={`relative shrink-0 overflow-hidden rounded-full bg-white ring-[#E8F6FB] ${medidasAvatar}`}
+          className={`relative shrink-0 overflow-hidden rounded-full bg-white ring-[var(--color-info-soft)] ${medidasAvatar}`}
         >
           <Image
             src={avatarUrl}
@@ -74,7 +74,7 @@ export function PublisherIdentity({
       ) : (
         <span
           aria-hidden="true"
-          className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] font-extrabold tracking-[0.08em] text-white ring-[#E8F6FB] ${medidasAvatar} ${
+          className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] font-extrabold tracking-[0.08em] text-white ring-[var(--color-info-soft)] ${medidasAvatar} ${
             compacta ? "text-[10px]" : destacada ? "text-sm" : "text-xs"
           }`}
         >

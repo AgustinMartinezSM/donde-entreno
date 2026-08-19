@@ -184,7 +184,7 @@ export function EditorRecorteImagen({
   }
 
   return (
-    <div className="rounded-[18px] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+    <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm font-extrabold text-[var(--color-primary)]">
           Elegí qué parte se ve
@@ -205,7 +205,7 @@ export function EditorRecorteImagen({
         onPointerCancel={alSoltar}
         onKeyDown={alPresionarTecla}
         style={{ aspectRatio: `${destino.ancho} / ${destino.alto}` }}
-        className="relative mt-3 w-full cursor-grab touch-none overflow-hidden rounded-[12px] bg-[#E8F6FB] active:cursor-grabbing focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+        className="relative mt-3 w-full cursor-grab touch-none overflow-hidden rounded-[12px] bg-[var(--color-info-soft)] active:cursor-grabbing focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
       >
         {/* Preview local (object URL, no next/image). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}

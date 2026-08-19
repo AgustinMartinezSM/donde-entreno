@@ -15,9 +15,9 @@ export function SportCatalogCard({ deporte }: SportCatalogCardProps) {
   return (
     <Link
       href={`/explorar?deporteSlug=${encodeURIComponent(deporte.slug)}&page=0`}
-      className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.13)] active:scale-[0.98]"
+      className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--color-border-accent)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.13)] active:scale-[0.98]"
     >
-      <div className="relative h-44 overflow-hidden bg-[#E8F6FB] sm:h-48">
+      <div className="relative h-44 overflow-hidden bg-[var(--color-info-soft)] sm:h-48">
         <Image
           src={imagen}
           alt=""
@@ -45,7 +45,7 @@ export function SportCatalogCard({ deporte }: SportCatalogCardProps) {
           </p>
         ) : null}
 
-        <div className="mt-4 inline-flex rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-bold text-[#1D7B4A] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
+        <div className="mt-4 inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-bold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
           Ver actividades
         </div>
       </div>

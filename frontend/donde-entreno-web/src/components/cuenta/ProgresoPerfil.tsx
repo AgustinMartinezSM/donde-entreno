@@ -37,7 +37,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
     <SurfaceCard variant="success" className="p-5 sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#1D7B4A]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-success)]">
             Para arrancar
           </p>
           <h2 className="mt-1 text-lg font-extrabold text-[var(--color-primary)] sm:text-xl">
@@ -46,7 +46,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <p className="text-sm font-extrabold text-[#1D7B4A]">
+          <p className="text-sm font-extrabold text-[var(--color-success)]">
             {perfil.pasosCompletados} de {totalPasos}
           </p>
           {/*
@@ -88,7 +88,7 @@ export function ProgresoPerfil({ perfil, onIrATab }: ProgresoPerfilProps) {
               <span
                 className={`truncate text-sm font-bold ${
                   paso.completado
-                    ? "text-[var(--color-muted)] line-through decoration-[#BDE8D0] decoration-2"
+                    ? "text-[var(--color-muted)] line-through decoration-[var(--color-success-border)] decoration-2"
                     : "text-[var(--color-primary)]"
                 }`}
               >
@@ -136,7 +136,7 @@ function MarcaPaso({ completado }: { completado: boolean }) {
       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
         completado
           ? "bg-[var(--color-secondary)] text-white"
-          : "border-2 border-[#BDE8D0] bg-white"
+          : "border-2 border-[var(--color-success-border)] bg-white"
       }`}
     >
       {completado ? (

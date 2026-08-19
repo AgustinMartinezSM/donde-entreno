@@ -18,13 +18,19 @@ const variantClassNames: Record<NonNullable<AppButtonProps["variant"]>, string> 
   primary:
     "gradient-cta gradient-cta-hover bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)]",
   secondary:
-    "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]",
+    "border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]",
   outline:
-    "border border-[#BFDDEA] bg-white/70 text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-white",
+    "border border-[var(--color-border-accent)] bg-[var(--color-surface)]/70 text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface)]",
+  /*
+    danger conserva la paleta red-* de Tailwind a propósito: unificarla
+    con --color-danger (el rojo propio, #9A3D3D) cambiaría el color y
+    esta fase promete cero delta visual. Queda anotado en el doc del
+    bloque como decisión pendiente.
+  */
   danger:
-    "border border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-white",
+    "border border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-[var(--color-surface)]",
   success:
-    "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872] hover:bg-white",
+    "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface)]",
 };
 
 const sizeClassNames: Record<NonNullable<AppButtonProps["size"]>, string> = {

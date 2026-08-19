@@ -203,7 +203,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
           <SurfaceCard
             as="section"
             variant="info"
-            className="decorative-orb decorative-dots relative overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:p-6"
+            className="decorative-orb decorative-dots relative overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-6"
           >
             <p className="relative z-10 mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               EXPLORAR
@@ -227,19 +227,19 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
             <div className="relative z-10 mt-4 flex flex-wrap items-center gap-3">
               {nombreCiudadActiva ? (
-                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
+                <p className="inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-2 text-sm font-bold text-[var(--color-success)]">
                   Explorando actividades en {nombreCiudadActiva}
                 </p>
               ) : null}
 
               {textoBuscado ? (
-                <p className="inline-flex rounded-full bg-[#E6F7EF] px-3 py-2 text-sm font-bold text-[#1D7B4A]">
+                <p className="inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-2 text-sm font-bold text-[var(--color-success)]">
                   Resultados para &quot;{textoBuscado}&quot;
                 </p>
               ) : null}
 
               {perfilPublicadorIdActual ? (
-                <p className="inline-flex items-center gap-2 rounded-full bg-[#E8F6FB] px-3 py-2 text-sm font-bold text-[#0F6F8F]">
+                <p className="inline-flex items-center gap-2 rounded-full bg-[var(--color-info-soft)] px-3 py-2 text-sm font-bold text-[var(--color-info-deep)]">
                   Actividades de{" "}
                   {nombrePublicadorFiltrado ?? "un publicador que seguís"}
                   <AppLinkButton

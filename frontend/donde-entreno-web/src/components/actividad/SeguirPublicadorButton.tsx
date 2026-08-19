@@ -108,8 +108,8 @@ export function SeguirPublicadorButton({
       disabled={procesando}
       className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] px-5 py-3 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 ${
         activo
-          ? "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872]"
-          : "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+          ? "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)]"
+          : "border border-[var(--color-border-accent)] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
       }`}
     >
       {activo ? "Siguiendo" : "Seguir"}

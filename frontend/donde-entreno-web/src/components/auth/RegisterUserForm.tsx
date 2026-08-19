@@ -33,7 +33,7 @@ const ESTADO_INICIAL: RegistroUsuarioFormState = {
 };
 
 const inputClassName =
-  "mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+  "mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70";
 
 const TEXTO_AYUDA_PASSWORD =
   "Mínimo 8 caracteres, con al menos una letra y un número.";
@@ -222,7 +222,7 @@ export function RegisterUserForm() {
         {cargando ? "Creando cuenta..." : "Crear cuenta de usuario"}
       </AppButton>
 
-      <div className="grid gap-3 border-t border-[#DDEAF3] pt-5 text-sm sm:grid-cols-2">
+      <div className="grid gap-3 border-t border-[var(--color-border-soft)] pt-5 text-sm sm:grid-cols-2">
         <AppLinkButton href="/login" variant="secondary" fullWidth>
           Ya tengo cuenta
         </AppLinkButton>

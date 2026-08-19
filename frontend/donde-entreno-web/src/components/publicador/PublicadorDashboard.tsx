@@ -96,7 +96,7 @@ export function PublicadorDashboard() {
   }, [accessToken, cerrarSesion, router]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title={
@@ -130,7 +130,7 @@ export function PublicadorDashboard() {
 
         {perfil ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <SurfaceCard className="border-[#BDE8D0] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-6 sm:p-8">
+            <SurfaceCard className="border-[var(--color-success-border)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-6 sm:p-8">
               <SectionHeader
                 eyebrow="Perfil"
                 title="Así te ve la comunidad"
@@ -149,7 +149,7 @@ export function PublicadorDashboard() {
               </dl>
 
               {perfil.descripcion ? (
-                <div className="mt-6 rounded-[20px] border border-[#BDE8D0] bg-[#E6F7EF]/55 p-4">
+                <div className="mt-6 rounded-[20px] border border-[var(--color-success-border)] bg-[#E6F7EF]/55 p-4">
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
                     Descripción
                   </p>
@@ -224,7 +224,7 @@ function DatoPerfil({
   valor: string | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#DDEAF3] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
+    <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
       <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
         {etiqueta}
       </dt>

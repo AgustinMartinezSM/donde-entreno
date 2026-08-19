@@ -104,7 +104,7 @@ export function ActividadGaleria({
         {fotos.map((foto, posicion) => (
           <li
             key={foto.id}
-            className={`relative ${ALTO_MEDIO} min-w-full shrink-0 snap-center bg-[#F8FAFC]`}
+            className={`relative ${ALTO_MEDIO} min-w-full shrink-0 snap-center bg-[var(--color-bg)]`}
           >
             <Image
               src={foto.url}

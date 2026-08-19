@@ -87,7 +87,7 @@ export function PublicadoresSeguidos({
             return (
               <li
                 key={publicador.perfilPublicadorId}
-                className="rounded-[18px] border border-[#DDEAF3] bg-white/85 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
+                className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/85 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -143,12 +143,12 @@ function EsqueletoFila() {
   return (
     <div
       aria-hidden="true"
-      className="flex animate-pulse items-center gap-3 rounded-[18px] border border-[#DDEAF3] bg-white/85 p-4"
+      className="flex animate-pulse items-center gap-3 rounded-[18px] border border-[var(--color-border-soft)] bg-white/85 p-4"
     >
-      <span className="h-11 w-11 rounded-full bg-[#E8F6FB]" />
+      <span className="h-11 w-11 rounded-full bg-[var(--color-info-soft)]" />
       <div className="flex-1">
-        <div className="h-3 w-1/3 rounded-full bg-[#E8F6FB]" />
-        <div className="mt-2 h-2.5 w-1/4 rounded-full bg-[#F8FAFC]" />
+        <div className="h-3 w-1/3 rounded-full bg-[var(--color-info-soft)]" />
+        <div className="mt-2 h-2.5 w-1/4 rounded-full bg-[var(--color-bg)]" />
       </div>
     </div>
   );

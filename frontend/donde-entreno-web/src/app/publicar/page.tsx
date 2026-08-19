@@ -39,7 +39,7 @@ export default function PublicarPage() {
           <SurfaceCard
             as="section"
             variant="success"
-            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-8"
+            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-8"
           >
             <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
               <div>
@@ -58,8 +58,8 @@ export default function PublicarPage() {
                 </p>
               </div>
 
-              <div className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-white/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
-                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#1D7B4A]">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-white/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
+                <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[var(--color-success)]">
                   ¿Qué pasa después?
                 </p>
                 <ul className="mt-4 space-y-3 text-sm font-bold leading-6 text-[var(--color-primary)]">
@@ -67,7 +67,7 @@ export default function PublicarPage() {
                   <li>Mostrá horarios, ubicación y datos de contacto.</li>
                   <li>La publicación se revisa antes de quedar visible.</li>
                 </ul>
-                <p className="mt-4 rounded-[18px] bg-[#E6F7EF] px-4 py-3 text-sm font-bold leading-6 text-[#1D7B4A]">
+                <p className="mt-4 rounded-[18px] bg-[var(--color-success-soft)] px-4 py-3 text-sm font-bold leading-6 text-[var(--color-success)]">
                   Te guiamos paso a paso para que la solicitud llegue clara y
                   lista para revisión.
                 </p>

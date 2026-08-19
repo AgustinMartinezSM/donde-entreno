@@ -90,7 +90,7 @@ export function ComunidadSugerida({
         {sugeridos.map((publicador) => (
           <li
             key={publicador.id}
-            className="flex h-full flex-col rounded-[18px] border border-[#DDEAF3] bg-white p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
+            className="flex h-full flex-col rounded-[18px] border border-[var(--color-border-soft)] bg-white p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]"
           >
             <PublisherIdentity
               nombre={publicador.nombre}
@@ -129,16 +129,16 @@ function EsqueletoFila({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-[18px] border border-[#DDEAF3] bg-white p-4 ${className}`}
+      className={`animate-pulse rounded-[18px] border border-[var(--color-border-soft)] bg-white p-4 ${className}`}
     >
       <div className="flex items-center gap-3">
-        <span className="h-11 w-11 rounded-full bg-[#E8F6FB]" />
+        <span className="h-11 w-11 rounded-full bg-[var(--color-info-soft)]" />
         <div className="flex-1">
-          <div className="h-3 w-2/3 rounded-full bg-[#E8F6FB]" />
-          <div className="mt-2 h-2.5 w-1/3 rounded-full bg-[#F8FAFC]" />
+          <div className="h-3 w-2/3 rounded-full bg-[var(--color-info-soft)]" />
+          <div className="mt-2 h-2.5 w-1/3 rounded-full bg-[var(--color-bg)]" />
         </div>
       </div>
-      <div className="mt-4 h-9 w-28 rounded-[14px] bg-[#F8FAFC]" />
+      <div className="mt-4 h-9 w-28 rounded-[14px] bg-[var(--color-bg)]" />
     </div>
   );
 }

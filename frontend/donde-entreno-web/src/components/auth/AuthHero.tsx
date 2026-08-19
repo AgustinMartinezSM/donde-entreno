@@ -45,7 +45,7 @@ export function AuthHero({
 
       <div className="relative z-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#BDE8D0]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[var(--color-success-border)]">
             {eyebrow}
           </p>
           <Link

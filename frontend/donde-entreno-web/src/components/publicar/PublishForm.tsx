@@ -396,15 +396,15 @@ function obtenerMensajesErrores(errores: ErroresSolicitudPublicacionForm) {
 const OPCION_OTRO = "__OTRO__";
 
 const inputClassName =
-  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 disabled:cursor-not-allowed disabled:opacity-70";
+  "min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 disabled:cursor-not-allowed disabled:opacity-70";
 
 const textareaClassName =
-  "rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
+  "rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
 
 const labelClassName = "text-sm font-bold text-[var(--color-primary)]";
 const helpTextClassName = "text-xs leading-5 text-[var(--color-muted)]";
 const fieldsetClassName =
-  "rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-gradient-to-br from-white via-white to-[#F8FCFE] p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
+  "rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
 
 function formatearEtiquetaCatalogo(valor: string) {
   return valor
@@ -637,7 +637,7 @@ function PublishSectionHeader({
 }: PublishSectionHeaderProps) {
   return (
     <legend className="mb-5 flex w-full flex-col gap-3 sm:flex-row sm:items-start">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-soft)] text-sm font-extrabold text-[var(--color-success)]">
         {paso}
       </span>
       <span>
@@ -1125,15 +1125,15 @@ export function PublishForm({
                 </span>
               </span>
 
-              <span className="shrink-0 rounded-full border border-[#BFDDEA] bg-[#F8FCFE] px-3 py-2 text-xs font-extrabold text-[var(--color-primary)]">
+              <span className="shrink-0 rounded-full border border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] px-3 py-2 text-xs font-extrabold text-[var(--color-primary)]">
                 <span className="group-open:hidden">Ver pasos</span>
                 <span className="hidden group-open:inline">Ocultar</span>
               </span>
             </summary>
 
             <ol className="mt-4 space-y-3">
-              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-soft)] text-sm font-extrabold text-[var(--color-success)]">
                   1
                 </span>
                 <span>
@@ -1145,8 +1145,8 @@ export function PublishForm({
                   </span>
                 </span>
               </li>
-              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-info-soft)] text-sm font-extrabold text-[var(--color-info-deep)]">
                   2
                 </span>
                 <span>
@@ -1158,8 +1158,8 @@ export function PublishForm({
                   </span>
                 </span>
               </li>
-              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-soft)] text-sm font-extrabold text-[var(--color-success)]">
                   3
                 </span>
                 <span>
@@ -1171,8 +1171,8 @@ export function PublishForm({
                   </span>
                 </span>
               </li>
-              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-info-soft)] text-sm font-extrabold text-[var(--color-info-deep)]">
                   4
                 </span>
                 <span>
@@ -1184,15 +1184,15 @@ export function PublishForm({
                   </span>
                 </span>
               </li>
-              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#1D7B4A]">
+              <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[var(--color-success)]">
                   5
                 </span>
                 <span>
                   <span className="block text-sm font-extrabold text-[var(--color-primary)]">
                     Enviá la solicitud a revisión
                   </span>
-                  <span className="mt-1 block text-sm leading-5 text-[#1D7B4A]">
+                  <span className="mt-1 block text-sm leading-5 text-[var(--color-success)]">
                     El equipo de <BrandName className="inline font-bold" /> la
                     revisa antes de publicarla.
                   </span>
@@ -1215,8 +1215,8 @@ export function PublishForm({
           </p>
 
           <ol className="mt-5 space-y-3">
-            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-soft)] text-sm font-extrabold text-[var(--color-success)]">
                 1
               </span>
               <span>
@@ -1228,8 +1228,8 @@ export function PublishForm({
                 </span>
               </span>
             </li>
-            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-info-soft)] text-sm font-extrabold text-[var(--color-info-deep)]">
                 2
               </span>
               <span>
@@ -1241,8 +1241,8 @@ export function PublishForm({
                 </span>
               </span>
             </li>
-            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E6F7EF] text-sm font-extrabold text-[#1D7B4A]">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-soft)] text-sm font-extrabold text-[var(--color-success)]">
                 3
               </span>
               <span>
@@ -1254,8 +1254,8 @@ export function PublishForm({
                 </span>
               </span>
             </li>
-            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E8F6FB] text-sm font-extrabold text-[#0F6F8F]">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-info-soft)] text-sm font-extrabold text-[var(--color-info-deep)]">
                 4
               </span>
               <span>
@@ -1267,15 +1267,15 @@ export function PublishForm({
                 </span>
               </span>
             </li>
-            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[#1D7B4A]">
+            <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[var(--color-success)]">
                 5
               </span>
               <span>
                 <span className="block text-sm font-extrabold text-[var(--color-primary)]">
                   Enviá la solicitud a revisión
                 </span>
-                <span className="mt-1 block text-sm leading-5 text-[#1D7B4A]">
+                <span className="mt-1 block text-sm leading-5 text-[var(--color-success)]">
                   El equipo de <BrandName className="inline font-bold" /> la
                   revisa antes de publicarla.
                 </span>
@@ -1286,7 +1286,7 @@ export function PublishForm({
       </aside>
 
       <form onSubmit={manejarEnvio} className="space-y-5">
-        <p className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-white px-4 py-3 text-sm font-bold text-[var(--color-muted)]">
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-white px-4 py-3 text-sm font-bold text-[var(--color-muted)]">
           Los campos marcados con{" "}
           <span className="font-bold text-[var(--color-secondary)]">*</span> son
           obligatorios.
@@ -1296,7 +1296,7 @@ export function PublishForm({
         <div
           role="status"
           aria-live="polite"
-          className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm font-bold leading-6 text-[#0F6F8F]"
+          className="rounded-[var(--radius-lg)] border border-[var(--color-border-accent)] bg-[var(--color-info-soft)] p-4 text-sm font-bold leading-6 text-[var(--color-info-deep)]"
         >
           Cargando deportes y ciudades...
         </div>
@@ -1306,7 +1306,7 @@ export function PublishForm({
         <div
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4 text-sm leading-6 text-[var(--color-warning)]"
         >
           <p className="font-bold">{errorCatalogosIniciales}</p>
           <AppButton
@@ -1314,7 +1314,7 @@ export function PublishForm({
             onClick={() => void cargarCatalogosIniciales()}
             variant="outline"
             size="sm"
-            className="mt-3 border-[#8A4B00] text-[#8A4B00]"
+            className="mt-3 border-[var(--color-warning)] text-[var(--color-warning)]"
           >
             Reintentar
           </AppButton>
@@ -1327,7 +1327,7 @@ export function PublishForm({
           tabIndex={-1}
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4 text-sm leading-6 text-[var(--color-warning)] outline-none focus:ring-2 focus:ring-[var(--color-warning)]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             Revisá los siguientes datos
@@ -1504,7 +1504,7 @@ export function PublishForm({
             <p
               id="error-deporte"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.deporte}
             </p>
@@ -1676,13 +1676,13 @@ export function PublishForm({
             <p
               id="error-edades"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.edades}
             </p>
           )}
 
-          <div className="flex items-start gap-3 rounded-[var(--radius-md)] bg-[#E8F6FB] p-4 sm:col-span-2">
+          <div className="flex items-start gap-3 rounded-[var(--radius-md)] bg-[var(--color-info-soft)] p-4 sm:col-span-2">
             <input
               id="mostrarPrecio"
               name="mostrarPrecio"
@@ -1737,7 +1737,7 @@ export function PublishForm({
                 <p
                   id="error-precioReferencia"
                   role="alert"
-                  className="text-sm font-bold text-[#9A3D3D]"
+                  className="text-sm font-bold text-[var(--color-danger)]"
                 >
                   {erroresFormulario.precioReferencia}
                 </p>
@@ -1816,7 +1816,7 @@ export function PublishForm({
             <p
               id="error-ciudad"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.ciudad}
             </p>
@@ -1878,7 +1878,7 @@ export function PublishForm({
                 <p
                   role="status"
                   aria-live="polite"
-                  className="text-sm font-bold text-[#0F6F8F]"
+                  className="text-sm font-bold text-[var(--color-info-deep)]"
                 >
                   Cargando barrios...
                 </p>
@@ -1888,7 +1888,7 @@ export function PublishForm({
                 <div
                   role="alert"
                   aria-live="assertive"
-                  className="rounded-[var(--radius-md)] bg-[#FFF4E5] p-3 text-sm leading-6 text-[#8A4B00]"
+                  className="rounded-[var(--radius-md)] bg-[var(--color-warning-surface)] p-3 text-sm leading-6 text-[var(--color-warning)]"
                 >
                   <p className="font-bold">{errorBarrios}</p>
                   <AppButton
@@ -1896,7 +1896,7 @@ export function PublishForm({
                     onClick={manejarReintentarBarrios}
                     variant="outline"
                     size="sm"
-                    className="mt-2 border-[#8A4B00] text-[#8A4B00]"
+                    className="mt-2 border-[var(--color-warning)] text-[var(--color-warning)]"
                   >
                     Reintentar barrios
                   </AppButton>
@@ -1968,7 +1968,7 @@ export function PublishForm({
             <p
               id="error-barrio"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.barrio}
             </p>
@@ -2027,7 +2027,7 @@ export function PublishForm({
             <p
               id="error-ubicacion"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.ubicacion}
             </p>
@@ -2138,7 +2138,7 @@ export function PublishForm({
             <p
               id="error-contacto"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D] sm:col-span-2"
+              className="text-sm font-bold text-[var(--color-danger)] sm:col-span-2"
             >
               {erroresFormulario.contacto}
             </p>
@@ -2154,7 +2154,7 @@ export function PublishForm({
         />
 
         <div className="mt-2 space-y-4">
-          <div className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-accent)] bg-[var(--color-info-soft)] p-4 text-sm leading-6 text-[var(--color-info-deep)]">
             <h3 className="font-extrabold text-[var(--color-primary)]">
               Horarios de la actividad
             </h3>
@@ -2176,7 +2176,7 @@ export function PublishForm({
             <p
               id="error-horarios"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D]"
+              className="text-sm font-bold text-[var(--color-danger)]"
             >
               {erroresFormulario.horarios ?? erroresFormulario.horariosDuplicados}
             </p>
@@ -2198,10 +2198,10 @@ export function PublishForm({
               return (
                 <div
                   key={horario.idInterno}
-                  className="rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-[#F8FAFC] p-4 shadow-[0_10px_26px_rgba(12,52,80,0.06)]"
+                  className="rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4 shadow-[0_10px_26px_rgba(12,52,80,0.06)]"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 className="inline-flex w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-sm font-extrabold text-[#1D7B4A]">
+                    <h3 className="inline-flex w-fit rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-sm font-extrabold text-[var(--color-success)]">
                       Horario {indice + 1}
                     </h3>
 
@@ -2210,7 +2210,7 @@ export function PublishForm({
                         type="button"
                         aria-label={`Quitar horario ${indice + 1}`}
                         onClick={() => quitarHorario(horario.idInterno)}
-                        className="min-h-10 rounded-[var(--radius-md)] border border-[#C96B6B] bg-white px-4 text-sm font-bold text-[#9A3D3D] transition duration-200 ease-out hover:bg-[#FFF4F4] active:scale-[0.98]"
+                        className="min-h-10 rounded-[var(--radius-md)] border border-[#C96B6B] bg-white px-4 text-sm font-bold text-[var(--color-danger)] transition duration-200 ease-out hover:bg-[#FFF4F4] active:scale-[0.98]"
                       >
                         Quitar
                       </button>
@@ -2221,7 +2221,7 @@ export function PublishForm({
                     <p
                       id={duplicadoErrorId}
                       role="alert"
-                      className="mt-3 text-sm font-bold text-[#9A3D3D]"
+                      className="mt-3 text-sm font-bold text-[var(--color-danger)]"
                     >
                       {erroresHorario.duplicado}
                     </p>
@@ -2263,7 +2263,7 @@ export function PublishForm({
                         <p
                           id={diaErrorId}
                           role="alert"
-                          className="text-sm font-bold text-[#9A3D3D]"
+                          className="text-sm font-bold text-[var(--color-danger)]"
                         >
                           {erroresHorario.diaSemana}
                         </p>
@@ -2300,7 +2300,7 @@ export function PublishForm({
                         <p
                           id={horaInicioErrorId}
                           role="alert"
-                          className="text-sm font-bold text-[#9A3D3D]"
+                          className="text-sm font-bold text-[var(--color-danger)]"
                         >
                           {erroresHorario.horaInicio}
                         </p>
@@ -2335,7 +2335,7 @@ export function PublishForm({
                         <p
                           id={horaFinErrorId}
                           role="alert"
-                          className="text-sm font-bold text-[#9A3D3D]"
+                          className="text-sm font-bold text-[var(--color-danger)]"
                         >
                           {erroresHorario.horaFin}
                         </p>
@@ -2416,7 +2416,7 @@ export function PublishForm({
             </p>
           </div>
 
-          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4">
+          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-4">
             <input
               id="aceptaCondiciones"
               name="aceptaCondiciones"
@@ -2447,7 +2447,7 @@ export function PublishForm({
             <p
               id="error-aceptaCondiciones"
               role="alert"
-              className="text-sm font-bold text-[#9A3D3D]"
+              className="text-sm font-bold text-[var(--color-danger)]"
             >
               {erroresFormulario.aceptaCondiciones}
             </p>
@@ -2455,7 +2455,7 @@ export function PublishForm({
         </div>
       </fieldset>
 
-      <div className="rounded-[var(--radius-lg)] border border-[#BFDDEA] bg-[#E8F6FB] p-4 text-sm leading-6 text-[#0F6F8F]">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-accent)] bg-[var(--color-info-soft)] p-4 text-sm leading-6 text-[var(--color-info-deep)]">
         <p className="font-extrabold text-[var(--color-primary)]">
           La solicitud quedará pendiente de revisión
         </p>
@@ -2471,7 +2471,7 @@ export function PublishForm({
           tabIndex={-1}
           role="alert"
           aria-live="assertive"
-          className="rounded-[var(--radius-lg)] border border-[#F6C56D] bg-[#FFF4E5] p-4 text-sm leading-6 text-[#8A4B00] outline-none focus:ring-2 focus:ring-[#8A4B00]"
+          className="rounded-[var(--radius-lg)] border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4 text-sm leading-6 text-[var(--color-warning)] outline-none focus:ring-2 focus:ring-[var(--color-warning)]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             No pudimos enviar la solicitud
@@ -2495,14 +2495,14 @@ export function PublishForm({
           tabIndex={-1}
           role="status"
           aria-live="polite"
-          className="rounded-[var(--radius-lg)] border border-[#BDE8D0] bg-[#E6F7EF] p-4 text-sm leading-6 text-[#1D7B4A] outline-none focus:ring-2 focus:ring-[#1D7B4A]"
+          className="rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-4 text-sm leading-6 text-[var(--color-success)] outline-none focus:ring-2 focus:ring-[var(--color-success)]"
         >
           <h2 className="font-extrabold text-[var(--color-primary)]">
             {tituloExitoPersonalizado ?? "Tu solicitud fue enviada correctamente"}
           </h2>
           <p className="mt-2">La vamos a revisar antes de publicarla.</p>
           <p className="mt-2 font-bold">{respuestaEnvio.mensaje}</p>
-          <div className="mt-3 rounded-[var(--radius-md)] border border-[#BDE8D0] bg-white p-3">
+          <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-success-border)] bg-white p-3">
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-muted)]">
               Código de seguimiento
             </p>

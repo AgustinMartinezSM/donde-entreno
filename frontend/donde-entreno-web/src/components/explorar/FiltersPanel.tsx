@@ -23,7 +23,7 @@ type FiltersPanelProps = {
 };
 
 const selectClassName =
-  "min-h-12 rounded-[var(--radius-md)] border border-[#BFDDEA] bg-[#F8FAFC] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
+  "min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
 
 export function FiltersPanel({
   filtros,
@@ -231,7 +231,7 @@ export function FiltersPanel({
           onClick={() => setFiltrosAbiertos((valorActual) => !valorActual)}
           aria-expanded={filtrosAbiertos}
           aria-controls={filtrosPanelId}
-          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] sm:text-sm"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-4 text-xs font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98] sm:text-sm"
         >
           {filtrosAbiertos ? "Ocultar" : "Mostrar"}
           <span

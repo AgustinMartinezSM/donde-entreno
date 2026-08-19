@@ -180,10 +180,10 @@ function AdminSolicitudesListado() {
     !cargandoSolicitudes && Boolean(paginaSolicitudes) && !paginaSolicitudes?.ultima;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -201,7 +201,7 @@ function AdminSolicitudesListado() {
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
                 {sesion && (
-                  <div className="rounded-[18px] border border-[#DDEAF3] bg-white/85 px-4 py-3 shadow-sm">
+                  <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/85 px-4 py-3 shadow-sm">
                     <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
                       Usuario conectado
                     </p>
@@ -258,7 +258,7 @@ function AdminSolicitudesListado() {
                 value={filtroEstado}
                 onChange={cambiarFiltroEstado}
                 disabled={cargandoSolicitudes}
-                className="mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {FILTROS_ESTADO.map((opcion) => (
                   <option key={opcion.etiqueta} value={opcion.valor}>
@@ -268,7 +268,7 @@ function AdminSolicitudesListado() {
               </select>
             </div>
 
-            <p className="rounded-full border border-[#DDEAF3] bg-[#F8FCFE] px-4 py-2 text-sm font-bold text-[var(--color-muted)]">
+            <p className="rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface-soft)] px-4 py-2 text-sm font-bold text-[var(--color-muted)]">
               Orden: recientes
             </p>
           </div>
@@ -277,10 +277,10 @@ function AdminSolicitudesListado() {
         {cargandoSolicitudes && (
           <div
             role="status"
-            className="rounded-[24px] border border-[#DDEAF3] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[var(--color-border-soft)] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#BFDDEA] border-t-[var(--color-secondary)]" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
             </div>
             <p className="mt-4 text-sm font-bold text-[var(--color-primary)]">
               Cargando solicitudes...
@@ -368,7 +368,7 @@ function ListadoSolicitudes({
     <SurfaceCard className="overflow-hidden rounded-[24px]">
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-[#F8FCFE] text-xs uppercase tracking-[0.08em] text-[var(--color-muted)]">
+          <thead className="bg-[var(--color-surface-soft)] text-xs uppercase tracking-[0.08em] text-[var(--color-muted)]">
             <tr>
               <th className="px-5 py-4 font-extrabold">Código</th>
               <th className="px-5 py-4 font-extrabold">Estado</th>
@@ -384,7 +384,7 @@ function ListadoSolicitudes({
             {solicitudes.map((solicitud) => (
               <tr
                 key={solicitud.id}
-                className="border-t border-[#DDEAF3] transition duration-200 ease-out hover:bg-[#F8FCFE]"
+                className="border-t border-[var(--color-border-soft)] transition duration-200 ease-out hover:bg-[var(--color-surface-soft)]"
               >
                 <td className="px-5 py-5 font-extrabold text-[var(--color-primary)]">
                   {solicitud.codigoSeguimiento}
@@ -416,11 +416,11 @@ function ListadoSolicitudes({
         </table>
       </div>
 
-      <div className="divide-y divide-[#DDEAF3] lg:hidden">
+      <div className="divide-y divide-[var(--color-border-soft)] lg:hidden">
         {solicitudes.map((solicitud) => (
           <article
             key={solicitud.id}
-            className="p-5 transition duration-200 ease-out hover:bg-[#F8FCFE]"
+            className="p-5 transition duration-200 ease-out hover:bg-[var(--color-surface-soft)]"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>

@@ -21,7 +21,7 @@ export function AsistenteHomeButton() {
       type="button"
       onClick={abrirAsistente}
       aria-haspopup="dialog"
-      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--color-border-accent)] bg-white py-1.5 pl-1.5 pr-4 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98]"
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--color-border-accent)] bg-white py-1.5 pl-1.5 pr-4 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 active:scale-[0.98]"
     >
       <DondiAvatar tamanio={28} />
       Preguntale a Dondi

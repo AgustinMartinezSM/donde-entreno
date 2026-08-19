@@ -139,7 +139,7 @@ function DialogoDatosDeCuenta({
       ref={dialogoRef}
       onClose={onCerrar}
       aria-labelledby="datos-cuenta-titulo"
-      className="w-[min(28rem,calc(100vw-2rem))] rounded-[var(--radius-xl)] border border-[#DDEAF3] bg-white p-0 text-[var(--color-text)] shadow-[0_24px_60px_rgba(12,52,80,0.28)] backdrop:bg-[#0F3D5E]/40 backdrop:backdrop-blur-sm"
+      className="w-[min(28rem,calc(100vw-2rem))] rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-white p-0 text-[var(--color-text)] shadow-[0_24px_60px_rgba(12,52,80,0.28)] backdrop:bg-[#0F3D5E]/40 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-start justify-between gap-4 border-b border-[#EDF3F8] px-5 py-4">
         <h2
@@ -152,7 +152,7 @@ function DialogoDatosDeCuenta({
           type="button"
           onClick={onCerrar}
           aria-label="Cerrar datos de mi cuenta"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[#F8FAFC] hover:text-[var(--color-primary)] active:scale-95"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-muted)] transition duration-200 ease-out hover:bg-[var(--color-bg)] hover:text-[var(--color-primary)] active:scale-95"
         >
           <svg
             viewBox="0 0 24 24"
@@ -206,7 +206,7 @@ function DialogoDatosDeCuenta({
 
 function DatoCuenta({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
-    <div className="rounded-[14px] border border-[#DDEAF3] bg-[#F8FAFC] p-3">
+    <div className="rounded-[14px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3">
       <dt className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
         {etiqueta}
       </dt>

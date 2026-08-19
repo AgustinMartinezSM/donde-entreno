@@ -120,7 +120,7 @@ export function AsistenteConversacion({
           "puede enviarse" porque es literal: lo que el asistente resuelve
           en el navegador nunca sale del dispositivo.
         */}
-        <div className="rounded-2xl bg-[#F8FCFE] px-4 py-3 text-xs leading-5 text-[var(--color-muted)] ring-1 ring-[#DDEAF3]">
+        <div className="rounded-2xl bg-[var(--color-surface-soft)] px-4 py-3 text-xs leading-5 text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]">
           {conversacionEmpezada ? (
             <details className="group">
               <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -198,8 +198,8 @@ export function AsistenteConversacion({
               <div
                 className={
                   esAsistente
-                    ? "max-w-[85%] rounded-2xl rounded-bl-md bg-[#F8FAFC] px-4 py-2.5 ring-1 ring-[#DDEAF3]"
-                    : "max-w-[85%] rounded-2xl rounded-br-md bg-[#0F3D5E] px-4 py-2.5 shadow-sm"
+                    ? "max-w-[85%] rounded-2xl rounded-bl-md bg-[var(--color-bg)] px-4 py-2.5 ring-1 ring-[var(--color-border-soft)]"
+                    : "max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-primary)] px-4 py-2.5 shadow-sm"
                 }
               >
                 <p
@@ -219,7 +219,7 @@ export function AsistenteConversacion({
                     <Link
                       key={`${mensaje.id}-${enlace.href}`}
                       href={enlace.href}
-                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#BFDDEA] bg-white px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[var(--color-border-accent)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
                     >
                       <span className="truncate">{enlace.etiqueta}</span>
                       <span aria-hidden="true" className="shrink-0">
@@ -237,7 +237,7 @@ export function AsistenteConversacion({
                       key={`${mensaje.id}-${opcion}`}
                       type="button"
                       onClick={() => manejarOpcionRapida(opcion)}
-                      className="rounded-full border border-[#DDEAF3] bg-white px-3 py-1.5 text-left text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:bg-[#F8FCFE] active:scale-[0.98]"
+                      className="rounded-full border border-[var(--color-border-soft)] bg-white px-3 py-1.5 text-left text-xs font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] active:scale-[0.98]"
                     >
                       {opcion}
                     </button>
@@ -250,7 +250,7 @@ export function AsistenteConversacion({
 
         {escribiendo ? (
           <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl rounded-bl-md bg-[#F8FAFC] px-4 py-2.5 ring-1 ring-[#DDEAF3]">
+            <div className="flex items-center gap-2 rounded-2xl rounded-bl-md bg-[var(--color-bg)] px-4 py-2.5 ring-1 ring-[var(--color-border-soft)]">
               <span className="flex items-center gap-1.5" aria-hidden="true">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-accent)]" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-accent)] [animation-delay:150ms]" />
@@ -266,7 +266,7 @@ export function AsistenteConversacion({
 
       <form
         onSubmit={manejarEnvio}
-        className="border-t border-[#DDEAF3] bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3"
+        className="border-t border-[var(--color-border-soft)] bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-3"
       >
         <div className="flex items-center gap-2">
           <input
@@ -283,13 +283,13 @@ export function AsistenteConversacion({
             onChange={(evento) => setTexto(evento.target.value)}
             aria-label="Escribí tu consulta para el asistente"
             placeholder="Escribí tu consulta…"
-            className="min-h-11 w-full min-w-0 flex-1 rounded-full border border-[#DDEAF3] bg-[#F8FAFC] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[#BFDDEA] focus:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/30"
+            className="min-h-11 w-full min-w-0 flex-1 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-4 text-sm font-medium text-[var(--color-text)] outline-none transition duration-200 ease-out placeholder:text-[var(--color-muted)] hover:border-[var(--color-border-accent)] focus:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#4FB3D9]/30"
           />
           <button
             type="submit"
             disabled={escribiendo || texto.trim().length === 0}
             aria-label="Enviar mensaje"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2EB872] text-white shadow-[0_14px_35px_rgba(46,184,114,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#249B60] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary)] text-white shadow-[0_14px_35px_rgba(46,184,114,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#249B60] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
             <svg
               viewBox="0 0 24 24"

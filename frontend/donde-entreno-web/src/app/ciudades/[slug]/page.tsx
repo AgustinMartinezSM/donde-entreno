@@ -89,7 +89,7 @@ export default async function CiudadDetallePage({
           <SurfaceCard
             as="section"
             variant="info"
-            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[#F8FCFE] to-[#E8F6FB] p-5 sm:p-8 lg:p-10"
+            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-5 sm:p-8 lg:p-10"
           >
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
               CIUDAD
@@ -196,7 +196,7 @@ export default async function CiudadDetallePage({
                   <Link
                     key={actividad.id}
                     href={`/actividades/${actividad.slug}`}
-                    className="group flex min-h-full flex-col rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5 shadow-[0_14px_34px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)]"
+                    className="group flex min-h-full flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-white p-5 shadow-[0_14px_34px_rgba(12,52,80,0.08)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)]"
                   >
                     <p className="text-sm font-bold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
                       {actividad.deporteNombre || "Actividad"}
@@ -213,7 +213,7 @@ export default async function CiudadDetallePage({
                         : ""}
                     </p>
 
-                    <span className="mt-5 w-fit rounded-full bg-[#E6F7EF] px-3 py-1 text-xs font-extrabold text-[#1D7B4A] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
+                    <span className="mt-5 w-fit rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-xs font-extrabold text-[var(--color-success)] transition duration-200 ease-out group-hover:bg-[var(--color-primary)] group-hover:text-white">
                       Ver detalle
                     </span>
                   </Link>

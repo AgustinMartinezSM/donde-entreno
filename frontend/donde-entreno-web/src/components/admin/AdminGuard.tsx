@@ -55,14 +55,14 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   if (verificando) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)]">
+      <main className="min-h-screen px-4 py-8 text-[var(--color-text)]">
         <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
           <div
             role="status"
-            className="w-full rounded-[28px] border border-[#DDEAF3] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
+            className="w-full rounded-[28px] border border-[var(--color-border-soft)] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
           >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F6FB]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#BFDDEA] border-t-[var(--color-secondary)]" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
             </div>
             <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
               Panel administrador
@@ -86,11 +86,11 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
   if (!esRolAdmin(sesion.usuario.rol)) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)]">
+      <main className="min-h-screen px-4 py-8 text-[var(--color-text)]">
         <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
           <div
             role="alert"
-            className="w-full rounded-[28px] border border-[#F6C56D] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
+            className="w-full rounded-[28px] border border-[var(--color-warning-border)] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
           >
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
               Acceso restringido

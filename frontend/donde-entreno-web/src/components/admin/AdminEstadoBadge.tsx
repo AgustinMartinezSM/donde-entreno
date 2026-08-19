@@ -14,15 +14,15 @@ const etiquetasPorEstado: Record<EstadoSolicitudAdmin, string> = {
 
 const clasesPorEstado: Record<EstadoSolicitudAdmin, string> = {
   PENDIENTE: "border-[#F2C94C] bg-[#FFF8E1] text-[#684A00]",
-  EN_REVISION: "border-[#9CCFE4] bg-[#EEF8FC] text-[#0F3D5E]",
-  APROBADA: "border-[#9FDCBC] bg-[#ECF9F2] text-[#176B3F]",
+  EN_REVISION: "border-[#9CCFE4] bg-[#EEF8FC] text-[var(--color-primary)]",
+  APROBADA: "border-[#9FDCBC] bg-[var(--color-success-wash)] text-[#176B3F]",
   RECHAZADA: "border-[#F3B6B6] bg-[#FFF1F1] text-[#A53030]",
 };
 
 const puntoPorEstado: Record<EstadoSolicitudAdmin, string> = {
   PENDIENTE: "bg-[#D99B00]",
-  EN_REVISION: "bg-[#4FB3D9]",
-  APROBADA: "bg-[#2EB872]",
+  EN_REVISION: "bg-[var(--color-accent)]",
+  APROBADA: "bg-[var(--color-secondary)]",
   RECHAZADA: "bg-red-500",
 };
 

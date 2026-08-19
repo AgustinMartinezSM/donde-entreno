@@ -21,7 +21,7 @@ import type { PerfilPublicadorActual } from "../../types/publicador";
 import type { AuthErroresPorCampo } from "../../types/auth";
 
 const CLASE_INPUT =
-  "mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+  "mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70";
 
 /*
   Edición del perfil publicador (V1).
@@ -160,7 +160,7 @@ export function MiPerfilEditor() {
   const errorEmail = erroresPorCampo?.emailContacto ?? null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Mi perfil publicador"
@@ -369,7 +369,7 @@ function DatoProtegido({
   valor: string | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#DDEAF3] bg-white/80 p-4">
+    <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-4">
       <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
         {etiqueta}
       </dt>

@@ -199,7 +199,7 @@ export default async function PerfilPublicadorPage({
 
         <div className="py-7 sm:py-9">
           {/* Encabezado del perfil: portada + identidad */}
-          <article className="overflow-hidden rounded-[24px] border border-[#D9E2EC] bg-white shadow-[0_12px_35px_rgba(15,61,94,0.08)]">
+          <article className="overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-white shadow-[0_12px_35px_rgba(15,61,94,0.08)]">
             {/*
               La portada solo reserva altura cuando hay una imagen que
               mostrar. Sin imagen alcanza una banda fina de color: una
@@ -229,7 +229,7 @@ export default async function PerfilPublicadorPage({
               ) : (
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-br from-[#0F3D5E] via-[#145276] to-[#2EB872]"
+                  className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)] via-[#145276] to-[var(--color-secondary)]"
                 />
               )}
             </div>
@@ -333,7 +333,7 @@ export default async function PerfilPublicadorPage({
               */}
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 {!huboErrorActividades ? (
-                  <span className="rounded-full bg-[#E8F6FB] px-3 py-1.5 text-xs font-extrabold text-[#0F6F8F]">
+                  <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-info-deep)]">
                     {totalActividades === 1
                       ? "1 actividad publicada"
                       : `${totalActividades} actividades publicadas`}
@@ -353,7 +353,7 @@ export default async function PerfilPublicadorPage({
                 ) : null}
 
                 {perfil.verificado === true ? (
-                  <span className="rounded-full bg-[#E6F7EF] px-3 py-1.5 text-xs font-extrabold text-[#1D7B4A]">
+                  <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-success)]">
                     Perfil verificado
                   </span>
                 ) : null}
@@ -373,7 +373,7 @@ export default async function PerfilPublicadorPage({
                     href={sitioWebUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center justify-center rounded-[18px] border border-[#BFDDEA] bg-white px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]"
+                    className="inline-flex min-h-11 items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white px-4 py-2 text-sm font-bold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
                   >
                     Sitio web ↗
                   </a>
@@ -387,7 +387,7 @@ export default async function PerfilPublicadorPage({
             que cada solapa sea enlazable y compartible.
           */}
           <nav
-            className="mt-8 flex gap-2 overflow-x-auto border-b border-[#D9E2EC] pb-px"
+            className="mt-8 flex gap-2 overflow-x-auto border-b border-[var(--color-border)] pb-px"
             aria-label="Secciones del perfil"
           >
             {TABS.filter(
@@ -404,7 +404,7 @@ export default async function PerfilPublicadorPage({
                   className={`-mb-px shrink-0 border-b-2 px-4 py-3 text-sm font-extrabold transition duration-200 ease-out ${
                     activa
                       ? "border-[var(--color-secondary)] text-[var(--color-primary)]"
-                      : "border-transparent text-[var(--color-muted)] hover:border-[#BFDDEA] hover:text-[var(--color-primary)]"
+                      : "border-transparent text-[var(--color-muted)] hover:border-[var(--color-border-accent)] hover:text-[var(--color-primary)]"
                   }`}
                 >
                   {tab.etiqueta}
@@ -485,7 +485,7 @@ export default async function PerfilPublicadorPage({
                     {foto.href ? (
                       <Link
                         href={foto.href}
-                        className="group relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[#D9E2EC] bg-[#F8FAFC]"
+                        className="group relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]"
                       >
                         <Image
                           src={foto.url}
@@ -496,7 +496,7 @@ export default async function PerfilPublicadorPage({
                         />
                       </Link>
                     ) : (
-                      <div className="relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[#D9E2EC] bg-[#F8FAFC]">
+                      <div className="relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]">
                         <Image
                           src={foto.url}
                           alt={foto.alt}
@@ -547,7 +547,7 @@ export default async function PerfilPublicadorPage({
               </dl>
 
               {perfil.descripcion ? (
-                <div className="mt-5 rounded-[var(--radius-lg)] border border-[#DDEAF3] bg-white p-5">
+                <div className="mt-5 rounded-[var(--radius-lg)] border border-[var(--color-border-soft)] bg-white p-5">
                   <p className="text-sm font-extrabold text-[var(--color-primary)]">
                     Descripción
                   </p>
@@ -650,7 +650,7 @@ function DatoDelPerfil({
   }
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[#DDEAF3] bg-white p-4">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-white p-4">
       <dt className="text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--color-muted)]">
         {termino}
       </dt>
@@ -660,7 +660,7 @@ function DatoDelPerfil({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline decoration-[#BFDDEA] underline-offset-4 hover:decoration-[var(--color-primary)]"
+            className="underline decoration-[var(--color-border-accent)] underline-offset-4 hover:decoration-[var(--color-primary)]"
           >
             {limpio}
           </a>

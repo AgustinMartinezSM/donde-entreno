@@ -31,8 +31,8 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 
 const ESTILOS_ESTADO: Record<string, string> = {
   PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
-  EN_REVISION: "bg-[#E8F6FB] text-[#0F6F8F] ring-1 ring-[#BFDDEA]",
-  APROBADA: "bg-[#E6F7EF] text-[#1D7B4A] ring-1 ring-[#BDE8D0]",
+  EN_REVISION: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
+  APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
   RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -140,10 +140,10 @@ function AdminSolicitudesCambioListado() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-6 text-[var(--color-text)] sm:py-10">
+    <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[#F8FCFE] to-[#E6F7EF] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -182,7 +182,7 @@ function AdminSolicitudesCambioListado() {
             value={filtroEstado}
             onChange={cambiarFiltroEstado}
             disabled={cargando}
-            className="mt-2 min-h-12 w-full max-w-sm rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-2 min-h-12 w-full max-w-sm rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm font-bold text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {FILTROS_ESTADO.map((opcion) => (
               <option key={opcion.etiqueta} value={opcion.valor}>
@@ -225,7 +225,7 @@ function AdminSolicitudesCambioListado() {
                 href={`/admin/solicitudes-cambio/${solicitud.id}`}
                 className="block rounded-[24px] outline-none transition duration-200 ease-out hover:-translate-y-0.5 focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
               >
-                <SurfaceCard className="p-5 transition duration-200 ease-out hover:border-[#BFDDEA] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)] sm:p-6">
+                <SurfaceCard className="p-5 transition duration-200 ease-out hover:border-[var(--color-border-accent)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.12)] sm:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
@@ -239,7 +239,7 @@ function AdminSolicitudesCambioListado() {
                     <span
                       className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
                         ESTILOS_ESTADO[solicitud.estado] ??
-                        "bg-[#F8FAFC] text-[var(--color-muted)] ring-1 ring-[#DDEAF3]"
+                        "bg-[var(--color-bg)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]"
                       }`}
                     >
                       {formatearEstado(solicitud.estado)}
@@ -250,7 +250,7 @@ function AdminSolicitudesCambioListado() {
                     {solicitud.camposPropuestos.map((campo) => (
                       <span
                         key={campo}
-                        className="rounded-full bg-[#E8F6FB] px-3 py-1 text-xs font-bold text-[#0F6F8F]"
+                        className="rounded-full bg-[var(--color-info-soft)] px-3 py-1 text-xs font-bold text-[var(--color-info-deep)]"
                       >
                         {ETIQUETAS_CAMPOS[campo] ?? campo}
                       </span>

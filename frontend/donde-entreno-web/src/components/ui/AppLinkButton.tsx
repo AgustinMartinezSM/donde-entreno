@@ -22,11 +22,11 @@ const variantClassNames: Record<
   primary:
     "gradient-cta gradient-cta-hover bg-[var(--color-primary)] text-white shadow-[var(--shadow-button)]",
   secondary:
-    "border border-[#BFDDEA] bg-white text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[#F8FCFE]",
+    "border border-[var(--color-border-accent)] bg-[var(--color-surface)] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]",
   outline:
-    "border border-[#BFDDEA] bg-white/70 text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-white",
+    "border border-[var(--color-border-accent)] bg-[var(--color-surface)]/70 text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface)]",
   success:
-    "border border-[#BDE8D0] bg-[#ECF9F2] text-[#1D7B4A] hover:border-[#2EB872] hover:bg-white",
+    "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface)]",
 };
 
 const sizeClassNames: Record<NonNullable<AppLinkButtonProps["size"]>, string> = {

@@ -23,7 +23,7 @@ import type {
 } from "../../types/publicador";
 
 const CLASE_INPUT =
-  "mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70";
+  "mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70";
 
 const NIVELES = ["PRINCIPIANTE", "INTERMEDIO", "AVANZADO", "TODOS"] as const;
 const MODALIDADES = ["PRESENCIAL", "ONLINE", "MIXTA"] as const;
@@ -254,7 +254,7 @@ export function SolicitarCambiosForm() {
 
   if (solicitudCreada) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+      <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
         <section className="mx-auto w-full max-w-3xl">
           <SurfaceCard className="p-6 sm:p-8">
             <SectionHeader
@@ -263,7 +263,7 @@ export function SolicitarCambiosForm() {
               description="El equipo los va a revisar. La versión pública de la actividad no cambia hasta que se aprueben."
             />
 
-            <div className="mt-6 rounded-[18px] border border-[#DDEAF3] bg-[#F8FAFC] p-4">
+            <div className="mt-6 rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4">
               <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
                 Cambios propuestos
               </p>
@@ -277,7 +277,7 @@ export function SolicitarCambiosForm() {
                       {cambio.valorActual || "Sin valor"}
                     </span>{" "}
                     <span aria-hidden="true">→</span>{" "}
-                    <span className="font-bold text-[#1D7B4A]">
+                    <span className="font-bold text-[var(--color-success)]">
                       {cambio.valorPropuesto}
                     </span>
                   </li>
@@ -304,7 +304,7 @@ export function SolicitarCambiosForm() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E8F6FB] px-4 py-8 text-[var(--color-text)] sm:py-12">
+    <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
       <section className="mx-auto w-full max-w-6xl">
         <PublicadorPageHeader
           title="Solicitar cambios"
@@ -403,7 +403,7 @@ export function SolicitarCambiosForm() {
                     checked={mostrarPrecio}
                     onChange={(evento) => setMostrarPrecio(evento.target.checked)}
                     disabled={enviando}
-                    className="h-5 w-5 rounded border-[#BFDDEA] accent-[#2EB872]"
+                    className="h-5 w-5 rounded border-[var(--color-border-accent)] accent-[var(--color-secondary)]"
                   />
                   Mostrar el precio públicamente
                 </label>

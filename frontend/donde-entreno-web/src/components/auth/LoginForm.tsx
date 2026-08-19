@@ -211,7 +211,7 @@ export function LoginForm() {
           disabled={cargando}
           aria-invalid={Boolean(errorEmail)}
           aria-describedby={errorEmail ? "login-email-error" : undefined}
-          className="mt-2 min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
         />
         {errorEmail ? (
           <p id="login-email-error" className="mt-2 text-sm font-bold text-red-700">
@@ -250,7 +250,7 @@ export function LoginForm() {
             aria-describedby={
               errorPassword ? "login-password-error" : undefined
             }
-            className="min-h-12 w-full rounded-[18px] border border-[#BFDDEA] bg-[#F8FAFC] py-3 pl-4 pr-14 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[#DDEAF3] disabled:cursor-not-allowed disabled:opacity-70"
+            className="min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] py-3 pl-4 pr-14 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
           />
           <button
             type="button"

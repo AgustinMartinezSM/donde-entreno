@@ -1,18 +1,16 @@
 "use client";
 
-import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
+import { Fragment } from "react";
+
+import { obtenerSeccionesCuenta } from "../../lib/menuCuenta";
 import { useAuthSession } from "./AuthSessionProvider";
 import { AppLinkButton } from "../ui/AppLinkButton";
+import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
 import {
   MenuDesplegable,
   OpcionMenu,
   SeparadorMenu,
 } from "../ui/MenuDesplegable";
-
-type AccesoSesion = {
-  href: string;
-  label: string;
-};
 
 export function HeaderSessionMenu() {
   const { status, sesion, usuario, cerrarSesion } = useAuthSession();
@@ -42,7 +40,7 @@ export function HeaderSessionMenu() {
 
   const nombre = (usuario?.nombre ?? sesion.usuario.nombre).trim();
   const rol = usuario?.rol ?? sesion.usuario.rol;
-  const accesoDeRol = obtenerAccesoDeRol(rol);
+  const secciones = obtenerSeccionesCuenta(rol);
   const inicial = nombre.charAt(0).toLocaleUpperCase("es") || "D";
 
   function manejarCerrarSesion() {
@@ -56,6 +54,11 @@ export function HeaderSessionMenu() {
     igual que entrar a ella. Ahora hay una sola entrada (el avatar) y
     adentro un menú donde cerrar sesión ocupa el lugar que le
     corresponde: el último, en gris, después de un separador.
+
+    Las opciones salen de `obtenerSeccionesCuenta`, la misma fuente que
+    el panel de cuenta mobile: el espacio personal primero para todos
+    los roles, y el lado publicador o la administración como sección
+    aparte — nunca mezclados como si fueran lo mismo.
   */
   return (
     <MenuDesplegable
@@ -85,53 +88,43 @@ export function HeaderSessionMenu() {
     >
       {(cerrar) => (
         <>
-          <OpcionMenu href="/mi-cuenta" onClick={cerrar} destacada>
-            Mi perfil deportivo
-          </OpcionMenu>
+          {secciones.map((seccion, indice) => (
+            <Fragment key={seccion.titulo ?? indice}>
+              {indice > 0 ? <SeparadorMenu /> : null}
 
-          <OpcionMenu href="/favoritos" onClick={cerrar} destacada>
-            Actividades guardadas
-          </OpcionMenu>
+              {seccion.titulo ? (
+                <p className="px-3 pb-1.5 pt-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+                  {seccion.titulo}
+                </p>
+              ) : null}
 
-          {accesoDeRol ? (
-            <OpcionMenu href={accesoDeRol.href} onClick={cerrar} destacada>
-              {accesoDeRol.label}
-            </OpcionMenu>
-          ) : null}
+              {seccion.items.map((item) => (
+                <OpcionMenu
+                  key={item.href}
+                  href={item.href}
+                  onClick={cerrar}
+                  destacada
+                >
+                  <IconoMenuCuenta
+                    tipo={item.icono}
+                    className="h-[18px] w-[18px] shrink-0 text-[var(--color-accent)]"
+                  />
+                  {item.label}
+                </OpcionMenu>
+              ))}
+            </Fragment>
+          ))}
 
           <SeparadorMenu />
 
-          <OpcionMenu onClick={manejarCerrarSesion}>Cerrar sesión</OpcionMenu>
+          <OpcionMenu onClick={manejarCerrarSesion}>
+            <IconoMenuCuenta tipo="salir" />
+            Cerrar sesión
+          </OpcionMenu>
         </>
       )}
     </MenuDesplegable>
   );
-}
-
-/*
-  El acceso por rol es una opción más del menú, no un botón aparte: el
-  usuario común no tiene ninguno y no ve nada, y quien publica o
-  administra llega a su lugar sin que eso ocupe el header de todos.
-
-  La administración se nombra como tal: quien la usa es del equipo y le
-  sirve saber que está entrando a otra cosa.
-*/
-function obtenerAccesoDeRol(rol: string): AccesoSesion | null {
-  if (esRolAdmin(rol)) {
-    return {
-      href: "/admin/solicitudes",
-      label: "Administración",
-    };
-  }
-
-  if (esRolPublicador(rol)) {
-    return {
-      href: "/publicador",
-      label: "Mi espacio de publicador",
-    };
-  }
-
-  return null;
 }
 
 function IconoChevron() {

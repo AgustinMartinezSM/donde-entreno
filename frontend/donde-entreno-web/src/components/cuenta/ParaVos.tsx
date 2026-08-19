@@ -5,6 +5,7 @@ import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { BloqueAsistente } from "./BloqueAsistente";
 import { ComunidadSugerida } from "./ComunidadSugerida";
+import { EspacioDeRol } from "./EspacioDeRol";
 import { ProgresoPerfil } from "./ProgresoPerfil";
 import { RecomendadosParaVos } from "./RecomendadosParaVos";
 import type { FeedNovedades } from "./useFeedNovedades";
@@ -15,6 +16,7 @@ type ParaVosProps = {
   perfil: PerfilDeportivo;
   feed: FeedNovedades;
   seguimientos: Seguimientos;
+  rol: string | null;
   onIrATab: (tab: TabPerfil) => void;
 };
 
@@ -31,7 +33,13 @@ type ParaVosProps = {
   backend, las recomendaciones son la búsqueda pública real, y ciudad y
   deportes salen de lo que la persona eligió en este dispositivo.
 */
-export function ParaVos({ perfil, feed, seguimientos, onIrATab }: ParaVosProps) {
+export function ParaVos({
+  perfil,
+  feed,
+  seguimientos,
+  rol,
+  onIrATab,
+}: ParaVosProps) {
   const idsSeguidos = (seguimientos.seguidos ?? [])
     .map((publicador) => publicador.perfilPublicadorId)
     .filter((id) => !seguimientos.idsNoSeguidos.includes(id));
@@ -62,6 +70,12 @@ export function ParaVos({ perfil, feed, seguimientos, onIrATab }: ParaVosProps) 
         sin lugar y caía en vertical.
       */}
       <aside className="grid gap-6 xl:sticky xl:top-6 xl:order-2">
+        {/*
+          El puente al espacio de publicador/administración va primero:
+          para quien tiene dos mundos, saber cómo cruzar al otro es lo
+          más valioso de esta columna.
+        */}
+        <EspacioDeRol rol={rol} />
         <ProgresoPerfil perfil={perfil} onIrATab={onIrATab} />
         <BloqueAsistente disposicion="lateral" />
       </aside>

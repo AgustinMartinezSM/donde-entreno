@@ -116,9 +116,13 @@ export function MisDeportes({ perfil }: MisDeportesProps) {
           ))}
         </div>
 
+        {/*
+          Esta nota decía "se guardan en este dispositivo... más adelante
+          van a viajar con tu cuenta": quedó vieja con el bloque de sync.
+        */}
         <p className="mt-6 text-xs leading-5 text-[var(--color-muted)]">
-          Tus deportes se guardan en este dispositivo. Más adelante van a viajar
-          con tu cuenta.
+          Tus deportes se sincronizan con tu cuenta: los vas a ver iguales
+          desde cualquier dispositivo.
         </p>
       </section>
 

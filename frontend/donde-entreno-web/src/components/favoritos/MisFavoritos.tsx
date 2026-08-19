@@ -84,8 +84,13 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
         tabIndex={-1}
         className="outline-none focus-visible:outline-none"
       >
+        {/*
+          "En tu cuenta" y no "en este dispositivo": desde el bloque de
+          sync (fcc4fa5) los favoritos de una sesión iniciada viven en el
+          backend, y esta vista solo existe detrás de AuthGuard.
+        */}
         <SectionHeader
-          eyebrow="Guardadas en este dispositivo"
+          eyebrow="Guardadas en tu cuenta"
           title="Mis favoritos"
           description="Las actividades que marcaste para volver a mirar."
         />
@@ -229,17 +234,17 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
           </div>
 
           {/*
-            El aviso era un cartel con título al pie de la grilla y
-            pesaba tanto como el contenido. La advertencia sigue estando
-            —importa saber que esto vive en el dispositivo— pero como
-            nota al pie, que es lo que es.
+            La nota al pie decía "solo en este navegador... más adelante
+            vas a poder sincronizarlos": quedó vieja con el bloque de
+            sync. Ahora dice lo que es cierto — y suma confianza en vez
+            de restar.
           */}
           <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--color-muted)]">
             <span aria-hidden="true" className="mt-px">
               <IconoInfo />
             </span>
-            Por ahora tus favoritos se guardan solo en este navegador. Más
-            adelante vas a poder sincronizarlos con tu cuenta.
+            Tus guardados están sincronizados con tu cuenta: entrá desde
+            cualquier dispositivo y vas a ver la misma lista.
           </p>
         </>
       )}

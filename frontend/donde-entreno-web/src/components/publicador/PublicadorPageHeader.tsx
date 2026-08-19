@@ -25,9 +25,10 @@ export function PublicadorPageHeader({
       <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-[#4FB3D9]/12" />
       <div className="absolute bottom-0 left-0 h-20 w-20 rounded-tr-full bg-[#2EB872]/8" />
 
-      {/* Barra superior: identidad del sitio y salida de sesión. El
-          asistente ya no necesita botón acá: el launcher flotante de
-          Dondi está presente también en estas páginas. */}
+      {/* Barra superior: identidad del sitio, el puente de vuelta al
+          lado persona y la salida de sesión. El asistente ya no
+          necesita botón acá: el launcher flotante de Dondi está
+          presente también en estas páginas. */}
       <div className="relative flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/"
@@ -37,7 +38,22 @@ export function PublicadorPageHeader({
           <span aria-hidden="true">·</span>
           Ver el sitio
         </Link>
-        <CerrarSesionButton />
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/*
+            El espejo del conmutador de espacio: desde /mi-cuenta se
+            llega acá con una tarjeta, y desde acá se vuelve con este
+            link. Antes el único camino de salida era "Ver el sitio",
+            que no dice que tu perfil deportivo existe.
+          */}
+          <Link
+            href="/mi-cuenta"
+            className="inline-flex min-h-9 items-center rounded-full border border-[#BFDDEA] bg-white/80 px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-white"
+          >
+            Mi perfil deportivo
+          </Link>
+          <CerrarSesionButton />
+        </div>
       </div>
 
       <div className="relative mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">

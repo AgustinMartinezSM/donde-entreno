@@ -22,6 +22,22 @@ export type PasoPerfil = {
 
 export type TabPerfil = "para-vos" | "guardados" | "siguiendo" | "deportes";
 
+const TABS_PERFIL: TabPerfil[] = [
+  "para-vos",
+  "guardados",
+  "siguiendo",
+  "deportes",
+];
+
+/*
+  Valida el `?tab=` de la URL: las solapas son enlazables desde los
+  menús de cuenta (p. ej. /mi-cuenta?tab=deportes) y un valor inventado
+  no debe romper nada — cae a null y la página abre por "Para vos".
+*/
+export function normalizarTabPerfil(valor: string | null): TabPerfil | null {
+  return TABS_PERFIL.includes(valor as TabPerfil) ? (valor as TabPerfil) : null;
+}
+
 export type PerfilDeportivo = {
   nombre: string;
   nombreCompleto: string;

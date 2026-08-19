@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
 import { useAuthSession } from "../auth/AuthSessionProvider";
 import { IconoGuardar } from "../ui/IconoGuardar";
+import { MenuCuentaMobile } from "./MenuCuentaMobile";
 
 type IconoNavegacion = "inicio" | "explorar" | "guardados" | "cuenta";
 
@@ -17,17 +18,10 @@ type ItemNavegacion = {
 
 export function MobileNavigation() {
   const pathname = usePathname() ?? "/";
-  const { status, sesion, usuario } = useAuthSession();
+  const { status, sesion } = useAuthSession();
+  const [menuCuentaAbierto, setMenuCuentaAbierto] = useState(false);
   const sesionCargando = status === "loading";
   const autenticado = status === "authenticated" && Boolean(sesion);
-  const rol = usuario?.rol ?? sesion?.usuario.rol;
-  /*
-    Cada rol sigue llegando a su propio destino: el nombre del ítem es el
-    mismo para todos, el lugar no.
-  */
-  const destinoCuenta = autenticado && rol
-    ? obtenerRutaInicialPorRol(rol)
-    : `/login?returnTo=${encodeURIComponent("/mi-cuenta")}`;
 
   const items: ItemNavegacion[] = [
     {
@@ -66,12 +60,15 @@ export function MobileNavigation() {
         que un usuario logueado no vea (ni toque) "Ingresar" en cada
         carga.
 
-        "Perfil" en vez de "Panel": panel es lenguaje de sistema, no de
-        persona. El publicador y el admin llegan al mismo lugar de
-        siempre, solo cambia cómo se llama.
+        Con sesión, este ítem ya no navega: abre el panel de cuenta. El
+        destino directo por rol mandaba al publicador SIEMPRE a
+        /publicador, sin ningún camino a su perfil deportivo ni a sus
+        guardadas — "Mi perfil" significaba otra cosa según quién lo
+        tocara. El visitante sí navega: /login, con "Iniciar sesión" y
+        "Crear cuenta" a la vista, ya es su menú.
       */
       label: autenticado || sesionCargando ? "Mi perfil" : "Ingresar",
-      href: destinoCuenta,
+      href: `/login?returnTo=${encodeURIComponent("/mi-cuenta")}`,
       icono: "cuenta",
       activo: (ruta) =>
         (!autenticado &&
@@ -118,6 +115,23 @@ export function MobileNavigation() {
             );
           }
 
+          if (item.icono === "cuenta" && autenticado) {
+            return (
+              <button
+                key={item.icono}
+                type="button"
+                onClick={() => setMenuCuentaAbierto(true)}
+                aria-haspopup="dialog"
+                aria-expanded={menuCuentaAbierto}
+                aria-current={seleccionado ? "page" : undefined}
+                className={clase}
+              >
+                <Icono tipo={item.icono} seleccionado={seleccionado} />
+                <span>{item.label}</span>
+              </button>
+            );
+          }
+
           return (
             <Link
               key={item.icono}
@@ -131,6 +145,13 @@ export function MobileNavigation() {
           );
         })}
       </div>
+
+      {autenticado ? (
+        <MenuCuentaMobile
+          abierto={menuCuentaAbierto}
+          onCerrar={() => setMenuCuentaAbierto(false)}
+        />
+      ) : null}
     </nav>
   );
 }

@@ -1,11 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { obtenerRutaInicialPorRol } from "../../lib/authRedirects";
+import { useState } from "react";
 import { useAuthSession } from "../auth/AuthSessionProvider";
+import { MenuCuentaMobile } from "./MenuCuentaMobile";
 
+/*
+  Avatar del header en mobile. Con sesión abre el panel de cuenta — el
+  mismo que "Mi perfil" en la barra inferior: las dos entradas tienen
+  que significar LO MISMO. Antes navegaba directo a un destino por rol,
+  así que el publicador caía en /publicador sin forma de llegar a su
+  lado persona.
+*/
 export function MobileAccountShortcut() {
   const { status, sesion, usuario } = useAuthSession();
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   if (status === "loading") {
     return (
@@ -30,17 +39,26 @@ export function MobileAccountShortcut() {
   }
 
   const nombre = (usuario?.nombre ?? sesion.usuario.nombre).trim();
-  const rol = usuario?.rol ?? sesion.usuario.rol;
   const inicial = nombre.charAt(0).toLocaleUpperCase("es") || "D";
 
   return (
-    <Link
-      href={obtenerRutaInicialPorRol(rol)}
-      aria-label={`Abrir mi espacio. Sesión de ${nombre || "usuario"}`}
-      className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition hover:bg-[#0B314D]"
-    >
-      {inicial}
-    </Link>
+    <>
+      <button
+        type="button"
+        onClick={() => setMenuAbierto(true)}
+        aria-haspopup="dialog"
+        aria-expanded={menuAbierto}
+        aria-label={`Abrir el menú de tu cuenta. Sesión de ${nombre || "usuario"}`}
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition hover:bg-[#0B314D] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/40 active:scale-95"
+      >
+        {inicial}
+      </button>
+
+      <MenuCuentaMobile
+        abierto={menuAbierto}
+        onCerrar={() => setMenuAbierto(false)}
+      />
+    </>
   );
 }
 

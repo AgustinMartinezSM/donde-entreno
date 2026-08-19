@@ -33,6 +33,15 @@ un JWT, no contiene nada), **rota en cada uso** (un token robado ya usado
 delata el robo) y **se revoca en el servidor** (logout real, imposible con
 el JWT actual).
 
+> **Decisión de Agustín (2026-08-19), para releer cuando cambie la
+> infraestructura**: `localStorage` se acepta **por la infraestructura
+> actual** (Vercel/Render en dominios separados) y **no es la opción
+> ideal a largo plazo**. Cuando la plataforma tenga dominio propio
+> (frontend y API como subdominios del mismo sitio), reevaluar cookie
+> `HttpOnly` first-party o arquitectura BFF. La tabla y los endpoints de
+> este bloque sirven igual en ese mundo: lo único que cambia es dónde
+> guarda el token el cliente.
+
 ## 3. Backend
 
 ### 3.1 Migración — script `19_create_refresh_token.sql` (ANTES que el código, regla 2)

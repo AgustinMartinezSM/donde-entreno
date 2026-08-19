@@ -38,7 +38,8 @@ import java.util.List;
 @EnableWebSecurity
 @EnableConfigurationProperties({
         SuperAdminBootstrapProperties.class,
-        JwtProperties.class
+        JwtProperties.class,
+        RefreshTokenProperties.class
 })
 public class SecurityConfig {
 
@@ -93,6 +94,15 @@ public class SecurityConfig {
                         */
                         .requestMatchers(HttpMethod.POST, "/api/asistente/consulta").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        /*
+                          Refresh y logout son publicos como el login: la
+                          credencial es el refresh token del body (256
+                          bits aleatorios), no el access token — que
+                          puede estar vencido justo cuando mas se
+                          necesita refrescar.
+                        */
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/publicador").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")

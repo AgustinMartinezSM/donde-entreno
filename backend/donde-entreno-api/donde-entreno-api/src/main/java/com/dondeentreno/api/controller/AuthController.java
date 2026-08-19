@@ -2,6 +2,7 @@ package com.dondeentreno.api.controller;
 
 import com.dondeentreno.api.dto.LoginRequestDTO;
 import com.dondeentreno.api.dto.LoginResponseDTO;
+import com.dondeentreno.api.dto.RefreshRequestDTO;
 import com.dondeentreno.api.dto.RegistroPublicadorRequestDTO;
 import com.dondeentreno.api.dto.RegistroUsuarioRequestDTO;
 import com.dondeentreno.api.dto.UsuarioActualDTO;
@@ -34,6 +35,26 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /**
+     * Rota el refresh token y devuelve una sesion nueva completa. Un
+     * token invalido, vencido, revocado o reutilizado responde 401 con
+     * el mismo mensaje: la respuesta no distingue el motivo.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refrescar(@Valid @RequestBody RefreshRequestDTO request) {
+        return ResponseEntity.ok(authService.refrescar(request.getRefreshToken()));
+    }
+
+    /**
+     * Revoca la familia del refresh token. Siempre 204: un logout no
+     * falla hacia el usuario y no delata si el token era valido.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Void> cerrarSesion(@Valid @RequestBody RefreshRequestDTO request) {
+        authService.cerrarSesion(request.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/registro/usuario")

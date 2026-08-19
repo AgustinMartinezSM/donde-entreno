@@ -8,6 +8,12 @@ public class LoginResponseDTO {
     private String tokenType;
     private String accessToken;
     private long expiresIn;
+    /*
+      Campos aditivos del bloque de sesion persistente (script 19): un
+      cliente viejo los ignora y sigue funcionando igual.
+    */
+    private String refreshToken;
+    private long refreshExpiresIn;
     private AuthUsuarioDTO usuario;
 
     public LoginResponseDTO() {
@@ -50,5 +56,21 @@ public class LoginResponseDTO {
 
     public void setUsuario(AuthUsuarioDTO usuario) {
         this.usuario = usuario;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public long getRefreshExpiresIn() {
+        return refreshExpiresIn;
+    }
+
+    public void setRefreshExpiresIn(long refreshExpiresIn) {
+        this.refreshExpiresIn = refreshExpiresIn;
     }
 }

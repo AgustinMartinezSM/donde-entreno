@@ -55,6 +55,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PerfilPublicadorRepository perfilPublicadorRepository;
@@ -64,6 +65,7 @@ public class AuthService {
     public AuthService(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
+            RefreshTokenService refreshTokenService,
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
@@ -72,6 +74,7 @@ public class AuthService {
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
@@ -88,17 +91,45 @@ public class AuthService {
             );
 
             UsuarioPrincipal usuario = obtenerUsuarioPrincipal(authentication);
-            String accessToken = jwtService.generarAccessToken(usuario);
+            /* Higiene sin scheduler: el login barre los vencidos viejos del usuario. */
+            refreshTokenService.limpiarVencidosDe(usuario.getId());
 
-            return new LoginResponseDTO(
-                    "Bearer",
-                    accessToken,
-                    jwtService.getExpiresIn(),
-                    AuthUsuarioDTO.desdePrincipal(usuario)
-            );
+            return crearLoginResponse(usuario);
         } catch (AuthenticationException exception) {
             throw new CredencialesInvalidasException(MENSAJE_CREDENCIALES_INVALIDAS);
         }
+    }
+
+    /**
+     * Rota un refresh token valido y devuelve una sesion nueva completa
+     * (access + refresh). El usuario se recarga con el filtro de
+     * activo/deleted: desactivar una cuenta mata sus refresh tokens en
+     * el proximo intento, sin esperar a que expiren.
+     */
+    public LoginResponseDTO refrescar(String refreshToken) {
+        RefreshTokenService.Rotacion rotacion = refreshTokenService.rotar(refreshToken);
+
+        Usuario usuario = usuarioRepository
+                .findByIdAndActivoTrueAndDeletedAtIsNull(rotacion.usuarioId())
+                .orElseThrow(() -> new CredencialesInvalidasException(MENSAJE_CREDENCIALES_INVALIDAS));
+
+        UsuarioPrincipal principal = UsuarioPrincipal.desdeUsuario(usuario);
+        String accessToken = jwtService.generarAccessToken(principal);
+
+        LoginResponseDTO respuesta = new LoginResponseDTO(
+                "Bearer",
+                accessToken,
+                jwtService.getExpiresIn(),
+                AuthUsuarioDTO.desdePrincipal(principal)
+        );
+        respuesta.setRefreshToken(rotacion.token().token());
+        respuesta.setRefreshExpiresIn(rotacion.token().expiresInSeconds());
+        return respuesta;
+    }
+
+    /** Logout real: revoca la familia del refresh token en el servidor. */
+    public void cerrarSesion(String refreshToken) {
+        refreshTokenService.revocarFamiliaDe(refreshToken);
     }
 
     @Transactional
@@ -195,13 +226,18 @@ public class AuthService {
 
     private LoginResponseDTO crearLoginResponse(UsuarioPrincipal usuario) {
         String accessToken = jwtService.generarAccessToken(usuario);
+        RefreshTokenService.TokenEmitido refresh =
+                refreshTokenService.emitirParaSesionNueva(usuario.getId());
 
-        return new LoginResponseDTO(
+        LoginResponseDTO respuesta = new LoginResponseDTO(
                 "Bearer",
                 accessToken,
                 jwtService.getExpiresIn(),
                 AuthUsuarioDTO.desdePrincipal(usuario)
         );
+        respuesta.setRefreshToken(refresh.token());
+        respuesta.setRefreshExpiresIn(refresh.expiresInSeconds());
+        return respuesta;
     }
 
     private Usuario crearUsuario(

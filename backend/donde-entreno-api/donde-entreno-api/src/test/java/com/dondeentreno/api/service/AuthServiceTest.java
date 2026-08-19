@@ -58,6 +58,9 @@ class AuthServiceTest {
     private JwtService jwtService;
 
     @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
     private UsuarioRepository usuarioRepository;
 
     @Mock
@@ -87,11 +90,16 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
         when(jwtService.generarAccessToken(principal)).thenReturn("jwt-ficticio");
         when(jwtService.getExpiresIn()).thenReturn(3600L);
+        when(refreshTokenService.emitirParaSesionNueva(1L))
+                .thenReturn(new RefreshTokenService.TokenEmitido("refresh-ficticio", 2_592_000L));
 
         LoginResponseDTO response = authService.login(new LoginRequestDTO(
                 "  ADMIN@DONDEENTRENO.COM  ",
                 PASSWORD_FICTICIO
         ));
+
+        /* El login barre los refresh vencidos viejos del usuario. */
+        verify(refreshTokenService).limpiarVencidosDe(1L);
 
         ArgumentCaptor<Authentication> authenticationCaptor = ArgumentCaptor.forClass(Authentication.class);
         verify(authenticationManager).authenticate(authenticationCaptor.capture());
@@ -102,6 +110,8 @@ class AuthServiceTest {
         assertEquals("Bearer", response.getTokenType());
         assertEquals("jwt-ficticio", response.getAccessToken());
         assertEquals(3600L, response.getExpiresIn());
+        assertEquals("refresh-ficticio", response.getRefreshToken());
+        assertEquals(2_592_000L, response.getRefreshExpiresIn());
         assertNotNull(response.getUsuario());
         assertEquals(1L, response.getUsuario().getId());
         assertEquals("admin@dondeentreno.com", response.getUsuario().getEmail());
@@ -156,6 +166,8 @@ class AuthServiceTest {
         });
         when(jwtService.generarAccessToken(any(UsuarioPrincipal.class))).thenReturn("jwt-usuario");
         when(jwtService.getExpiresIn()).thenReturn(3600L);
+        when(refreshTokenService.emitirParaSesionNueva(10L))
+                .thenReturn(new RefreshTokenService.TokenEmitido("refresh-usuario", 2_592_000L));
 
         LoginResponseDTO response = authService.registrarUsuario(request);
 
@@ -177,6 +189,7 @@ class AuthServiceTest {
         assertNotNull(usuarioGuardado.getCreatedAt());
         assertEquals("Bearer", response.getTokenType());
         assertEquals("jwt-usuario", response.getAccessToken());
+        assertEquals("refresh-usuario", response.getRefreshToken());
         assertEquals("USUARIO", response.getUsuario().getRol());
         assertEquals("usuario@ejemplo.com", response.getUsuario().getEmail());
     }
@@ -248,6 +261,8 @@ class AuthServiceTest {
         });
         when(jwtService.generarAccessToken(any(UsuarioPrincipal.class))).thenReturn("jwt-publicador");
         when(jwtService.getExpiresIn()).thenReturn(3600L);
+        when(refreshTokenService.emitirParaSesionNueva(20L))
+                .thenReturn(new RefreshTokenService.TokenEmitido("refresh-publicador", 2_592_000L));
 
         LoginResponseDTO response = authService.registrarPublicador(request);
 
@@ -277,7 +292,64 @@ class AuthServiceTest {
         assertTrue(perfilGuardado.getActivo());
         assertFalse(perfilGuardado.getVerificado());
         assertEquals("jwt-publicador", response.getAccessToken());
+        assertEquals("refresh-publicador", response.getRefreshToken());
         assertEquals("PUBLICADOR", response.getUsuario().getRol());
+    }
+
+    /* =============================================================
+       Refresh y logout (sesion persistente, script 19).
+       ============================================================= */
+
+    @Test
+    void refrescarRotaElTokenRecargaElUsuarioYDevuelveSesionCompleta() {
+        Usuario usuario = usuario(7L, "usuario@ejemplo.com", "USUARIO");
+
+        when(refreshTokenService.rotar("refresh-viejo")).thenReturn(
+                new RefreshTokenService.Rotacion(
+                        7L,
+                        new RefreshTokenService.TokenEmitido("refresh-nuevo", 2_592_000L)
+                )
+        );
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(7L))
+                .thenReturn(Optional.of(usuario));
+        when(jwtService.generarAccessToken(any(UsuarioPrincipal.class))).thenReturn("jwt-refrescado");
+        when(jwtService.getExpiresIn()).thenReturn(3600L);
+
+        LoginResponseDTO response = authService.refrescar("refresh-viejo");
+
+        assertEquals("Bearer", response.getTokenType());
+        assertEquals("jwt-refrescado", response.getAccessToken());
+        assertEquals("refresh-nuevo", response.getRefreshToken());
+        assertEquals(2_592_000L, response.getRefreshExpiresIn());
+        assertEquals("usuario@ejemplo.com", response.getUsuario().getEmail());
+    }
+
+    /*
+      Desactivar una cuenta mata sus refresh tokens en el proximo
+      intento: el usuario se recarga con el filtro de activo/deleted.
+    */
+    @Test
+    void refrescarConUsuarioDesactivadoDevuelve401() {
+        when(refreshTokenService.rotar("refresh-de-cuenta-baja")).thenReturn(
+                new RefreshTokenService.Rotacion(
+                        8L,
+                        new RefreshTokenService.TokenEmitido("refresh-nuevo", 2_592_000L)
+                )
+        );
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(8L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                CredencialesInvalidasException.class,
+                () -> authService.refrescar("refresh-de-cuenta-baja")
+        );
+    }
+
+    @Test
+    void cerrarSesionDelegaLaRevocacionDeLaFamilia() {
+        authService.cerrarSesion("refresh-a-revocar");
+
+        verify(refreshTokenService).revocarFamiliaDe("refresh-a-revocar");
     }
 
     @Test

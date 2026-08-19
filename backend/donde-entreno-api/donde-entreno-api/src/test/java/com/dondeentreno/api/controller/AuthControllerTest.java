@@ -72,6 +72,61 @@ class AuthControllerTest {
     }
 
     @Test
+    void refreshValidoDevuelveSesionNuevaCompleta() throws Exception {
+        LoginResponseDTO respuesta = new LoginResponseDTO(
+                "Bearer",
+                "jwt-refrescado",
+                3600L,
+                new AuthUsuarioDTO(1L, "usuario@ejemplo.com", "Usuario", null, "USUARIO")
+        );
+        respuesta.setRefreshToken("refresh-nuevo");
+        respuesta.setRefreshExpiresIn(2_592_000L);
+        when(authService.refrescar("refresh-viejo")).thenReturn(respuesta);
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "refreshToken": "refresh-viejo"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("jwt-refrescado"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-nuevo"))
+                .andExpect(jsonPath("$.refreshExpiresIn").value(2_592_000L))
+                .andExpect(jsonPath("$.usuario.email").value("usuario@ejemplo.com"));
+    }
+
+    @Test
+    void refreshSinTokenDevuelveBadRequestSinLlamarAlService() throws Exception {
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "refreshToken": "  "
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.refreshToken").exists());
+
+        verify(authService, never()).refrescar(any());
+    }
+
+    @Test
+    void logoutDevuelve204YDelegaLaRevocacion() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "refreshToken": "refresh-a-revocar"
+                                }
+                                """))
+                .andExpect(status().isNoContent());
+
+        verify(authService).cerrarSesion("refresh-a-revocar");
+    }
+
+    @Test
     void emailInvalidoDevuelveBadRequestYNoLlamaService() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

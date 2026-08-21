@@ -90,8 +90,8 @@ class SolicitudCambioActividadAdminServiceTest {
         configurarSolicitud(solicitud);
         configurarAdmin();
         when(actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
-                        eq(70L), eq(30L), eq("PUBLICADA")
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                        eq(70L), eq(30L), eq(java.util.List.of("PUBLICADA", "PAUSADA"))
                 ))
                 .thenReturn(Optional.empty());
         when(solicitudCambioRepository.save(solicitud)).thenReturn(solicitud);
@@ -187,8 +187,8 @@ class SolicitudCambioActividadAdminServiceTest {
 
     private void configurarActividadVigente(Actividad actividad) {
         when(actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
-                        eq(70L), eq(30L), eq("PUBLICADA")
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                        eq(70L), eq(30L), eq(java.util.List.of("PUBLICADA", "PAUSADA"))
                 ))
                 .thenReturn(Optional.of(actividad));
     }

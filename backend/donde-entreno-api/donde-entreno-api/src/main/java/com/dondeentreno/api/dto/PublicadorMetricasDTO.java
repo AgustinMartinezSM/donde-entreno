@@ -7,6 +7,8 @@ package com.dondeentreno.api.dto;
  * publicador que hace la consulta (no exponen datos de terceros):
  *
  * - actividadesPublicadas: actividades propias activas y publicadas.
+ * - actividadesPausadas: actividades propias en pausa voluntaria
+ *   (fase 6) — invisibles para el público, gestionables por el dueño.
  * - solicitudesPublicacionPendientes: solicitudes de publicación
  *   propias que siguen en estado PENDIENTE.
  * - solicitudesCambioPendientes: solicitudes de cambio propias aún
@@ -18,6 +20,7 @@ package com.dondeentreno.api.dto;
 public class PublicadorMetricasDTO {
 
     private final long actividadesPublicadas;
+    private final long actividadesPausadas;
     private final long solicitudesPublicacionPendientes;
     private final long solicitudesCambioPendientes;
     private final long imagenesPendientesModeracion;
@@ -25,12 +28,14 @@ public class PublicadorMetricasDTO {
 
     public PublicadorMetricasDTO(
             long actividadesPublicadas,
+            long actividadesPausadas,
             long solicitudesPublicacionPendientes,
             long solicitudesCambioPendientes,
             long imagenesPendientesModeracion,
             long seguidores
     ) {
         this.actividadesPublicadas = actividadesPublicadas;
+        this.actividadesPausadas = actividadesPausadas;
         this.solicitudesPublicacionPendientes = solicitudesPublicacionPendientes;
         this.solicitudesCambioPendientes = solicitudesCambioPendientes;
         this.imagenesPendientesModeracion = imagenesPendientesModeracion;
@@ -39,6 +44,10 @@ public class PublicadorMetricasDTO {
 
     public long getActividadesPublicadas() {
         return actividadesPublicadas;
+    }
+
+    public long getActividadesPausadas() {
+        return actividadesPausadas;
     }
 
     public long getSolicitudesPublicacionPendientes() {

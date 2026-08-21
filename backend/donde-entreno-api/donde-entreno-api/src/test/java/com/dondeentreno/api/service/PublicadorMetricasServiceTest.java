@@ -74,6 +74,9 @@ class PublicadorMetricasServiceTest {
         when(actividadRepository
                 .countByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(perfilId, "PUBLICADA"))
                 .thenReturn(3L);
+        when(actividadRepository
+                .countByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(perfilId, "PAUSADA"))
+                .thenReturn(1L);
         when(solicitudPublicacionRepository
                 .countByUsuario_IdAndPerfilPublicador_IdAndEstadoAndDeletedAtIsNull(userId, perfilId, "PENDIENTE"))
                 .thenReturn(2L);
@@ -90,6 +93,7 @@ class PublicadorMetricasServiceTest {
         PublicadorMetricasDTO metricas = publicadorMetricasService.obtenerMetricas(userId);
 
         assertEquals(3L, metricas.getActividadesPublicadas());
+        assertEquals(1L, metricas.getActividadesPausadas());
         assertEquals(2L, metricas.getSolicitudesPublicacionPendientes());
         assertEquals(1L, metricas.getSolicitudesCambioPendientes());
         assertEquals(4L, metricas.getImagenesPendientesModeracion());

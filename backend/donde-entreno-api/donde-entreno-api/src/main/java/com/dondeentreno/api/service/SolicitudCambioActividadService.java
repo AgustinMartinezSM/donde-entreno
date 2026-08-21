@@ -241,11 +241,15 @@ public class SolicitudCambioActividadService {
             throw new RecursoNoEncontradoException("No se encontro la actividad.");
         }
 
+        /*
+          Publicada O pausada (fase 6): en pausa tambien se pueden pedir
+          cambios — pausar oculta al publico, no congela la gestion.
+        */
         return actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                         actividadId,
                         perfilId,
-                        ESTADO_PUBLICACION_PUBLICADA
+                        PublicadorActividadService.ESTADOS_DEL_PANEL
                 )
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "No se encontro una actividad publicada de tu perfil con ese id."

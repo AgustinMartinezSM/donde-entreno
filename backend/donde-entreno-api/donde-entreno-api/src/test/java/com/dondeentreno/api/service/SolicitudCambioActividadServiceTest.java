@@ -151,8 +151,8 @@ class SolicitudCambioActividadServiceTest {
         PerfilPublicador perfil = perfil();
         configurarPerfil(perfil);
         when(actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
-                        eq(70L), eq(30L), eq("PUBLICADA")
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                        eq(70L), eq(30L), eq(java.util.List.of("PUBLICADA", "PAUSADA"))
                 ))
                 .thenReturn(Optional.empty());
 
@@ -196,8 +196,8 @@ class SolicitudCambioActividadServiceTest {
 
     private void configurarActividadPropia(Actividad actividad, PerfilPublicador perfil) {
         when(actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
-                        eq(70L), eq(perfil.getId()), eq("PUBLICADA")
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                        eq(70L), eq(perfil.getId()), eq(java.util.List.of("PUBLICADA", "PAUSADA"))
                 ))
                 .thenReturn(Optional.of(actividad));
     }

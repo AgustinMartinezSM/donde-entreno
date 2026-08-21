@@ -86,9 +86,9 @@ class PublicadorActividadServiceTest {
         PerfilPublicador perfil = perfilPublicador();
         Actividad actividad = actividad(perfil);
         configurarPerfil(perfil);
-        when(actividadRepository.findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        when(actividadRepository.findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 eq(30L),
-                eq("PUBLICADA"),
+                eq(List.of("PUBLICADA", "PAUSADA")),
                 any(Pageable.class)
         )).thenReturn(new PageImpl<>(
                 List.of(actividad),
@@ -112,9 +112,9 @@ class PublicadorActividadServiceTest {
         assertEquals(20, response.getTamanioPagina());
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(actividadRepository).findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        verify(actividadRepository).findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 eq(30L),
-                eq("PUBLICADA"),
+                eq(List.of("PUBLICADA", "PAUSADA")),
                 pageableCaptor.capture()
         );
         assertEquals(0, pageableCaptor.getValue().getPageNumber());
@@ -127,9 +127,9 @@ class PublicadorActividadServiceTest {
     void listarSinActividadesDevuelvePaginaVacia() {
         PerfilPublicador perfil = perfilPublicador();
         configurarPerfil(perfil);
-        when(actividadRepository.findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        when(actividadRepository.findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 eq(30L),
-                eq("PUBLICADA"),
+                eq(List.of("PUBLICADA", "PAUSADA")),
                 any(Pageable.class)
         )).thenReturn(Page.empty());
 
@@ -159,10 +159,10 @@ class PublicadorActividadServiceTest {
         PerfilPublicador perfil = perfilPublicador();
         Actividad actividad = actividad(perfil);
         configurarPerfil(perfil);
-        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 100L,
                 30L,
-                "PUBLICADA"
+                List.of("PUBLICADA", "PAUSADA")
         )).thenReturn(Optional.of(actividad));
         when(horarioActividadRepository.findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(100L))
                 .thenReturn(List.of(horario()));
@@ -194,10 +194,10 @@ class PublicadorActividadServiceTest {
     void obtenerDetalleAjenoOInexistenteDevuelveNotFound() {
         PerfilPublicador perfil = perfilPublicador();
         configurarPerfil(perfil);
-        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 999L,
                 30L,
-                "PUBLICADA"
+                List.of("PUBLICADA", "PAUSADA")
         )).thenReturn(Optional.empty());
 
         RecursoNoEncontradoException exception = assertThrows(
@@ -214,10 +214,10 @@ class PublicadorActividadServiceTest {
         PerfilPublicador perfil = perfilPublicador();
         Actividad actividad = actividad(perfil);
         configurarPerfil(perfil);
-        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                 100L,
                 30L,
-                "PUBLICADA"
+                List.of("PUBLICADA", "PAUSADA")
         )).thenReturn(Optional.of(actividad));
         when(horarioActividadRepository.findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(100L))
                 .thenReturn(List.of());
@@ -251,6 +251,105 @@ class PublicadorActividadServiceTest {
                 exception.getMessage()
         );
         verifyNoInteractions(actividadRepository);
+    }
+
+    @Test
+    void pausarUnaPublicadaCambiaElEstadoYDevuelveElDetalle() {
+        PerfilPublicador perfil = perfilPublicador();
+        Actividad actividad = actividad(perfil);
+        configurarPerfil(perfil);
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                100L,
+                30L,
+                List.of("PUBLICADA", "PAUSADA")
+        )).thenReturn(Optional.of(actividad));
+        when(horarioActividadRepository.findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(100L))
+                .thenReturn(List.of());
+        when(imagenRepository.findByActivaTrueAndActividad_IdOrderByOrdenAsc(100L))
+                .thenReturn(List.of());
+        when(solicitudPublicacionRepository.findByActividadGenerada_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+                100L,
+                30L
+        )).thenReturn(Optional.empty());
+
+        PublicadorActividadDetalleDTO detalle = service.cambiarVisibilidad(10L, 100L, false);
+
+        ArgumentCaptor<Actividad> captor = ArgumentCaptor.forClass(Actividad.class);
+        verify(actividadRepository).save(captor.capture());
+        assertEquals("PAUSADA", captor.getValue().getEstadoPublicacion());
+        assertEquals("PAUSADA", detalle.getEstadoPublicacion());
+    }
+
+    @Test
+    void pausarLoPausadoEsIdempotenteYNoGuardaNada() {
+        PerfilPublicador perfil = perfilPublicador();
+        Actividad actividad = actividad(perfil);
+        actividad.setEstadoPublicacion("PAUSADA");
+        configurarPerfil(perfil);
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                100L,
+                30L,
+                List.of("PUBLICADA", "PAUSADA")
+        )).thenReturn(Optional.of(actividad));
+        when(horarioActividadRepository.findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(100L))
+                .thenReturn(List.of());
+        when(imagenRepository.findByActivaTrueAndActividad_IdOrderByOrdenAsc(100L))
+                .thenReturn(List.of());
+        when(solicitudPublicacionRepository.findByActividadGenerada_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+                100L,
+                30L
+        )).thenReturn(Optional.empty());
+
+        PublicadorActividadDetalleDTO detalle = service.cambiarVisibilidad(10L, 100L, false);
+
+        verify(actividadRepository, never()).save(any(Actividad.class));
+        assertEquals("PAUSADA", detalle.getEstadoPublicacion());
+    }
+
+    @Test
+    void reanudarUnaPausadaLaVuelveAPublicada() {
+        PerfilPublicador perfil = perfilPublicador();
+        Actividad actividad = actividad(perfil);
+        actividad.setEstadoPublicacion("PAUSADA");
+        configurarPerfil(perfil);
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                100L,
+                30L,
+                List.of("PUBLICADA", "PAUSADA")
+        )).thenReturn(Optional.of(actividad));
+        when(horarioActividadRepository.findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(100L))
+                .thenReturn(List.of());
+        when(imagenRepository.findByActivaTrueAndActividad_IdOrderByOrdenAsc(100L))
+                .thenReturn(List.of());
+        when(solicitudPublicacionRepository.findByActividadGenerada_IdAndPerfilPublicador_IdAndDeletedAtIsNull(
+                100L,
+                30L
+        )).thenReturn(Optional.empty());
+
+        PublicadorActividadDetalleDTO detalle = service.cambiarVisibilidad(10L, 100L, true);
+
+        ArgumentCaptor<Actividad> captor = ArgumentCaptor.forClass(Actividad.class);
+        verify(actividadRepository).save(captor.capture());
+        assertEquals("PUBLICADA", captor.getValue().getEstadoPublicacion());
+        assertEquals("PUBLICADA", detalle.getEstadoPublicacion());
+    }
+
+    @Test
+    void cambiarVisibilidadDeActividadAjenaOInexistenteDa404() {
+        PerfilPublicador perfil = perfilPublicador();
+        configurarPerfil(perfil);
+        when(actividadRepository.findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                999L,
+                30L,
+                List.of("PUBLICADA", "PAUSADA")
+        )).thenReturn(Optional.empty());
+
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> service.cambiarVisibilidad(10L, 999L, false)
+        );
+
+        verify(actividadRepository, never()).save(any(Actividad.class));
     }
 
     private void configurarPerfil(PerfilPublicador perfil) {

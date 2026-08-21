@@ -542,10 +542,10 @@ class ImagenPublicadorServiceTest {
         Actividad actividad = new Actividad();
         actividad.setId(actividadId);
         when(actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                         actividadId,
                         perfilId,
-                        "PUBLICADA"
+                        java.util.List.of("PUBLICADA", "PAUSADA")
                 ))
                 .thenReturn(Optional.of(actividad));
     }

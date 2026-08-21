@@ -43,6 +43,27 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             "ubicacion.ciudad",
             "ubicacion.barrio"
     })
+    /**
+     * Listado del panel del publicador (fase 6): el dueño ve sus
+     * actividades publicadas Y pausadas — la pausa la maneja el, asi
+     * que tiene que poder verla.
+     */
+    Page<Actividad> findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+            Long perfilPublicadorId,
+            java.util.Collection<String> estadosPublicacion,
+            Pageable pageable
+    );
+
+    /**
+     * Actividad del panel por id (fase 6): mismo criterio que el
+     * listado — publicada o pausada, siempre del dueño.
+     */
+    Optional<Actividad> findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+            Long id,
+            Long perfilPublicadorId,
+            java.util.Collection<String> estadosPublicacion
+    );
+
     Page<Actividad> findByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
             Long perfilPublicadorId,
             String estadoPublicacion,

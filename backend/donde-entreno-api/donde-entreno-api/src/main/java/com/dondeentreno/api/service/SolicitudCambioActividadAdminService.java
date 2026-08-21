@@ -27,7 +27,6 @@ import java.util.Optional;
 import static com.dondeentreno.api.service.SolicitudCambioActividadService.ESTADO_APROBADA;
 import static com.dondeentreno.api.service.SolicitudCambioActividadService.ESTADO_EN_REVISION;
 import static com.dondeentreno.api.service.SolicitudCambioActividadService.ESTADO_PENDIENTE;
-import static com.dondeentreno.api.service.SolicitudCambioActividadService.ESTADO_PUBLICACION_PUBLICADA;
 import static com.dondeentreno.api.service.SolicitudCambioActividadService.ESTADO_RECHAZADA;
 
 /**
@@ -159,11 +158,17 @@ public class SolicitudCambioActividadAdminService {
         Usuario admin = buscarUsuarioAdmin(adminUserId);
         OffsetDateTime ahora = OffsetDateTime.now();
 
+        /*
+          Publicada O pausada (fase 6): un cambio aprobado sobre una
+          actividad pausada aplica igual y queda listo para cuando el
+          publicador la reanude. El rechazo automatico queda solo para
+          actividades realmente dadas de baja.
+        */
         Optional<Actividad> actividadVigente = actividadRepository
-                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+                .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
                         solicitud.getActividad().getId(),
                         solicitud.getPerfilPublicador().getId(),
-                        ESTADO_PUBLICACION_PUBLICADA
+                        PublicadorActividadService.ESTADOS_DEL_PANEL
                 );
 
         if (actividadVigente.isEmpty()) {

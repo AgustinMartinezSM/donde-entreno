@@ -26,6 +26,7 @@ import java.util.List;
 public class PublicadorMetricasService {
 
     private static final String ESTADO_ACTIVIDAD_PUBLICADA = "PUBLICADA";
+    private static final String ESTADO_ACTIVIDAD_PAUSADA = "PAUSADA";
     private static final String ESTADO_SOLICITUD_PENDIENTE = "PENDIENTE";
     private static final String ESTADO_MODERACION_PENDIENTE = "PENDIENTE";
     private static final List<String> ESTADOS_CAMBIO_ABIERTOS =
@@ -66,6 +67,13 @@ public class PublicadorMetricasService {
                         ESTADO_ACTIVIDAD_PUBLICADA
                 );
 
+        /* Pausa voluntaria (fase 6): el dashboard las muestra aparte. */
+        long actividadesPausadas = actividadRepository
+                .countByPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+                        perfilId,
+                        ESTADO_ACTIVIDAD_PAUSADA
+                );
+
         long solicitudesPublicacionPendientes = solicitudPublicacionRepository
                 .countByUsuario_IdAndPerfilPublicador_IdAndEstadoAndDeletedAtIsNull(
                         userId,
@@ -90,6 +98,7 @@ public class PublicadorMetricasService {
 
         return new PublicadorMetricasDTO(
                 actividadesPublicadas,
+                actividadesPausadas,
                 solicitudesPublicacionPendientes,
                 solicitudesCambioPendientes,
                 imagenesPendientesModeracion,

@@ -38,6 +38,11 @@ export type OrdenActividadesPublicador =
 */
 export type MetricasPublicador = {
   actividadesPublicadas: number;
+  /*
+    Pausadas (fase 6). Opcional para tolerar el orden de los deploys:
+    un backend sin el campo simplemente no muestra el conteo.
+  */
+  actividadesPausadas?: number;
   solicitudesPublicacionPendientes: number;
   solicitudesCambioPendientes: number;
   imagenesPendientesModeracion: number;

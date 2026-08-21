@@ -66,6 +66,11 @@ function obtenerClasesEstado(estado: string, activa?: boolean | null): string {
     return "border-[var(--color-border-accent)] bg-[var(--color-surface-soft)] text-[var(--color-muted)]";
   }
 
+  /* Pausa voluntaria (fase 6): tono de aviso, no de error. */
+  if (estado === "PAUSADA") {
+    return "border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] text-[var(--color-warning)]";
+  }
+
   return "border-[#8CCCE6] bg-[var(--color-info-soft)] text-[var(--color-primary)]";
 }
 
@@ -76,6 +81,10 @@ function obtenerClasesPunto(estado: string, activa?: boolean | null): string {
 
   if (estado === "PUBLICADA") {
     return "bg-[var(--color-secondary)]";
+  }
+
+  if (estado === "PAUSADA") {
+    return "bg-[var(--color-warning)]";
   }
 
   return "bg-[var(--color-accent)]";

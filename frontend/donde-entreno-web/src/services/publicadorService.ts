@@ -233,6 +233,35 @@ export async function obtenerActividadPublicador(
   );
 }
 
+/**
+ * Pausa (visible=false) o reanuda (visible=true) una actividad propia
+ * (fase 6). El backend devuelve el detalle actualizado, con
+ * estadoPublicacion PAUSADA o PUBLICADA.
+ */
+export async function cambiarVisibilidadActividad(
+  id: number,
+  visible: boolean,
+  accessToken: string
+): Promise<ActividadPublicadorDetalle> {
+  const idSeguro = validarIdActividad(id);
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/${encodeURIComponent(
+      String(idSeguro)
+    )}/visibilidad`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify({ visible }),
+    },
+    esActividadPublicadorDetalle
+  );
+}
+
 // ============================================================
 // Solicitudes de cambio sobre actividades publicadas
 // ============================================================
@@ -472,6 +501,8 @@ function esMetricasPublicador(valor: unknown): valor is MetricasPublicador {
   return (
     esObjeto(valor) &&
     typeof valor.actividadesPublicadas === "number" &&
+    (valor.actividadesPausadas === undefined ||
+      typeof valor.actividadesPausadas === "number") &&
     typeof valor.solicitudesPublicacionPendientes === "number" &&
     typeof valor.solicitudesCambioPendientes === "number" &&
     typeof valor.imagenesPendientesModeracion === "number" &&

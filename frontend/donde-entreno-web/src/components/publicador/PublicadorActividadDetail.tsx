@@ -15,8 +15,10 @@ import {
 } from "../../lib/activityImages";
 import {
   PublicadorApiError,
+  cambiarVisibilidadActividad,
   obtenerActividadPublicador,
 } from "../../services/publicadorService";
+import { AppButton } from "../ui/AppButton";
 import type { ActividadPublicadorDetalle } from "../../types/publicador";
 import { GestionImagenesActividad } from "./GestionImagenesActividad";
 import { PublicadorActividadEstadoBadge } from "./PublicadorActividadEstadoBadge";
@@ -162,17 +164,113 @@ export function PublicadorActividadDetail() {
         ) : null}
 
         {actividad ? (
-          <ActividadDetalleContenido actividad={actividad} />
+          <ActividadDetalleContenido
+            actividad={actividad}
+            accessToken={accessToken}
+            onActividadActualizada={setActividad}
+          />
         ) : null}
       </section>
     </main>
   );
 }
 
-function ActividadDetalleContenido({
+/*
+  Pausar y reanudar (fase 6): pausar oculta la actividad al público
+  (búsquedas, perfil, guardados) sin borrar nada ni frenar la gestión;
+  reanudar la devuelve tal cual estaba. El estado que muestra el badge
+  de arriba se actualiza con la respuesta del backend.
+*/
+function PanelVisibilidad({
   actividad,
+  accessToken,
+  onActividadActualizada,
 }: {
   actividad: ActividadPublicadorDetalle;
+  accessToken: string | null;
+  onActividadActualizada: (actividad: ActividadPublicadorDetalle) => void;
+}) {
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const estaPausada = actividad.estadoPublicacion?.trim().toUpperCase() === "PAUSADA";
+
+  async function alternarVisibilidad() {
+    if (!accessToken || cargando) {
+      return;
+    }
+
+    if (
+      !estaPausada &&
+      !window.confirm(
+        "¿Pausar esta actividad?\n\nMientras esté pausada no va a aparecer en búsquedas, en tu perfil público ni en los guardados de los usuarios. Tus fotos, horarios y datos no se tocan, y la podés reanudar cuando quieras."
+      )
+    ) {
+      return;
+    }
+
+    setCargando(true);
+    setError(null);
+
+    try {
+      const actualizada = await cambiarVisibilidadActividad(
+        actividad.id,
+        estaPausada,
+        accessToken
+      );
+      onActividadActualizada(actualizada);
+    } catch (excepcion) {
+      setError(
+        excepcion instanceof PublicadorApiError && excepcion.message
+          ? excepcion.message
+          : "No pudimos cambiar la visibilidad. Probá de nuevo en un momento."
+      );
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  return (
+    <div className="mt-4">
+      {estaPausada ? (
+        <StatusMessage variant="warning" role="status">
+          <strong>Actividad pausada.</strong> No aparece en búsquedas, en tu
+          perfil público ni en los guardados de los usuarios. Podés seguir
+          gestionando sus fotos y datos, y reanudarla cuando quieras.
+        </StatusMessage>
+      ) : null}
+
+      <div className="mt-3">
+        <AppButton
+          type="button"
+          variant={estaPausada ? "primary" : "secondary"}
+          onClick={alternarVisibilidad}
+          disabled={cargando || !accessToken}
+        >
+          {cargando
+            ? "Guardando..."
+            : estaPausada
+              ? "Reanudar actividad"
+              : "Pausar actividad"}
+        </AppButton>
+      </div>
+
+      {error ? (
+        <StatusMessage variant="error" role="alert" className="mt-3">
+          {error}
+        </StatusMessage>
+      ) : null}
+    </div>
+  );
+}
+
+function ActividadDetalleContenido({
+  actividad,
+  accessToken,
+  onActividadActualizada,
+}: {
+  actividad: ActividadPublicadorDetalle;
+  accessToken: string | null;
+  onActividadActualizada: (actividad: ActividadPublicadorDetalle) => void;
 }) {
   const slugPublico = obtenerSlugPublico(actividad);
   /*
@@ -223,11 +321,19 @@ function ActividadDetalleContenido({
             />
           </div>
 
-          <StatusMessage variant="info" className="mt-6">
-            Esta actividad ya está publicada. Podés proponer cambios desde{" "}
-            <strong>Solicitar cambios</strong>: se publican después de la
-            revisión del equipo.
-          </StatusMessage>
+          {actividad.estadoPublicacion?.trim().toUpperCase() !== "PAUSADA" ? (
+            <StatusMessage variant="info" className="mt-6">
+              Esta actividad ya está publicada. Podés proponer cambios desde{" "}
+              <strong>Solicitar cambios</strong>: se publican después de la
+              revisión del equipo.
+            </StatusMessage>
+          ) : null}
+
+          <PanelVisibilidad
+            actividad={actividad}
+            accessToken={accessToken}
+            onActividadActualizada={onActividadActualizada}
+          />
 
           <div className="mt-8 grid gap-5">
             <SeccionDetalle titulo="Actividad">

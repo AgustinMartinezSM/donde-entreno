@@ -34,6 +34,17 @@ export function PublicadorMetricasPanel({
       valor: metricas.actividadesPublicadas,
       href: "/publicador/actividades",
     },
+    /* Solo aparece si hay alguna: con cero seria ruido permanente. */
+    ...((metricas.actividadesPausadas ?? 0) > 0
+      ? [
+          {
+            etiqueta: "Actividades pausadas",
+            valor: metricas.actividadesPausadas ?? 0,
+            href: "/publicador/actividades",
+            resaltarSiHay: true,
+          },
+        ]
+      : []),
     {
       etiqueta: "Solicitudes pendientes",
       valor: metricas.solicitudesPublicacionPendientes,

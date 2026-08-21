@@ -73,6 +73,13 @@ export type TipoRespuestaLocal =
 export type ResultadoLocal = {
   respuesta: RespuestaAsistente;
   tipo: TipoRespuestaLocal;
+  /*
+    El deporte del catálogo que resolvió la respuesta, cuando tipo es
+    "deporte" y la coincidencia fue por deporte (no por categoría). La
+    cascada lo usa para medir si la consulta traía MÁS señal que el
+    deporte (barrio, día, nivel) y entonces ceder al backend.
+  */
+  deporteResuelto?: { nombre: string; slug: string };
 };
 
 /*

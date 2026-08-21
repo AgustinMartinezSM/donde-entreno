@@ -324,6 +324,7 @@ export function resolverLocal(
     return {
       respuesta: crearRespuestaCoincidencia(coincidencia),
       tipo: "deporte",
+      deporteResuelto: deporteResueltoDe(coincidencia),
     };
   }
 
@@ -344,10 +345,99 @@ export function resolverLocal(
     return {
       respuesta: crearRespuestaCoincidencia(coincidencia),
       tipo: "deporte",
+      deporteResuelto: deporteResueltoDe(coincidencia),
     };
   }
 
   return { respuesta: RESPUESTA_FALLBACK, tipo: "fallback" };
+}
+
+function deporteResueltoDe(
+  coincidencia: CoincidenciaCatalogo
+): { nombre: string; slug: string } | undefined {
+  if (coincidencia.tipo !== "deporte") {
+    return undefined;
+  }
+
+  return {
+    nombre: coincidencia.deporte.nombre,
+    slug: coincidencia.deporte.slug,
+  };
+}
+
+/*
+  Conectores gramaticales que no aportan señal (se suman a los tokens
+  genéricos para el chequeo de resto). Solo importan los de 3+ letras:
+  el resto ya lo filtra el largo mínimo.
+*/
+const CONECTORES_SIN_SENAL = new Set([
+  "los",
+  "las",
+  "una",
+  "uno",
+  "unos",
+  "unas",
+  "que",
+  "con",
+  "del",
+  "por",
+  "como",
+  "este",
+  "esta",
+  "esto",
+  "hay",
+  "muy",
+  "mas",
+  "mis",
+  "sus",
+  "pero",
+  "hola",
+  "buenas",
+  "buenos",
+  "gracias",
+]);
+
+/**
+ * ¿La consulta trae MÁS señal que el deporte que el navegador resolvió?
+ *
+ * "yoga en Constitución" resuelve "yoga" localmente, pero "constitucion"
+ * queda sin usar: el navegador no conoce barrios, días ni niveles, y el
+ * backend sí. La regla: si después de sacar muletillas y las palabras
+ * del propio deporte sobra algún token con contenido, hay que ceder.
+ * Sin listas de barrios ni de días: cualquier palabra que el catálogo
+ * no explique es razón suficiente para preguntar.
+ */
+export function tieneSenalMasAllaDelDeporte(
+  entrada: string,
+  deporteResuelto: { nombre: string; slug: string }
+): boolean {
+  const deporteDelCatalogo = CATALOGO_DEPORTES_ASISTENTE.find(
+    (deporte) => deporte.slug === deporteResuelto.slug
+  );
+
+  const tokens = normalizarTexto(entrada)
+    .split(" ")
+    .filter((token) => token.length >= 3)
+    .filter((token) => !TOKENS_GENERICOS.has(token))
+    .filter((token) => !CONECTORES_SIN_SENAL.has(token));
+
+  return tokens.some((token) => {
+    /* Consumido por el deporte (nombre, slug o alias, vía el buscador). */
+    if (
+      deporteDelCatalogo &&
+      obtenerPuntajeBusquedaDeporte(deporteDelCatalogo, token) > 0
+    ) {
+      return false;
+    }
+
+    /* Parte de un nombre compuesto ("muay" de "muay thai"). */
+    const nombreNormalizado = normalizarTexto(deporteResuelto.nombre);
+    if (nombreNormalizado.includes(token)) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 /*

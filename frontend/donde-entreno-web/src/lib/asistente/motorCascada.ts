@@ -34,7 +34,7 @@
 */
 
 import { normalizarTexto } from "../deporteSearch";
-import { resolverLocal } from "./motorLocal";
+import { resolverLocal, tieneSenalMasAllaDelDeporte } from "./motorLocal";
 import { consultarAsistenteRemoto } from "./motorRemoto";
 import type {
   ContextoAsistente,
@@ -127,10 +127,19 @@ export const motorAsistenteCascada: MotorAsistente = {
       return local.respuesta;
     }
 
+    /*
+      El deporte nombrado a secas se queda local SOLO si la consulta no
+      trae nada más: ni charla previa, ni señal conversacional, ni un
+      resto que el catálogo no explique. "yoga en Constitución" resuelve
+      "yoga" acá, pero "constitucion" sobra — y el backend sí sabe
+      filtrar por barrio, día o nivel (la limitación A3 que esto cierra).
+    */
     if (
       local.tipo === "deporte" &&
       !hayCharlaPrevia &&
-      !tieneSenalConversacional(entrada)
+      !tieneSenalConversacional(entrada) &&
+      (!local.deporteResuelto ||
+        !tieneSenalMasAllaDelDeporte(entrada, local.deporteResuelto))
     ) {
       return local.respuesta;
     }

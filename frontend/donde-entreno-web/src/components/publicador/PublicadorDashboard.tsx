@@ -196,6 +196,13 @@ export function PublicadorDashboard() {
                   Solicitudes de cambio
                 </AppLinkButton>
                 <AppLinkButton
+                  href="/publicador/fotos"
+                  variant="outline"
+                  fullWidth
+                >
+                  Centro de fotos
+                </AppLinkButton>
+                <AppLinkButton
                   href="/publicador/perfil"
                   variant="outline"
                   fullWidth

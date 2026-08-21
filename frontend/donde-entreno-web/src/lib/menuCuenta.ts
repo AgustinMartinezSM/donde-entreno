@@ -84,6 +84,11 @@ export function obtenerSeccionesCuenta(
           label: "Mis solicitudes",
           icono: "solicitudes",
         },
+        {
+          href: "/publicador/fotos",
+          label: "Mis fotos",
+          icono: "imagenes",
+        },
       ],
     });
   }

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 
+import { LightboxFotos } from "../imagenes/LightboxFotos";
 import { ActivityImage } from "./ActivityImage";
 
 export type FotoActividad = {
@@ -40,6 +41,8 @@ export function ActividadGaleria({
 }: ActividadGaleriaProps) {
   const pistaRef = useRef<HTMLUListElement>(null);
   const [indice, setIndice] = useState(0);
+  /* null = lightbox cerrado; un índice = abierto en esa foto (fase 4). */
+  const [indiceLightbox, setIndiceLightbox] = useState<number | null>(null);
 
   /*
     El índice se deduce del scroll real, no al revés: así queda
@@ -106,18 +109,60 @@ export function ActividadGaleria({
             key={foto.id}
             className={`relative ${ALTO_MEDIO} min-w-full shrink-0 snap-center bg-[var(--color-bg)]`}
           >
-            <Image
-              src={foto.url}
-              alt={foto.alt}
-              fill
-              /* La primera es la LCP de la página de detalle. */
-              priority={posicion === 0}
-              sizes="(max-width: 1023px) 100vw, 800px"
-              className="object-cover"
-            />
+            {/*
+              La foto es un botón: la abre a pantalla completa. El swipe
+              del carrusel no se pierde — un arrastre táctil no dispara
+              el click, solo el tap.
+            */}
+            <button
+              type="button"
+              onClick={() => setIndiceLightbox(posicion)}
+              aria-label={`Ver la foto ${posicion + 1} en pantalla completa`}
+              aria-haspopup="dialog"
+              className="absolute inset-0 h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#4FB3D9]/50"
+            >
+              <Image
+                src={foto.url}
+                alt={foto.alt}
+                fill
+                /* La primera es la LCP de la página de detalle. */
+                priority={posicion === 0}
+                sizes="(max-width: 1023px) 100vw, 800px"
+                className="object-cover"
+              />
+            </button>
           </li>
         ))}
       </ul>
+
+      {/*
+        "Ver todas": la entrada explícita al visor. El tap sobre la foto
+        también lo abre, pero un botón con el total dice que hay más.
+      */}
+      {fotos.length > 1 ? (
+        /* Arriba a la izquierda, espejando el contador: los bordes de
+           abajo se mueven con los puntos y el epígrafe. */
+        <button
+          type="button"
+          onClick={() => setIndiceLightbox(indice)}
+          aria-haspopup="dialog"
+          className="absolute left-3 top-3 rounded-full bg-[#0F3D5E]/75 px-3.5 py-1.5 text-xs font-extrabold text-white backdrop-blur-sm transition duration-200 ease-out hover:bg-[#0F3D5E]/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/50 active:scale-95"
+        >
+          Ver todas las fotos ({fotos.length})
+        </button>
+      ) : null}
+
+      <LightboxFotos
+        fotos={fotos.map((foto) => ({
+          clave: String(foto.id),
+          url: foto.url,
+          alt: foto.alt,
+          epigrafe: foto.titulo,
+        }))}
+        indice={indiceLightbox}
+        onCerrar={() => setIndiceLightbox(null)}
+        onNavegar={setIndiceLightbox}
+      />
 
       {unaSola ? null : (
         <>

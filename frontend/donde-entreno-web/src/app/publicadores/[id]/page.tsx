@@ -12,6 +12,7 @@ import { Header } from "../../../components/layout/Header";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { ErrorState } from "../../../components/feedback/ErrorState";
+import { GaleriaPerfil } from "../../../components/publicadores/GaleriaPerfil";
 import { CompartirButton } from "../../../components/social/CompartirButton";
 import { SocialActivityCard } from "../../../components/social/SocialActivityCard";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
@@ -479,36 +480,12 @@ export default async function PerfilPublicadorPage({
                 titleId="fotos-perfil-titulo"
               />
 
-              <ul className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-                {fotos.map((foto) => (
-                  <li key={foto.clave}>
-                    {foto.href ? (
-                      <Link
-                        href={foto.href}
-                        className="group relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]"
-                      >
-                        <Image
-                          src={foto.url}
-                          alt={foto.alt}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
-                          className="object-cover transition duration-200 ease-out group-hover:scale-105"
-                        />
-                      </Link>
-                    ) : (
-                      <div className="relative block aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]">
-                        <Image
-                          src={foto.url}
-                          alt={foto.alt}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {/*
+                Client component con visor a pantalla completa: tocar
+                una foto la muestra; el link a la actividad vive dentro
+                del visor (fase 4).
+              */}
+              <GaleriaPerfil fotos={fotos} />
             </section>
           ) : null}
 

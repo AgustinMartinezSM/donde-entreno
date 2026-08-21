@@ -115,8 +115,8 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
               <div className="h-40 rounded-[var(--radius-md)] bg-[var(--color-info-soft)]" />
               <div className="p-2 pt-4">
                 <div className="h-4 w-24 rounded-full bg-[var(--color-info-soft)]" />
-                <div className="mt-3 h-5 w-3/4 rounded-full bg-[#F1F5F9]" />
-                <div className="mt-2 h-4 w-1/2 rounded-full bg-[#F1F5F9]" />
+                <div className="mt-3 h-5 w-3/4 rounded-full bg-[var(--color-bg)]" />
+                <div className="mt-2 h-4 w-1/2 rounded-full bg-[var(--color-bg)]" />
               </div>
             </div>
           ))}

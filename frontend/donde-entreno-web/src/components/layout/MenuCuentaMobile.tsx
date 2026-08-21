@@ -258,7 +258,7 @@ function FilaMenuCuenta({
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] ${
         apagada
           ? "bg-[var(--color-bg)] text-[var(--color-muted)]"
-          : "bg-[#EAF6FB] text-[var(--color-accent)]"
+          : "bg-[var(--color-info-soft)] text-[var(--color-accent)]"
       }`}
     >
       <IconoMenuCuenta tipo={icono} />

@@ -347,7 +347,7 @@ export default async function PerfilPublicadorPage({
                   abandonados sin aportar información.
                 */}
                 {seguidores > 0 ? (
-                  <span className="rounded-full bg-[#F1F8FC] px-3 py-1.5 text-xs font-extrabold text-[var(--color-primary)]">
+                  <span className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-primary)]">
                     {seguidores === 1 ? "1 seguidor" : `${seguidores} seguidores`}
                   </span>
                 ) : null}

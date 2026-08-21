@@ -283,13 +283,15 @@ body {
 
 /*
   El wordmark del header es azul marino y sobre navy se pierde; no hay
-  asset horizontal claro (pendiente de marca). Hasta tenerlo, en oscuro
-  el logo va sobre una pastilla clara suave — legible sin tocar el PNG.
+  asset horizontal claro (pendiente de marca). En oscuro se re-tiñe con
+  filtros: invertir la luminancia y devolver el matiz con hue-rotate.
+  Verificado por muestreo de píxeles en canvas: el navy del wordmark
+  pasa a celeste claro legible y el verde de marca queda idéntico
+  (0,200,80). La V1 usaba una pastilla blanca detrás y desentonaba con
+  todo el tema (feedback del smoke).
 */
-:root[data-theme="dark"] .logo-marca {
-  background-color: rgba(244, 250, 254, 0.92);
-  border-radius: 14px;
-  padding: 0.3rem 0.65rem;
+:root[data-theme="dark"] .logo-marca img {
+  filter: invert(1) hue-rotate(195deg) saturate(1.4) brightness(1.05);
 }
 
 /*

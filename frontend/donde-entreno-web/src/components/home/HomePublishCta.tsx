@@ -36,7 +36,7 @@ export function HomePublishCta({ ciudadSlug }: HomePublishCtaProps) {
           <h2 className="mt-2 text-2xl font-extrabold sm:text-3xl">
             Sumá tu club, profe o actividad
           </h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-border-accent)]">
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[#BFDDEA]">
             Si sos club, profe, gimnasio o espacio deportivo, cargá tu propuesta
             para que más personas puedan encontrarte.
           </p>

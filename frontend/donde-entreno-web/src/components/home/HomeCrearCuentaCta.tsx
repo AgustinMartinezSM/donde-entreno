@@ -88,7 +88,7 @@ export function HomeCrearCuentaCta() {
           <h2 className="mt-2 text-2xl font-extrabold leading-tight sm:text-3xl">
             Guardá lo que te gusta y armá tu espacio deportivo
           </h2>
-          <p className="mt-3 max-w-xl text-base leading-7 text-[var(--color-border-accent)]">
+          <p className="mt-3 max-w-xl text-base leading-7 text-[#BFDDEA]">
             Explorar es libre. Con una cuenta, además, guardás tus actividades
             favoritas, seguís clubes y profes, y elegís los deportes que más te
             interesan.
@@ -119,7 +119,7 @@ export function HomeCrearCuentaCta() {
               </span>
               <div>
                 <p className="font-extrabold">{beneficio.titulo}</p>
-                <p className="mt-1 text-sm leading-6 text-[var(--color-border-accent)]">
+                <p className="mt-1 text-sm leading-6 text-[#BFDDEA]">
                   {beneficio.detalle}
                 </p>
               </div>

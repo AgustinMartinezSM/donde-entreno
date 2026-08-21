@@ -374,6 +374,44 @@ class PublicadorServiceTest {
     }
 
     @Test
+    void actualizarMiPerfilCambiaElNombrePublicoDirecto() {
+        Usuario usuario = usuario();
+        PerfilPublicador perfil = perfil(usuario);
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
+                .thenReturn(Optional.of(perfil));
+        when(perfilPublicadorRepository.save(perfil)).thenReturn(perfil);
+
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+        request.setNombre("  Club Renovado  ");
+
+        PerfilPublicadorActualDTO resultado = service.actualizarMiPerfil(10L, request);
+
+        assertEquals("Club Renovado", resultado.getNombre());
+        verify(perfilPublicadorRepository).save(perfil);
+    }
+
+    @Test
+    void actualizarMiPerfilConNombreVacioRechazaSinLimpiar() {
+        Usuario usuario = usuario();
+        PerfilPublicador perfil = perfil(usuario);
+        String nombreOriginal = perfil.getNombre();
+        when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
+                .thenReturn(Optional.of(perfil));
+
+        ActualizarPerfilPublicadorRequestDTO request = new ActualizarPerfilPublicadorRequestDTO();
+        request.setNombre("   ");
+
+        assertThrows(
+                SolicitudPublicacionInvalidaException.class,
+                () -> service.actualizarMiPerfil(10L, request)
+        );
+
+        /* El nombre es obligatorio: el vacio no limpia, rechaza. */
+        assertEquals(nombreOriginal, perfil.getNombre());
+        verify(perfilPublicadorRepository, never()).save(any(PerfilPublicador.class));
+    }
+
+    @Test
     void actualizarMiPerfilSinPerfilLanzaNoEncontrado() {
         when(perfilPublicadorRepository.findFirstByUsuario_IdAndActivoTrueAndDeletedAtIsNull(10L))
                 .thenReturn(Optional.empty());

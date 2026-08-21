@@ -20,6 +20,8 @@ import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionHorarioRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionRepository;
 import com.dondeentreno.api.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +37,8 @@ import java.util.Locale;
  */
 @Service
 public class PublicadorService {
+
+    private static final Logger log = LoggerFactory.getLogger(PublicadorService.class);
 
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
     private static final String ESTADO_EN_REVISION = "EN_REVISION";
@@ -79,12 +83,13 @@ public class PublicadorService {
 
     /**
      * Actualiza los campos de edicion directa del perfil del publicador
-     * autenticado: descripcion, instagram y email de contacto.
+     * autenticado: nombre publico (fase 5e), descripcion, instagram y
+     * email de contacto.
      *
      * Semantica PATCH: un campo null no se toca; un campo vacio o con
-     * solo espacios limpia el valor (queda null). Los campos sensibles
-     * (nombre publico, tipo, ciudad, whatsapp/telefono, estado) se
-     * editaran mas adelante mediante un flujo con revision admin.
+     * solo espacios limpia el valor (queda null) — salvo el nombre, que
+     * es obligatorio y con vacio rechaza. Tipo, ciudad,
+     * whatsapp/telefono y estado siguen fuera a proposito.
      *
      * @param userId id del usuario autenticado (claim del JWT).
      * @param request campos a actualizar.
@@ -104,6 +109,27 @@ public class PublicadorService {
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "No se encontro un perfil publicador para el usuario autenticado."
                 ));
+
+        /*
+          Nombre publico (fase 5e): edicion directa, con la excepcion de
+          la semantica PATCH — es obligatorio en el schema, asi que el
+          vacio no limpia: rechaza.
+        */
+        if (request.getNombre() != null) {
+            String nombreNormalizado = normalizarTextoEditable(request.getNombre());
+
+            if (nombreNormalizado == null) {
+                throw new SolicitudPublicacionInvalidaException(
+                        "El nombre publico no puede quedar vacio."
+                );
+            }
+
+            if (!nombreNormalizado.equals(perfil.getNombre())) {
+                perfil.setNombre(nombreNormalizado);
+                /* Solo metadata: nunca el nombre en si. */
+                log.info("Publicador: PERFIL_NOMBRE_CAMBIADO perfilId={}", perfil.getId());
+            }
+        }
 
         if (request.getDescripcion() != null) {
             perfil.setDescripcion(normalizarTextoEditable(request.getDescripcion()));

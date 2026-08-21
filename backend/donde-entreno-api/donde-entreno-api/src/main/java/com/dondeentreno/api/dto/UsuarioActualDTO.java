@@ -16,6 +16,8 @@ public class UsuarioActualDTO {
     private String telefono;
     private Boolean activo;
     private Boolean emailVerificado;
+    /** URL pública del avatar (fase 5d); null = iniciales. Aditivo. */
+    private String avatarUrl;
 
     public UsuarioActualDTO() {
     }
@@ -42,7 +44,7 @@ public class UsuarioActualDTO {
 
     public static UsuarioActualDTO desdeUsuario(Usuario usuario) {
         Rol rolUsuario = usuario.getRol();
-        return new UsuarioActualDTO(
+        UsuarioActualDTO dto = new UsuarioActualDTO(
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getApellido(),
@@ -52,6 +54,8 @@ public class UsuarioActualDTO {
                 usuario.getActivo(),
                 usuario.getEmailVerificado()
         );
+        dto.setAvatarUrl(usuario.getAvatarUrl());
+        return dto;
     }
 
     public Long getId() {
@@ -84,6 +88,14 @@ public class UsuarioActualDTO {
 
     public Boolean getEmailVerificado() {
         return emailVerificado;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public void setId(Long id) {

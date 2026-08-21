@@ -67,6 +67,14 @@ public class Usuario {
     private String passwordHash;
 
     /**
+     * URL pública del avatar (script 21, fase 5d). NULL = iniciales.
+     * Sin moderación en V1: el avatar no tiene superficie pública (solo
+     * lo ve su dueño).
+     */
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    /**
      * Teléfono opcional.
      */
     @Column(name = "telefono", length = 30)
@@ -142,6 +150,14 @@ public class Usuario {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getTelefono() {

@@ -45,6 +45,11 @@ export type UsuarioActual = {
   telefono: string | null;
   activo: boolean;
   emailVerificado: boolean;
+  /*
+    URL pública del avatar (fase 5d); null/ausente = iniciales.
+    Opcional para tolerar el orden de los deploys.
+  */
+  avatarUrl?: string | null;
 };
 
 export type LoginResponse = {

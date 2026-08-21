@@ -168,6 +168,52 @@ export async function cambiarPassword(
   );
 }
 
+/**
+ * Sube o reemplaza el avatar del usuario (fase 5d). El archivo llega ya
+ * recortado 1:1 por el editor de encuadre. Devuelve el usuario
+ * actualizado con la avatarUrl nueva.
+ */
+export async function actualizarAvatarUsuario(
+  accessToken: string,
+  archivo: File
+): Promise<UsuarioActual> {
+  const cuerpo = new FormData();
+  cuerpo.append("archivo", archivo);
+
+  /* Sin Content-Type manual: FormData define el boundary solo. */
+  return ejecutarAuthRequest(
+    `${API_BASE_URL}/api/usuario/avatar`,
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationAuth(accessToken),
+      },
+      body: cuerpo,
+    },
+    esUsuarioActual,
+    "No se pudo actualizar la foto de perfil."
+  );
+}
+
+/** Quita el avatar y vuelve a iniciales. Idempotente. */
+export async function eliminarAvatarUsuario(
+  accessToken: string
+): Promise<UsuarioActual> {
+  return ejecutarAuthRequest(
+    `${API_BASE_URL}/api/usuario/avatar`,
+    {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationAuth(accessToken),
+      },
+    },
+    esUsuarioActual,
+    "No se pudo quitar la foto de perfil."
+  );
+}
+
 export function guardarSesionAuth(respuesta: LoginResponse): SesionAuth {
   const sesion: SesionAuth = {
     tokenType: respuesta.tokenType,
@@ -548,7 +594,8 @@ function esUsuarioActual(valor: unknown): valor is UsuarioActual {
     typeof valor.rol === "string" &&
     esStringONull(valor.telefono) &&
     typeof valor.activo === "boolean" &&
-    typeof valor.emailVerificado === "boolean"
+    typeof valor.emailVerificado === "boolean" &&
+    (valor.avatarUrl === undefined || esStringONull(valor.avatarUrl))
   );
 }
 

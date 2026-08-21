@@ -24,13 +24,12 @@ const CLASE_INPUT =
   "mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70";
 
 /*
-  Edición del perfil publicador (V1).
+  Edición del perfil publicador (V1 + fase 5e).
 
-  Solo permite editar los campos de edición directa que expone
-  PATCH /api/publicador/me: descripción, Instagram y email de contacto.
-  Los campos sensibles (nombre público, tipo, ciudad, WhatsApp/teléfono
-  y estado) se muestran en solo lectura: van a editarse más adelante
-  mediante un flujo con revisión del equipo.
+  Campos de edición directa de PATCH /api/publicador/me: nombre público
+  (5e, directo por decisión de Agustín — la descripción ya lo era y es
+  texto más riesgoso), descripción, Instagram y email de contacto. Tipo,
+  ciudad, WhatsApp/teléfono y estado siguen en solo lectura.
 */
 export function MiPerfilEditor() {
   const router = useRouter();
@@ -40,6 +39,7 @@ export function MiPerfilEditor() {
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
 
+  const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [instagram, setInstagram] = useState("");
   const [emailContacto, setEmailContacto] = useState("");
@@ -66,6 +66,7 @@ export function MiPerfilEditor() {
         }
 
         setPerfil(perfilActual);
+        setNombre(perfilActual.nombre ?? "");
         setDescripcion(perfilActual.descripcion ?? "");
         setInstagram(perfilActual.instagram ?? "");
         setEmailContacto(perfilActual.emailContacto ?? "");
@@ -109,6 +110,12 @@ export function MiPerfilEditor() {
       return;
     }
 
+    /* El nombre es obligatorio: mejor frenarlo acá que con el 400. */
+    if (!nombre.trim()) {
+      setErrorGuardado("El nombre público no puede quedar vacío.");
+      return;
+    }
+
     setGuardando(true);
     setGuardadoOk(false);
     setErrorGuardado(null);
@@ -122,6 +129,7 @@ export function MiPerfilEditor() {
       */
       const perfilActualizado = await actualizarPerfilPublicador(
         {
+          nombre: nombre.trim(),
           descripcion: descripcion.trim(),
           instagram: instagram.trim(),
           emailContacto: emailContacto.trim(),
@@ -130,6 +138,7 @@ export function MiPerfilEditor() {
       );
 
       setPerfil(perfilActualizado);
+      setNombre(perfilActualizado.nombre ?? "");
       setDescripcion(perfilActualizado.descripcion ?? "");
       setInstagram(perfilActualizado.instagram ?? "");
       setEmailContacto(perfilActualizado.emailContacto ?? "");
@@ -155,6 +164,7 @@ export function MiPerfilEditor() {
     }
   }
 
+  const errorNombre = erroresPorCampo?.nombre ?? null;
   const errorDescripcion = erroresPorCampo?.descripcion ?? null;
   const errorInstagram = erroresPorCampo?.instagram ?? null;
   const errorEmail = erroresPorCampo?.emailContacto ?? null;
@@ -210,6 +220,48 @@ export function MiPerfilEditor() {
               />
 
               <form className="mt-6 flex flex-col gap-5" onSubmit={manejarEnvio}>
+                <div>
+                  <label
+                    htmlFor="perfil-nombre"
+                    className="text-sm font-bold text-[var(--color-primary)]"
+                  >
+                    Nombre público
+                  </label>
+                  <input
+                    id="perfil-nombre"
+                    type="text"
+                    maxLength={150}
+                    value={nombre}
+                    onChange={(evento) => {
+                      setNombre(evento.target.value);
+                      setGuardadoOk(false);
+                      setErrorGuardado(null);
+                      setErroresPorCampo(null);
+                    }}
+                    disabled={guardando}
+                    aria-invalid={Boolean(errorNombre)}
+                    aria-describedby={
+                      errorNombre ? "perfil-nombre-error" : "perfil-nombre-ayuda"
+                    }
+                    className={CLASE_INPUT}
+                  />
+                  <p
+                    id="perfil-nombre-ayuda"
+                    className="mt-2 text-xs leading-5 text-[var(--color-muted)]"
+                  >
+                    Es el nombre que se ve en tu perfil público y en todas
+                    tus actividades.
+                  </p>
+                  {errorNombre ? (
+                    <p
+                      id="perfil-nombre-error"
+                      className="mt-2 text-sm font-bold text-red-700"
+                    >
+                      {errorNombre}
+                    </p>
+                  ) : null}
+                </div>
+
                 <div>
                   <label
                     htmlFor="perfil-descripcion"
@@ -341,7 +393,6 @@ export function MiPerfilEditor() {
               />
 
               <dl className="mt-6 grid gap-3">
-                <DatoProtegido etiqueta="Nombre público" valor={perfil.nombre} />
                 <DatoProtegido
                   etiqueta="Tipo de publicador"
                   valor={formatearCatalogo(perfil.tipoPublicador)}

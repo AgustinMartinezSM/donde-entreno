@@ -110,6 +110,8 @@ export async function obtenerMetricasPublicador(
   vacío, se limpia.
 */
 export type ActualizarPerfilPublicadorRequest = {
+  /* Fase 5e: edición directa. Obligatorio en el schema — vacío = 400. */
+  nombre?: string;
   descripcion?: string;
   instagram?: string;
   emailContacto?: string;

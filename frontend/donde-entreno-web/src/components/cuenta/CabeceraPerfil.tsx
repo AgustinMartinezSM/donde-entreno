@@ -1,9 +1,13 @@
 "use client";
 
+import Image from "next/image";
+import { useState } from "react";
+
 import type { UsuarioActual } from "../../types/auth";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
+import { DialogoAvatar } from "./DialogoAvatar";
 import { MenuAjustes } from "./MenuAjustes";
 import type { PerfilDeportivo, TabPerfil } from "./usePerfilDeportivo";
 
@@ -43,6 +47,18 @@ export function CabeceraPerfil({
   const deportesVisibles = perfil.deportesNombres.slice(0, DEPORTES_VISIBLES);
   const deportesRestantes =
     perfil.deportesNombres.length - deportesVisibles.length;
+
+  const [avatarAbierto, setAvatarAbierto] = useState(false);
+  /*
+    La foto recién cambiada se refleja al instante desde acá; en la
+    próxima carga viene del backend por /api/auth/me. undefined = todavía
+    no hubo cambio en esta vista.
+  */
+  const [avatarLocal, setAvatarLocal] = useState<string | null | undefined>(
+    undefined
+  );
+  const avatarUrl =
+    avatarLocal !== undefined ? avatarLocal : (usuario?.avatarUrl ?? null);
 
   return (
     <SurfaceCard as="section">
@@ -88,11 +104,36 @@ export function CabeceraPerfil({
               relative + z-10: la banda de arriba es un elemento
               posicionado y sin esto le comía la mitad al avatar.
             */}
-            <span
-              aria-hidden="true"
-              className="relative z-10 -mt-12 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xl font-extrabold tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] ring-4 ring-white sm:-mt-16 sm:h-28 sm:w-28 sm:text-2xl"
-            >
-              {perfil.iniciales}
+            <span className="relative z-10 -mt-12 block h-20 w-20 shrink-0 sm:-mt-16 sm:h-28 sm:w-28">
+              <span
+                aria-hidden="true"
+                className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[var(--color-brand)] text-xl font-extrabold tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(15,61,94,0.18)] ring-4 ring-white sm:text-2xl"
+              >
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt=""
+                    fill
+                    sizes="112px"
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  perfil.iniciales
+                )}
+              </span>
+
+              {/* La camarita abre el diálogo de foto (fase 5d). */}
+              <button
+                type="button"
+                onClick={() => setAvatarAbierto(true)}
+                aria-label={
+                  avatarUrl ? "Cambiar tu foto de perfil" : "Agregar una foto de perfil"
+                }
+                aria-haspopup="dialog"
+                className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-cta)] text-white shadow-[0_4px_12px_rgba(15,61,94,0.3)] ring-2 ring-white transition duration-200 ease-out hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/50 active:scale-95"
+              >
+                <IconoCamara />
+              </button>
             </span>
 
             <div className="min-w-0 pb-1">
@@ -200,7 +241,35 @@ export function CabeceraPerfil({
           />
         </div>
       </div>
+
+      <DialogoAvatar
+        abierto={avatarAbierto}
+        avatarUrl={avatarUrl}
+        iniciales={perfil.iniciales}
+        onCerrar={() => setAvatarAbierto(false)}
+        onUsuarioActualizado={(usuarioNuevo) =>
+          setAvatarLocal(usuarioNuevo.avatarUrl ?? null)
+        }
+      />
     </SurfaceCard>
+  );
+}
+
+function IconoCamara() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5l-2-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
   );
 }
 

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import type { UsuarioActual } from "../../types/auth";
 import { SelectorTema } from "../tema/SelectorTema";
+import { DialogoCambiarPassword } from "./DialogoCambiarPassword";
 import { AppButton } from "../ui/AppButton";
 import {
   MenuDesplegable,
@@ -36,6 +37,7 @@ export function MenuAjustes({
   onCerrarSesion,
 }: MenuAjustesProps) {
   const [datosAbiertos, setDatosAbiertos] = useState(false);
+  const [cambiarPasswordAbierto, setCambiarPasswordAbierto] = useState(false);
   const accesoDeRol = obtenerAccesoDeRol(rol);
 
   return (
@@ -75,6 +77,16 @@ export function MenuAjustes({
               Datos de mi cuenta
             </OpcionMenu>
 
+            <OpcionMenu
+              destacada
+              onClick={() => {
+                setCambiarPasswordAbierto(true);
+                cerrar();
+              }}
+            >
+              Cambiar contraseña
+            </OpcionMenu>
+
             <SeparadorMenu />
 
             {/* Elegir apariencia no cierra el menú: se comparan temas en vivo. */}
@@ -102,6 +114,11 @@ export function MenuAjustes({
         usuario={usuario}
         abierto={datosAbiertos}
         onCerrar={() => setDatosAbiertos(false)}
+      />
+
+      <DialogoCambiarPassword
+        abierto={cambiarPasswordAbierto}
+        onCerrar={() => setCambiarPasswordAbierto(false)}
       />
     </>
   );
@@ -190,7 +207,8 @@ function DialogoDatosDeCuenta({
 
             <p className="mt-4 text-xs leading-5 text-[var(--color-muted)]">
               Por ahora estos datos son de solo lectura. Si necesitás
-              cambiarlos, escribinos y lo resolvemos.
+              cambiarlos, escribinos y lo resolvemos. La contraseña sí se
+              cambia desde Ajustes, en &ldquo;Cambiar contraseña&rdquo;.
             </p>
           </>
         ) : (

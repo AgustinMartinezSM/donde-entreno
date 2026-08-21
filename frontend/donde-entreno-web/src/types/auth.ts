@@ -21,6 +21,13 @@ export type LoginRequest = {
   password: string;
 };
 
+/** Cambio de contraseña con sesión activa (fase 5a). */
+export type CambiarPasswordRequest = {
+  passwordActual: string;
+  passwordNueva: string;
+  confirmarPassword: string;
+};
+
 export type AuthUsuario = {
   id: number;
   email: string;

@@ -13,6 +13,7 @@ import type {
   AuthErrorResponse,
   AuthErroresPorCampo,
   AuthUsuario,
+  CambiarPasswordRequest,
   LoginRequest,
   LoginResponse,
   RegistroPublicadorRequest,
@@ -138,6 +139,32 @@ export async function obtenerUsuarioActual(
     },
     esUsuarioActual,
     "Tu sesion expiro o no es valida."
+  );
+}
+
+/**
+ * Cambio de contraseña con sesión activa (fase 5a). El backend revoca
+ * todas las sesiones del usuario y responde una sesión nueva completa,
+ * igual que el login: el que llama debe persistirla con
+ * `guardarSesionAuth` para que este dispositivo quede adentro.
+ */
+export async function cambiarPassword(
+  accessToken: string,
+  request: CambiarPasswordRequest
+): Promise<LoginResponse> {
+  return ejecutarAuthRequest(
+    `${API_BASE_URL}/api/auth/cambiar-password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationAuth(accessToken),
+      },
+      body: JSON.stringify(request),
+    },
+    esLoginResponse,
+    "No se pudo cambiar la contraseña."
   );
 }
 

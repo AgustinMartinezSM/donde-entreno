@@ -168,6 +168,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(CambioPasswordInvalidoException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarCambioPasswordInvalido(
+            CambioPasswordInvalidoException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(ConfiguracionSistemaInvalidaException.class)
     public ResponseEntity<ErrorResponseDTO> manejarConfiguracionSistemaInvalida(
             ConfiguracionSistemaInvalidaException exception,

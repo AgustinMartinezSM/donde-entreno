@@ -160,6 +160,15 @@ public class RefreshTokenService {
         );
     }
 
+    /**
+     * Cambio de password (fase 5a): revoca TODAS las sesiones vivas del
+     * usuario. Devuelve cuantos tokens cayeron, para el log de metadata.
+     */
+    @Transactional
+    public int revocarTodasDe(Long usuarioId) {
+        return refreshTokenRepository.revocarTodasDe(usuarioId, OffsetDateTime.now(clock));
+    }
+
     /** Higiene en el login: borra los tokens del usuario vencidos hace mas de 30 dias. */
     @Transactional
     public void limpiarVencidosDe(Long usuarioId) {

@@ -1,6 +1,7 @@
 package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.dto.AuthUsuarioDTO;
+import com.dondeentreno.api.dto.CambiarPasswordRequestDTO;
 import com.dondeentreno.api.dto.LoginRequestDTO;
 import com.dondeentreno.api.dto.LoginResponseDTO;
 import com.dondeentreno.api.dto.RegistroPublicadorRequestDTO;
@@ -10,9 +11,11 @@ import com.dondeentreno.api.entity.Ciudad;
 import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.Rol;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.CambioPasswordInvalidoException;
 import com.dondeentreno.api.exception.ConfiguracionSistemaInvalidaException;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
 import com.dondeentreno.api.exception.EmailYaRegistradoException;
+import com.dondeentreno.api.exception.LimiteConsultasExcedidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.RegistroInvalidoException;
 import com.dondeentreno.api.repository.CiudadRepository;
@@ -20,7 +23,10 @@ import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.RolRepository;
 import com.dondeentreno.api.repository.UsuarioRepository;
 import com.dondeentreno.api.security.JwtService;
+import com.dondeentreno.api.security.LimitadorCambioPassword;
 import com.dondeentreno.api.security.UsuarioPrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,6 +44,8 @@ import java.util.Set;
  */
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private static final String ROL_USUARIO = "USUARIO";
     private static final String ROL_PUBLICADOR = "PUBLICADOR";
@@ -61,6 +69,7 @@ public class AuthService {
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final CiudadRepository ciudadRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LimitadorCambioPassword limitadorCambioPassword;
 
     public AuthService(
             AuthenticationManager authenticationManager,
@@ -70,7 +79,8 @@ public class AuthService {
             RolRepository rolRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
             CiudadRepository ciudadRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            LimitadorCambioPassword limitadorCambioPassword
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -80,6 +90,7 @@ public class AuthService {
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.ciudadRepository = ciudadRepository;
         this.passwordEncoder = passwordEncoder;
+        this.limitadorCambioPassword = limitadorCambioPassword;
     }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
@@ -214,6 +225,66 @@ public class AuthService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario autenticado no encontrado."));
 
         return UsuarioActualDTO.desdeUsuario(usuario);
+    }
+
+    /**
+     * Cambio de password con sesion activa (fase 5a).
+     *
+     * El orden importa: el freno de fuerza bruta corre antes que nada
+     * (un atacante con sesion robada no puede probar passwords), la
+     * actual se verifica antes de validar la nueva (el fallo cuenta en
+     * el limitador aunque la transaccion haga rollback: vive en
+     * memoria), y la revocacion total corre ANTES de emitir la sesion
+     * nueva, asi la barrida no la alcanza.
+     *
+     * Los access tokens ya emitidos en otros dispositivos siguen
+     * validos hasta expirar (no hay blacklist de JWT, igual que en el
+     * logout): el refresh revocado garantiza que esas sesiones no
+     * sobreviven la hora.
+     */
+    @Transactional
+    public LoginResponseDTO cambiarPassword(Long userId, CambiarPasswordRequestDTO request) {
+        if (userId == null) {
+            throw new CredencialesInvalidasException("No autenticado.");
+        }
+
+        if (limitadorCambioPassword.estaBloqueado(userId)) {
+            throw new LimiteConsultasExcedidoException(
+                    "Demasiados intentos. Proba de nuevo en unos minutos."
+            );
+        }
+
+        Usuario usuario = usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new CredencialesInvalidasException(MENSAJE_CREDENCIALES_INVALIDAS));
+
+        if (!passwordEncoder.matches(request.getPasswordActual(), usuario.getPasswordHash())) {
+            limitadorCambioPassword.registrarFallo(userId);
+            throw new CambioPasswordInvalidoException("La password actual no es correcta.");
+        }
+
+        validarPassword(request.getPasswordNueva(), request.getConfirmarPassword());
+
+        if (request.getPasswordNueva().equals(request.getPasswordActual())) {
+            throw new CambioPasswordInvalidoException(
+                    "La password nueva no puede ser igual a la actual."
+            );
+        }
+
+        usuario.setPasswordHash(passwordEncoder.encode(request.getPasswordNueva()));
+        usuario.setUpdatedAt(OffsetDateTime.now());
+        usuarioRepository.save(usuario);
+
+        int tokensRevocados = refreshTokenService.revocarTodasDe(userId);
+        limitadorCambioPassword.registrarExito(userId);
+
+        /* Solo metadata, nunca passwords: la linea tiene que poder greparse. */
+        log.info(
+                "Auth: PASSWORD_CAMBIADO usuarioId={} tokensRevocados={}",
+                userId,
+                tokensRevocados
+        );
+
+        return crearLoginResponse(UsuarioPrincipal.desdeUsuario(usuario));
     }
 
     private UsuarioPrincipal obtenerUsuarioPrincipal(Authentication authentication) {

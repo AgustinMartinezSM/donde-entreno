@@ -1,5 +1,6 @@
 package com.dondeentreno.api.controller;
 
+import com.dondeentreno.api.dto.CambiarPasswordRequestDTO;
 import com.dondeentreno.api.dto.LoginRequestDTO;
 import com.dondeentreno.api.dto.LoginResponseDTO;
 import com.dondeentreno.api.dto.RefreshRequestDTO;
@@ -74,6 +75,20 @@ public class AuthController {
     @GetMapping("/me")
     public UsuarioActualDTO obtenerUsuarioActual(@AuthenticationPrincipal Jwt jwt) {
         return authService.obtenerUsuarioActual(extraerUserId(jwt));
+    }
+
+    /**
+     * Cambio de password con sesion activa (fase 5a). Revoca todas las
+     * sesiones del usuario y responde una sesion nueva completa, como
+     * el login: el dispositivo del cambio queda adentro, el resto
+     * afuera.
+     */
+    @PostMapping("/cambiar-password")
+    public ResponseEntity<LoginResponseDTO> cambiarPassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody CambiarPasswordRequestDTO request
+    ) {
+        return ResponseEntity.ok(authService.cambiarPassword(extraerUserId(jwt), request));
     }
 
     private Long extraerUserId(Jwt jwt) {

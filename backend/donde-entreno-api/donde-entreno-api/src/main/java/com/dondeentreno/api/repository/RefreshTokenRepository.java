@@ -31,6 +31,21 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     int revocarFamilia(@Param("familia") UUID familia, @Param("ahora") OffsetDateTime ahora);
 
     /**
+     * Revoca TODOS los tokens vivos del usuario, familia por familia
+     * (cambio de password, fase 5a): una sesion robada muere aca. La
+     * sesion nueva del cambio se emite despues de esta barrida, asi que
+     * no la alcanza.
+     */
+    @Modifying
+    @Query("""
+            UPDATE RefreshToken r
+               SET r.revocadoEn = :ahora
+             WHERE r.usuarioId = :usuarioId
+               AND r.revocadoEn IS NULL
+            """)
+    int revocarTodasDe(@Param("usuarioId") Long usuarioId, @Param("ahora") OffsetDateTime ahora);
+
+    /**
      * Higiene sin scheduler: borra los tokens del usuario vencidos hace
      * mas del limite. Corre en cada login, asi la tabla no crece sin
      * tope.

@@ -105,6 +105,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro/publicador").permitAll()
+                        /*
+                          Explicito a proposito: es el unico endpoint de
+                          /api/auth que exige sesion (fase 5a). Que no se
+                          sume por accidente a la lista de permitAll de
+                          arriba.
+                        */
+                        .requestMatchers(HttpMethod.POST, "/api/auth/cambiar-password").authenticated()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/publicador/**").hasRole("PUBLICADOR")
                         /*

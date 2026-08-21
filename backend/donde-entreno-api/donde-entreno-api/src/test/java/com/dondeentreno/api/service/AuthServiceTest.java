@@ -1,5 +1,6 @@
 package com.dondeentreno.api.service;
 
+import com.dondeentreno.api.dto.CambiarPasswordRequestDTO;
 import com.dondeentreno.api.dto.LoginRequestDTO;
 import com.dondeentreno.api.dto.LoginResponseDTO;
 import com.dondeentreno.api.dto.RegistroPublicadorRequestDTO;
@@ -9,14 +10,17 @@ import com.dondeentreno.api.entity.Ciudad;
 import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.entity.Rol;
 import com.dondeentreno.api.entity.Usuario;
+import com.dondeentreno.api.exception.CambioPasswordInvalidoException;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
 import com.dondeentreno.api.exception.EmailYaRegistradoException;
+import com.dondeentreno.api.exception.LimiteConsultasExcedidoException;
 import com.dondeentreno.api.exception.RegistroInvalidoException;
 import com.dondeentreno.api.repository.CiudadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.RolRepository;
 import com.dondeentreno.api.repository.UsuarioRepository;
 import com.dondeentreno.api.security.JwtService;
+import com.dondeentreno.api.security.LimitadorCambioPassword;
 import com.dondeentreno.api.security.UsuarioPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,6 +78,9 @@ class AuthServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private LimitadorCambioPassword limitadorCambioPassword;
 
     @InjectMocks
     private AuthService authService;
@@ -432,6 +439,138 @@ class AuthServiceTest {
         request.setEmailContacto(" CONTACTO@EJEMPLO.COM ");
         request.setTelefonoContacto("+54 223 555 8888");
         return request;
+    }
+
+    @Test
+    void cambiarPasswordExitosoActualizaHashRevocaTodoYDevuelveSesionNueva() {
+        Usuario usuario = usuario(1L, "usuario@ejemplo.com", "USUARIO");
+
+        when(limitadorCambioPassword.estaBloqueado(1L)).thenReturn(false);
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(1L))
+                .thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("ActualValida1", "$2a$10$hash-ficticio-no-real"))
+                .thenReturn(true);
+        when(passwordEncoder.encode("NuevaValida1")).thenReturn("$2a$10$hash-nuevo");
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+        when(refreshTokenService.revocarTodasDe(1L)).thenReturn(3);
+        when(jwtService.generarAccessToken(any(UsuarioPrincipal.class))).thenReturn("jwt-nuevo");
+        when(jwtService.getExpiresIn()).thenReturn(3600L);
+        when(refreshTokenService.emitirParaSesionNueva(1L))
+                .thenReturn(new RefreshTokenService.TokenEmitido("refresh-nuevo", 2_592_000L));
+
+        LoginResponseDTO response = authService.cambiarPassword(
+                1L,
+                new CambiarPasswordRequestDTO("ActualValida1", "NuevaValida1", "NuevaValida1")
+        );
+
+        assertEquals("$2a$10$hash-nuevo", usuario.getPasswordHash());
+        /* La barrida corre antes de emitir la sesion nueva: no la alcanza. */
+        verify(refreshTokenService).revocarTodasDe(1L);
+        verify(limitadorCambioPassword).registrarExito(1L);
+        assertEquals("jwt-nuevo", response.getAccessToken());
+        assertEquals("refresh-nuevo", response.getRefreshToken());
+        assertEquals(1L, response.getUsuario().getId());
+    }
+
+    @Test
+    void cambiarPasswordConActualIncorrectaRegistraElFalloYNoTocaNada() {
+        Usuario usuario = usuario(1L, "usuario@ejemplo.com", "USUARIO");
+
+        when(limitadorCambioPassword.estaBloqueado(1L)).thenReturn(false);
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(1L))
+                .thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("Equivocada1", "$2a$10$hash-ficticio-no-real"))
+                .thenReturn(false);
+
+        CambioPasswordInvalidoException exception = assertThrows(
+                CambioPasswordInvalidoException.class,
+                () -> authService.cambiarPassword(
+                        1L,
+                        new CambiarPasswordRequestDTO("Equivocada1", "NuevaValida1", "NuevaValida1")
+                )
+        );
+
+        assertEquals("La password actual no es correcta.", exception.getMessage());
+        verify(limitadorCambioPassword).registrarFallo(1L);
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+        verify(refreshTokenService, never()).revocarTodasDe(any());
+    }
+
+    @Test
+    void cambiarPasswordBloqueadoPorElLimitadorDa429SinVerificarNada() {
+        when(limitadorCambioPassword.estaBloqueado(1L)).thenReturn(true);
+
+        assertThrows(
+                LimiteConsultasExcedidoException.class,
+                () -> authService.cambiarPassword(
+                        1L,
+                        new CambiarPasswordRequestDTO("Actual1", "NuevaValida1", "NuevaValida1")
+                )
+        );
+
+        /* Bloqueado = ni siquiera se mira la base: no hay oraculo de passwords. */
+        verify(usuarioRepository, never()).findByIdAndActivoTrueAndDeletedAtIsNull(any());
+        verify(passwordEncoder, never()).matches(any(), any());
+    }
+
+    @Test
+    void cambiarPasswordConNuevaDebilAplicaLaMismaPoliticaDelRegistro() {
+        Usuario usuario = usuario(1L, "usuario@ejemplo.com", "USUARIO");
+
+        when(limitadorCambioPassword.estaBloqueado(1L)).thenReturn(false);
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(1L))
+                .thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("ActualValida1", "$2a$10$hash-ficticio-no-real"))
+                .thenReturn(true);
+
+        RegistroInvalidoException exception = assertThrows(
+                RegistroInvalidoException.class,
+                () -> authService.cambiarPassword(
+                        1L,
+                        new CambiarPasswordRequestDTO("ActualValida1", "corta1", "corta1")
+                )
+        );
+
+        assertEquals("La password no cumple los requisitos minimos.", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+        verify(refreshTokenService, never()).revocarTodasDe(any());
+    }
+
+    @Test
+    void cambiarPasswordConNuevaIgualALaActualDa400() {
+        Usuario usuario = usuario(1L, "usuario@ejemplo.com", "USUARIO");
+
+        when(limitadorCambioPassword.estaBloqueado(1L)).thenReturn(false);
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(1L))
+                .thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("MismaValida1", "$2a$10$hash-ficticio-no-real"))
+                .thenReturn(true);
+
+        CambioPasswordInvalidoException exception = assertThrows(
+                CambioPasswordInvalidoException.class,
+                () -> authService.cambiarPassword(
+                        1L,
+                        new CambiarPasswordRequestDTO("MismaValida1", "MismaValida1", "MismaValida1")
+                )
+        );
+
+        assertEquals("La password nueva no puede ser igual a la actual.", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    void cambiarPasswordSinUsuarioActivoDa401() {
+        when(limitadorCambioPassword.estaBloqueado(9L)).thenReturn(false);
+        when(usuarioRepository.findByIdAndActivoTrueAndDeletedAtIsNull(9L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                CredencialesInvalidasException.class,
+                () -> authService.cambiarPassword(
+                        9L,
+                        new CambiarPasswordRequestDTO("Actual1", "NuevaValida1", "NuevaValida1")
+                )
+        );
     }
 
     private UsuarioPrincipal crearPrincipal(String email, String rol) {

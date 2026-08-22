@@ -58,6 +58,7 @@ export function SocialActivityCard({
   const hrefActividad = `/actividades/${actividad.slug}`;
   const publicadaRelativa = formatearFechaRelativa(actividad.fechaPublicacion);
   const publicadaExacta = formatearFechaLarga(actividad.fechaPublicacion);
+  const esNueva = esActividadNueva(actividad.fechaPublicacion);
 
   return (
     <article
@@ -91,11 +92,24 @@ export function SocialActivityCard({
           }
         />
 
-        {actividad.deporteNombre ? (
-          <span className="shrink-0 rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-success)]">
-            {actividad.deporteNombre}
-          </span>
-        ) : null}
+        <span className="flex shrink-0 items-center gap-1.5">
+          {/*
+            "Nueva" = publicada hace 14 días o menos (bloque 12): la
+            señal de actividades nuevas sale de la fecha real, no de una
+            métrica inventada.
+          */}
+          {esNueva ? (
+            <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-primary)]">
+              Nueva
+            </span>
+          ) : null}
+
+          {actividad.deporteNombre ? (
+            <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-success)]">
+              {actividad.deporteNombre}
+            </span>
+          ) : null}
+        </span>
       </div>
 
       <div className={`relative ${esFeed ? "mx-3 sm:mx-4" : "mx-3"}`}>
@@ -211,6 +225,25 @@ export function SocialActivityCard({
       </div>
     </article>
   );
+}
+
+/* "Nueva" = publicada hace 14 días o menos. Fecha ilegible = no es nueva. */
+const DIAS_COMO_NUEVA = 14;
+
+function esActividadNueva(fechaPublicacion?: string | null): boolean {
+  if (!fechaPublicacion) {
+    return false;
+  }
+
+  const fecha = new Date(fechaPublicacion).getTime();
+
+  if (Number.isNaN(fecha)) {
+    return false;
+  }
+
+  const antiguedadDias = (Date.now() - fecha) / (1000 * 60 * 60 * 24);
+
+  return antiguedadDias >= 0 && antiguedadDias <= DIAS_COMO_NUEVA;
 }
 
 function Etiqueta({ children }: { children: string }) {

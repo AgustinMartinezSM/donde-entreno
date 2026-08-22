@@ -6,6 +6,7 @@ import { Header } from "../components/layout/Header";
 import { HomeTopBar } from "../components/home/HomeTopBar";
 import { HomeStoriesDeportes } from "../components/home/HomeStoriesDeportes";
 import { HomeFeedSeguidos } from "../components/home/HomeFeedSeguidos";
+import { HomeParaVos } from "../components/home/HomeParaVos";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
@@ -72,7 +73,17 @@ export default async function Home({ searchParams }: HomeProps) {
       size: 6,
     });
 
-    actividades = respuesta.contenido;
+    /*
+      Contenido visual primero (bloque 12): dentro de la misma página de
+      resultados, las actividades CON foto real encabezan el feed. Es un
+      reorden estable de los mismos datos — no inventa ranking, solo
+      pone adelante lo que mejor se ve.
+    */
+    actividades = [...respuesta.contenido].sort(
+      (a, b) =>
+        Number(Boolean(b.imagenPrincipalUrl)) -
+        Number(Boolean(a.imagenPrincipalUrl))
+    );
   } catch (error) {
     huboError = true;
     console.error("Error al cargar actividades:", error);
@@ -125,6 +136,13 @@ export default async function Home({ searchParams }: HomeProps) {
             arranca por el descubrimiento general.
           */}
           <HomeFeedSeguidos publicadoresSugeridos={publicadoresSugeridos} />
+
+          {/*
+            "Para vos" (bloque 12): recomendaciones reales por ciudad +
+            deportes elegidos, solo para logueados con preferencias. El
+            visitante sigue arrancando por el descubrimiento general.
+          */}
+          <HomeParaVos ciudadSlug={ciudadSlug} ciudadNombre={ciudadNombre} />
 
           <HomePreferenciasChips ciudadSlug={ciudadSlug} />
 

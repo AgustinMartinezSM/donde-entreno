@@ -15,6 +15,8 @@ type RecomendadosParaVosProps = {
   ciudadNombre: string | null;
   /* Slugs ya guardados: no tiene sentido recomendar lo que ya se guardó. */
   slugsGuardados: string[];
+  /* Tope de cards (la Home usa menos que /mi-cuenta). */
+  maxVisibles?: number;
 };
 
 /* Cuántos deportes consultamos: uno por request, así que no pueden ser todos. */
@@ -36,6 +38,7 @@ export function RecomendadosParaVos({
   ciudadSlug,
   ciudadNombre,
   slugsGuardados,
+  maxVisibles = MAX_RECOMENDADAS,
 }: RecomendadosParaVosProps) {
   const [actividades, setActividades] = useState<Actividad[] | null>(null);
   const [error, setError] = useState(false);
@@ -104,7 +107,7 @@ export function RecomendadosParaVos({
 
   const visibles = (actividades ?? [])
     .filter((actividad) => !slugsGuardados.includes(actividad.slug))
-    .slice(0, MAX_RECOMENDADAS);
+    .slice(0, maxVisibles);
 
   if (actividades !== null && visibles.length === 0) {
     return null;

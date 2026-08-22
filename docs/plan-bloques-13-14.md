@@ -1,10 +1,15 @@
 # Plan Bloques 13 + 14 — Colecciones de guardados y Likes en fotos
 
-Estado: **propuesto, pendiente de aprobación de Agustín**. Los dos
-bloques traen migración (scripts 22 y 23, versionados junto a este
-plan): nada se aplica en Supabase sin tu autorización, y siempre ANTES
-que el código. Orden de implementación: 13 primero, 14 después (tu
-enumeración), en pushes separados.
+Estado: **aprobado por Agustín con las 4 recomendaciones e
+IMPLEMENTADO COMPLETO — EN PRODUCCIÓN en cuatro tandas (2026-08-21;
+falta el smoke)**. Scripts 22 y 23 aplicados por Agustín (Supabase +
+local, POST verificados). 465 unit + 74 ITs verdes. Deploy verificado:
+backend 13 `1b8fb16` (marcador `Allow: GET,HEAD,POST` en colecciones,
+401 anónimos, público sano), frontend 13 `3c8f02d` ("Nueva colección"
+en chunks de /favoritos), backend 14 `131cbf2` (`Allow: DELETE,PUT` en
+likes-fotos y `cantidadLikes: 0` viajando en las fotos reales de
+karate), frontend 14 `8f166aa` (corazón probado EN VIVO: visor abre,
+contador real, anónimo → login con returnTo; consola limpia).
 
 ## Bloque 13 — Colecciones de guardados V1
 

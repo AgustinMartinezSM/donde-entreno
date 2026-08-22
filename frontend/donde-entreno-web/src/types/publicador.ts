@@ -223,6 +223,13 @@ export type ListarActividadesPublicadorParams = {
   Campos que se pueden proponer cambiar (V1). Un campo ausente
   significa "sin cambio propuesto".
 */
+export type SolicitudCambioHorarioRequest = {
+  diaSemana: string;
+  horaInicio: string;
+  horaFin: string;
+  observacion?: string;
+};
+
 export type SolicitudCambioRequest = {
   titulo?: string;
   descripcion?: string;
@@ -233,6 +240,17 @@ export type SolicitudCambioRequest = {
   emailContacto?: string;
   nivel?: string;
   modalidad?: string;
+  deporteId?: number;
+  edadMinima?: number;
+  edadMaxima?: number;
+  enfoque?: string;
+  ubicacionNombre?: string;
+  ubicacionDireccion?: string;
+  ubicacionReferencia?: string;
+  ubicacionBarrioId?: number;
+  /* true = reemplazar el conjunto de horarios por `horarios` (>= 1). */
+  cambiaHorarios?: boolean;
+  horarios?: SolicitudCambioHorarioRequest[];
 };
 
 export type CampoCambio = {

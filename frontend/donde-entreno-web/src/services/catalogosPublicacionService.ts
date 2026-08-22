@@ -155,6 +155,7 @@ function normalizarCiudadPublicacion(
   return {
     id: ciudad.id,
     nombre: ciudad.nombre,
+    slug: typeof ciudad.slug === "string" ? ciudad.slug : null,
   };
 }
 

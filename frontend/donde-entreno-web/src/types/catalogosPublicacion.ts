@@ -11,6 +11,7 @@ export type DeportePublicacionOpcion = {
 export type CiudadPublicacionOpcion = {
   id: number;
   nombre: string;
+  slug: string | null;
 };
 
 // Modelo normalizado para el select de barrios del formulario de publicación.

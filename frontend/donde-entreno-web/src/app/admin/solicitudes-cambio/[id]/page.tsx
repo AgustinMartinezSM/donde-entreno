@@ -28,6 +28,12 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
   emailContacto: "Email de contacto",
   nivel: "Nivel",
   modalidad: "Modalidad",
+  deporte: "Deporte",
+  edadMinima: "Edad mínima",
+  edadMaxima: "Edad máxima",
+  enfoque: "Enfoque",
+  ubicacion: "Ubicación",
+  horarios: "Horarios",
 };
 
 const ESTILOS_ESTADO: Record<string, string> = {

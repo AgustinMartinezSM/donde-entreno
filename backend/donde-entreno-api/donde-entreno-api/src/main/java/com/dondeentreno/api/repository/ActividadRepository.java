@@ -44,6 +44,17 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             "ubicacion.barrio"
     })
     /**
+     * ¿La ubicacion es compartida? Cuenta OTRAS actividades vivas que
+     * la usan (regla anti-efecto colateral al aplicar un cambio de
+     * ubicacion: compartida = se crea sede nueva, exclusiva = se edita
+     * en el lugar).
+     */
+    long countByUbicacion_IdAndActivaTrueAndDeletedAtIsNullAndIdNot(
+            Long ubicacionId,
+            Long actividadId
+    );
+
+    /**
      * Listado del panel del publicador (fase 6): el dueño ve sus
      * actividades publicadas Y pausadas — la pausa la maneja el, asi
      * que tiene que poder verla.

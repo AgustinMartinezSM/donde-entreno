@@ -94,6 +94,55 @@ public class SolicitudCambioActividad {
     private String modalidad;
 
     // ==========================================================
+    // Campos propuestos nuevos (script 24): deporte, edades,
+    // enfoque, ubicacion y horarios. Null = sin cambio propuesto.
+    // ==========================================================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deporte_id")
+    private Deporte deporte;
+
+    @Column(name = "edad_minima")
+    private Integer edadMinima;
+
+    @Column(name = "edad_maxima")
+    private Integer edadMaxima;
+
+    @Column(name = "enfoque", length = 50)
+    private String enfoque;
+
+    @Column(name = "ubicacion_nombre", length = 150)
+    private String ubicacionNombre;
+
+    @Column(name = "ubicacion_direccion", length = 255)
+    private String ubicacionDireccion;
+
+    @Column(name = "ubicacion_referencia", length = 255)
+    private String ubicacionReferencia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ubicacion_barrio_id")
+    private Barrio ubicacionBarrio;
+
+    /**
+     * true = la solicitud propone REEMPLAZAR el conjunto de horarios
+     * por las filas hijas. El flag existe porque "cero hijas" no
+     * distingue "no toco horarios" de "borrar todos"; con true el
+     * service exige al menos una.
+     */
+    @Column(name = "cambia_horarios", nullable = false)
+    private Boolean cambiaHorarios = Boolean.FALSE;
+
+    /** Horarios PROPUESTOS (reemplazo total si cambiaHorarios=true). */
+    @jakarta.persistence.OneToMany(
+            mappedBy = "solicitud",
+            cascade = jakarta.persistence.CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @jakarta.persistence.OrderBy("diaSemana ASC, horaInicio ASC")
+    private java.util.List<SolicitudCambioHorario> horarios = new java.util.ArrayList<>();
+
+    // ==========================================================
     // Resolucion administrativa
     // ==========================================================
 
@@ -230,6 +279,86 @@ public class SolicitudCambioActividad {
 
     public void setModalidad(String modalidad) {
         this.modalidad = modalidad;
+    }
+
+    public Deporte getDeporte() {
+        return deporte;
+    }
+
+    public void setDeporte(Deporte deporte) {
+        this.deporte = deporte;
+    }
+
+    public Integer getEdadMinima() {
+        return edadMinima;
+    }
+
+    public void setEdadMinima(Integer edadMinima) {
+        this.edadMinima = edadMinima;
+    }
+
+    public Integer getEdadMaxima() {
+        return edadMaxima;
+    }
+
+    public void setEdadMaxima(Integer edadMaxima) {
+        this.edadMaxima = edadMaxima;
+    }
+
+    public String getEnfoque() {
+        return enfoque;
+    }
+
+    public void setEnfoque(String enfoque) {
+        this.enfoque = enfoque;
+    }
+
+    public String getUbicacionNombre() {
+        return ubicacionNombre;
+    }
+
+    public void setUbicacionNombre(String ubicacionNombre) {
+        this.ubicacionNombre = ubicacionNombre;
+    }
+
+    public String getUbicacionDireccion() {
+        return ubicacionDireccion;
+    }
+
+    public void setUbicacionDireccion(String ubicacionDireccion) {
+        this.ubicacionDireccion = ubicacionDireccion;
+    }
+
+    public String getUbicacionReferencia() {
+        return ubicacionReferencia;
+    }
+
+    public void setUbicacionReferencia(String ubicacionReferencia) {
+        this.ubicacionReferencia = ubicacionReferencia;
+    }
+
+    public Barrio getUbicacionBarrio() {
+        return ubicacionBarrio;
+    }
+
+    public void setUbicacionBarrio(Barrio ubicacionBarrio) {
+        this.ubicacionBarrio = ubicacionBarrio;
+    }
+
+    public Boolean getCambiaHorarios() {
+        return cambiaHorarios;
+    }
+
+    public void setCambiaHorarios(Boolean cambiaHorarios) {
+        this.cambiaHorarios = cambiaHorarios;
+    }
+
+    public java.util.List<SolicitudCambioHorario> getHorarios() {
+        return horarios;
+    }
+
+    public void setHorarios(java.util.List<SolicitudCambioHorario> horarios) {
+        this.horarios = horarios;
     }
 
     public String getMotivoRechazo() {

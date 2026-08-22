@@ -1,11 +1,15 @@
 package com.dondeentreno.api.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Campos propuestos para una solicitud de cambio de actividad.
@@ -43,6 +47,120 @@ public class SolicitudCambioActividadRequestDTO {
 
     @Size(max = 50, message = "La modalidad no puede superar los 50 caracteres.")
     private String modalidad;
+
+    // ==========================================================
+    // Campos nuevos (script 24). Null = sin cambio propuesto.
+    // ==========================================================
+
+    private Long deporteId;
+
+    @Min(value = 0, message = "La edad minima no puede ser negativa.")
+    @Max(value = 120, message = "La edad minima no puede superar 120.")
+    private Integer edadMinima;
+
+    @Min(value = 0, message = "La edad maxima no puede ser negativa.")
+    @Max(value = 120, message = "La edad maxima no puede superar 120.")
+    private Integer edadMaxima;
+
+    @Size(max = 50, message = "El enfoque no puede superar los 50 caracteres.")
+    private String enfoque;
+
+    @Size(max = 150, message = "El nombre de la sede no puede superar los 150 caracteres.")
+    private String ubicacionNombre;
+
+    @Size(max = 255, message = "La direccion no puede superar los 255 caracteres.")
+    private String ubicacionDireccion;
+
+    @Size(max = 255, message = "La referencia no puede superar los 255 caracteres.")
+    private String ubicacionReferencia;
+
+    private Long ubicacionBarrioId;
+
+    /** true = reemplazar el conjunto de horarios por `horarios` (>=1). */
+    private Boolean cambiaHorarios;
+
+    @Valid
+    private List<SolicitudPublicacionHorarioRequestDTO> horarios;
+
+    public Long getDeporteId() {
+        return deporteId;
+    }
+
+    public void setDeporteId(Long deporteId) {
+        this.deporteId = deporteId;
+    }
+
+    public Integer getEdadMinima() {
+        return edadMinima;
+    }
+
+    public void setEdadMinima(Integer edadMinima) {
+        this.edadMinima = edadMinima;
+    }
+
+    public Integer getEdadMaxima() {
+        return edadMaxima;
+    }
+
+    public void setEdadMaxima(Integer edadMaxima) {
+        this.edadMaxima = edadMaxima;
+    }
+
+    public String getEnfoque() {
+        return enfoque;
+    }
+
+    public void setEnfoque(String enfoque) {
+        this.enfoque = enfoque;
+    }
+
+    public String getUbicacionNombre() {
+        return ubicacionNombre;
+    }
+
+    public void setUbicacionNombre(String ubicacionNombre) {
+        this.ubicacionNombre = ubicacionNombre;
+    }
+
+    public String getUbicacionDireccion() {
+        return ubicacionDireccion;
+    }
+
+    public void setUbicacionDireccion(String ubicacionDireccion) {
+        this.ubicacionDireccion = ubicacionDireccion;
+    }
+
+    public String getUbicacionReferencia() {
+        return ubicacionReferencia;
+    }
+
+    public void setUbicacionReferencia(String ubicacionReferencia) {
+        this.ubicacionReferencia = ubicacionReferencia;
+    }
+
+    public Long getUbicacionBarrioId() {
+        return ubicacionBarrioId;
+    }
+
+    public void setUbicacionBarrioId(Long ubicacionBarrioId) {
+        this.ubicacionBarrioId = ubicacionBarrioId;
+    }
+
+    public Boolean getCambiaHorarios() {
+        return cambiaHorarios;
+    }
+
+    public void setCambiaHorarios(Boolean cambiaHorarios) {
+        this.cambiaHorarios = cambiaHorarios;
+    }
+
+    public List<SolicitudPublicacionHorarioRequestDTO> getHorarios() {
+        return horarios;
+    }
+
+    public void setHorarios(List<SolicitudPublicacionHorarioRequestDTO> horarios) {
+        this.horarios = horarios;
+    }
 
     public String getTitulo() {
         return titulo;

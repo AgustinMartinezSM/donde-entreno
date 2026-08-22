@@ -10,9 +10,14 @@ import com.dondeentreno.api.entity.Usuario;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudCambioInvalidaException;
+import com.dondeentreno.api.entity.HorarioActividad;
+import com.dondeentreno.api.entity.SolicitudCambioHorario;
+import com.dondeentreno.api.entity.Ubicacion;
 import com.dondeentreno.api.mapper.SolicitudCambioActividadMapper;
 import com.dondeentreno.api.repository.ActividadRepository;
+import com.dondeentreno.api.repository.HorarioActividadRepository;
 import com.dondeentreno.api.repository.SolicitudCambioActividadRepository;
+import com.dondeentreno.api.repository.UbicacionRepository;
 import com.dondeentreno.api.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,15 +49,21 @@ public class SolicitudCambioActividadAdminService {
     private final SolicitudCambioActividadRepository solicitudCambioRepository;
     private final ActividadRepository actividadRepository;
     private final UsuarioRepository usuarioRepository;
+    private final HorarioActividadRepository horarioActividadRepository;
+    private final UbicacionRepository ubicacionRepository;
 
     public SolicitudCambioActividadAdminService(
             SolicitudCambioActividadRepository solicitudCambioRepository,
             ActividadRepository actividadRepository,
-            UsuarioRepository usuarioRepository
+            UsuarioRepository usuarioRepository,
+            HorarioActividadRepository horarioActividadRepository,
+            UbicacionRepository ubicacionRepository
     ) {
         this.solicitudCambioRepository = solicitudCambioRepository;
         this.actividadRepository = actividadRepository;
         this.usuarioRepository = usuarioRepository;
+        this.horarioActividadRepository = horarioActividadRepository;
+        this.ubicacionRepository = ubicacionRepository;
     }
 
     @Transactional(readOnly = true)
@@ -199,6 +210,8 @@ public class SolicitudCambioActividadAdminService {
                 SolicitudCambioActividadMapper.construirCambios(solicitud, actividad);
 
         SolicitudCambioActividadMapper.aplicarCambios(solicitud, actividad);
+        aplicarUbicacion(solicitud, actividad, ahora);
+        aplicarHorarios(solicitud, actividad, ahora);
         actividad.setUpdatedAt(ahora);
         actividadRepository.save(actividad);
 
@@ -210,6 +223,96 @@ public class SolicitudCambioActividadAdminService {
         SolicitudCambioActividad guardada = solicitudCambioRepository.save(solicitud);
 
         return SolicitudCambioDetalleDTO.desdeEntidad(guardada, cambios);
+    }
+
+    /**
+     * Aplica la ubicacion propuesta con la regla anti-efecto colateral:
+     * si la sede actual es EXCLUSIVA de la actividad se edita en el
+     * lugar; si esta COMPARTIDA con otra actividad viva, se crea una
+     * sede nueva del perfil y la actividad apunta ahi — editar una sede
+     * compartida moveria de direccion a otras actividades sin que nadie
+     * lo pidiera. El nombre propuesto en null conserva el actual.
+     */
+    private void aplicarUbicacion(
+            SolicitudCambioActividad solicitud,
+            Actividad actividad,
+            OffsetDateTime ahora
+    ) {
+        if (solicitud.getUbicacionDireccion() == null) {
+            return;
+        }
+
+        Ubicacion actual = actividad.getUbicacion();
+        boolean compartida = actual != null
+                && actividadRepository.countByUbicacion_IdAndActivaTrueAndDeletedAtIsNullAndIdNot(
+                        actual.getId(),
+                        actividad.getId()
+                ) > 0;
+
+        Ubicacion destino;
+
+        if (actual != null && !compartida) {
+            destino = actual;
+        } else {
+            destino = new Ubicacion();
+            destino.setPerfilPublicador(solicitud.getPerfilPublicador());
+            destino.setCiudad(actual != null ? actual.getCiudad() : null);
+            destino.setActiva(true);
+            destino.setCreatedAt(ahora);
+        }
+
+        if (solicitud.getUbicacionNombre() != null) {
+            destino.setNombre(solicitud.getUbicacionNombre());
+        } else if (destino.getNombre() == null) {
+            destino.setNombre(actual != null ? actual.getNombre() : "Sede");
+        }
+        destino.setDireccion(solicitud.getUbicacionDireccion());
+        destino.setReferencia(solicitud.getUbicacionReferencia());
+        destino.setBarrio(solicitud.getUbicacionBarrio());
+        destino.setUpdatedAt(ahora);
+
+        Ubicacion guardada = ubicacionRepository.save(destino);
+        actividad.setUbicacion(guardada);
+    }
+
+    /**
+     * Reemplazo total de horarios: los vigentes pasan a activo=false
+     * (historial, no borrado) y se crean los propuestos.
+     */
+    private void aplicarHorarios(
+            SolicitudCambioActividad solicitud,
+            Actividad actividad,
+            OffsetDateTime ahora
+    ) {
+        if (!Boolean.TRUE.equals(solicitud.getCambiaHorarios())) {
+            return;
+        }
+
+        List<HorarioActividad> vigentes = horarioActividadRepository
+                .findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(actividad.getId());
+
+        for (HorarioActividad vigente : vigentes) {
+            vigente.setActivo(false);
+            vigente.setUpdatedAt(ahora);
+        }
+        horarioActividadRepository.saveAll(vigentes);
+
+        List<HorarioActividad> nuevos = new java.util.ArrayList<>();
+
+        for (SolicitudCambioHorario propuesto : solicitud.getHorarios()) {
+            HorarioActividad horario = new HorarioActividad();
+            horario.setActividad(actividad);
+            horario.setDiaSemana(propuesto.getDiaSemana());
+            horario.setHoraInicio(propuesto.getHoraInicio());
+            horario.setHoraFin(propuesto.getHoraFin());
+            horario.setObservacion(propuesto.getObservacion());
+            horario.setActivo(true);
+            horario.setCreatedAt(ahora);
+            horario.setUpdatedAt(ahora);
+            nuevos.add(horario);
+        }
+
+        horarioActividadRepository.saveAll(nuevos);
     }
 
     private SolicitudCambioActividad buscarSolicitudActiva(Long solicitudId) {

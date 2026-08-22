@@ -48,6 +48,12 @@ class SolicitudCambioActividadServiceTest {
     @Mock
     private ActividadRepository actividadRepository;
 
+    @Mock
+    private com.dondeentreno.api.repository.DeporteRepository deporteRepository;
+
+    @Mock
+    private com.dondeentreno.api.repository.BarrioRepository barrioRepository;
+
     private SolicitudCambioActividadService service;
 
     @BeforeEach
@@ -55,7 +61,9 @@ class SolicitudCambioActividadServiceTest {
         service = new SolicitudCambioActividadService(
                 solicitudCambioRepository,
                 perfilPublicadorRepository,
-                actividadRepository
+                actividadRepository,
+                deporteRepository,
+                barrioRepository
         );
     }
 
@@ -227,5 +235,159 @@ class SolicitudCambioActividadServiceTest {
         actividad.setNivel("TODOS");
         actividad.setPrecioReferencia(new BigDecimal("1000.00"));
         return actividad;
+    }
+
+    /* ============ Campos nuevos (script 24) ============ */
+
+    @Test
+    void cambiarHorariosSinFilasLanzaInvalida() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+
+        SolicitudCambioActividadRequestDTO request = new SolicitudCambioActividadRequestDTO();
+        request.setCambiaHorarios(true);
+
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, request)
+        );
+    }
+
+    @Test
+    void unHorarioQueTerminaAntesDeEmpezarLanzaInvalida() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+
+        SolicitudCambioActividadRequestDTO request = new SolicitudCambioActividadRequestDTO();
+        request.setCambiaHorarios(true);
+        request.setHorarios(java.util.List.of(
+                new com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO(
+                        "LUNES",
+                        java.time.LocalTime.of(19, 0),
+                        java.time.LocalTime.of(18, 0),
+                        null
+                )
+        ));
+
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, request)
+        );
+    }
+
+    @Test
+    void horariosValidosQuedanComoHijasDeLaSolicitud() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+        when(solicitudCambioRepository.existsByActividad_IdAndEstadoInAndDeletedAtIsNull(
+                eq(70L), anyList()
+        )).thenReturn(false);
+        when(solicitudCambioRepository.save(any(SolicitudCambioActividad.class)))
+                .thenAnswer((invocacion) -> invocacion.getArgument(0));
+
+        SolicitudCambioActividadRequestDTO request = new SolicitudCambioActividadRequestDTO();
+        request.setCambiaHorarios(true);
+        request.setHorarios(java.util.List.of(
+                new com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO(
+                        "LUNES",
+                        java.time.LocalTime.of(18, 0),
+                        java.time.LocalTime.of(19, 30),
+                        "Traer guantes"
+                ),
+                new com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO(
+                        "MIERCOLES",
+                        java.time.LocalTime.of(18, 0),
+                        java.time.LocalTime.of(19, 30),
+                        null
+                )
+        ));
+
+        SolicitudCambioDetalleDTO detalle = service.crearSolicitud(10L, 70L, request);
+
+        ArgumentCaptor<SolicitudCambioActividad> captor =
+                ArgumentCaptor.forClass(SolicitudCambioActividad.class);
+        verify(solicitudCambioRepository).save(captor.capture());
+        assertEquals(2, captor.getValue().getHorarios().size());
+        assertEquals(Boolean.TRUE, captor.getValue().getCambiaHorarios());
+        assertEquals(1, detalle.getCambios().size());
+        assertEquals("horarios", detalle.getCambios().get(0).getCampo());
+    }
+
+    @Test
+    void laEdadMinimaPropuestaNoPuedeSuperarLaMaximaQueQueda() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        actividad.setEdadMaxima(40);
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+
+        SolicitudCambioActividadRequestDTO request = new SolicitudCambioActividadRequestDTO();
+        request.setEdadMinima(50);
+
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, request)
+        );
+    }
+
+    @Test
+    void laUbicacionExigeDireccionYBarrioDeLaMismaCiudad() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        com.dondeentreno.api.entity.Ciudad ciudad = new com.dondeentreno.api.entity.Ciudad();
+        ciudad.setId(2L);
+        com.dondeentreno.api.entity.Ubicacion ubicacion = new com.dondeentreno.api.entity.Ubicacion();
+        ubicacion.setCiudad(ciudad);
+        actividad.setUbicacion(ubicacion);
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+
+        /* Sin barrio: invalida. */
+        SolicitudCambioActividadRequestDTO sinBarrio = new SolicitudCambioActividadRequestDTO();
+        sinBarrio.setUbicacionDireccion("Calle nueva 123");
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, sinBarrio)
+        );
+
+        /* Barrio de OTRA ciudad: invalida. */
+        com.dondeentreno.api.entity.Ciudad otraCiudad = new com.dondeentreno.api.entity.Ciudad();
+        otraCiudad.setId(9L);
+        com.dondeentreno.api.entity.Barrio barrioAjeno = new com.dondeentreno.api.entity.Barrio();
+        barrioAjeno.setActivo(true);
+        barrioAjeno.setCiudad(otraCiudad);
+        when(barrioRepository.findById(33L)).thenReturn(java.util.Optional.of(barrioAjeno));
+
+        SolicitudCambioActividadRequestDTO otraCiudadRequest = new SolicitudCambioActividadRequestDTO();
+        otraCiudadRequest.setUbicacionDireccion("Calle nueva 123");
+        otraCiudadRequest.setUbicacionBarrioId(33L);
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, otraCiudadRequest)
+        );
+    }
+
+    @Test
+    void unDeporteInactivoOInexistenteLanzaInvalida() {
+        PerfilPublicador perfil = perfil();
+        Actividad actividad = actividad();
+        configurarPerfil(perfil);
+        configurarActividadPropia(actividad, perfil);
+        when(deporteRepository.findByIdAndActivoTrue(99L))
+                .thenReturn(java.util.Optional.empty());
+
+        SolicitudCambioActividadRequestDTO request = new SolicitudCambioActividadRequestDTO();
+        request.setDeporteId(99L);
+
+        assertThrows(
+                SolicitudCambioInvalidaException.class,
+                () -> service.crearSolicitud(10L, 70L, request)
+        );
     }
 }

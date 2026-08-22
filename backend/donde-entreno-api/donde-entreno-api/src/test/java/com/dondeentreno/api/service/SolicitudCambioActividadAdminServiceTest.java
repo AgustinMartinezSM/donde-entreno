@@ -41,6 +41,12 @@ class SolicitudCambioActividadAdminServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private com.dondeentreno.api.repository.HorarioActividadRepository horarioActividadRepository;
+
+    @Mock
+    private com.dondeentreno.api.repository.UbicacionRepository ubicacionRepository;
+
     private SolicitudCambioActividadAdminService service;
 
     @BeforeEach
@@ -48,7 +54,9 @@ class SolicitudCambioActividadAdminServiceTest {
         service = new SolicitudCambioActividadAdminService(
                 solicitudCambioRepository,
                 actividadRepository,
-                usuarioRepository
+                usuarioRepository,
+                horarioActividadRepository,
+                ubicacionRepository
         );
     }
 
@@ -170,6 +178,124 @@ class SolicitudCambioActividadAdminServiceTest {
                 SolicitudCambioInvalidaException.class,
                 () -> service.actualizarEstado(80L, request, 50L)
         );
+    }
+
+    @Test
+    void aprobarConUbicacionCompartidaCreaSedeNuevaEnVezDeEditarla() {
+        Actividad actividad = actividad();
+        com.dondeentreno.api.entity.Ubicacion compartida = new com.dondeentreno.api.entity.Ubicacion();
+        ponerId(compartida, 500L);
+        compartida.setNombre("Sede compartida");
+        actividad.setUbicacion(compartida);
+
+        SolicitudCambioActividad solicitud = solicitudPendiente(actividad);
+        com.dondeentreno.api.entity.Barrio barrio = new com.dondeentreno.api.entity.Barrio();
+        solicitud.setUbicacionDireccion("Calle nueva 456");
+        solicitud.setUbicacionNombre("Sede nueva");
+        solicitud.setUbicacionBarrio(barrio);
+
+        configurarSolicitud(solicitud);
+        configurarAdmin();
+        configurarActividadVigente(actividad);
+        when(solicitudCambioRepository.save(solicitud)).thenReturn(solicitud);
+        /* OTRA actividad viva usa la misma sede: compartida. */
+        when(actividadRepository.countByUbicacion_IdAndActivaTrueAndDeletedAtIsNullAndIdNot(500L, 70L))
+                .thenReturn(1L);
+        when(ubicacionRepository.save(any(com.dondeentreno.api.entity.Ubicacion.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        service.aprobar(80L, 50L);
+
+        org.mockito.ArgumentCaptor<com.dondeentreno.api.entity.Ubicacion> captor =
+                org.mockito.ArgumentCaptor.forClass(com.dondeentreno.api.entity.Ubicacion.class);
+        verify(ubicacionRepository).save(captor.capture());
+        /* La compartida NO se toco: la guardada es una sede nueva. */
+        org.junit.jupiter.api.Assertions.assertNotSame(compartida, captor.getValue());
+        assertEquals("Sede compartida", compartida.getNombre());
+        assertEquals("Sede nueva", captor.getValue().getNombre());
+        assertEquals("Calle nueva 456", captor.getValue().getDireccion());
+        org.junit.jupiter.api.Assertions.assertSame(captor.getValue(), actividad.getUbicacion());
+    }
+
+    @Test
+    void aprobarConUbicacionExclusivaLaEditaEnElLugar() {
+        Actividad actividad = actividad();
+        com.dondeentreno.api.entity.Ubicacion exclusiva = new com.dondeentreno.api.entity.Ubicacion();
+        ponerId(exclusiva, 501L);
+        exclusiva.setNombre("Sede propia");
+        actividad.setUbicacion(exclusiva);
+
+        SolicitudCambioActividad solicitud = solicitudPendiente(actividad);
+        solicitud.setUbicacionDireccion("Direccion corregida 789");
+        solicitud.setUbicacionBarrio(new com.dondeentreno.api.entity.Barrio());
+
+        configurarSolicitud(solicitud);
+        configurarAdmin();
+        configurarActividadVigente(actividad);
+        when(solicitudCambioRepository.save(solicitud)).thenReturn(solicitud);
+        when(actividadRepository.countByUbicacion_IdAndActivaTrueAndDeletedAtIsNullAndIdNot(501L, 70L))
+                .thenReturn(0L);
+        when(ubicacionRepository.save(any(com.dondeentreno.api.entity.Ubicacion.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        service.aprobar(80L, 50L);
+
+        org.mockito.ArgumentCaptor<com.dondeentreno.api.entity.Ubicacion> captor =
+                org.mockito.ArgumentCaptor.forClass(com.dondeentreno.api.entity.Ubicacion.class);
+        verify(ubicacionRepository).save(captor.capture());
+        org.junit.jupiter.api.Assertions.assertSame(exclusiva, captor.getValue());
+        assertEquals("Direccion corregida 789", exclusiva.getDireccion());
+        /* El nombre no propuesto se conserva. */
+        assertEquals("Sede propia", exclusiva.getNombre());
+    }
+
+    @Test
+    void aprobarConHorariosDesactivaLosVigentesYCreaLosPropuestos() {
+        Actividad actividad = actividad();
+        SolicitudCambioActividad solicitud = solicitudPendiente(actividad);
+        solicitud.setCambiaHorarios(true);
+        com.dondeentreno.api.entity.SolicitudCambioHorario propuesto =
+                new com.dondeentreno.api.entity.SolicitudCambioHorario();
+        propuesto.setDiaSemana("MARTES");
+        propuesto.setHoraInicio(java.time.LocalTime.of(10, 0));
+        propuesto.setHoraFin(java.time.LocalTime.of(11, 0));
+        solicitud.getHorarios().add(propuesto);
+
+        com.dondeentreno.api.entity.HorarioActividad vigente =
+                new com.dondeentreno.api.entity.HorarioActividad();
+        vigente.setActivo(true);
+
+        configurarSolicitud(solicitud);
+        configurarAdmin();
+        configurarActividadVigente(actividad);
+        when(solicitudCambioRepository.save(solicitud)).thenReturn(solicitud);
+        when(horarioActividadRepository
+                .findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(70L))
+                .thenReturn(java.util.List.of(vigente));
+
+        service.aprobar(80L, 50L);
+
+        assertEquals(Boolean.FALSE, vigente.getActivo());
+
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<java.util.List<com.dondeentreno.api.entity.HorarioActividad>> captor =
+                org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(horarioActividadRepository, org.mockito.Mockito.times(2)).saveAll(captor.capture());
+        java.util.List<com.dondeentreno.api.entity.HorarioActividad> creados =
+                captor.getAllValues().get(1);
+        assertEquals(1, creados.size());
+        assertEquals("MARTES", creados.get(0).getDiaSemana());
+        assertEquals(Boolean.TRUE, creados.get(0).getActivo());
+    }
+
+    private void ponerId(Object entidad, Long id) {
+        try {
+            java.lang.reflect.Field campo = entidad.getClass().getDeclaredField("id");
+            campo.setAccessible(true);
+            campo.set(entidad, id);
+        } catch (ReflectiveOperationException excepcion) {
+            throw new IllegalStateException(excepcion);
+        }
     }
 
     private void configurarSolicitud(SolicitudCambioActividad solicitud) {

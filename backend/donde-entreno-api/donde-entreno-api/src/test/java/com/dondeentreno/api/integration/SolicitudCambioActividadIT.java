@@ -110,6 +110,9 @@ class SolicitudCambioActividadIT {
     @Autowired
     private DeporteRepository deporteRepository;
 
+    @Autowired
+    private com.dondeentreno.api.repository.HorarioActividadRepository horarioActividadRepository;
+
     private final List<Long> solicitudCambioIds = new ArrayList<>();
     private final List<Long> actividadIds = new ArrayList<>();
     private final List<Long> ubicacionIds = new ArrayList<>();
@@ -135,6 +138,16 @@ class SolicitudCambioActividadIT {
             solicitudCambioRepository.findById(solicitudId).ifPresent(solicitudCambioRepository::delete);
         }
         solicitudCambioRepository.flush();
+
+        /*
+          Los horarios no cascadean desde la actividad: se borran antes
+          para que la FK no bloquee la limpieza.
+        */
+        horarioActividadRepository.findAll().stream()
+                .filter(horario -> horario.getActividad() != null
+                        && actividadIds.contains(horario.getActividad().getId()))
+                .forEach(horarioActividadRepository::delete);
+        horarioActividadRepository.flush();
 
         for (Long actividadId : actividadIds) {
             actividadRepository.findById(actividadId).ifPresent(actividadRepository::delete);
@@ -245,6 +258,103 @@ class SolicitudCambioActividadIT {
                                 .content("{\"descripcion\":\"Descripcion nueva " + marcador + "\"}"))
                 .andExpect(status().isCreated());
         solicitudCambioIds.add(leerJson(segunda).path("id").asLong());
+    }
+
+    @Test
+    void aprobarSolicitudCompletaAplicaDeporteEdadesEnfoqueUbicacionYHorarios() throws Exception {
+        Referencias referencias = obtenerReferenciasActivas();
+        String marcador = marcadorUnico();
+        Publicador publicador = crearPublicador(marcador, referencias.ciudad());
+        Usuario admin = crearAdmin(marcador);
+        Actividad actividad = crearActividadPublicada(marcador, publicador.perfil(), referencias);
+
+        Deporte deportePropuesto = deporteRepository.findByActivoTrue().stream()
+                .filter(deporte -> !deporte.getId().equals(referencias.deporte().getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Se necesitan al menos dos deportes activos para el flujo completo."
+                ));
+
+        // Horario vigente que la aprobacion debe desactivar.
+        OffsetDateTime ahora = OffsetDateTime.now();
+        com.dondeentreno.api.entity.HorarioActividad vigente =
+                new com.dondeentreno.api.entity.HorarioActividad();
+        vigente.setActividad(actividad);
+        vigente.setDiaSemana("LUNES");
+        vigente.setHoraInicio(java.time.LocalTime.of(9, 0));
+        vigente.setHoraFin(java.time.LocalTime.of(10, 0));
+        vigente.setActivo(true);
+        vigente.setCreatedAt(ahora);
+        vigente.setUpdatedAt(ahora);
+        long vigenteId = horarioActividadRepository.saveAndFlush(vigente).getId();
+
+        var cuerpo = new java.util.LinkedHashMap<String, Object>();
+        cuerpo.put("deporteId", deportePropuesto.getId());
+        cuerpo.put("edadMinima", 21);
+        cuerpo.put("edadMaxima", 70);
+        cuerpo.put("enfoque", "COMPETITIVO");
+        cuerpo.put("ubicacionNombre", "Sede renovada " + marcador);
+        cuerpo.put("ubicacionDireccion", "Calle aprobada " + marcador);
+        cuerpo.put("ubicacionReferencia", "Referencia nueva " + marcador);
+        cuerpo.put("ubicacionBarrioId", referencias.barrio().getId());
+        cuerpo.put("cambiaHorarios", true);
+        cuerpo.put("horarios", List.of(java.util.Map.of(
+                "diaSemana", "MARTES",
+                "horaInicio", "10:00",
+                "horaFin", "11:30",
+                "observacion", "Trae ropa comoda"
+        )));
+
+        ResultActions creacion = mockMvc.perform(
+                        post("/api/publicador/actividades/" + actividad.getId() + "/solicitudes-cambio")
+                                .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(cuerpo)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cambios.length()").value(6))
+                .andExpect(jsonPath("$.cambios[0].campo").value("deporte"))
+                .andExpect(jsonPath("$.cambios[0].valorPropuesto").value(deportePropuesto.getNombre()))
+                .andExpect(jsonPath("$.cambios[4].campo").value("ubicacion"))
+                .andExpect(jsonPath("$.cambios[5].campo").value("horarios"));
+
+        long solicitudId = leerJson(creacion).path("id").asLong();
+        solicitudCambioIds.add(solicitudId);
+
+        mockMvc.perform(post("/api/admin/solicitudes-cambio/" + solicitudId + "/aprobar")
+                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("APROBADA"));
+
+        Actividad actualizada = actividadRepository.findById(actividad.getId()).orElseThrow();
+        assertEquals(deportePropuesto.getId(), actualizada.getDeporte().getId());
+        assertEquals(21, actualizada.getEdadMinima());
+        assertEquals(70, actualizada.getEdadMaxima());
+        assertEquals("COMPETITIVO", actualizada.getEnfoque());
+
+        /*
+          La sede era exclusiva de esta actividad: se edita EN EL LUGAR
+          (mismo id), no se crea una nueva. Se recarga por repo porque
+          la relacion es LAZY y aca no hay sesion abierta.
+        */
+        assertEquals(actividad.getUbicacion().getId(), actualizada.getUbicacion().getId());
+        Ubicacion ubicacionActualizada =
+                ubicacionRepository.findById(actualizada.getUbicacion().getId()).orElseThrow();
+        assertEquals("Sede renovada " + marcador, ubicacionActualizada.getNombre());
+        assertEquals("Calle aprobada " + marcador, ubicacionActualizada.getDireccion());
+
+        // Horarios: el vigente quedo inactivo y el propuesto es el unico activo.
+        com.dondeentreno.api.entity.HorarioActividad vigenteRefrescado =
+                horarioActividadRepository.findById(vigenteId).orElseThrow();
+        assertEquals(Boolean.FALSE, vigenteRefrescado.getActivo());
+
+        List<com.dondeentreno.api.entity.HorarioActividad> activos =
+                horarioActividadRepository
+                        .findByActivoTrueAndActividad_IdOrderByDiaSemanaAscHoraInicioAsc(actividad.getId());
+        assertEquals(1, activos.size());
+        assertEquals("MARTES", activos.get(0).getDiaSemana());
+        assertEquals(java.time.LocalTime.of(10, 0), activos.get(0).getHoraInicio());
+        assertEquals(java.time.LocalTime.of(11, 30), activos.get(0).getHoraFin());
+        assertEquals("Trae ropa comoda", activos.get(0).getObservacion());
     }
 
     @Test

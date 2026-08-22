@@ -12,8 +12,11 @@ import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.exception.SolicitudCambioConflictoException;
 import com.dondeentreno.api.exception.SolicitudCambioInvalidaException;
+import com.dondeentreno.api.entity.SolicitudCambioHorario;
 import com.dondeentreno.api.mapper.SolicitudCambioActividadMapper;
 import com.dondeentreno.api.repository.ActividadRepository;
+import com.dondeentreno.api.repository.BarrioRepository;
+import com.dondeentreno.api.repository.DeporteRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.SolicitudCambioActividadRepository;
 import org.springframework.data.domain.Page;
@@ -55,18 +58,27 @@ public class SolicitudCambioActividadService {
     private static final List<String> MODALIDADES_PERMITIDAS =
             List.of("PRESENCIAL", "ONLINE", "MIXTA");
 
+    private static final List<String> ENFOQUES_PERMITIDOS =
+            List.of("RECREATIVO", "COMPETITIVO", "MIXTO");
+
     private final SolicitudCambioActividadRepository solicitudCambioRepository;
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final ActividadRepository actividadRepository;
+    private final DeporteRepository deporteRepository;
+    private final BarrioRepository barrioRepository;
 
     public SolicitudCambioActividadService(
             SolicitudCambioActividadRepository solicitudCambioRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
-            ActividadRepository actividadRepository
+            ActividadRepository actividadRepository,
+            DeporteRepository deporteRepository,
+            BarrioRepository barrioRepository
     ) {
         this.solicitudCambioRepository = solicitudCambioRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
+        this.deporteRepository = deporteRepository;
+        this.barrioRepository = barrioRepository;
     }
 
     /**
@@ -87,7 +99,7 @@ public class SolicitudCambioActividadService {
         PerfilPublicador perfil = buscarPerfil(userId);
         Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
 
-        SolicitudCambioActividad solicitud = construirSolicitudNormalizada(request);
+        SolicitudCambioActividad solicitud = construirSolicitudNormalizada(request, actividad);
 
         if (SolicitudCambioActividadMapper.listarCamposPropuestos(solicitud).isEmpty()) {
             throw new SolicitudCambioInvalidaException(
@@ -258,10 +270,13 @@ public class SolicitudCambioActividadService {
 
     /**
      * Normaliza el request: recorta textos (blanco = sin cambio) y
-     * valida los dominios de nivel/modalidad.
+     * valida dominios, deporte, edades (contra el resultado combinado),
+     * ubicacion (barrio de la MISMA ciudad de la actividad) y horarios
+     * (reemplazo total con flag explicito, >=1 fila).
      */
     private SolicitudCambioActividad construirSolicitudNormalizada(
-            SolicitudCambioActividadRequestDTO request
+            SolicitudCambioActividadRequestDTO request,
+            Actividad actividad
     ) {
         SolicitudCambioActividad solicitud = new SolicitudCambioActividad();
 
@@ -282,8 +297,166 @@ public class SolicitudCambioActividadService {
                 MODALIDADES_PERMITIDAS,
                 "modalidad"
         ));
+        solicitud.setEnfoque(validarDominio(
+                limpiarTexto(request.getEnfoque()),
+                ENFOQUES_PERMITIDOS,
+                "enfoque"
+        ));
+
+        if (request.getDeporteId() != null) {
+            solicitud.setDeporte(deporteRepository
+                    .findByIdAndActivoTrue(request.getDeporteId())
+                    .orElseThrow(() -> new SolicitudCambioInvalidaException(
+                            "El deporte propuesto no existe o no esta activo."
+                    )));
+        }
+
+        aplicarEdadesValidadas(solicitud, request, actividad);
+        aplicarUbicacionValidada(solicitud, request, actividad);
+        aplicarHorariosValidados(solicitud, request);
 
         return solicitud;
+    }
+
+    /**
+     * Las edades se validan sobre el RESULTADO combinado (propuesto +
+     * vigente): proponer solo la minima no puede dejarla por encima de
+     * la maxima que queda.
+     */
+    private void aplicarEdadesValidadas(
+            SolicitudCambioActividad solicitud,
+            SolicitudCambioActividadRequestDTO request,
+            Actividad actividad
+    ) {
+        if (request.getEdadMinima() == null && request.getEdadMaxima() == null) {
+            return;
+        }
+
+        Integer minResultante = request.getEdadMinima() != null
+                ? request.getEdadMinima()
+                : actividad.getEdadMinima();
+        Integer maxResultante = request.getEdadMaxima() != null
+                ? request.getEdadMaxima()
+                : actividad.getEdadMaxima();
+
+        if (minResultante != null && maxResultante != null && minResultante > maxResultante) {
+            throw new SolicitudCambioInvalidaException(
+                    "La edad minima resultante (" + minResultante
+                            + ") no puede superar la maxima (" + maxResultante + ")."
+            );
+        }
+
+        solicitud.setEdadMinima(request.getEdadMinima());
+        solicitud.setEdadMaxima(request.getEdadMaxima());
+    }
+
+    /**
+     * Ubicacion propuesta: direccion y barrio van juntos, y el barrio
+     * tiene que ser de la MISMA ciudad de la actividad (cambiar de
+     * ciudad no entra en este flujo).
+     */
+    private void aplicarUbicacionValidada(
+            SolicitudCambioActividad solicitud,
+            SolicitudCambioActividadRequestDTO request,
+            Actividad actividad
+    ) {
+        String nombre = limpiarTexto(request.getUbicacionNombre());
+        String direccion = limpiarTexto(request.getUbicacionDireccion());
+        String referencia = limpiarTexto(request.getUbicacionReferencia());
+        Long barrioId = request.getUbicacionBarrioId();
+
+        if (nombre == null && direccion == null && referencia == null && barrioId == null) {
+            return;
+        }
+
+        if (direccion == null || barrioId == null) {
+            throw new SolicitudCambioInvalidaException(
+                    "Para proponer un cambio de ubicacion, la direccion y el barrio son obligatorios."
+            );
+        }
+
+        Long ciudadActualId = actividad.getUbicacion() != null
+                && actividad.getUbicacion().getCiudad() != null
+                ? actividad.getUbicacion().getCiudad().getId()
+                : null;
+
+        com.dondeentreno.api.entity.Barrio barrio = barrioRepository.findById(barrioId)
+                .filter(b -> Boolean.TRUE.equals(b.getActivo()))
+                .orElseThrow(() -> new SolicitudCambioInvalidaException(
+                        "El barrio propuesto no existe o no esta activo."
+                ));
+
+        if (ciudadActualId != null
+                && (barrio.getCiudad() == null
+                        || !ciudadActualId.equals(barrio.getCiudad().getId()))) {
+            throw new SolicitudCambioInvalidaException(
+                    "El barrio propuesto tiene que ser de la misma ciudad de la actividad."
+            );
+        }
+
+        solicitud.setUbicacionNombre(nombre);
+        solicitud.setUbicacionDireccion(direccion);
+        solicitud.setUbicacionReferencia(referencia);
+        solicitud.setUbicacionBarrio(barrio);
+    }
+
+    /**
+     * Horarios: reemplazo total con flag explicito. true exige >=1 fila
+     * valida (fin > inicio, sin filas exactamente duplicadas); false o
+     * ausente ignora la lista.
+     */
+    private void aplicarHorariosValidados(
+            SolicitudCambioActividad solicitud,
+            SolicitudCambioActividadRequestDTO request
+    ) {
+        if (!Boolean.TRUE.equals(request.getCambiaHorarios())) {
+            return;
+        }
+
+        List<com.dondeentreno.api.dto.SolicitudPublicacionHorarioRequestDTO> propuestos =
+                request.getHorarios() != null ? request.getHorarios() : List.of();
+
+        if (propuestos.isEmpty()) {
+            throw new SolicitudCambioInvalidaException(
+                    "Para cambiar los horarios tenes que proponer al menos uno."
+            );
+        }
+
+        java.util.Set<String> vistos = new java.util.HashSet<>();
+        OffsetDateTime ahora = OffsetDateTime.now();
+
+        solicitud.setCambiaHorarios(Boolean.TRUE);
+
+        for (var propuesto : propuestos) {
+            if (!propuesto.getHoraFin().isAfter(propuesto.getHoraInicio())) {
+                throw new SolicitudCambioInvalidaException(
+                        "Un horario tiene que terminar despues de empezar ("
+                                + propuesto.getDiaSemana() + " "
+                                + propuesto.getHoraInicio() + "-" + propuesto.getHoraFin() + ")."
+                );
+            }
+
+            String clave = propuesto.getDiaSemana() + "|"
+                    + propuesto.getHoraInicio() + "|" + propuesto.getHoraFin();
+
+            if (!vistos.add(clave)) {
+                throw new SolicitudCambioInvalidaException(
+                        "Hay horarios exactamente duplicados ("
+                                + propuesto.getDiaSemana() + " "
+                                + propuesto.getHoraInicio() + "-" + propuesto.getHoraFin() + ")."
+                );
+            }
+
+            SolicitudCambioHorario horario = new SolicitudCambioHorario();
+            horario.setSolicitud(solicitud);
+            horario.setDiaSemana(propuesto.getDiaSemana());
+            horario.setHoraInicio(propuesto.getHoraInicio());
+            horario.setHoraFin(propuesto.getHoraFin());
+            horario.setObservacion(limpiarTexto(propuesto.getObservacion()));
+            horario.setCreatedAt(ahora);
+            horario.setUpdatedAt(ahora);
+            solicitud.getHorarios().add(horario);
+        }
     }
 
     private String limpiarTexto(String valor) {

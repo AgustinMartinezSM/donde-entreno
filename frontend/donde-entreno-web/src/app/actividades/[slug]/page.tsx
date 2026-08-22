@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import type { Actividad, ActividadDetalle } from "../../../types/actividad";
+import type {
+  Actividad,
+  ActividadDetalle,
+  SocialProofActividad,
+} from "../../../types/actividad";
 import { Header } from "../../../components/layout/Header";
 import {
   ActividadNoEncontradaError,
@@ -14,6 +18,7 @@ import {
   ActividadGaleria,
   type FotoActividad,
 } from "../../../components/actividad/ActividadGaleria";
+import { CheckinButton } from "../../../components/actividad/CheckinButton";
 import { FavoritoButton } from "../../../components/actividad/FavoritoButton";
 import { MeGustaButton } from "../../../components/actividad/MeGustaButton";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
@@ -314,12 +319,19 @@ export default async function ActividadDetallePage({
 
                 <FavoritoButton variante="detalle" actividad={datosFavorito} />
 
+                <CheckinButton
+                  actividadId={actividad.id}
+                  titulo={actividad.titulo}
+                />
+
                 <CompartirButton
                   ruta={`/actividades/${actividad.slug}`}
                   titulo={actividad.titulo}
                   ocultarTextoEnMobile
                 />
               </div>
+
+              <SocialProofFila socialProof={actividad.socialProof} />
 
               <div className="p-2 pt-6 sm:p-3 sm:pt-7">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -659,6 +671,57 @@ async function cargarContextoDelPost(actividad: ActividadDetalle): Promise<{
   );
 
   return { masDelPublicador, similares, logoPublicadorUrl };
+}
+
+/*
+  Social proof (script 26): señales agregadas y anónimas del detalle.
+  Cada una aparece solo si es mayor que cero; con todas en cero la fila
+  no se renderiza — nunca un cero triste (regla vigente).
+*/
+function SocialProofFila({
+  socialProof,
+}: {
+  socialProof?: SocialProofActividad | null;
+}) {
+  if (!socialProof) {
+    return null;
+  }
+
+  const senales: string[] = [];
+
+  if (socialProof.cantidadFavoritos > 0) {
+    senales.push(
+      socialProof.cantidadFavoritos === 1
+        ? "1 guardado"
+        : `${socialProof.cantidadFavoritos} guardados`
+    );
+  }
+
+  if (socialProof.cantidadLikesFotos > 0) {
+    senales.push(
+      socialProof.cantidadLikesFotos === 1
+        ? "1 me gusta en fotos"
+        : `${socialProof.cantidadLikesFotos} me gusta en fotos`
+    );
+  }
+
+  if (socialProof.cantidadPersonasEntrenaron30Dias > 0) {
+    senales.push(
+      socialProof.cantidadPersonasEntrenaron30Dias === 1
+        ? "1 persona entrenó acá este mes"
+        : `${socialProof.cantidadPersonasEntrenaron30Dias} personas entrenaron acá este mes`
+    );
+  }
+
+  if (senales.length === 0) {
+    return null;
+  }
+
+  return (
+    <p className="px-2 pt-3 text-sm font-semibold text-[var(--color-muted)] sm:px-3">
+      {senales.join(" · ")}
+    </p>
+  );
 }
 
 function IconoUbicacion() {

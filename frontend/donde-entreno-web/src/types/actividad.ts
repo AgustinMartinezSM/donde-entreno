@@ -136,6 +136,19 @@ export type ActividadDetalle = {
 
   horarios?: HorarioActividad[];
   imagenes?: ImagenActividad[];
+
+  /* Señales agregadas de confianza (script 26). Aditivo. */
+  socialProof?: SocialProofActividad | null;
+};
+
+/*
+  Social proof del detalle: números agregados y anónimos. El frontend
+  muestra cada señal solo si es mayor que cero.
+*/
+export type SocialProofActividad = {
+  cantidadFavoritos: number;
+  cantidadLikesFotos: number;
+  cantidadPersonasEntrenaron30Dias: number;
 };
 
 export type HorarioActividad = {

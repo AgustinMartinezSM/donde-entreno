@@ -4,6 +4,7 @@ import type {
   HorarioActividad,
   ImagenActividad,
   PaginaActividades,
+  SocialProofActividad,
 } from "../types/actividad";
 
 
@@ -77,9 +78,10 @@ export async function buscarActividades(
 // - horarios: listado de horarios
 // - imagenes: listado de imágenes
 type ActividadDetalleBackendResponse = {
-  actividad: Omit<ActividadDetalle, "horarios" | "imagenes">;
+  actividad: Omit<ActividadDetalle, "horarios" | "imagenes" | "socialProof">;
   horarios?: HorarioActividad[];
   imagenes?: ImagenActividad[];
+  socialProof?: SocialProofActividad | null;
 };
 
 /*
@@ -120,6 +122,7 @@ export async function obtenerDetalleActividad(
     ...data.actividad,
     horarios: data.horarios || [],
     imagenes: data.imagenes || [],
+    socialProof: data.socialProof ?? null,
   };
 }
 

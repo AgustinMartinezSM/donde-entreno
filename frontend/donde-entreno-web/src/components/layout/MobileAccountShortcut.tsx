@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuthSession } from "../auth/AuthSessionProvider";
+import { AvatarUsuario } from "../cuenta/AvatarUsuario";
 import { MenuCuentaMobile } from "./MenuCuentaMobile";
 
 /*
@@ -39,7 +40,6 @@ export function MobileAccountShortcut() {
   }
 
   const nombre = (usuario?.nombre ?? sesion.usuario.nombre).trim();
-  const inicial = nombre.charAt(0).toLocaleUpperCase("es") || "D";
 
   return (
     <>
@@ -49,9 +49,13 @@ export function MobileAccountShortcut() {
         aria-haspopup="dialog"
         aria-expanded={menuAbierto}
         aria-label={`Abrir el menú de tu cuenta. Sesión de ${nombre || "usuario"}`}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-brand)] text-sm font-extrabold text-white shadow-[var(--shadow-button)] transition hover:bg-[var(--color-brand-strong)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/40 active:scale-95"
+        className="flex h-11 w-11 items-center justify-center rounded-full shadow-[var(--shadow-button)] transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/40 active:scale-95"
       >
-        {inicial}
+        <AvatarUsuario
+          usuario={usuario ?? sesion.usuario}
+          className="h-11 w-11"
+          claseTexto="text-sm"
+        />
       </button>
 
       <MenuCuentaMobile

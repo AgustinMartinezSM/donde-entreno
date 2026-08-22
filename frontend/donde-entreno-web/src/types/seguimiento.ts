@@ -15,6 +15,8 @@ export type PublicadorSeguido = {
   tipoPublicador: string | null;
   ciudadPrincipalNombre: string | null;
   seguidoDesde: string | null;
+  /* Logo aprobado (identidad única, fix UX 2026-08-22). Aditivo. */
+  perfilLogoUrl?: string | null;
 };
 
 /*

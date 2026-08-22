@@ -2,23 +2,32 @@
 
 import { useEffect, useState } from "react";
 
+/*
+  Volver arriba (rediseño 2026-08-22).
+
+  Antes: círculo navy con borde y halo verdes y una flecha de texto
+  "↑", que aparecía y desaparecía de golpe (montaje condicional). Ahora
+  comparte el lenguaje de los flotantes de la app — el gradiente de
+  marca de los botones primarios, sombra `shadow-lifted`, icono SVG — y
+  queda SIEMPRE montado: la visibilidad es una transición suave de
+  opacidad y desplazamiento, con pointer-events-none mientras está
+  oculto para no robar taps invisibles.
+
+  Posiciones intactas a propósito: la coreografía con Dondi (este a la
+  derecha en mobile, Dondi a la izquierda; en desktop apilados a la
+  derecha) ya está medida y documentada — acá solo cambia la piel.
+*/
 export function ScrollToTopButton() {
-  const [mostrarBoton, setMostrarBoton] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     function controlarScroll() {
-      /*
-        Si el usuario bajó más de 500px, mostramos el botón.
-        Si está cerca de arriba, lo ocultamos.
-      */
-      setMostrarBoton(window.scrollY > 500);
+      setVisible(window.scrollY > 500);
     }
 
-    window.addEventListener("scroll", controlarScroll);
+    controlarScroll();
+    window.addEventListener("scroll", controlarScroll, { passive: true });
 
-    /*
-      Limpieza del evento cuando el componente se desmonta.
-    */
     return () => {
       window.removeEventListener("scroll", controlarScroll);
     };
@@ -31,31 +40,32 @@ export function ScrollToTopButton() {
     });
   }
 
-  if (!mostrarBoton) {
-    return null;
-  }
-
   return (
-    /*
-      A la DERECHA en mobile, no a la izquierda.
-
-      Estaba en `left-4`, y el launcher de Dondi se puso también en
-      `left-4` dando por hecho lo contrario: que la izquierda estaba
-      libre porque la derecha la ocupaba este botón. Medido a 390×844,
-      los dos caían en x16,y704 — con Dondi en z-50 y 56px tapando por
-      completo a este de z-40 y 48px, o sea que volver arriba era
-      inalcanzable en mobile. Con esto la premisa de aquella decisión
-      pasa a ser cierta: Dondi a la izquierda, volver arriba a la
-      derecha. En desktop los dos van a la derecha, separados por el
-      bottom (este a 20px, Dondi a 84px).
-    */
     <button
       type="button"
       onClick={volverArriba}
       aria-label="Volver arriba"
-      className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-[var(--color-secondary)] bg-[var(--color-brand)] text-xl font-extrabold text-[var(--color-secondary)] shadow-[0_12px_30px_rgba(15,61,94,0.28)] ring-4 ring-[#2EB872]/15 transition hover:-translate-y-1 hover:scale-105 active:scale-95 lg:bottom-5 lg:right-5 lg:z-50"
+      aria-hidden={!visible}
+      tabIndex={visible ? 0 : -1}
+      className={`gradient-cta gradient-cta-hover fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-brand)] text-white shadow-lifted ring-1 ring-white/25 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/50 active:scale-95 lg:bottom-5 lg:right-5 lg:z-50 ${
+        visible
+          ? "translate-y-0 opacity-100 hover:-translate-y-0.5"
+          : "pointer-events-none translate-y-3 opacity-0"
+      }`}
     >
-      ↑
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5 w-5"
+        aria-hidden="true"
+      >
+        <path d="m5 13 7-7 7 7" />
+        <path d="M12 6v14" />
+      </svg>
     </button>
   );
 }

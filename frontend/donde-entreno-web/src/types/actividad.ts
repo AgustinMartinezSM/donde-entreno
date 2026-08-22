@@ -40,6 +40,11 @@ export type Actividad = {
 
   // Datos visuales o económicos
   imagenPrincipalUrl?: string | null;
+  /*
+    Logo aprobado del publicador (identidad única, fix UX 2026-08-22).
+    Opcional: backend viejo no lo trae y el avatar cae a iniciales.
+  */
+  perfilLogoUrl?: string | null;
   precioReferencia?: number | null;
   mostrarPrecio?: boolean;
   requiereInscripcion?: boolean;
@@ -105,6 +110,8 @@ export type ActividadDetalle = {
   perfilPublicadorNombre?: string | null;
   tipoPublicador?: string | null;
   perfilVerificado?: boolean;
+  /* Logo aprobado del publicador (identidad única). Aditivo. */
+  perfilLogoUrl?: string | null;
 
   deporteId?: number;
   deporteNombre?: string;

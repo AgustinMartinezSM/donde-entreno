@@ -94,6 +94,7 @@ export function PublicadoresSeguidos({
                     <PublisherIdentity
                       nombre={publicador.perfilPublicadorNombre}
                       tipo={publicador.tipoPublicador}
+                      avatarUrl={publicador.perfilLogoUrl}
                       href={`/publicadores/${publicador.perfilPublicadorId}`}
                     />
                     <p className="mt-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-secondary)]">

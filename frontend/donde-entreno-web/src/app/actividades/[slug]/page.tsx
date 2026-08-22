@@ -261,7 +261,12 @@ export default async function ActividadDetallePage({
                   nombre={actividad.perfilPublicadorNombre}
                   tipo={actividad.tipoPublicador}
                   verificado={actividad.perfilVerificado}
-                  avatarUrl={logoPublicadorUrl}
+                  /*
+                    Fuente única de identidad (fix UX 2026-08-22): el
+                    logo viaja en el propio DTO; el fetch aparte queda
+                    solo como fallback para un backend viejo.
+                  */
+                  avatarUrl={actividad.perfilLogoUrl ?? logoPublicadorUrl}
                   tamanio="destacada"
                   nota={
                     publicadaRelativa ? `Publicada ${publicadaRelativa}` : null

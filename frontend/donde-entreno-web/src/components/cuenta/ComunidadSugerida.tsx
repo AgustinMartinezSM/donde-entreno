@@ -96,6 +96,7 @@ export function ComunidadSugerida({
               nombre={publicador.nombre}
               tipo={publicador.tipoPublicador}
               verificado={publicador.verificado === true}
+              avatarUrl={publicador.logoUrl}
               href={`/publicadores/${publicador.id}`}
             />
 

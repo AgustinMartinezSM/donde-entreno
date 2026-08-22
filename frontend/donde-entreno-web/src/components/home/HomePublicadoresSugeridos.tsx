@@ -43,6 +43,7 @@ export function HomePublicadoresSugeridos({
               nombre={publicador.nombre}
               tipo={publicador.tipoPublicador}
               verificado={publicador.verificado === true}
+              avatarUrl={publicador.logoUrl}
               href={`/publicadores/${publicador.id}`}
             />
 

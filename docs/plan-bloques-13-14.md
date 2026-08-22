@@ -10,6 +10,7 @@ en chunks de /favoritos), backend 14 `131cbf2` (`Allow: DELETE,PUT` en
 likes-fotos y `cantidadLikes: 0` viajando en las fotos reales de
 karate), frontend 14 `8f166aa` (corazón probado EN VIVO: visor abre,
 contador real, anónimo → login con returnTo; consola limpia).
+**SMOKE DE AGUSTÍN: OK (2026-08-22) — BLOQUES 12, 13 Y 14 CERRADOS.**
 
 ## Bloque 13 — Colecciones de guardados V1
 

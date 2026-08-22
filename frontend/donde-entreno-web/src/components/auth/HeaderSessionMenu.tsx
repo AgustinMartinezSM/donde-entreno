@@ -4,6 +4,7 @@ import { Fragment } from "react";
 
 import { obtenerSeccionesCuenta } from "../../lib/menuCuenta";
 import { useAuthSession } from "./AuthSessionProvider";
+import { AvatarUsuario } from "../cuenta/AvatarUsuario";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
 import { SelectorTema } from "../tema/SelectorTema";
@@ -42,7 +43,6 @@ export function HeaderSessionMenu() {
   const nombre = (usuario?.nombre ?? sesion.usuario.nombre).trim();
   const rol = usuario?.rol ?? sesion.usuario.rol;
   const secciones = obtenerSeccionesCuenta(rol);
-  const inicial = nombre.charAt(0).toLocaleUpperCase("es") || "D";
 
   function manejarCerrarSesion() {
     cerrarSesion();
@@ -73,12 +73,11 @@ export function HeaderSessionMenu() {
       className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface)] py-1.5 pl-1.5 pr-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
       disparador={
         <>
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xs font-extrabold text-white"
-          >
-            {inicial}
-          </span>
+          <AvatarUsuario
+            usuario={usuario ?? sesion.usuario}
+            className="h-8 w-8"
+            claseTexto="text-xs"
+          />
           {/* El nombre es lo único que puede ceder ancho: se recorta. */}
           <span className="min-w-0 flex-1 truncate text-left">
             {nombre || "Mi cuenta"}

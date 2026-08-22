@@ -7,6 +7,7 @@ import { Fragment } from "react";
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import { obtenerSeccionesCuenta } from "../../lib/menuCuenta";
 import { useAuthSession } from "../auth/AuthSessionProvider";
+import { AvatarUsuario } from "../cuenta/AvatarUsuario";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
 import { SelectorTema } from "../tema/SelectorTema";
 
@@ -106,7 +107,6 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
   const usuarioDeSesion = usuario ?? sesion?.usuario ?? null;
   const rol = usuarioDeSesion?.rol ?? null;
   const nombre = (usuarioDeSesion?.nombre ?? "").trim();
-  const inicial = nombre.charAt(0).toLocaleUpperCase("es") || "D";
   const secciones = obtenerSeccionesCuenta(rol);
   const chipRol = obtenerChipRol(rol);
 
@@ -142,12 +142,11 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
         />
 
         <div className="mt-4 flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-base font-extrabold text-white"
-          >
-            {inicial}
-          </span>
+          <AvatarUsuario
+            usuario={usuarioDeSesion}
+            className="h-12 w-12"
+            claseTexto="text-base"
+          />
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-extrabold text-[var(--color-primary)]">

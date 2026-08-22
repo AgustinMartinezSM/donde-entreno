@@ -133,6 +133,7 @@ export function HomeFeedSeguidos({
                 nombre={publicador.nombre}
                 tipo={publicador.tipoPublicador}
                 verificado={publicador.verificado === true}
+                avatarUrl={publicador.logoUrl}
                 href={`/publicadores/${publicador.id}`}
                 tamanio="compacta"
               />

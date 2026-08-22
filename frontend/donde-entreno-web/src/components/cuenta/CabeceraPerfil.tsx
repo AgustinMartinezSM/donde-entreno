@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 import type { UsuarioActual } from "../../types/auth";
+import { useAuthSession } from "../auth/AuthSessionProvider";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SurfaceCard } from "../ui/SurfaceCard";
@@ -50,15 +51,12 @@ export function CabeceraPerfil({
 
   const [avatarAbierto, setAvatarAbierto] = useState(false);
   /*
-    La foto recién cambiada se refleja al instante desde acá; en la
-    próxima carga viene del backend por /api/auth/me. undefined = todavía
-    no hubo cambio en esta vista.
+    Fuente única de identidad (fix UX 2026-08-22): el cambio de foto va
+    al provider con actualizarUsuario, así el header, el sheet y la
+    barra inferior se enteran al instante — antes solo se veía acá.
   */
-  const [avatarLocal, setAvatarLocal] = useState<string | null | undefined>(
-    undefined
-  );
-  const avatarUrl =
-    avatarLocal !== undefined ? avatarLocal : (usuario?.avatarUrl ?? null);
+  const { actualizarUsuario } = useAuthSession();
+  const avatarUrl = usuario?.avatarUrl ?? null;
 
   return (
     <SurfaceCard as="section">
@@ -247,9 +245,7 @@ export function CabeceraPerfil({
         avatarUrl={avatarUrl}
         iniciales={perfil.iniciales}
         onCerrar={() => setAvatarAbierto(false)}
-        onUsuarioActualizado={(usuarioNuevo) =>
-          setAvatarLocal(usuarioNuevo.avatarUrl ?? null)
-        }
+        onUsuarioActualizado={actualizarUsuario}
       />
     </SurfaceCard>
   );

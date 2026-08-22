@@ -13,6 +13,8 @@ export type PerfilPublicadorPublico = {
   instagram?: string | null;
   sitioWeb?: string | null;
   verificado?: boolean | null;
+  /* Logo aprobado (identidad única, fix UX 2026-08-22). Aditivo. */
+  logoUrl?: string | null;
   /*
     Campo aditivo: tolera respuestas viejas del backend, así el frontend
     no depende del orden de los deploys.

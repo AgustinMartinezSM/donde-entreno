@@ -42,6 +42,14 @@ type AuthSessionContextValue = {
   accessToken: string | null;
   iniciarSesionDesdeRespuesta: (response: LoginResponse) => Promise<void>;
   refrescarUsuarioActual: () => Promise<void>;
+  /*
+    Fuente única de identidad (fix UX 2026-08-22): cuando un flujo
+    cambia datos del usuario (por ejemplo el avatar), actualiza acá y
+    TODOS los lugares que muestran identidad se enteran al instante —
+    header, sheet, cabecera del perfil. Antes cada vista guardaba su
+    propia copia y el cambio se veía solo donde se hizo.
+  */
+  actualizarUsuario: (usuario: UsuarioActual) => void;
   cerrarSesion: () => void;
 };
 
@@ -413,6 +421,10 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
     };
   }, [status, limpiarSesion]);
 
+  const actualizarUsuario = useCallback((usuarioNuevo: UsuarioActual) => {
+    setUsuario(usuarioNuevo);
+  }, []);
+
   const value = useMemo<AuthSessionContextValue>(
     () => ({
       status,
@@ -421,6 +433,7 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
       accessToken: sesion?.accessToken ?? null,
       iniciarSesionDesdeRespuesta,
       refrescarUsuarioActual,
+      actualizarUsuario,
       cerrarSesion,
     }),
     [
@@ -429,6 +442,7 @@ export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
       usuario,
       iniciarSesionDesdeRespuesta,
       refrescarUsuarioActual,
+      actualizarUsuario,
       cerrarSesion,
     ]
   );

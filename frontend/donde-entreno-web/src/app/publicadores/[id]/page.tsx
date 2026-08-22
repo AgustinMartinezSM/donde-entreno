@@ -62,6 +62,8 @@ type FotoDelPerfil = {
   url: string;
   alt: string;
   href?: string;
+  imagenId?: number;
+  cantidadLikes?: number | null;
 };
 
 function parsearId(idCrudo: string): number | null {
@@ -581,6 +583,8 @@ async function reunirFotosDelPerfil(
         clave: `perfil-${imagen.id}`,
         url,
         alt: imagen.titulo?.trim() || `Foto de ${nombrePerfil}`,
+        imagenId: imagen.id,
+        cantidadLikes: imagen.cantidadLikes ?? null,
       });
     }
   }
@@ -603,6 +607,8 @@ async function reunirFotosDelPerfil(
           url,
           alt: imagen.descripcion?.trim() || `Foto de ${actividad.titulo}`,
           href: `/actividades/${actividad.slug}`,
+          imagenId: imagen.id,
+          cantidadLikes: imagen.cantidadLikes ?? null,
         });
       }
     }

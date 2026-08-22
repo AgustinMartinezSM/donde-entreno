@@ -11,6 +11,9 @@ export type FotoDeGaleriaPerfil = {
   alt: string;
   /* Link a la actividad de la que salió la foto, si se conoce. */
   href?: string;
+  /* Para el corazón del visor (bloque 14). */
+  imagenId?: number;
+  cantidadLikes?: number | null;
 };
 
 /*
@@ -53,6 +56,8 @@ export function GaleriaPerfil({ fotos }: { fotos: FotoDeGaleriaPerfil[] }) {
           alt: foto.alt,
           href: foto.href,
           hrefTexto: "Ver la actividad",
+          imagenId: foto.imagenId,
+          cantidadLikes: foto.cantidadLikes,
         }))}
         indice={indiceLightbox}
         onCerrar={() => setIndiceLightbox(null)}

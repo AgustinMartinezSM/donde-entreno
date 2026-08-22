@@ -153,4 +153,7 @@ export type ImagenActividad = {
 
   actividadId?: number;
   actividadSlug?: string;
+
+  /* Likes públicos de la foto (bloque 14). Opcional: backend viejo no lo trae. */
+  cantidadLikes?: number | null;
 };

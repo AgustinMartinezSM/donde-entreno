@@ -32,4 +32,6 @@ export type ImagenPerfilPublicador = {
   titulo?: string | null;
   descripcion?: string | null;
   orden?: number | null;
+  /* Likes públicos (bloque 14). Opcional: backend viejo no lo trae. */
+  cantidadLikes?: number | null;
 };

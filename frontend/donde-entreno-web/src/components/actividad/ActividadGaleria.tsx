@@ -12,6 +12,8 @@ export type FotoActividad = {
   url: string;
   alt: string;
   titulo?: string | null;
+  /* Likes públicos (bloque 14); null/ausente = backend viejo, sin corazón. */
+  cantidadLikes?: number | null;
 };
 
 type ActividadGaleriaProps = {
@@ -158,6 +160,8 @@ export function ActividadGaleria({
           url: foto.url,
           alt: foto.alt,
           epigrafe: foto.titulo,
+          imagenId: foto.id,
+          cantidadLikes: foto.cantidadLikes,
         }))}
         indice={indiceLightbox}
         onCerrar={() => setIndiceLightbox(null)}

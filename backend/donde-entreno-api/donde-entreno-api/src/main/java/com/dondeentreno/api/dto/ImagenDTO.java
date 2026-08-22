@@ -23,6 +23,12 @@ public class ImagenDTO {
     private Long perfilPublicadorId;
     private String perfilPublicadorNombre;
 
+    /**
+     * Likes publicos de la foto (script 23, bloque 14). Aditivo: lo
+     * llenan las vistas publicas; null en las que no lo calculan.
+     */
+    private Long cantidadLikes;
+
     public ImagenDTO() {
     }
 
@@ -88,6 +94,14 @@ public class ImagenDTO {
 
     public String getPerfilPublicadorNombre() {
         return perfilPublicadorNombre;
+    }
+
+    public Long getCantidadLikes() {
+        return cantidadLikes;
+    }
+
+    public void setCantidadLikes(Long cantidadLikes) {
+        this.cantidadLikes = cantidadLikes;
     }
 
     public void setId(Long id) {

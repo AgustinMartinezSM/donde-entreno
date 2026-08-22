@@ -4,6 +4,7 @@ import com.dondeentreno.api.dto.ActividadDTO;
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.Imagen;
 import com.dondeentreno.api.repository.ImagenRepository;
+import com.dondeentreno.api.repository.MeGustaImagenRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -28,12 +29,15 @@ class ImagenServicePrincipalTest {
     @Mock
     private ImagenRepository imagenRepository;
 
+    @Mock
+    private MeGustaImagenRepository meGustaImagenRepository;
+
     private static final String URL_PUBLICA =
             "https://proyecto.supabase.co/storage/v1/object/public/imagenes-publicas/boxeo.jpg";
 
     @Test
     void asignaLaImagenPrincipalPorActividadYDejaNullLasQueNoTienen() {
-        ImagenService service = new ImagenService(imagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
 
         ActividadDTO conImagen = new ActividadDTO();
         conImagen.setId(1L);
@@ -56,7 +60,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conVariasPrincipalesGanaLaDeMenorOrden() {
-        ImagenService service = new ImagenService(imagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -85,7 +89,7 @@ class ImagenServicePrincipalTest {
     */
     @Test
     void ignoraLasUrlsRelativasLegadoDeDiscoLocal() {
-        ImagenService service = new ImagenService(imagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -105,7 +109,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conUnaRelativaYUnaAbsolutaGanaLaAbsolutaAunqueTengaMayorOrden() {
-        ImagenService service = new ImagenService(imagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -128,7 +132,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conListaVaciaNoConsultaElRepositorio() {
-        ImagenService service = new ImagenService(imagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
 
         service.asignarImagenPrincipal(List.of());
 

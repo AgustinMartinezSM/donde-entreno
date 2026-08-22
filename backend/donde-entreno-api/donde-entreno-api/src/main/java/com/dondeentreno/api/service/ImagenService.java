@@ -5,6 +5,7 @@ import com.dondeentreno.api.dto.ImagenDTO;
 import com.dondeentreno.api.entity.Imagen;
 import com.dondeentreno.api.mapper.ImagenMapper;
 import com.dondeentreno.api.repository.ImagenRepository;
+import com.dondeentreno.api.repository.MeGustaImagenRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class ImagenService {
     private static final String TIPO_IMAGEN_PRINCIPAL = "PRINCIPAL";
 
     private final ImagenRepository imagenRepository;
+    private final MeGustaImagenRepository meGustaImagenRepository;
 
     /**
      * Inyección de dependencias por constructor.
@@ -37,8 +39,36 @@ public class ImagenService {
      * Spring detecta automáticamente el repository
      * y lo entrega a este service.
      */
-    public ImagenService(ImagenRepository imagenRepository) {
+    public ImagenService(
+            ImagenRepository imagenRepository,
+            MeGustaImagenRepository meGustaImagenRepository
+    ) {
         this.imagenRepository = imagenRepository;
+        this.meGustaImagenRepository = meGustaImagenRepository;
+    }
+
+    /**
+     * Suma el contador de likes (bloque 14) a una lista pública de
+     * imágenes, en UN solo query agrupado — sin N+1. Fotos sin likes
+     * quedan en 0 explícito: en público el dato siempre viaja.
+     */
+    private List<ImagenDTO> conLikes(List<ImagenDTO> imagenes) {
+        if (imagenes.isEmpty()) {
+            return imagenes;
+        }
+
+        List<Long> ids = imagenes.stream().map(ImagenDTO::getId).toList();
+        Map<Long, Long> conteos = new HashMap<>();
+
+        for (Object[] fila : meGustaImagenRepository.contarPorImagen(ids)) {
+            conteos.put((Long) fila[0], (Long) fila[1]);
+        }
+
+        for (ImagenDTO imagen : imagenes) {
+            imagen.setCantidadLikes(conteos.getOrDefault(imagen.getId(), 0L));
+        }
+
+        return imagenes;
     }
 
     /**
@@ -55,9 +85,9 @@ public class ImagenService {
                         actividadSlug
                 );
 
-        return imagenes.stream()
+        return conLikes(imagenes.stream()
                 .map(ImagenMapper::toDTO)
-                .toList();
+                .toList());
     }
 
     /**
@@ -79,9 +109,9 @@ public class ImagenService {
                         tipoImagen
                 );
 
-        return imagenes.stream()
+        return conLikes(imagenes.stream()
                 .map(ImagenMapper::toDTO)
-                .toList();
+                .toList());
     }
 
     /**
@@ -98,9 +128,9 @@ public class ImagenService {
                         perfilPublicadorId
                 );
 
-        return imagenes.stream()
+        return conLikes(imagenes.stream()
                 .map(ImagenMapper::toDTO)
-                .toList();
+                .toList());
     }
 
     /**
@@ -122,9 +152,9 @@ public class ImagenService {
                         tipoImagen
                 );
 
-        return imagenes.stream()
+        return conLikes(imagenes.stream()
                 .map(ImagenMapper::toDTO)
-                .toList();
+                .toList());
     }
 
     /**

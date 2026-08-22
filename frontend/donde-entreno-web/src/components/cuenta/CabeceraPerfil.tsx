@@ -130,7 +130,7 @@ export function CabeceraPerfil({
                   avatarUrl ? "Cambiar tu foto de perfil" : "Agregar una foto de perfil"
                 }
                 aria-haspopup="dialog"
-                className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-cta)] text-white shadow-[0_4px_12px_rgba(15,61,94,0.3)] ring-2 ring-white transition duration-200 ease-out hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/50 active:scale-95"
+                className="gradient-cta absolute -bottom-0.5 -right-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand)] text-white shadow-[0_4px_12px_rgba(15,61,94,0.35)] ring-2 ring-white transition duration-200 ease-out hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/50 active:scale-95"
               >
                 <IconoCamara />
               </button>

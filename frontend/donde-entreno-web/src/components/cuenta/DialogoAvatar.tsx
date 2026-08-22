@@ -214,12 +214,35 @@ export function DialogoAvatar({
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {/* El input real es invisible: el label hace de botón. */}
-              <label className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-[18px] bg-[var(--color-cta)] px-5 text-base font-extrabold text-white transition duration-200 ease-out hover:brightness-110 active:scale-[0.98]">
-                {avatarUrl ? "Cambiar foto" : "Elegir foto"}
+              {/*
+                Los inputs reales son invisibles: los labels hacen de
+                botón, con las MISMAS clases del AppButton primario (un
+                token inventado ya dejó estos botones transparentes e
+                invisibles — cazado por Agustín en producción).
+              */}
+              <label className={CLASE_BOTON_SUBIR}>
+                <IconoSubir />
+                Subir imagen
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={elegirArchivo}
+                  disabled={cargando}
+                />
+              </label>
+
+              {/*
+                capture abre la cámara del dispositivo en mobile; en
+                desktop sin cámara cae al selector de archivos normal.
+              */}
+              <label className={CLASE_BOTON_SUBIR}>
+                <IconoCamaraChica />
+                Sacar foto
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  capture="user"
                   className="sr-only"
                   onChange={elegirArchivo}
                   disabled={cargando}
@@ -231,6 +254,7 @@ export function DialogoAvatar({
                   variant="outline"
                   onClick={quitarFoto}
                   disabled={cargando}
+                  className="sm:col-span-2"
                 >
                   {cargando ? "Quitando..." : "Quitar foto"}
                 </AppButton>
@@ -260,6 +284,47 @@ export function DialogoAvatar({
         )}
       </div>
     </dialog>
+  );
+}
+
+/* Mismas clases que el AppButton primario, aplicadas a un label. */
+const CLASE_BOTON_SUBIR =
+  "gradient-cta gradient-cta-hover inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[18px] bg-[var(--color-brand)] px-5 text-base font-extrabold text-white shadow-[var(--shadow-button)] transition duration-200 ease-out active:scale-[0.98]";
+
+function IconoSubir() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4.5 w-4.5"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="m17 8-5-5-5 5" />
+      <path d="M12 3v12" />
+    </svg>
+  );
+}
+
+function IconoCamaraChica() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4.5 w-4.5"
+      aria-hidden="true"
+    >
+      <path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5l-2-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
   );
 }
 

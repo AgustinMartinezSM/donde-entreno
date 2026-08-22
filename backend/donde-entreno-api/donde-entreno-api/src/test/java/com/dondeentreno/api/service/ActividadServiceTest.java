@@ -36,6 +36,9 @@ class ActividadServiceTest {
     @Mock
     private ImagenService imagenService;
 
+    @Mock
+    private SocialProofService socialProofService;
+
     private ActividadService actividadService;
 
     @BeforeEach
@@ -43,7 +46,8 @@ class ActividadServiceTest {
         actividadService = new ActividadService(
                 actividadRepository,
                 horarioActividadService,
-                imagenService
+                imagenService,
+                socialProofService
         );
     }
 

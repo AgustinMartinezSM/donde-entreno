@@ -33,4 +33,21 @@ public interface MeGustaImagenRepository extends JpaRepository<MeGustaImagen, Lo
              GROUP BY m.imagenId
             """)
     List<Object[]> contarPorImagen(@Param("imagenIds") Collection<Long> imagenIds);
+
+    /**
+     * Likes totales sobre las fotos VISIBLES de una actividad (social
+     * proof del detalle, script 26): solo cuentan las aprobadas y
+     * activas — un like sobre una foto despublicada no suma.
+     */
+    @Query("""
+            SELECT COUNT(m)
+              FROM MeGustaImagen m
+             WHERE m.imagenId IN (
+                   SELECT i.id
+                     FROM Imagen i
+                    WHERE i.actividad.id = :actividadId
+                      AND i.activa = true
+                      AND i.estadoModeracion = 'APROBADA')
+            """)
+    long contarDeActividad(@Param("actividadId") Long actividadId);
 }

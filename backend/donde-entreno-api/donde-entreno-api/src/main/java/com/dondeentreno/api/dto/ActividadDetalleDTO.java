@@ -18,6 +18,9 @@ public class ActividadDetalleDTO {
     private List<HorarioActividadDTO> horarios;
     private List<ImagenDTO> imagenes;
 
+    /** Señales agregadas de confianza (script 26, aditivo). */
+    private SocialProofDTO socialProof;
+
     public ActividadDetalleDTO() {
     }
 
@@ -53,5 +56,13 @@ public class ActividadDetalleDTO {
 
     public void setImagenes(List<ImagenDTO> imagenes) {
         this.imagenes = imagenes;
+    }
+
+    public SocialProofDTO getSocialProof() {
+        return socialProof;
+    }
+
+    public void setSocialProof(SocialProofDTO socialProof) {
+        this.socialProof = socialProof;
     }
 }

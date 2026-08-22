@@ -26,6 +26,9 @@ public interface FavoritoActividadRepository
      */
     long deleteByUsuarioIdAndActividadId(Long usuarioId, Long actividadId);
 
+    /** Contador publico del detalle (social proof, script 26). */
+    long countByActividadId(Long actividadId);
+
     /** El guardado puntual, para asignarle coleccion o nota (bloque 13). */
     java.util.Optional<FavoritoActividad> findByUsuarioIdAndActividadId(
             Long usuarioId,

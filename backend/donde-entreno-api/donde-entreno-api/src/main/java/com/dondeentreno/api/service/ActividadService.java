@@ -63,6 +63,7 @@ public class ActividadService {
     private final ActividadRepository actividadRepository;
     private final HorarioActividadService horarioActividadService;
     private final ImagenService imagenService;
+    private final SocialProofService socialProofService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -73,11 +74,13 @@ public class ActividadService {
     public ActividadService(
             ActividadRepository actividadRepository,
             HorarioActividadService horarioActividadService,
-            ImagenService imagenService
+            ImagenService imagenService,
+            SocialProofService socialProofService
     ) {
         this.actividadRepository = actividadRepository;
         this.horarioActividadService = horarioActividadService;
         this.imagenService = imagenService;
+        this.socialProofService = socialProofService;
     }
 
     /**
@@ -369,11 +372,16 @@ public class ActividadService {
         List<ImagenDTO> imagenes =
                 imagenService.obtenerImagenesPorActividadSlug(slug);
 
-        return new ActividadDetalleDTO(
+        ActividadDetalleDTO detalle = new ActividadDetalleDTO(
                 actividad,
                 horarios,
                 imagenes
         );
+
+        /* Señales agregadas de confianza (etapa A): aditivo al DTO. */
+        detalle.setSocialProof(socialProofService.deActividad(actividad.getId()));
+
+        return detalle;
     }
 
     /**

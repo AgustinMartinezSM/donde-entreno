@@ -1,9 +1,12 @@
 # Plan — Solicitudes de cambio completas (horarios, ubicación, deporte, edades y enfoque)
 
-Estado: **IMPLEMENTADO Y EN DEPLOY** (aprobado con las 3 recomendaciones,
-2026-08-21). Scripts 24 **y 25** aplicados por Agustín en Supabase y
-local ANTES del deploy. Backend `6331014` (474 unit + 75 ITs verdes),
-frontend `ab07c8e` (typecheck+lint+build 26/26), en dos tandas.
+Estado: **CERRADO EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-22).
+Aprobado con las 3 recomendaciones. Scripts 24 **y 25** aplicados por
+Agustín en Supabase y local ANTES del deploy. Backend `6331014` (474
+unit + 75 ITs verdes; Live confirmado por hash en el panel de Render,
+health 200 continuo en la rotación), frontend `3916f82` (typecheck +
+lint + build 26/26; marcador "Proponer cambio de horarios" verificado
+en los chunks servidos vía cookie-trick), en dos tandas.
 
 **Lección del bloque (script 25)**: el CHECK `algun_campo` del script 14
 enumeraba solo las 9 columnas originales; el 24 agregó campos sin

@@ -1,6 +1,7 @@
 package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.dto.ActividadDTO;
+import com.dondeentreno.api.dto.FavoritoOrganizadoDTO;
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.FavoritoActividad;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
@@ -34,15 +35,18 @@ public class FavoritosUsuarioService {
     private final FavoritoActividadRepository favoritoActividadRepository;
     private final ActividadRepository actividadRepository;
     private final ImagenService imagenService;
+    private final ColeccionesGuardadosService coleccionesGuardadosService;
 
     public FavoritosUsuarioService(
             FavoritoActividadRepository favoritoActividadRepository,
             ActividadRepository actividadRepository,
-            ImagenService imagenService
+            ImagenService imagenService,
+            ColeccionesGuardadosService coleccionesGuardadosService
     ) {
         this.favoritoActividadRepository = favoritoActividadRepository;
         this.actividadRepository = actividadRepository;
         this.imagenService = imagenService;
+        this.coleccionesGuardadosService = coleccionesGuardadosService;
     }
 
     /**
@@ -128,6 +132,83 @@ public class FavoritosUsuarioService {
         ).ifPresent(actividad ->
                 favoritoActividadRepository.deleteByUsuarioIdAndActividadId(usuarioId, actividad.getId())
         );
+    }
+
+    /**
+     * Los guardados con su organizacion (bloque 13): la misma card
+     * publica de listar() mas la coleccion y la nota. Endpoint aditivo;
+     * el GET plano no cambia de forma.
+     */
+    @Transactional(readOnly = true)
+    public List<FavoritoOrganizadoDTO> listarOrganizados(Long usuarioId) {
+        validarUserId(usuarioId);
+
+        List<FavoritoActividad> favoritos =
+                favoritoActividadRepository.findByUsuarioIdOrderByCreatedAtDesc(usuarioId);
+
+        if (favoritos.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> idsOrdenados = favoritos.stream()
+                .map(FavoritoActividad::getActividadId)
+                .toList();
+
+        Map<Long, Actividad> actividadesPorId = actividadRepository
+                .findByIdInAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNull(
+                        idsOrdenados,
+                        ESTADO_ACTIVIDAD_PUBLICADA
+                )
+                .stream()
+                .collect(Collectors.toMap(Actividad::getId, Function.identity()));
+
+        List<ActividadDTO> cards = favoritos.stream()
+                .map(favorito -> actividadesPorId.get(favorito.getActividadId()))
+                .filter(actividad -> actividad != null)
+                .map(ActividadMapper::toDTO)
+                .toList();
+        imagenService.asignarImagenPrincipal(cards);
+
+        Map<Long, ActividadDTO> cardsPorId = cards.stream()
+                .collect(Collectors.toMap(ActividadDTO::getId, Function.identity()));
+
+        return favoritos.stream()
+                .filter(favorito -> cardsPorId.containsKey(favorito.getActividadId()))
+                .map(favorito -> new FavoritoOrganizadoDTO(
+                        cardsPorId.get(favorito.getActividadId()),
+                        favorito.getColeccionId(),
+                        favorito.getNota()
+                ))
+                .toList();
+    }
+
+    /**
+     * Asigna coleccion y nota a un guardado (bloque 13). Reemplazo
+     * total de ambos campos: coleccionId null = "Todos", nota vacia =
+     * sin nota. La coleccion tiene que ser del usuario; el guardado,
+     * existir ("primero guarda, despues organiza").
+     */
+    @Transactional
+    public void organizar(Long usuarioId, String slug, Long coleccionId, String nota) {
+        validarUserId(usuarioId);
+
+        Actividad actividad = buscarActividadPublicada(slug);
+
+        FavoritoActividad favorito = favoritoActividadRepository
+                .findByUsuarioIdAndActividadId(usuarioId, actividad.getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Primero guarda la actividad para poder organizarla."
+                ));
+
+        if (coleccionId != null) {
+            coleccionesGuardadosService.validarPropia(usuarioId, coleccionId);
+        }
+
+        String notaLimpia = nota != null ? nota.trim() : "";
+
+        favorito.setColeccionId(coleccionId);
+        favorito.setNota(notaLimpia.isEmpty() ? null : notaLimpia);
+        favoritoActividadRepository.save(favorito);
     }
 
     private Actividad buscarActividadPublicada(String slug) {

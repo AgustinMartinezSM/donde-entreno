@@ -1,15 +1,20 @@
 package com.dondeentreno.api.controller;
 
 import com.dondeentreno.api.dto.ActividadDTO;
+import com.dondeentreno.api.dto.FavoritoOrganizadoDTO;
+import com.dondeentreno.api.dto.OrganizarFavoritoRequestDTO;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
 import com.dondeentreno.api.service.FavoritosUsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,10 +42,35 @@ public class UsuarioFavoritosController {
         return favoritosUsuarioService.listar(extraerUserId(jwt));
     }
 
+    /**
+     * Los guardados con coleccion y nota (bloque 13). Endpoint aditivo:
+     * el GET plano de arriba conserva su forma para el sync existente.
+     */
+    @GetMapping("/organizados")
+    public List<FavoritoOrganizadoDTO> listarOrganizados(@AuthenticationPrincipal Jwt jwt) {
+        return favoritosUsuarioService.listarOrganizados(extraerUserId(jwt));
+    }
+
     @PutMapping("/{slug}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void guardar(@AuthenticationPrincipal Jwt jwt, @PathVariable String slug) {
         favoritosUsuarioService.guardar(extraerUserId(jwt), slug);
+    }
+
+    /** Asigna coleccion y nota al guardado (bloque 13, reemplazo total). */
+    @PatchMapping("/{slug}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void organizar(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String slug,
+            @Valid @RequestBody OrganizarFavoritoRequestDTO request
+    ) {
+        favoritosUsuarioService.organizar(
+                extraerUserId(jwt),
+                slug,
+                request.getColeccionId(),
+                request.getNota()
+        );
     }
 
     @DeleteMapping("/{slug}")

@@ -34,10 +34,38 @@ public class FavoritoActividad {
     @Column(name = "actividad_id", nullable = false)
     private Long actividadId;
 
+    /**
+     * Coleccion a la que pertenece el guardado (script 22, bloque 13).
+     * NULL = "Todos". FK plana con ON DELETE SET NULL en la base:
+     * borrar la coleccion nunca borra guardados.
+     */
+    @Column(name = "coleccion_id")
+    private Long coleccionId;
+
+    /** Nota personal corta sobre el guardado (script 22). */
+    @Column(name = "nota", length = 280)
+    private String nota;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     public FavoritoActividad() {
+    }
+
+    public Long getColeccionId() {
+        return coleccionId;
+    }
+
+    public void setColeccionId(Long coleccionId) {
+        this.coleccionId = coleccionId;
+    }
+
+    public String getNota() {
+        return nota;
+    }
+
+    public void setNota(String nota) {
+        this.nota = nota;
     }
 
     public Long getId() {

@@ -30,6 +30,7 @@ class FavoritosUsuarioServiceTest {
     private FavoritoActividadRepository favoritoRepository;
     private ActividadRepository actividadRepository;
     private ImagenService imagenService;
+    private ColeccionesGuardadosService coleccionesService;
     private FavoritosUsuarioService service;
 
     @BeforeEach
@@ -37,10 +38,12 @@ class FavoritosUsuarioServiceTest {
         favoritoRepository = mock(FavoritoActividadRepository.class);
         actividadRepository = mock(ActividadRepository.class);
         imagenService = mock(ImagenService.class);
+        coleccionesService = mock(ColeccionesGuardadosService.class);
         service = new FavoritosUsuarioService(
                 favoritoRepository,
                 actividadRepository,
-                imagenService
+                imagenService,
+                coleccionesService
         );
     }
 
@@ -158,6 +161,53 @@ class FavoritosUsuarioServiceTest {
         service.quitar(7L, "no-existe");
 
         verify(favoritoRepository, never()).deleteByUsuarioIdAndActividadId(any(), any());
+    }
+
+    @Test
+    void organizarAsignaColeccionPropiaYNotaRecortada() {
+        when(actividadRepository.findBySlugAndActivaTrueAndEstadoPublicacion("karate-kids", "PUBLICADA"))
+                .thenReturn(Optional.of(actividad(20L, "karate-kids")));
+        FavoritoActividad guardado = favorito(7L, 20L);
+        when(favoritoRepository.findByUsuarioIdAndActividadId(7L, 20L))
+                .thenReturn(Optional.of(guardado));
+
+        service.organizar(7L, "karate-kids", 5L, "  probar el sabado  ");
+
+        verify(coleccionesService).validarPropia(7L, 5L);
+        assertEquals(5L, guardado.getColeccionId());
+        assertEquals("probar el sabado", guardado.getNota());
+        verify(favoritoRepository).save(guardado);
+    }
+
+    @Test
+    void organizarConNulosVuelveATodosYSinNota() {
+        when(actividadRepository.findBySlugAndActivaTrueAndEstadoPublicacion("karate-kids", "PUBLICADA"))
+                .thenReturn(Optional.of(actividad(20L, "karate-kids")));
+        FavoritoActividad guardado = favorito(7L, 20L);
+        guardado.setColeccionId(5L);
+        guardado.setNota("vieja");
+        when(favoritoRepository.findByUsuarioIdAndActividadId(7L, 20L))
+                .thenReturn(Optional.of(guardado));
+
+        service.organizar(7L, "karate-kids", null, "   ");
+
+        assertEquals(null, guardado.getColeccionId());
+        assertEquals(null, guardado.getNota());
+        verify(coleccionesService, never()).validarPropia(any(), any());
+    }
+
+    @Test
+    void organizarSinGuardadoPrevioDa404() {
+        when(actividadRepository.findBySlugAndActivaTrueAndEstadoPublicacion("karate-kids", "PUBLICADA"))
+                .thenReturn(Optional.of(actividad(20L, "karate-kids")));
+        when(favoritoRepository.findByUsuarioIdAndActividadId(7L, 20L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> service.organizar(7L, "karate-kids", null, null)
+        );
+        verify(favoritoRepository, never()).save(any());
     }
 
     private FavoritoActividad favorito(Long usuarioId, Long actividadId) {

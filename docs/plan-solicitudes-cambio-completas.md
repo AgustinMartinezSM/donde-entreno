@@ -1,10 +1,20 @@
 # Plan — Solicitudes de cambio completas (horarios, ubicación, deporte, edades y enfoque)
 
-Estado: **propuesto, pendiente de aprobación de Agustín**. Cierra el
-gap funcional más señalado del panel (freno 2026-08 §B): hoy esos cinco
-aspectos no son editables por NINGÚN camino. Trae migración (script
-24, versionado junto a este plan): nada se aplica sin tu autorización,
-y siempre ANTES que el código.
+Estado: **IMPLEMENTADO Y EN DEPLOY** (aprobado con las 3 recomendaciones,
+2026-08-21). Scripts 24 **y 25** aplicados por Agustín en Supabase y
+local ANTES del deploy. Backend `6331014` (474 unit + 75 ITs verdes),
+frontend `ab07c8e` (typecheck+lint+build 26/26), en dos tandas.
+
+**Lección del bloque (script 25)**: el CHECK `algun_campo` del script 14
+enumeraba solo las 9 columnas originales; el 24 agregó campos sin
+redefinirlo, y una solicitud que propone SOLO campos nuevos violaba el
+constraint (500 en el INSERT). Lo detectó el IT de flujo completo — los
+unit tests con repos mockeados no ven constraints de la base. Regla
+para futuros scripts: al agregar columnas a una tabla con CHECKs que
+enumeran columnas, revisar si el CHECK debe sumarlas.
+
+Cierra el gap funcional más señalado del panel (freno 2026-08 §B):
+esos cinco aspectos no eran editables por NINGÚN camino.
 
 ## El diseño existente que se extiende (no se inventa nada)
 

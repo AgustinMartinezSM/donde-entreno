@@ -126,6 +126,16 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     );
 
     /**
+     * Logos aprobados por lote de perfiles (identidad única del
+     * publicador en cards y listados): un query batch, sin N+1.
+     */
+    List<Imagen> findByActivaTrueAndEstadoModeracionAndTipoImagenAndPerfilPublicador_IdInOrderByOrdenAsc(
+            String estadoModeracion,
+            String tipoImagen,
+            java.util.Collection<Long> perfilPublicadorIds
+    );
+
+    /**
      * Cuenta las imágenes de las actividades de un perfil publicador en
      * un estado de moderación dado (métricas del panel: se usa con
      * PENDIENTE). Las imágenes que sube el publicador cuelgan de la

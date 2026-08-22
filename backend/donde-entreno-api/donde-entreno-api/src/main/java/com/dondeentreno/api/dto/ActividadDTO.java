@@ -73,6 +73,14 @@ public class ActividadDTO {
     */
     private String imagenPrincipalUrl;
 
+    /*
+      URL del LOGO aprobado del publicador (o null): la identidad única
+      del club/profe en cards y listados. Igual que imagenPrincipalUrl,
+      lo asigna ImagenService con un query batch — no viaja por el
+      constructor.
+    */
+    private String perfilLogoUrl;
+
     public ActividadDTO() {
     }
 
@@ -436,5 +444,13 @@ public class ActividadDTO {
 
     public void setImagenPrincipalUrl(String imagenPrincipalUrl) {
         this.imagenPrincipalUrl = imagenPrincipalUrl;
+    }
+
+    public String getPerfilLogoUrl() {
+        return perfilLogoUrl;
+    }
+
+    public void setPerfilLogoUrl(String perfilLogoUrl) {
+        this.perfilLogoUrl = perfilLogoUrl;
     }
 }

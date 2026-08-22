@@ -14,6 +14,12 @@ public class SeguimientoPublicadorDTO {
     private final String ciudadPrincipalNombre;
     private final OffsetDateTime seguidoDesde;
 
+    /**
+     * Logo aprobado del publicador (identidad única, fix UX
+     * 2026-08-22). No final: lo asigna el service con un query batch.
+     */
+    private String perfilLogoUrl;
+
     public SeguimientoPublicadorDTO(
             Long perfilPublicadorId,
             String perfilPublicadorNombre,
@@ -46,5 +52,13 @@ public class SeguimientoPublicadorDTO {
 
     public OffsetDateTime getSeguidoDesde() {
         return seguidoDesde;
+    }
+
+    public String getPerfilLogoUrl() {
+        return perfilLogoUrl;
+    }
+
+    public void setPerfilLogoUrl(String perfilLogoUrl) {
+        this.perfilLogoUrl = perfilLogoUrl;
     }
 }

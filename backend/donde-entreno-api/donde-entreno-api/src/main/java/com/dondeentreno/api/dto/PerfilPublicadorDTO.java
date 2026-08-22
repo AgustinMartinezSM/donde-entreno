@@ -31,6 +31,13 @@ public class PerfilPublicadorDTO {
      */
     private Long cantidadSeguidores;
 
+    /**
+     * URL del LOGO aprobado (o null): la identidad única del publicador
+     * en listados y perfil (fix UX 2026-08-22). Aditivo, no viaja por
+     * el constructor: lo asigna el service con un query batch.
+     */
+    private String logoUrl;
+
     public PerfilPublicadorDTO() {
     }
 
@@ -140,6 +147,14 @@ public class PerfilPublicadorDTO {
 
     public Long getCantidadSeguidores() {
         return cantidadSeguidores;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
     public void setCantidadSeguidores(Long cantidadSeguidores) {

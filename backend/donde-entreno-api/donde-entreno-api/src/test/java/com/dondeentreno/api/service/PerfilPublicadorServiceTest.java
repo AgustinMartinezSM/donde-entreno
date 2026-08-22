@@ -31,13 +31,17 @@ class PerfilPublicadorServiceTest {
     @Mock
     private SeguimientoPublicadorRepository seguimientoPublicadorRepository;
 
+    @Mock
+    private ImagenService imagenService;
+
     private PerfilPublicadorService perfilPublicadorService;
 
     @BeforeEach
     void setUp() {
         perfilPublicadorService = new PerfilPublicadorService(
                 perfilPublicadorRepository,
-                seguimientoPublicadorRepository
+                seguimientoPublicadorRepository,
+                imagenService
         );
     }
 

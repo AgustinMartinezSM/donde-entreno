@@ -136,11 +136,31 @@ public class SeguimientoPublicadorService {
     @Transactional(readOnly = true)
     public List<SeguimientoPublicadorDTO> listarSeguidos(Long userId) {
         validarUserId(userId);
-        return seguimientoPublicadorRepository
+        List<SeguimientoPublicadorDTO> seguidos = seguimientoPublicadorRepository
                 .findByUsuario_IdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::toDTO)
                 .toList();
+
+        asignarLogos(seguidos);
+
+        return seguidos;
+    }
+
+    /** Identidad única (fix UX 2026-08-22): el logo sale de ImagenService. */
+    private void asignarLogos(List<SeguimientoPublicadorDTO> seguidos) {
+        List<Long> perfilIds = seguidos.stream()
+                .map(SeguimientoPublicadorDTO::getPerfilPublicadorId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+
+        java.util.Map<Long, String> logoPorPerfil =
+                imagenService.obtenerLogosAprobadosPorPerfil(perfilIds);
+
+        for (SeguimientoPublicadorDTO seguido : seguidos) {
+            seguido.setPerfilLogoUrl(logoPorPerfil.get(seguido.getPerfilPublicadorId()));
+        }
     }
 
     private SeguimientoPublicadorDTO toDTO(SeguimientoPublicador seguimiento) {

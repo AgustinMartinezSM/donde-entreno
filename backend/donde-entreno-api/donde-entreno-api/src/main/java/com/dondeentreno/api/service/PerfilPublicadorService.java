@@ -27,6 +27,7 @@ public class PerfilPublicadorService {
 
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
+    private final ImagenService imagenService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -36,10 +37,12 @@ public class PerfilPublicadorService {
      */
     public PerfilPublicadorService(
             PerfilPublicadorRepository perfilPublicadorRepository,
-            SeguimientoPublicadorRepository seguimientoPublicadorRepository
+            SeguimientoPublicadorRepository seguimientoPublicadorRepository,
+            ImagenService imagenService
     ) {
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
+        this.imagenService = imagenService;
     }
 
     /**
@@ -78,6 +81,7 @@ public class PerfilPublicadorService {
         dto.setCantidadSeguidores(
                 seguimientoPublicadorRepository.countByPerfilPublicador_Id(id)
         );
+        asignarLogos(List.of(dto));
 
         return dto;
     }
@@ -130,6 +134,27 @@ public class PerfilPublicadorService {
             dto.setCantidadSeguidores(seguidoresPorPerfil.getOrDefault(dto.getId(), 0L));
         }
 
+        asignarLogos(dtos);
+
         return dtos;
+    }
+
+    /**
+     * Completa logoUrl con el LOGO aprobado de cada perfil (fix UX
+     * 2026-08-22: identidad única del publicador). La resolución vive
+     * en ImagenService — la misma consulta que usan las cards.
+     */
+    private void asignarLogos(List<PerfilPublicadorDTO> dtos) {
+        List<Long> ids = dtos.stream()
+                .map(PerfilPublicadorDTO::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<Long, String> logoPorPerfil =
+                imagenService.obtenerLogosAprobadosPorPerfil(ids);
+
+        for (PerfilPublicadorDTO dto : dtos) {
+            dto.setLogoUrl(logoPorPerfil.get(dto.getId()));
+        }
     }
 }

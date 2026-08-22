@@ -29,6 +29,7 @@ public class ImagenService {
     private static final String ESTADO_MODERACION_APROBADA = "APROBADA";
 
     private static final String TIPO_IMAGEN_PRINCIPAL = "PRINCIPAL";
+    private static final String TIPO_IMAGEN_LOGO = "LOGO";
 
     private final ImagenRepository imagenRepository;
     private final MeGustaImagenRepository meGustaImagenRepository;
@@ -205,5 +206,60 @@ public class ImagenService {
         for (ActividadDTO actividad : actividades) {
             actividad.setImagenPrincipalUrl(urlPorActividad.get(actividad.getId()));
         }
+
+        asignarLogoPublicador(actividades);
+    }
+
+    /**
+     * La identidad única del publicador (fix UX 2026-08-22): el LOGO
+     * aprobado viaja en cada card como perfilLogoUrl, así el avatar del
+     * club/profe es EL MISMO en cards, detalle, perfil público y panel.
+     * Un query batch por lote de perfiles, sin N+1; sin logo queda null
+     * y el frontend cae a las iniciales de siempre.
+     */
+    private void asignarLogoPublicador(List<ActividadDTO> actividades) {
+        List<Long> perfilIds = actividades.stream()
+                .map(ActividadDTO::getPerfilPublicadorId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Long, String> logoPorPerfil = obtenerLogosAprobadosPorPerfil(perfilIds);
+
+        for (ActividadDTO actividad : actividades) {
+            actividad.setPerfilLogoUrl(logoPorPerfil.get(actividad.getPerfilPublicadorId()));
+        }
+    }
+
+    /**
+     * Mapa perfilId → URL del LOGO aprobado y publicable, en un query
+     * batch. Es EL punto único de resolución del logo: lo usan las
+     * cards de actividad, el listado de perfiles y los seguidos, así la
+     * identidad del publicador sale siempre de la misma consulta.
+     */
+    public Map<Long, String> obtenerLogosAprobadosPorPerfil(List<Long> perfilIds) {
+        Map<Long, String> logoPorPerfil = new HashMap<>();
+
+        if (perfilIds.isEmpty()) {
+            return logoPorPerfil;
+        }
+
+        List<Imagen> logos = imagenRepository
+                .findByActivaTrueAndEstadoModeracionAndTipoImagenAndPerfilPublicador_IdInOrderByOrdenAsc(
+                        ESTADO_MODERACION_APROBADA,
+                        TIPO_IMAGEN_LOGO,
+                        perfilIds
+                );
+
+        for (Imagen imagen : logos) {
+            if (imagen.getPerfilPublicador() == null
+                    || !ImagenMapper.esUrlPublicable(imagen.getUrl())) {
+                continue;
+            }
+
+            logoPorPerfil.putIfAbsent(imagen.getPerfilPublicador().getId(), imagen.getUrl());
+        }
+
+        return logoPorPerfil;
     }
 }

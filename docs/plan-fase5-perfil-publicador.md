@@ -1,10 +1,24 @@
 # Plan — Fase 5 social: el perfil del publicador como perfil de verdad
 
-Estado: **aprobado ("Dale, con las 5 recomendaciones") e IMPLEMENTADO**
-(backend `cfc36e0`, frontend `6bb9cda`). Script 31 aplicado por Agustín
-en Supabase y local; **suite unit + ITs en verde con el script
-aplicado** (incluido `PerfilPublicadorSocialIT`, 5 flujos); typecheck y
-lint limpios. Falta: deploy en dos tandas y su smoke.
+Estado: ✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-24).
+`main` = `origin/main` = **`8118a36`**; script 31 aplicado por él en
+Supabase y local antes del deploy; backend `cfc36e0` y frontend
+`8118a36` desplegados en dos tandas con marcadores anónimos
+verificados (404→200 en el GET de valoraciones del perfil, y el DTO
+trayendo los cuatro stats). Suite unit + ITs en verde con el script
+aplicado (incluido `PerfilPublicadorSocialIT`, 5 flujos).
+
+**Trampa de verificación que dejó esta fase**: el primer marcador del
+frontend buscaba un string en los **chunks JS**, y
+`/publicadores/[id]` es un **server component** — sus textos viajan en
+el HTML, no en el bundle del cliente. El segundo intento (contar
+ocurrencias de un texto que debía desaparecer) también falló: dio un
+FALSO NEGATIVO porque cada frase aparece **dos veces** en la respuesta
+—una en el HTML renderizado y otra en el payload RSC embebido—, así
+que el conteo esperado estaba mal calibrado y el deploy parecía no
+haber salido cuando ya estaba vivo. Para server components, verificar
+con un string que **exista** en el HTML nuevo (o con un componente
+`"use client"` de la fase, que sí va a los chunks).
 
 Notas de la implementación, sobre lo planeado:
 

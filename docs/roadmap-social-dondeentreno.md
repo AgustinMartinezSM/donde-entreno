@@ -156,11 +156,25 @@ reportes entran en el mismo bloque.
 - **Grilla única del publicador** (todas sus fotos).
 
 ### Fase 5 — Perfil publicador Instagram-like completo
-- Cabecera con stats (actividades, seguidores, fotos, valoraciones),
-  tabs + Opiniones + Novedades, actividades destacadas manuales,
-  Q&A visible, botón WhatsApp prominente (con tracking de Fase 2).
-- **Perfil de calidad** (checklist % completado — extiende el de
-  Media Center).
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; script 31
+aplicado por él; backend `cfc36e0` + frontend `8118a36`). Plan y
+hallazgos en `docs/plan-fase5-perfil-publicador.md`.
+
+- Cabecera con stats reales (actividades, seguidores, fotos, promedio),
+  cada uno navegando a su solapa y **ninguno dibujado sin dato**.
+- Tab **Opiniones**: valoraciones de TODAS sus actividades + preguntas
+  ya respondidas, cada una con link a su actividad. **"Novedades" NO
+  entró a propósito**: la tabla `feed_event` es de la Fase 6 y los
+  canales del publicador de la Fase 8 — un Novedades V1 acá habría
+  sido una tabla condenada a ser reemplazada.
+- Actividades **destacadas manuales** (hasta 3, orden elegido).
+- WhatsApp del perfil **con tracking propio** (`perfil_publicador_id`,
+  `actividad_id` NULL): antes ese botón no registraba nada.
+- Endpoint agregado de fotos del publicador (mata el fan-out de hasta
+  6 requests por vista).
+- **Pendiente que quedó fuera**: el "perfil de calidad" (checklist %
+  completado) sigue viviendo solo en el Centro de fotos, no se movió a
+  componente compartido ni se mostró en el perfil.
 
 ### Fase 6 — Feed social V2
 - Tabla `feed_event` (tipo, perfil, actividad, imagen, created_at)

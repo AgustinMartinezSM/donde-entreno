@@ -33,6 +33,17 @@ export async function registrarCheckin(
   );
 }
 
+export async function quitarCheckinDeHoy(
+  actividadId: number,
+  accessToken: string
+): Promise<CheckinRespuesta> {
+  return ejecutar(
+    `${API_BASE_URL}/api/usuario/checkins/${actividadId}`,
+    "DELETE",
+    accessToken
+  );
+}
+
 export async function obtenerEstadoCheckinHoy(
   actividadId: number,
   accessToken: string
@@ -46,7 +57,7 @@ export async function obtenerEstadoCheckinHoy(
 
 async function ejecutar(
   url: string,
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "DELETE",
   accessToken: string
 ): Promise<CheckinRespuesta> {
   let respuesta: Response;

@@ -7,6 +7,7 @@ import { useAuthSession } from "../auth/AuthSessionProvider";
 import {
   CheckinApiError,
   obtenerEstadoCheckinHoy,
+  quitarCheckinDeHoy,
   registrarCheckin,
 } from "../../services/checkinService";
 
@@ -52,7 +53,9 @@ function IconoTilde() {
 /*
   Check-in "Entrené acá" (script 26): registra el entrenamiento de hoy
   sobre la actividad (una vez por día; el backend valida contra la
-  base). Anónimo va al login con aviso y returnTo, como las demás
+  base). Es un TOGGLE — hallazgo del smoke: la elección tiene que
+  poder revertirse, así que el segundo click deshace el registro de
+  hoy. Anónimo va al login con aviso y returnTo, como las demás
   acciones con cuenta. El contador público NO se muestra acá: vive en
   la fila de social proof del detalle, que es server-rendered.
 */
@@ -98,14 +101,16 @@ export function CheckinButton({ actividadId, titulo }: CheckinButtonProps) {
       return;
     }
 
-    if (enviando || yaEntrenoHoy) {
+    if (enviando) {
       return;
     }
 
     setEnviando(true);
 
     try {
-      const respuesta = await registrarCheckin(actividadId, accessToken);
+      const respuesta = yaEntrenoHoy
+        ? await quitarCheckinDeHoy(actividadId, accessToken)
+        : await registrarCheckin(actividadId, accessToken);
       setYaEntrenoHoy(respuesta.yaRegistradoHoy);
       if (respuesta.registradoAhora) {
         setAnimando(true);
@@ -129,9 +134,10 @@ export function CheckinButton({ actividadId, titulo }: CheckinButtonProps) {
       disabled={enviando}
       aria-label={
         yaEntrenoHoy
-          ? `Ya registraste que entrenaste hoy en ${titulo}`
-          : `Registrar que entrenaste hoy en ${titulo}`
+          ? `Quitar tu registro de hoy en ${titulo}`
+          : `Registrar que hoy entrenaste en ${titulo}`
       }
+      title={yaEntrenoHoy ? "Tocá para deshacer el registro de hoy" : undefined}
       /* Mismo lenguaje que MeGustaButton: solo ícono en mobile. */
       className={`inline-flex min-h-11 items-center justify-center gap-0 rounded-[18px] px-3 py-2.5 text-sm font-extrabold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 sm:gap-2 sm:px-4 ${
         yaEntrenoHoy
@@ -147,8 +153,13 @@ export function CheckinButton({ actividadId, titulo }: CheckinButtonProps) {
       >
         {yaEntrenoHoy ? <IconoTilde /> : <IconoPesa />}
       </span>
+      {/*
+        Copy del estado activo (hallazgo del smoke: "Entrenaste hoy" no
+        se entendía): dice qué quedó hecho — el registro — y el title +
+        aria-label avisan que el mismo botón lo deshace.
+      */}
       <span className="hidden sm:inline">
-        {yaEntrenoHoy ? "Entrenaste hoy" : "Entrené acá"}
+        {yaEntrenoHoy ? "Registrado hoy" : "Entrené acá"}
       </span>
     </button>
   );

@@ -101,6 +101,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/actividades/*/interacciones").permitAll()
                         /* Comentarios de fotos (Fase 4): leer es público. */
                         .requestMatchers(HttpMethod.GET, "/api/imagenes/*/comentarios").permitAll()
+                        /* Fase 5: el click de contacto desde el perfil. */
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/perfiles-publicadores/*/interacciones"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         /*
                           Refresh y logout son publicos como el login: la

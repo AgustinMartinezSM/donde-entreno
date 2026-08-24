@@ -20,6 +20,15 @@ public class ValoracionPublicaDTO {
     private boolean esPropia;
     private OffsetDateTime createdAt;
 
+    /**
+     * Contexto de la actividad valorada (Fase 5). Solo se completa en
+     * el listado del PERFIL, donde las reseñas de varias actividades
+     * se mezclan y hace falta saber de cuál habla cada una. En el
+     * detalle de actividad viajan en null: ahí es obvio.
+     */
+    private String actividadTitulo;
+    private String actividadSlug;
+
     public ValoracionPublicaDTO() {
     }
 
@@ -73,5 +82,21 @@ public class ValoracionPublicaDTO {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getActividadTitulo() {
+        return actividadTitulo;
+    }
+
+    public void setActividadTitulo(String actividadTitulo) {
+        this.actividadTitulo = actividadTitulo;
+    }
+
+    public String getActividadSlug() {
+        return actividadSlug;
+    }
+
+    public void setActividadSlug(String actividadSlug) {
+        this.actividadSlug = actividadSlug;
     }
 }

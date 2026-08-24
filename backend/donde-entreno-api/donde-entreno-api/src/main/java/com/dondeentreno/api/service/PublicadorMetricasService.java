@@ -119,7 +119,16 @@ public class PublicadorMetricasService {
                         InteresActividadService.QUIERO_PROBAR
                 );
 
-        return new PublicadorMetricasDTO(
+        /*
+          Fase 5: los contactos que salen del PERFIL van aparte. Si se
+          sumaran a los de las actividades, el publicador no podría
+          distinguir qué le funciona: la vidriera o cada propuesta.
+        */
+        long contactosDesdePerfil30Dias = interaccionService
+                .contarUltimos30DiasDePerfil(perfilId)
+                .getOrDefault("CLICK_WHATSAPP", 0L);
+
+        PublicadorMetricasDTO dto = new PublicadorMetricasDTO(
                 actividadesPublicadas,
                 actividadesPausadas,
                 solicitudesPublicacionPendientes,
@@ -130,6 +139,9 @@ public class PublicadorMetricasService {
                 contactosWhatsapp30Dias,
                 quierenProbar
         );
+        dto.setContactosDesdePerfil30Dias(contactosDesdePerfil30Dias);
+
+        return dto;
     }
 
     private long sumarTipo(

@@ -21,6 +21,7 @@ public class LimitadorInteracciones {
 
     private static final int MAX_POR_MINUTO = 30;
     private static final int MAX_IPS_RECORDADAS = 10_000;
+    private static final int MAX_LARGO_IP = 60;
 
     private final Clock reloj;
     private final Map<String, Deque<Instant>> eventosPorIp = new ConcurrentHashMap<>();
@@ -55,6 +56,34 @@ public class LimitadorInteracciones {
 
         marcas.addLast(ahora);
         return true;
+    }
+
+    /**
+     * Identificador del cliente para el rate limit: detrás del proxy de
+     * Render la IP real viaja en X-Forwarded-For.
+     *
+     * Vive acá y no en un controller porque desde la Fase 5 son DOS los
+     * que registran interacciones (actividad y perfil) y la resolución
+     * tiene que ser idéntica en los dos.
+     */
+    public static String identificadorDe(jakarta.servlet.http.HttpServletRequest peticion) {
+        String reenviadas = peticion.getHeader("X-Forwarded-For");
+
+        if (reenviadas != null && !reenviadas.isBlank()) {
+            String primera = reenviadas.split(",")[0].trim();
+
+            if (!primera.isEmpty()) {
+                return recortar(primera);
+            }
+        }
+
+        String remota = peticion.getRemoteAddr();
+
+        return remota == null ? "desconocida" : recortar(remota);
+    }
+
+    private static String recortar(String valor) {
+        return valor.length() <= MAX_LARGO_IP ? valor : valor.substring(0, MAX_LARGO_IP);
     }
 
     private void limpiarViejas(Instant desdeUnMinuto) {

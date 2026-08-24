@@ -35,11 +35,18 @@ class InteraccionServiceTest {
     @Mock
     private ActividadRepository actividadRepository;
 
+    @Mock
+    private com.dondeentreno.api.repository.PerfilPublicadorRepository perfilPublicadorRepository;
+
     private InteraccionService service;
 
     @BeforeEach
     void setUp() {
-        service = new InteraccionService(eventoInteraccionRepository, actividadRepository);
+        service = new InteraccionService(
+                eventoInteraccionRepository,
+                actividadRepository,
+                perfilPublicadorRepository
+        );
     }
 
     @Test

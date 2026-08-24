@@ -149,6 +149,61 @@ public interface ImagenRepository extends JpaRepository<Imagen, Long> {
     );
 
     /**
+     * TODAS las fotos visibles de un publicador (Fase 5): las que
+     * cuelgan del perfil y las de sus actividades vivas, en UN query.
+     * Mata el fan-out de una llamada por actividad que hacía el perfil
+     * público (hasta 6 requests por vista).
+     *
+     * LOGO y PORTADA quedan fuera: son identidad, ya se ven en la
+     * cabecera, y contarlas haría que el número de la cabecera no
+     * coincidiera con lo que muestra el tab Fotos.
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT i
+              FROM Imagen i
+             WHERE i.activa = true
+               AND i.estadoModeracion = :estadoModeracion
+               AND i.tipoImagen NOT IN ('LOGO', 'PORTADA')
+               AND (
+                     i.perfilPublicador.id = :perfilId
+                  OR (i.actividad.perfilPublicador.id = :perfilId
+                      AND i.actividad.activa = true
+                      AND i.actividad.deletedAt IS NULL)
+               )
+             ORDER BY i.orden ASC, i.id ASC
+            """)
+    List<Imagen> fotosVisiblesDePublicador(
+            @org.springframework.data.repository.query.Param("perfilId") Long perfilId,
+            @org.springframework.data.repository.query.Param("estadoModeracion")
+            String estadoModeracion
+    );
+
+    /**
+     * La misma cuenta que arriba pero agrupada para VARIOS perfiles
+     * (stats del listado sin N+1). Filas: [perfilId, cantidad].
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT COALESCE(i.perfilPublicador.id, i.actividad.perfilPublicador.id), COUNT(i)
+              FROM Imagen i
+             WHERE i.activa = true
+               AND i.estadoModeracion = :estadoModeracion
+               AND i.tipoImagen NOT IN ('LOGO', 'PORTADA')
+               AND (
+                     i.perfilPublicador.id IN :perfilIds
+                  OR (i.actividad.perfilPublicador.id IN :perfilIds
+                      AND i.actividad.activa = true
+                      AND i.actividad.deletedAt IS NULL)
+               )
+             GROUP BY COALESCE(i.perfilPublicador.id, i.actividad.perfilPublicador.id)
+            """)
+    List<Object[]> contarFotosVisiblesPorPublicador(
+            @org.springframework.data.repository.query.Param("perfilIds")
+            java.util.List<Long> perfilIds,
+            @org.springframework.data.repository.query.Param("estadoModeracion")
+            String estadoModeracion
+    );
+
+    /**
      * Cuenta de GALERIA "que van a existir" en una actividad (activas
      * aprobadas + pendientes de moderación): es la base del límite de
      * fotos por actividad en la subida.

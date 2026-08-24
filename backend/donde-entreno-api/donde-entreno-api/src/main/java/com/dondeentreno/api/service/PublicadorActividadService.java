@@ -47,6 +47,12 @@ public class PublicadorActividadService {
      */
     static final List<String> ESTADOS_DEL_PANEL = List.of(ESTADO_PUBLICADA, ESTADO_PAUSADA);
 
+    /**
+     * Tope de destacadas (Fase 5). Vive acá y no en un CHECK de la
+     * base: cambiarlo no tiene que costar una migración.
+     */
+    public static final int MAX_DESTACADAS = 3;
+
     private static final String MENSAJE_PERFIL_NO_ENCONTRADO = "Perfil publicador no encontrado.";
     private static final String MENSAJE_ACTIVIDAD_NO_ENCONTRADA = "Actividad no encontrada.";
 
@@ -167,6 +173,86 @@ public class PublicadorActividadService {
         }
 
         return obtenerMiActividad(userId, actividadId);
+    }
+
+    /**
+     * Reescribe las destacadas del publicador (Fase 5, script 31): la
+     * lista llega ORDENADA y se persiste como 1..N en `destacadaOrden`.
+     * Las que estaban destacadas y no vienen en la lista vuelven a
+     * null, así que un PUT con lista vacía las limpia todas.
+     *
+     * Se valida contra la base, no contra lo que mande el cliente:
+     * cada id tiene que ser una actividad PUBLICADA de este publicador
+     * (una pausada destacada no se vería en el perfil, que solo lista
+     * publicadas — destacar algo invisible es una trampa silenciosa).
+     */
+    @Transactional
+    public List<PublicadorActividadResumenDTO> definirDestacadas(
+            Long userId,
+            List<Long> actividadIds
+    ) {
+        PerfilPublicador perfil = obtenerPerfilPublicador(userId);
+        List<Long> ids = actividadIds != null ? actividadIds : List.of();
+
+        if (ids.size() > MAX_DESTACADAS) {
+            throw new FiltroInvalidoException(
+                    "Podes destacar hasta " + MAX_DESTACADAS + " actividades."
+            );
+        }
+
+        if (ids.size() != ids.stream().distinct().count()) {
+            throw new FiltroInvalidoException("Hay actividades repetidas en la seleccion.");
+        }
+
+        /* Primero se limpia lo anterior: el PUT reemplaza, no suma. */
+        for (Actividad anterior
+                : actividadRepository.findByPerfilPublicador_IdAndDestacadaOrdenIsNotNull(perfil.getId())) {
+            anterior.setDestacadaOrden(null);
+            anterior.setUpdatedAt(OffsetDateTime.now());
+            actividadRepository.save(anterior);
+        }
+
+        int posicion = 1;
+        for (Long actividadId : ids) {
+            Actividad actividad = actividadRepository
+                    .findByIdAndPerfilPublicador_IdAndActivaTrueAndEstadoPublicacionInAndDeletedAtIsNull(
+                            actividadId,
+                            perfil.getId(),
+                            List.of(ESTADO_PUBLICADA)
+                    )
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            MENSAJE_ACTIVIDAD_NO_ENCONTRADA
+                    ));
+
+            actividad.setDestacadaOrden(posicion);
+            actividad.setUpdatedAt(OffsetDateTime.now());
+            actividadRepository.save(actividad);
+            posicion++;
+        }
+
+        return actividadRepository
+                .findByPerfilPublicador_IdAndDestacadaOrdenIsNotNullAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNullOrderByDestacadaOrdenAsc(
+                        perfil.getId(),
+                        ESTADO_PUBLICADA
+                )
+                .stream()
+                .map(this::toResumenDTO)
+                .toList();
+    }
+
+    /** Las destacadas actuales del publicador autenticado. */
+    @Transactional(readOnly = true)
+    public List<PublicadorActividadResumenDTO> listarMisDestacadas(Long userId) {
+        PerfilPublicador perfil = obtenerPerfilPublicador(userId);
+
+        return actividadRepository
+                .findByPerfilPublicador_IdAndDestacadaOrdenIsNotNullAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNullOrderByDestacadaOrdenAsc(
+                        perfil.getId(),
+                        ESTADO_PUBLICADA
+                )
+                .stream()
+                .map(this::toResumenDTO)
+                .toList();
     }
 
     private Actividad buscarActividadDelPanel(Long actividadId, Long perfilId) {

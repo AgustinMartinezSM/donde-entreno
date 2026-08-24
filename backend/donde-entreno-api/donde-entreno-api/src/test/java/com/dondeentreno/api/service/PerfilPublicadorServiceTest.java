@@ -34,6 +34,15 @@ class PerfilPublicadorServiceTest {
     @Mock
     private ImagenService imagenService;
 
+    @Mock
+    private com.dondeentreno.api.repository.ActividadRepository actividadRepository;
+
+    @Mock
+    private com.dondeentreno.api.repository.ImagenRepository imagenRepository;
+
+    @Mock
+    private com.dondeentreno.api.repository.ValoracionRepository valoracionRepository;
+
     private PerfilPublicadorService perfilPublicadorService;
 
     @BeforeEach
@@ -41,7 +50,10 @@ class PerfilPublicadorServiceTest {
         perfilPublicadorService = new PerfilPublicadorService(
                 perfilPublicadorRepository,
                 seguimientoPublicadorRepository,
-                imagenService
+                imagenService,
+                actividadRepository,
+                imagenRepository,
+                valoracionRepository
         );
     }
 

@@ -34,6 +34,22 @@ class PerfilPublicadorControllerTest {
     @MockitoBean
     private ImagenService imagenService;
 
+    /* Fase 5: el controller suma opiniones, preguntas y tracking. */
+    @MockitoBean
+    private com.dondeentreno.api.service.ActividadService actividadService;
+
+    @MockitoBean
+    private com.dondeentreno.api.service.ValoracionService valoracionService;
+
+    @MockitoBean
+    private com.dondeentreno.api.service.PreguntaActividadService preguntaActividadService;
+
+    @MockitoBean
+    private com.dondeentreno.api.service.InteraccionService interaccionService;
+
+    @MockitoBean
+    private com.dondeentreno.api.security.LimitadorInteracciones limitadorInteracciones;
+
     @Test
     void obtenerPerfilPorIdDevuelveElDetallePublico() throws Exception {
         when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("8"))

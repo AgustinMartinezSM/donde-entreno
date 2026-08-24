@@ -15,6 +15,14 @@ public class PreguntaActividadDTO {
     private boolean esPropia;
     private OffsetDateTime createdAt;
 
+    /**
+     * Contexto de la actividad (Fase 5): solo se completa en el
+     * listado del PERFIL, donde se mezclan preguntas de varias
+     * actividades. En el detalle viajan en null.
+     */
+    private String actividadTitulo;
+    private String actividadSlug;
+
     public PreguntaActividadDTO() {
     }
 
@@ -56,5 +64,21 @@ public class PreguntaActividadDTO {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getActividadTitulo() {
+        return actividadTitulo;
+    }
+
+    public void setActividadTitulo(String actividadTitulo) {
+        this.actividadTitulo = actividadTitulo;
+    }
+
+    public String getActividadSlug() {
+        return actividadSlug;
+    }
+
+    public void setActividadSlug(String actividadSlug) {
+        this.actividadSlug = actividadSlug;
     }
 }

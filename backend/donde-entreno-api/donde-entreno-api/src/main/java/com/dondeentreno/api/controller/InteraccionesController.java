@@ -23,8 +23,6 @@ import java.util.Map;
 @RequestMapping("/api/actividades/{actividadId}/interacciones")
 public class InteraccionesController {
 
-    private static final int MAX_LARGO_IP = 60;
-
     private final InteraccionService interaccionService;
     private final LimitadorInteracciones limitador;
 
@@ -43,34 +41,12 @@ public class InteraccionesController {
             @RequestBody Map<String, String> cuerpo,
             HttpServletRequest peticion
     ) {
-        if (!limitador.registrar(obtenerIdentificadorCliente(peticion))) {
+        /* La resolución de IP vive en el limitador: desde la Fase 5 la
+           comparten este endpoint y el del perfil. */
+        if (!limitador.registrar(LimitadorInteracciones.identificadorDe(peticion))) {
             return;
         }
 
         interaccionService.registrar(actividadId, cuerpo.get("tipo"));
-    }
-
-    /* Mismo criterio que AsistenteController: detrás del proxy de
-       Render la IP real viaja en X-Forwarded-For. */
-    private String obtenerIdentificadorCliente(HttpServletRequest peticion) {
-        String reenviadas = peticion.getHeader("X-Forwarded-For");
-
-        if (reenviadas != null && !reenviadas.isBlank()) {
-            String primera = reenviadas.split(",")[0].trim();
-
-            if (!primera.isEmpty()) {
-                return recortar(primera);
-            }
-        }
-
-        String remota = peticion.getRemoteAddr();
-
-        return remota == null ? "desconocida" : recortar(remota);
-    }
-
-    private String recortar(String valor) {
-        return valor.length() <= MAX_LARGO_IP
-                ? valor
-                : valor.substring(0, MAX_LARGO_IP);
     }
 }

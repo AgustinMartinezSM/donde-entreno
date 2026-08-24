@@ -2,10 +2,12 @@ package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.EventoInteraccion;
+import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.repository.ActividadRepository;
 import com.dondeentreno.api.repository.EventoInteraccionRepository;
+import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +31,16 @@ public class InteraccionService {
 
     private final EventoInteraccionRepository eventoInteraccionRepository;
     private final ActividadRepository actividadRepository;
+    private final PerfilPublicadorRepository perfilPublicadorRepository;
 
     public InteraccionService(
             EventoInteraccionRepository eventoInteraccionRepository,
-            ActividadRepository actividadRepository
+            ActividadRepository actividadRepository,
+            PerfilPublicadorRepository perfilPublicadorRepository
     ) {
         this.eventoInteraccionRepository = eventoInteraccionRepository;
         this.actividadRepository = actividadRepository;
+        this.perfilPublicadorRepository = perfilPublicadorRepository;
     }
 
     @Transactional
@@ -56,6 +61,55 @@ public class InteraccionService {
         evento.setCreatedAt(OffsetDateTime.now());
 
         eventoInteraccionRepository.save(evento);
+    }
+
+    /**
+     * Interacción sobre un PERFIL de publicador (Fase 5, script 31).
+     * Va con `perfil_publicador_id` y `actividad_id` en null: colgar el
+     * click del perfil de una actividad inventada ensuciaría las
+     * métricas por actividad que el publicador ya está mirando.
+     */
+    @Transactional
+    public void registrarEnPerfil(Long perfilPublicadorId, String tipo) {
+        if (tipo == null || !TIPOS.contains(tipo)) {
+            throw new FiltroInvalidoException("El tipo de interaccion no es valido.");
+        }
+
+        PerfilPublicador perfil = perfilPublicadorRepository
+                .findByIdAndActivoTrue(perfilPublicadorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontro el perfil publicador."
+                ));
+
+        EventoInteraccion evento = new EventoInteraccion();
+        evento.setPerfilPublicadorId(perfil.getId());
+        evento.setTipo(tipo);
+        evento.setCreatedAt(OffsetDateTime.now());
+
+        eventoInteraccionRepository.save(evento);
+    }
+
+    /**
+     * Conteos de los últimos 30 días de un PERFIL, por tipo. Alimenta
+     * "contactos desde tu perfil" en el panel, separado de los
+     * contactos de cada actividad.
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Long> contarUltimos30DiasDePerfil(Long perfilPublicadorId) {
+        Map<String, Long> conteos = new HashMap<>();
+
+        if (perfilPublicadorId == null) {
+            return conteos;
+        }
+
+        OffsetDateTime desde = OffsetDateTime.now().minusDays(DIAS_VENTANA_METRICAS);
+
+        for (Object[] fila : eventoInteraccionRepository
+                .contarPorPerfilYTipo(perfilPublicadorId, desde)) {
+            conteos.put((String) fila[0], (Long) fila[1]);
+        }
+
+        return conteos;
     }
 
     /**

@@ -1,16 +1,30 @@
 package com.dondeentreno.api.controller;
 
 import com.dondeentreno.api.dto.PerfilPublicadorDTO;
+import com.dondeentreno.api.dto.PreguntaActividadDTO;
+import com.dondeentreno.api.dto.ResumenValoracionesDTO;
+import com.dondeentreno.api.security.LimitadorInteracciones;
+import com.dondeentreno.api.service.InteraccionService;
 import com.dondeentreno.api.service.PerfilPublicadorService;
+import com.dondeentreno.api.service.PreguntaActividadService;
+import com.dondeentreno.api.service.ValoracionService;
 import com.dondeentreno.api.dto.ImagenDTO;
 import com.dondeentreno.api.service.ImagenService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller de perfiles publicadores.
@@ -32,6 +46,11 @@ public class PerfilPublicadorController {
 
     private final PerfilPublicadorService perfilPublicadorService;
     private final ImagenService imagenService;
+    private final com.dondeentreno.api.service.ActividadService actividadService;
+    private final ValoracionService valoracionService;
+    private final PreguntaActividadService preguntaActividadService;
+    private final InteraccionService interaccionService;
+    private final LimitadorInteracciones limitador;
 
     /**
      * Inyección de dependencias por constructor.
@@ -41,10 +60,20 @@ public class PerfilPublicadorController {
      */
     public PerfilPublicadorController(
             PerfilPublicadorService perfilPublicadorService,
-            ImagenService imagenService
+            ImagenService imagenService,
+            com.dondeentreno.api.service.ActividadService actividadService,
+            ValoracionService valoracionService,
+            PreguntaActividadService preguntaActividadService,
+            InteraccionService interaccionService,
+            LimitadorInteracciones limitador
     ) {
         this.perfilPublicadorService = perfilPublicadorService;
         this.imagenService = imagenService;
+        this.actividadService = actividadService;
+        this.valoracionService = valoracionService;
+        this.preguntaActividadService = preguntaActividadService;
+        this.interaccionService = interaccionService;
+        this.limitador = limitador;
     }
 
     /**
@@ -123,5 +152,108 @@ public class PerfilPublicadorController {
         }
 
         return imagenService.obtenerImagenesPorPerfilPublicador(id);
+    }
+
+    /**
+     * TODAS las fotos visibles del publicador (Fase 5): las del perfil
+     * y las de sus actividades, en UN request. Antes el frontend hacía
+     * una llamada por actividad para armar esta misma grilla.
+     */
+    @GetMapping("/{id}/fotos")
+    public List<ImagenDTO> obtenerFotosDelPublicador(@PathVariable Long id) {
+        return imagenService.obtenerFotosVisiblesDePublicador(id);
+    }
+
+    /**
+     * Las destacadas del publicador (Fase 5): hasta 3, en su orden.
+     * Van arriba del listado normal en el perfil público.
+     */
+    @GetMapping("/{id}/destacadas")
+    public List<com.dondeentreno.api.dto.ActividadDTO> obtenerDestacadas(@PathVariable Long id) {
+        return actividadService.obtenerDestacadasDePerfil(id);
+    }
+
+    /**
+     * Opiniones del publicador (Fase 5): las valoraciones de TODAS sus
+     * actividades juntas, con el resumen. JWT opcional — con sesión,
+     * cada reseña sabe si es propia.
+     */
+    @GetMapping("/{idOSlug}/valoraciones")
+    public ResumenValoracionesDTO obtenerValoracionesDelPublicador(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String idOSlug,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Long perfilId = perfilPublicadorService.obtenerPerfilActivoPorIdOSlug(idOSlug).getId();
+
+        return valoracionService.resumenDePublicador(
+                perfilId,
+                extraerUserIdOpcional(jwt),
+                page,
+                size
+        );
+    }
+
+    /**
+     * Preguntas ya respondidas del publicador (Fase 5). Solo las
+     * respondidas: en la vidriera del publicador una pregunta sin
+     * responder juega en contra, y en el detalle se ven todas.
+     */
+    @GetMapping("/{idOSlug}/preguntas")
+    public List<PreguntaActividadDTO> obtenerPreguntasDelPublicador(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String idOSlug,
+            @RequestParam(defaultValue = "10") int limite
+    ) {
+        Long perfilId = perfilPublicadorService.obtenerPerfilActivoPorIdOSlug(idOSlug).getId();
+
+        return preguntaActividadService.listarRespondidasDePublicador(
+                perfilId,
+                extraerUserIdOpcional(jwt),
+                limite
+        );
+    }
+
+    /**
+     * Interacción anónima sobre el perfil (Fase 5): hoy el WhatsApp del
+     * perfil no se mide. Responde 204 y nunca falla hacia el cliente:
+     * un beacon roto no puede romper la página.
+     */
+    @PostMapping("/{id}/interacciones")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registrarInteraccionDePerfil(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> cuerpo,
+            HttpServletRequest peticion
+    ) {
+        if (!limitador.registrar(LimitadorInteracciones.identificadorDe(peticion))) {
+            /* Excedido: se ignora en silencio, igual que en actividades. */
+            return;
+        }
+
+        interaccionService.registrarEnPerfil(id, cuerpo.get("tipo"));
+    }
+
+    private Long extraerUserIdOpcional(Jwt jwt) {
+        if (jwt == null) {
+            return null;
+        }
+
+        Object userId = jwt.getClaim("userId");
+
+        if (userId instanceof Number number) {
+            return number.longValue();
+        }
+
+        if (userId instanceof String texto) {
+            try {
+                return Long.parseLong(texto);
+            } catch (NumberFormatException excepcion) {
+                return null;
+            }
+        }
+
+        return null;
     }
 }

@@ -44,6 +44,21 @@ public class PerfilPublicadorDTO {
      */
     private String logoUrl;
 
+    /**
+     * Stats de cabecera (Fase 5, script 31). Aditivos por setter, como
+     * cantidadSeguidores y logoUrl: los completa el service con queries
+     * agrupadas, nunca por fila.
+     *
+     * `valoracionPromedio` es null hasta juntar 3 valoraciones — la
+     * MISMA regla que rige en el detalle de actividad. Si el perfil
+     * mostrara promedio con una sola reseña, su número y el de la
+     * actividad se contradirían en pantalla.
+     */
+    private Long cantidadActividades;
+    private Long cantidadFotos;
+    private Double valoracionPromedio;
+    private Long cantidadValoraciones;
+
     public PerfilPublicadorDTO() {
     }
 
@@ -165,6 +180,38 @@ public class PerfilPublicadorDTO {
 
     public void setCantidadSeguidores(Long cantidadSeguidores) {
         this.cantidadSeguidores = cantidadSeguidores;
+    }
+
+    public Long getCantidadActividades() {
+        return cantidadActividades;
+    }
+
+    public void setCantidadActividades(Long cantidadActividades) {
+        this.cantidadActividades = cantidadActividades;
+    }
+
+    public Long getCantidadFotos() {
+        return cantidadFotos;
+    }
+
+    public void setCantidadFotos(Long cantidadFotos) {
+        this.cantidadFotos = cantidadFotos;
+    }
+
+    public Double getValoracionPromedio() {
+        return valoracionPromedio;
+    }
+
+    public void setValoracionPromedio(Double valoracionPromedio) {
+        this.valoracionPromedio = valoracionPromedio;
+    }
+
+    public Long getCantidadValoraciones() {
+        return cantidadValoraciones;
+    }
+
+    public void setCantidadValoraciones(Long cantidadValoraciones) {
+        this.cantidadValoraciones = cantidadValoraciones;
     }
 
     public String getSlug() {

@@ -172,6 +172,22 @@ public class ImagenService {
     }
 
     /**
+     * TODAS las fotos visibles de un publicador (Fase 5): las del
+     * perfil y las de sus actividades vivas, en UN query. Antes el
+     * perfil público las juntaba con una llamada por actividad.
+     */
+    public List<ImagenDTO> obtenerFotosVisiblesDePublicador(Long perfilPublicadorId) {
+        List<Imagen> imagenes = imagenRepository.fotosVisiblesDePublicador(
+                perfilPublicadorId,
+                ESTADO_MODERACION_APROBADA
+        );
+
+        return conLikes(imagenes.stream()
+                .map(ImagenMapper::toDTO)
+                .toList());
+    }
+
+    /**
      * Enriquece DTOs de actividad con la URL de su imagen PRINCIPAL
      * visible en público (activa y aprobada por moderación).
      *

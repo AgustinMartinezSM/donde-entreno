@@ -36,6 +36,13 @@ public class PublicadorMetricasDTO {
     /** Fase 3: cuántas personas quieren probar sus actividades (agregado). */
     private final long quierenProbar;
 
+    /**
+     * Fase 5: contactos que salieron del PERFIL, separados de los de
+     * cada actividad. Aditivo por setter (el constructor ya tiene
+     * nueve parámetros y sumar otro rompería a todos los llamadores).
+     */
+    private long contactosDesdePerfil30Dias;
+
     public PublicadorMetricasDTO(
             long actividadesPublicadas,
             long actividadesPausadas,
@@ -92,5 +99,13 @@ public class PublicadorMetricasDTO {
 
     public long getQuierenProbar() {
         return quierenProbar;
+    }
+
+    public long getContactosDesdePerfil30Dias() {
+        return contactosDesdePerfil30Dias;
+    }
+
+    public void setContactosDesdePerfil30Dias(long contactosDesdePerfil30Dias) {
+        this.contactosDesdePerfil30Dias = contactosDesdePerfil30Dias;
     }
 }

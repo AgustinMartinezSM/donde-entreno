@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -211,6 +213,17 @@ public class Actividad {
     private Boolean activa;
 
     /**
+     * Posición como destacada del publicador (script 31): 1..3, o NULL
+     * si no está destacada. El tope lo valida el service, no un CHECK.
+     *
+     * El @JdbcTypeCode es obligatorio: la columna es SMALLINT y sin él
+     * ddl-auto=validate no arranca (lección del script 29).
+     */
+    @Column(name = "destacada_orden")
+    @JdbcTypeCode(SqlTypes.SMALLINT)
+    private Integer destacadaOrden;
+
+    /**
      * Fecha de borrado lógico.
      */
     @Column(name = "deleted_at")
@@ -320,6 +333,14 @@ public class Actividad {
 
     public Boolean getActiva() {
         return activa;
+    }
+
+    public Integer getDestacadaOrden() {
+        return destacadaOrden;
+    }
+
+    public void setDestacadaOrden(Integer destacadaOrden) {
+        this.destacadaOrden = destacadaOrden;
     }
 
     public OffsetDateTime getDeletedAt() {

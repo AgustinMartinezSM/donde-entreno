@@ -51,7 +51,13 @@ public class ValoracionService {
 
     private static final String ESTADO_VISIBLE = "VISIBLE";
     private static final String ESTADO_OCULTA = "OCULTA_POR_ADMIN";
-    private static final int MINIMO_PARA_PROMEDIO = 3;
+    /**
+     * Umbral del promedio: con menos de 3 valoraciones no se publica
+     * número. Público porque el promedio del PERFIL (Fase 5) tiene que
+     * respetar exactamente la misma regla; si cada lado tuviera su
+     * constante, el perfil y la actividad podrían contradecirse.
+     */
+    public static final int MINIMO_PARA_PROMEDIO = 3;
     private static final int MAX_COMENTARIO = 500;
     private static final int MAX_PAGINA = 50;
     private static final String MENSAJE_NO_ENCONTRADA = "No se encontro la actividad.";
@@ -212,6 +218,80 @@ public class ValoracionService {
                         nombres.getOrDefault(valoracion.getUsuarioId(), "Alguien de la comunidad"),
                         usuarioId
                 ))
+                .toList();
+
+        return new ResumenValoracionesDTO(promedio, cantidad, distribucion, contenido);
+    }
+
+    /**
+     * Resumen del PUBLICADOR (Fase 5): las valoraciones de TODAS sus
+     * actividades juntas. Mismo umbral de promedio que el detalle
+     * (MINIMO_PARA_PROMEDIO) y misma fuente para promedio y cantidad:
+     * la distribución agrupada, no el total de la página.
+     *
+     * Cada reseña viaja con el título y el slug de SU actividad: acá
+     * se mezclan varias y sin eso el lector no sabe de qué habla.
+     */
+    @Transactional(readOnly = true)
+    public ResumenValoracionesDTO resumenDePublicador(
+            Long perfilPublicadorId,
+            Long usuarioId,
+            int page,
+            int size
+    ) {
+        int tamanio = Math.min(Math.max(size, 1), MAX_PAGINA);
+        Page<Valoracion> pagina = valoracionRepository.visiblesDePublicador(
+                perfilPublicadorId,
+                PageRequest.of(Math.max(page, 0), tamanio)
+        );
+
+        Map<Integer, Long> distribucion = new HashMap<>();
+        long cantidad = 0;
+        long suma = 0;
+        for (Object[] fila
+                : valoracionRepository.distribucionVisiblesDePublicador(perfilPublicadorId)) {
+            Integer puntaje = (Integer) fila[0];
+            Long conteo = (Long) fila[1];
+            distribucion.put(puntaje, conteo);
+            cantidad += conteo;
+            suma += (long) puntaje * conteo;
+        }
+
+        Double promedio = cantidad >= MINIMO_PARA_PROMEDIO
+                ? Math.round((double) suma / cantidad * 10.0) / 10.0
+                : null;
+
+        List<Long> autorIds = pagina.getContent().stream()
+                .map(Valoracion::getUsuarioId)
+                .distinct()
+                .toList();
+        Map<Long, String> nombres = usuarioRepository.findAllById(autorIds).stream()
+                .collect(Collectors.toMap(Usuario::getId, this::nombreCorto));
+
+        /* Títulos de las actividades valoradas, en batch (sin N+1). */
+        List<Long> actividadIds = pagina.getContent().stream()
+                .map(Valoracion::getActividadId)
+                .distinct()
+                .toList();
+        Map<Long, Actividad> actividades = actividadRepository.findAllById(actividadIds).stream()
+                .collect(Collectors.toMap(Actividad::getId, actividad -> actividad));
+
+        List<ValoracionPublicaDTO> contenido = pagina.getContent().stream()
+                .map(valoracion -> {
+                    ValoracionPublicaDTO dto = toPublicaDTO(
+                            valoracion,
+                            nombres.getOrDefault(valoracion.getUsuarioId(), "Alguien de la comunidad"),
+                            usuarioId
+                    );
+
+                    Actividad actividad = actividades.get(valoracion.getActividadId());
+                    if (actividad != null) {
+                        dto.setActividadTitulo(actividad.getTitulo());
+                        dto.setActividadSlug(actividad.getSlug());
+                    }
+
+                    return dto;
+                })
                 .toList();
 
         return new ResumenValoracionesDTO(promedio, cantidad, distribucion, contenido);

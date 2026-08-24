@@ -178,6 +178,52 @@ public class PreguntaActividadService {
                 .toList();
     }
 
+    /**
+     * Preguntas RESPONDIDAS del publicador (Fase 5, tab del perfil).
+     * Cada una con su actividad, porque acá se mezclan varias.
+     */
+    @Transactional(readOnly = true)
+    public List<PreguntaActividadDTO> listarRespondidasDePublicador(
+            Long perfilPublicadorId,
+            Long usuarioId,
+            int limite
+    ) {
+        List<PreguntaActividad> preguntas = preguntaActividadRepository
+                .respondidasDePublicador(
+                        perfilPublicadorId,
+                        ESTADO_VISIBLE,
+                        org.springframework.data.domain.PageRequest.of(
+                                0,
+                                Math.min(Math.max(limite, 1), 50)
+                        )
+                );
+
+        List<Long> actividadIds = preguntas.stream()
+                .map(PreguntaActividad::getActividadId)
+                .distinct()
+                .toList();
+        java.util.Map<Long, Actividad> actividades =
+                actividadRepository.findAllById(actividadIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                Actividad::getId,
+                                actividad -> actividad
+                        ));
+
+        return preguntas.stream()
+                .map(pregunta -> {
+                    PreguntaActividadDTO dto = toDTO(pregunta, usuarioId);
+                    Actividad actividad = actividades.get(pregunta.getActividadId());
+
+                    if (actividad != null) {
+                        dto.setActividadTitulo(actividad.getTitulo());
+                        dto.setActividadSlug(actividad.getSlug());
+                    }
+
+                    return dto;
+                })
+                .toList();
+    }
+
     /** ¿Visible? (para reportarla). */
     @Transactional(readOnly = true)
     public boolean esVisible(Long preguntaId) {

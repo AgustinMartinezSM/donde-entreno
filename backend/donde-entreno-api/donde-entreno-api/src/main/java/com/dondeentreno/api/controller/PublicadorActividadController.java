@@ -1,6 +1,7 @@
 package com.dondeentreno.api.controller;
 
 import com.dondeentreno.api.dto.CambiarVisibilidadRequestDTO;
+import com.dondeentreno.api.dto.DefinirDestacadasRequestDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.dto.PublicadorActividadDetalleDTO;
 import com.dondeentreno.api.dto.PublicadorActividadResumenDTO;
@@ -67,6 +68,32 @@ public class PublicadorActividadController {
                 extraerUserId(jwt),
                 id,
                 request.getVisible()
+        );
+    }
+
+    /**
+     * Las destacadas actuales (Fase 5): hasta 3 actividades que el
+     * publicador elige mostrar primero en su perfil.
+     */
+    @GetMapping("/destacadas")
+    public java.util.List<PublicadorActividadResumenDTO> listarMisDestacadas(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return publicadorActividadService.listarMisDestacadas(extraerUserId(jwt));
+    }
+
+    /**
+     * Reescribe la selección con la lista ORDENADA de ids (máx. 3).
+     * Una lista vacía limpia las destacadas.
+     */
+    @org.springframework.web.bind.annotation.PutMapping("/destacadas")
+    public java.util.List<PublicadorActividadResumenDTO> definirDestacadas(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody DefinirDestacadasRequestDTO request
+    ) {
+        return publicadorActividadService.definirDestacadas(
+                extraerUserId(jwt),
+                request != null ? request.getActividadIds() : java.util.List.of()
         );
     }
 

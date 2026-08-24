@@ -4,8 +4,11 @@ import com.dondeentreno.api.dto.PerfilPublicadorDTO;
 import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.mapper.PerfilPublicadorMapper;
+import com.dondeentreno.api.repository.ActividadRepository;
+import com.dondeentreno.api.repository.ImagenRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
+import com.dondeentreno.api.repository.ValoracionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -24,10 +27,15 @@ public class PerfilPublicadorService {
 
     private static final String MENSAJE_PERFIL_NO_ENCONTRADO =
             "El perfil publicador solicitado no existe o no está disponible.";
+    private static final String ESTADO_PUBLICADA = "PUBLICADA";
+    private static final String ESTADO_APROBADA = "APROBADA";
 
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
     private final ImagenService imagenService;
+    private final ActividadRepository actividadRepository;
+    private final ImagenRepository imagenRepository;
+    private final ValoracionRepository valoracionRepository;
 
     /**
      * Inyección de dependencias por constructor.
@@ -38,11 +46,17 @@ public class PerfilPublicadorService {
     public PerfilPublicadorService(
             PerfilPublicadorRepository perfilPublicadorRepository,
             SeguimientoPublicadorRepository seguimientoPublicadorRepository,
-            ImagenService imagenService
+            ImagenService imagenService,
+            ActividadRepository actividadRepository,
+            ImagenRepository imagenRepository,
+            ValoracionRepository valoracionRepository
     ) {
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
         this.imagenService = imagenService;
+        this.actividadRepository = actividadRepository;
+        this.imagenRepository = imagenRepository;
+        this.valoracionRepository = valoracionRepository;
     }
 
     /**
@@ -114,8 +128,81 @@ public class PerfilPublicadorService {
                 seguimientoPublicadorRepository.countByPerfilPublicador_Id(dto.getId())
         );
         asignarLogos(List.of(dto));
+        asignarStats(List.of(dto));
 
         return dto;
+    }
+
+    /**
+     * Stats de cabecera (Fase 5): actividades, fotos y valoraciones.
+     * Todo por queries agrupadas sobre el lote de perfiles — el mismo
+     * criterio anti-N+1 que ya rige para seguidores y logos.
+     *
+     * El promedio respeta el umbral de ValoracionService
+     * (MINIMO_PARA_PROMEDIO): con menos de 3 valoraciones viaja null,
+     * igual que en el detalle de actividad. Mostrar un promedio de una
+     * sola reseña en el perfil contradiría al número de la actividad.
+     */
+    private void asignarStats(List<PerfilPublicadorDTO> dtos) {
+        List<Long> ids = dtos.stream()
+                .map(PerfilPublicadorDTO::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Long> actividades = new HashMap<>();
+        for (Object[] fila : actividadRepository.contarPublicadasPorPerfil(ids, ESTADO_PUBLICADA)) {
+            actividades.put((Long) fila[0], (Long) fila[1]);
+        }
+
+        Map<Long, Long> fotos = new HashMap<>();
+        for (Object[] fila
+                : imagenRepository.contarFotosVisiblesPorPublicador(ids, ESTADO_APROBADA)) {
+            if (fila[0] != null) {
+                fotos.put((Long) fila[0], (Long) fila[1]);
+            }
+        }
+
+        /* Distribución 1..5 por perfil: de ahí salen promedio Y cantidad. */
+        Map<Long, long[]> distribucionPorPerfil = new HashMap<>();
+        for (Object[] fila : valoracionRepository.distribucionVisiblesPorPublicador(ids)) {
+            Long perfilId = (Long) fila[0];
+            int puntaje = ((Number) fila[1]).intValue();
+            long cantidad = ((Number) fila[2]).longValue();
+
+            if (perfilId == null || puntaje < 1 || puntaje > 5) {
+                continue;
+            }
+
+            distribucionPorPerfil
+                    .computeIfAbsent(perfilId, clave -> new long[6])[puntaje] += cantidad;
+        }
+
+        for (PerfilPublicadorDTO dto : dtos) {
+            dto.setCantidadActividades(actividades.getOrDefault(dto.getId(), 0L));
+            dto.setCantidadFotos(fotos.getOrDefault(dto.getId(), 0L));
+
+            long[] distribucion = distribucionPorPerfil.get(dto.getId());
+            long total = 0;
+            long suma = 0;
+
+            if (distribucion != null) {
+                for (int puntaje = 1; puntaje <= 5; puntaje++) {
+                    total += distribucion[puntaje];
+                    suma += (long) puntaje * distribucion[puntaje];
+                }
+            }
+
+            dto.setCantidadValoraciones(total);
+            dto.setValoracionPromedio(
+                    total >= ValoracionService.MINIMO_PARA_PROMEDIO
+                            ? Math.round((double) suma / total * 10.0) / 10.0
+                            : null
+            );
+        }
     }
 
     /**
@@ -167,6 +254,7 @@ public class PerfilPublicadorService {
         }
 
         asignarLogos(dtos);
+        asignarStats(dtos);
 
         return dtos;
     }

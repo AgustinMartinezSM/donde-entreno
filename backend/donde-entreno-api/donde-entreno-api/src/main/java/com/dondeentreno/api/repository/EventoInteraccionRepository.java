@@ -31,4 +31,20 @@ public interface EventoInteraccionRepository
             @Param("actividadIds") Collection<Long> actividadIds,
             @Param("desde") OffsetDateTime desde
     );
+
+    /**
+     * Conteos por tipo de las interacciones del PERFIL (Fase 5): las
+     * que no cuelgan de ninguna actividad. Filas: [tipo, cantidad].
+     */
+    @Query("""
+            SELECT e.tipo, COUNT(e)
+              FROM EventoInteraccion e
+             WHERE e.perfilPublicadorId = :perfilPublicadorId
+               AND e.createdAt >= :desde
+             GROUP BY e.tipo
+            """)
+    List<Object[]> contarPorPerfilYTipo(
+            @Param("perfilPublicadorId") Long perfilPublicadorId,
+            @Param("desde") OffsetDateTime desde
+    );
 }

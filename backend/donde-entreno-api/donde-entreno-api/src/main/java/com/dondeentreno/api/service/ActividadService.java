@@ -160,22 +160,6 @@ public class ActividadService {
     }
 
     /**
-     * Obtiene actividades publicadas filtradas por perfil publicador.
-     *
-     * @param perfilPublicadorId ID del perfil publicador.
-     * @return lista de actividades públicas de ese perfil.
-     */
-    public List<ActividadDTO> obtenerActividadesPorPerfilPublicador(Long perfilPublicadorId) {
-        List<Actividad> actividades =
-                actividadRepository.findByActivaTrueAndEstadoPublicacionAndPerfilPublicador_IdOrderByCreatedAtDesc(
-                        ESTADO_PUBLICADA,
-                        perfilPublicadorId
-                );
-
-        return mapearConImagenPrincipal(actividades);
-    }
-
-    /**
      * Obtiene actividades publicadas filtradas por nivel.
      *
      * @param nivel nivel de la actividad.
@@ -275,6 +259,22 @@ public class ActividadService {
      * Mapea entidades a DTO y les asigna la imagen PRINCIPAL visible
      * en público (un query batch por lote, sin N+1).
      */
+    /**
+     * Las actividades DESTACADAS del publicador (Fase 5), en el orden
+     * que él eligió. Endpoint propio y no un `orden=destacadas` del
+     * buscador: el perfil las muestra ARRIBA de su listado normal, no
+     * en vez de él, así que son dos consultas distintas.
+     */
+    public List<ActividadDTO> obtenerDestacadasDePerfil(Long perfilPublicadorId) {
+        List<Actividad> actividades = actividadRepository
+                .findByPerfilPublicador_IdAndDestacadaOrdenIsNotNullAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNullOrderByDestacadaOrdenAsc(
+                        perfilPublicadorId,
+                        ESTADO_PUBLICADA
+                );
+
+        return mapearConImagenPrincipal(actividades);
+    }
+
     private List<ActividadDTO> mapearConImagenPrincipal(List<Actividad> actividades) {
         List<ActividadDTO> dtos = actividades.stream()
                 .map(ActividadMapper::toDTO)

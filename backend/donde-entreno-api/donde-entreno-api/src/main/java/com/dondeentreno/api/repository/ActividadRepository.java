@@ -35,6 +35,42 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             String estadoPublicacion
     );
 
+    /**
+     * Cantidad de actividades publicadas por perfil, para VARIOS
+     * perfiles en un query agrupado (Fase 5: stats de cabecera sin
+     * N+1 en el listado). Filas: [perfilPublicadorId, cantidad].
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT a.perfilPublicador.id, COUNT(a)
+              FROM Actividad a
+             WHERE a.perfilPublicador.id IN :perfilIds
+               AND a.activa = true
+               AND a.deletedAt IS NULL
+               AND a.estadoPublicacion = :estadoPublicacion
+             GROUP BY a.perfilPublicador.id
+            """)
+    java.util.List<Object[]> contarPublicadasPorPerfil(
+            @org.springframework.data.repository.query.Param("perfilIds")
+            java.util.List<Long> perfilIds,
+            @org.springframework.data.repository.query.Param("estadoPublicacion")
+            String estadoPublicacion
+    );
+
+    /**
+     * Las destacadas del publicador (script 31), en su orden elegido.
+     * Solo publicadas y vivas: una destacada pausada no se muestra.
+     */
+    java.util.List<Actividad>
+    findByPerfilPublicador_IdAndDestacadaOrdenIsNotNullAndActivaTrueAndEstadoPublicacionAndDeletedAtIsNullOrderByDestacadaOrdenAsc(
+            Long perfilPublicadorId,
+            String estadoPublicacion
+    );
+
+    /** Las que hoy están destacadas, para reescribir la selección. */
+    java.util.List<Actividad> findByPerfilPublicador_IdAndDestacadaOrdenIsNotNull(
+            Long perfilPublicadorId
+    );
+
     @EntityGraph(attributePaths = {
             "perfilPublicador",
             "deporte",

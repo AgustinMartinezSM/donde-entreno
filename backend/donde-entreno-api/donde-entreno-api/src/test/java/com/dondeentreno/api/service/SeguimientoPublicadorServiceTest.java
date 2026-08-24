@@ -52,6 +52,9 @@ class SeguimientoPublicadorServiceTest {
     @Mock
     private ImagenService imagenService;
 
+    @Mock
+    private NotificacionService notificacionService;
+
     private SeguimientoPublicadorService service;
 
     @BeforeEach
@@ -61,7 +64,8 @@ class SeguimientoPublicadorServiceTest {
                 perfilPublicadorRepository,
                 usuarioRepository,
                 actividadRepository,
-                imagenService
+                imagenService,
+                notificacionService
         );
     }
 

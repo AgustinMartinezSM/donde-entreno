@@ -49,13 +49,16 @@ public class ImagenAdminService {
 
     private final ImagenRepository imagenRepository;
     private final AlmacenArchivos almacenArchivos;
+    private final NotificacionService notificacionService;
 
     public ImagenAdminService(
             ImagenRepository imagenRepository,
-            AlmacenArchivos almacenArchivos
+            AlmacenArchivos almacenArchivos,
+            NotificacionService notificacionService
     ) {
         this.imagenRepository = imagenRepository;
         this.almacenArchivos = almacenArchivos;
+        this.notificacionService = notificacionService;
     }
 
     /**
@@ -138,7 +141,35 @@ public class ImagenAdminService {
         imagen.setMotivoRechazo(null);
         imagen.setUpdatedAt(ahora);
 
-        return aDTO(imagenRepository.save(imagen));
+        Imagen guardada = imagenRepository.save(imagen);
+
+        /* Aviso al publicador (Fase 2 social), best-effort. */
+        notificarDuenio(guardada, "FOTO_APROBADA", "Tu foto fue aprobada y ya se ve publicada.");
+
+        return aDTO(guardada);
+    }
+
+    /*
+      Resuelve al dueño de la imagen (actividad o perfil) y le avisa.
+      La emisión es best-effort dentro de NotificacionService.
+    */
+    private void notificarDuenio(Imagen imagen, String tipo, String titulo) {
+        Long duenioId = null;
+        String ruta = "/publicador/fotos";
+
+        if (imagen.getActividad() != null
+                && imagen.getActividad().getPerfilPublicador() != null
+                && imagen.getActividad().getPerfilPublicador().getUsuario() != null) {
+            duenioId = imagen.getActividad().getPerfilPublicador().getUsuario().getId();
+            ruta = "/publicador/actividades/" + imagen.getActividad().getId();
+        } else if (imagen.getPerfilPublicador() != null
+                && imagen.getPerfilPublicador().getUsuario() != null) {
+            duenioId = imagen.getPerfilPublicador().getUsuario().getId();
+        }
+
+        if (duenioId != null) {
+            notificacionService.emitir(duenioId, tipo, titulo, ruta);
+        }
     }
 
     /*
@@ -197,7 +228,12 @@ public class ImagenAdminService {
         imagen.setMotivoRechazo(motivoLimpio);
         imagen.setUpdatedAt(ahora);
 
-        return aDTO(imagenRepository.save(imagen));
+        Imagen guardada = imagenRepository.save(imagen);
+
+        /* Aviso al publicador (Fase 2 social), best-effort. */
+        notificarDuenio(guardada, "FOTO_RECHAZADA", "Una foto tuya fue rechazada: " + motivoLimpio);
+
+        return aDTO(guardada);
     }
 
     /**

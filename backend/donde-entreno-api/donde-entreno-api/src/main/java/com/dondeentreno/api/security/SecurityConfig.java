@@ -93,6 +93,12 @@ public class SecurityConfig {
                           del controller y el tope diario del asistente.
                         */
                         .requestMatchers(HttpMethod.POST, "/api/asistente/consulta").permitAll()
+                        /*
+                          Tracking anónimo de interacciones (Fase 2 social):
+                          público a propósito — los visitantes también
+                          cuentan. Rate limit por IP en el controller.
+                        */
+                        .requestMatchers(HttpMethod.POST, "/api/actividades/*/interacciones").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         /*
                           Refresh y logout son publicos como el login: la

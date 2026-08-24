@@ -25,6 +25,7 @@ import com.dondeentreno.api.repository.CiudadRepository;
 import com.dondeentreno.api.repository.DeporteRepository;
 import com.dondeentreno.api.repository.HorarioActividadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
+import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionHorarioRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionRepository;
 import com.dondeentreno.api.repository.UbicacionRepository;
@@ -70,6 +71,8 @@ public class SolicitudPublicacionAdminService {
     private final CiudadRepository ciudadRepository;
     private final BarrioRepository barrioRepository;
     private final PerfilPublicadorSlugService perfilPublicadorSlugService;
+    private final NotificacionService notificacionService;
+    private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
 
     public SolicitudPublicacionAdminService(
             SolicitudPublicacionRepository solicitudPublicacionRepository,
@@ -82,7 +85,9 @@ public class SolicitudPublicacionAdminService {
             DeporteRepository deporteRepository,
             CiudadRepository ciudadRepository,
             BarrioRepository barrioRepository,
-            PerfilPublicadorSlugService perfilPublicadorSlugService
+            PerfilPublicadorSlugService perfilPublicadorSlugService,
+            NotificacionService notificacionService,
+            SeguimientoPublicadorRepository seguimientoPublicadorRepository
     ) {
         this.solicitudPublicacionRepository = solicitudPublicacionRepository;
         this.solicitudPublicacionHorarioRepository = solicitudPublicacionHorarioRepository;
@@ -95,6 +100,8 @@ public class SolicitudPublicacionAdminService {
         this.ciudadRepository = ciudadRepository;
         this.barrioRepository = barrioRepository;
         this.perfilPublicadorSlugService = perfilPublicadorSlugService;
+        this.notificacionService = notificacionService;
+        this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
     }
 
     @Transactional(readOnly = true)
@@ -197,6 +204,28 @@ public class SolicitudPublicacionAdminService {
         solicitud.setMotivoRechazo(null);
 
         SolicitudPublicacion solicitudGuardada = solicitudPublicacionRepository.save(solicitud);
+
+        /*
+          Notificaciones (Fase 2 social), best-effort — nunca rompen la
+          aprobación: aviso al dueño y fan-out a quienes siguen al perfil.
+        */
+        Long duenioId = solicitud.getUsuario() != null
+                ? solicitud.getUsuario().getId()
+                : (perfilPublicador.getUsuario() != null
+                        ? perfilPublicador.getUsuario().getId()
+                        : null);
+        notificacionService.emitir(
+                duenioId,
+                "ACTIVIDAD_APROBADA",
+                "Tu actividad \"" + actividad.getTitulo() + "\" fue aprobada y ya está publicada.",
+                "/actividades/" + actividad.getSlug()
+        );
+        notificacionService.emitirATodos(
+                seguimientoPublicadorRepository.usuarioIdsSeguidoresDe(perfilPublicador.getId()),
+                "ACTIVIDAD_NUEVA",
+                perfilPublicador.getNombre() + " publicó una actividad nueva: " + actividad.getTitulo(),
+                "/actividades/" + actividad.getSlug()
+        );
 
         return new SolicitudPublicacionAprobacionResponseDTO(
                 solicitudGuardada.getId(),
@@ -504,6 +533,16 @@ public class SolicitudPublicacionAdminService {
         }
 
         solicitud.setRevisionFinalizadaAt(ahora);
+
+        /* Aviso al solicitante si tiene cuenta (las hay anónimas). */
+        if (solicitud.getUsuario() != null) {
+            notificacionService.emitir(
+                    solicitud.getUsuario().getId(),
+                    "SOLICITUD_RECHAZADA",
+                    "Tu solicitud de publicación fue rechazada: " + motivoNormalizado,
+                    "/publicador/solicitudes"
+            );
+        }
     }
 
     private String normalizarEstadoListado(String estado) {

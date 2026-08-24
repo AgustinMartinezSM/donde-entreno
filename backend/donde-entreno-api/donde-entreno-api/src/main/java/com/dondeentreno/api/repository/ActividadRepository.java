@@ -55,6 +55,21 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
     );
 
     /**
+     * Ids de las actividades vivas de un perfil, para agregarles las
+     * métricas de interacciones (Fase 2 social) sin cargar entidades.
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT a.id
+              FROM Actividad a
+             WHERE a.perfilPublicador.id = :perfilId
+               AND a.activa = true
+               AND a.deletedAt IS NULL
+            """)
+    java.util.List<Long> idsDePerfil(
+            @org.springframework.data.repository.query.Param("perfilId") Long perfilId
+    );
+
+    /**
      * Listado del panel del publicador (fase 6): el dueño ve sus
      * actividades publicadas Y pausadas — la pausa la maneja el, asi
      * que tiene que poder verla.

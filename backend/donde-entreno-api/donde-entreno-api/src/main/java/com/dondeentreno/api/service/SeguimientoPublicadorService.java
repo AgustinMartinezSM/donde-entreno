@@ -44,19 +44,22 @@ public class SeguimientoPublicadorService {
     private final UsuarioRepository usuarioRepository;
     private final ActividadRepository actividadRepository;
     private final ImagenService imagenService;
+    private final NotificacionService notificacionService;
 
     public SeguimientoPublicadorService(
             SeguimientoPublicadorRepository seguimientoPublicadorRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
             UsuarioRepository usuarioRepository,
             ActividadRepository actividadRepository,
-            ImagenService imagenService
+            ImagenService imagenService,
+            NotificacionService notificacionService
     ) {
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.usuarioRepository = usuarioRepository;
         this.actividadRepository = actividadRepository;
         this.imagenService = imagenService;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional
@@ -77,6 +80,19 @@ public class SeguimientoPublicadorService {
             seguimiento.setPerfilPublicador(perfil);
             seguimiento.setCreatedAt(OffsetDateTime.now());
             seguimientoPublicadorRepository.save(seguimiento);
+
+            /*
+              Aviso al publicador (Fase 2 social), best-effort y ANÓNIMO:
+              el conteo es público pero quién sigue no se expone.
+            */
+            if (perfil.getUsuario() != null) {
+                notificacionService.emitir(
+                        perfil.getUsuario().getId(),
+                        "NUEVO_SEGUIDOR",
+                        "Tenés un seguidor nuevo en " + perfil.getNombre() + ".",
+                        "/publicador"
+                );
+            }
         }
 
         return new EstadoSeguimientoDTO(true);

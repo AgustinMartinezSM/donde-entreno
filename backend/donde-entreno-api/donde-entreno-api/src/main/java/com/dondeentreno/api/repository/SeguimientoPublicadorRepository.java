@@ -55,6 +55,19 @@ public interface SeguimientoPublicadorRepository
     );
 
     /**
+     * Ids de los usuarios que siguen un perfil, para el fan-out de
+     * notificaciones (Fase 2 social): solo ids, sin cargar entidades.
+     */
+    @Query("""
+            SELECT s.usuario.id
+            FROM SeguimientoPublicador s
+            WHERE s.perfilPublicador.id = :perfilPublicadorId
+            """)
+    List<Long> usuarioIdsSeguidoresDe(
+            @Param("perfilPublicadorId") Long perfilPublicadorId
+    );
+
+    /**
      * Proyección del conteo agrupado.
      */
     interface ConteoSeguidores {

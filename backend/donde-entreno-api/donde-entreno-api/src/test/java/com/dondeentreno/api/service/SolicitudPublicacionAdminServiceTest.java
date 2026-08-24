@@ -25,6 +25,7 @@ import com.dondeentreno.api.repository.CiudadRepository;
 import com.dondeentreno.api.repository.DeporteRepository;
 import com.dondeentreno.api.repository.HorarioActividadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
+import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionHorarioRepository;
 import com.dondeentreno.api.repository.SolicitudPublicacionRepository;
 import com.dondeentreno.api.repository.UbicacionRepository;
@@ -96,6 +97,12 @@ class SolicitudPublicacionAdminServiceTest {
     @Mock
     private PerfilPublicadorSlugService perfilPublicadorSlugService;
 
+    @Mock
+    private NotificacionService notificacionService;
+
+    @Mock
+    private SeguimientoPublicadorRepository seguimientoPublicadorRepository;
+
     private SolicitudPublicacionAdminService service;
 
     @BeforeEach
@@ -111,7 +118,9 @@ class SolicitudPublicacionAdminServiceTest {
                 deporteRepository,
                 ciudadRepository,
                 barrioRepository,
-                perfilPublicadorSlugService
+                perfilPublicadorSlugService,
+                notificacionService,
+                seguimientoPublicadorRepository
         );
     }
 

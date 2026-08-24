@@ -48,6 +48,9 @@ class PublicadorMetricasServiceTest {
     @Mock
     private SeguimientoPublicadorRepository seguimientoPublicadorRepository;
 
+    @Mock
+    private InteraccionService interaccionService;
+
     private PublicadorMetricasService publicadorMetricasService;
 
     @BeforeEach
@@ -58,7 +61,8 @@ class PublicadorMetricasServiceTest {
                 solicitudPublicacionRepository,
                 solicitudCambioActividadRepository,
                 imagenRepository,
-                seguimientoPublicadorRepository
+                seguimientoPublicadorRepository,
+                interaccionService
         );
     }
 

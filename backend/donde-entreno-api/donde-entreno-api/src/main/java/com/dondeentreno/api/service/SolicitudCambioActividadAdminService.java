@@ -51,19 +51,22 @@ public class SolicitudCambioActividadAdminService {
     private final UsuarioRepository usuarioRepository;
     private final HorarioActividadRepository horarioActividadRepository;
     private final UbicacionRepository ubicacionRepository;
+    private final NotificacionService notificacionService;
 
     public SolicitudCambioActividadAdminService(
             SolicitudCambioActividadRepository solicitudCambioRepository,
             ActividadRepository actividadRepository,
             UsuarioRepository usuarioRepository,
             HorarioActividadRepository horarioActividadRepository,
-            UbicacionRepository ubicacionRepository
+            UbicacionRepository ubicacionRepository,
+            NotificacionService notificacionService
     ) {
         this.solicitudCambioRepository = solicitudCambioRepository;
         this.actividadRepository = actividadRepository;
         this.usuarioRepository = usuarioRepository;
         this.horarioActividadRepository = horarioActividadRepository;
         this.ubicacionRepository = ubicacionRepository;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional(readOnly = true)
@@ -135,6 +138,14 @@ public class SolicitudCambioActividadAdminService {
             solicitud.setResueltoPor(admin);
             solicitud.setResueltoAt(ahora);
             solicitud.setUpdatedAt(ahora);
+
+            /* Aviso al publicador (Fase 2 social), best-effort. */
+            notificarPublicador(
+                    solicitud,
+                    "CAMBIO_RECHAZADO",
+                    "Tu solicitud de cambio fue rechazada: " + motivo,
+                    "/publicador/solicitudes-cambio"
+            );
         } else {
             throw new SolicitudCambioInvalidaException(
                     "Estado invalido. Valores permitidos: EN_REVISION, RECHAZADA."
@@ -222,7 +233,33 @@ public class SolicitudCambioActividadAdminService {
 
         SolicitudCambioActividad guardada = solicitudCambioRepository.save(solicitud);
 
+        /* Aviso al publicador (Fase 2 social), best-effort. */
+        notificarPublicador(
+                solicitud,
+                "CAMBIO_APROBADO",
+                "Tus cambios sobre \"" + actividad.getTitulo() + "\" fueron aprobados y ya están publicados.",
+                "/actividades/" + actividad.getSlug()
+        );
+
         return SolicitudCambioDetalleDTO.desdeEntidad(guardada, cambios);
+    }
+
+    /* Null-safe: sin dueño resoluble no hay aviso, jamás un NPE. */
+    private void notificarPublicador(
+            SolicitudCambioActividad solicitud,
+            String tipo,
+            String titulo,
+            String ruta
+    ) {
+        if (solicitud.getPerfilPublicador() != null
+                && solicitud.getPerfilPublicador().getUsuario() != null) {
+            notificacionService.emitir(
+                    solicitud.getPerfilPublicador().getUsuario().getId(),
+                    tipo,
+                    titulo,
+                    ruta
+            );
+        }
     }
 
     /**

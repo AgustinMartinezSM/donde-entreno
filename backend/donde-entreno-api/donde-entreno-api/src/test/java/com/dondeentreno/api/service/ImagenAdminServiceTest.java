@@ -35,11 +35,14 @@ class ImagenAdminServiceTest {
     @Mock
     private AlmacenArchivos almacenArchivos;
 
+    @Mock
+    private NotificacionService notificacionService;
+
     private ImagenAdminService service;
 
     @BeforeEach
     void setUp() {
-        service = new ImagenAdminService(imagenRepository, almacenArchivos);
+        service = new ImagenAdminService(imagenRepository, almacenArchivos, notificacionService);
     }
 
     @Test

@@ -26,13 +26,22 @@ public class PublicadorMetricasDTO {
     private final long imagenesPendientesModeracion;
     private final long seguidores;
 
+    /*
+      Tracking de interacciones (Fase 2 social): agregados anónimos de
+      los últimos 30 días sobre TODAS las actividades del perfil.
+    */
+    private final long vistas30Dias;
+    private final long contactosWhatsapp30Dias;
+
     public PublicadorMetricasDTO(
             long actividadesPublicadas,
             long actividadesPausadas,
             long solicitudesPublicacionPendientes,
             long solicitudesCambioPendientes,
             long imagenesPendientesModeracion,
-            long seguidores
+            long seguidores,
+            long vistas30Dias,
+            long contactosWhatsapp30Dias
     ) {
         this.actividadesPublicadas = actividadesPublicadas;
         this.actividadesPausadas = actividadesPausadas;
@@ -40,6 +49,8 @@ public class PublicadorMetricasDTO {
         this.solicitudesCambioPendientes = solicitudesCambioPendientes;
         this.imagenesPendientesModeracion = imagenesPendientesModeracion;
         this.seguidores = seguidores;
+        this.vistas30Dias = vistas30Dias;
+        this.contactosWhatsapp30Dias = contactosWhatsapp30Dias;
     }
 
     public long getActividadesPublicadas() {
@@ -64,5 +75,13 @@ public class PublicadorMetricasDTO {
 
     public long getSeguidores() {
         return seguidores;
+    }
+
+    public long getVistas30Dias() {
+        return vistas30Dias;
+    }
+
+    public long getContactosWhatsapp30Dias() {
+        return contactosWhatsapp30Dias;
     }
 }

@@ -39,6 +39,7 @@ public class PublicadorMetricasService {
     private final SolicitudCambioActividadRepository solicitudCambioActividadRepository;
     private final ImagenRepository imagenRepository;
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
+    private final InteraccionService interaccionService;
 
     public PublicadorMetricasService(
             PerfilPublicadorRepository perfilPublicadorRepository,
@@ -46,7 +47,8 @@ public class PublicadorMetricasService {
             SolicitudPublicacionRepository solicitudPublicacionRepository,
             SolicitudCambioActividadRepository solicitudCambioActividadRepository,
             ImagenRepository imagenRepository,
-            SeguimientoPublicadorRepository seguimientoPublicadorRepository
+            SeguimientoPublicadorRepository seguimientoPublicadorRepository,
+            InteraccionService interaccionService
     ) {
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
@@ -54,6 +56,7 @@ public class PublicadorMetricasService {
         this.solicitudCambioActividadRepository = solicitudCambioActividadRepository;
         this.imagenRepository = imagenRepository;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
+        this.interaccionService = interaccionService;
     }
 
     @Transactional(readOnly = true)
@@ -96,14 +99,34 @@ public class PublicadorMetricasService {
         long seguidores = seguimientoPublicadorRepository
                 .countByPerfilPublicador_Id(perfilId);
 
+        /*
+          Interacciones de los últimos 30 días (Fase 2 social): un solo
+          query agrupado sobre todas las actividades del perfil.
+        */
+        var conteosInteracciones = interaccionService
+                .contarUltimos30Dias(actividadRepository.idsDePerfil(perfilId));
+        long vistas30Dias = sumarTipo(conteosInteracciones, "VISTA_DETALLE");
+        long contactosWhatsapp30Dias = sumarTipo(conteosInteracciones, "CLICK_WHATSAPP");
+
         return new PublicadorMetricasDTO(
                 actividadesPublicadas,
                 actividadesPausadas,
                 solicitudesPublicacionPendientes,
                 solicitudesCambioPendientes,
                 imagenesPendientesModeracion,
-                seguidores
+                seguidores,
+                vistas30Dias,
+                contactosWhatsapp30Dias
         );
+    }
+
+    private long sumarTipo(
+            java.util.Map<Long, java.util.Map<String, Long>> conteos,
+            String tipo
+    ) {
+        return conteos.values().stream()
+                .mapToLong(porTipo -> porTipo.getOrDefault(tipo, 0L))
+                .sum();
     }
 
     private PerfilPublicador obtenerPerfilPublicador(Long userId) {

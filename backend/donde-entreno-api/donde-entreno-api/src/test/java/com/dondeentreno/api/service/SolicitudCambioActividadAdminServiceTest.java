@@ -47,6 +47,9 @@ class SolicitudCambioActividadAdminServiceTest {
     @Mock
     private com.dondeentreno.api.repository.UbicacionRepository ubicacionRepository;
 
+    @Mock
+    private NotificacionService notificacionService;
+
     private SolicitudCambioActividadAdminService service;
 
     @BeforeEach
@@ -56,7 +59,8 @@ class SolicitudCambioActividadAdminServiceTest {
                 actividadRepository,
                 usuarioRepository,
                 horarioActividadRepository,
-                ubicacionRepository
+                ubicacionRepository,
+                notificacionService
         );
     }
 

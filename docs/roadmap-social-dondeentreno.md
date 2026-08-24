@@ -94,6 +94,12 @@ Alcance original:
 - **Menú Más** (desktop) con Configuración/Ayuda/Normas/Cerrar sesión.
 
 ### Fase 2 — Infraestructura social mínima (backend + migraciones)
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; backend
+`0a48544` + frontend `992e171`, script 28): campanita con contador y
+panel, emisores en los 5 flujos existentes (con fan-out a seguidores),
+reportes con cola admin (/admin/reportes), tracking anónimo
+(vistas/WhatsApp/compartir → métricas del publicador 30 días) y
+edición inline de nombre/apellido en /configuracion. Alcance original:
 - **Notificaciones internas V1**: tabla `notificacion` (usuario_id,
   tipo, título, ruta, leída, created_at), campanita con contador,
   panel (drawer desktop / pantalla mobile), marcar leídas. Sin email

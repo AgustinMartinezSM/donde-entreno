@@ -113,6 +113,14 @@ edición inline de nombre/apellido en /configuracion. Alcance original:
   publicador y rankings. Barato y muy valioso: hoy no se mide nada.
 
 ### Fase 3 — Confianza: valoraciones, Q&A y el flujo propio
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; backend
+`b94de22`+`0afa8b3`, frontend `0f1c57e`, script 29): flujo quiero
+probar → ya probé → valorar con insignia Verificada, valoraciones 1-5
+con reseña directa + tags + promedio con N≥3, Q&A con respuesta del
+dueño y notificaciones cruzadas, reportes de valoración/pregunta,
+social proof con estrellas y métricas con "quieren probar". Lección
+nueva: SMALLINT en la base exige @JdbcTypeCode en la entidad o
+validate no arranca (lo cazó el IT). Alcance original:
 - **"Quiero probar"** (misma receta que check-in) y **"Ya probé"**.
   Flujo propio: Guardé → Quiero probar → Ya probé → Valoro / Entreno acá.
 - **Valoraciones 1-5** (etapa B del diseño previo, ya pensada): solo
@@ -127,6 +135,16 @@ edición inline de nombre/apellido en /configuracion. Alcance original:
 - Notificaciones: nueva pregunta / respuesta / valoración.
 
 ### Fase 4 — Galería social y moderación flexible de fotos
+🚧 **IMPLEMENTADA, EN DEPLOY** (script 30 aplicado por Agustín el
+2026-08-24; backend `cec2fe2` + frontend `58cccd1` + `1667467`; 92 ITs
+y suite unit en verde con el script aplicado). Falta: deploy en dos
+tandas y el smoke de Agustín. Detalle y hallazgos en
+`docs/plan-fase4-galeria-social.md` — incluido el que destaparon los
+ITs: al sacar la compuerta previa, `rechazar()` seguía exigiendo
+PENDIENTE y el admin quedaba **sin ninguna forma de bajar una foto
+reportada**; la baja reactiva y las acciones directas del panel de
+reportes entran en el mismo bloque.
+
 - **Cambio de flujo**: fotos de publicadores publican DIRECTO
   (estado aprobado al subir), con reportes + ocultar por admin +
   ocultar por publicador. El circuito de moderación previa queda como

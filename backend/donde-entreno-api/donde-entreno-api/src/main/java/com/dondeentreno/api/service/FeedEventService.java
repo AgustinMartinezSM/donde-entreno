@@ -1,0 +1,262 @@
+package com.dondeentreno.api.service;
+
+import com.dondeentreno.api.dto.FeedEventDTO;
+import com.dondeentreno.api.dto.PaginaResponseDTO;
+import com.dondeentreno.api.entity.Actividad;
+import com.dondeentreno.api.entity.FeedEvent;
+import com.dondeentreno.api.entity.Imagen;
+import com.dondeentreno.api.entity.PerfilPublicador;
+import com.dondeentreno.api.exception.CredencialesInvalidasException;
+import com.dondeentreno.api.mapper.ImagenMapper;
+import com.dondeentreno.api.repository.ActividadRepository;
+import com.dondeentreno.api.repository.FeedEventRepository;
+import com.dondeentreno.api.repository.ImagenRepository;
+import com.dondeentreno.api.repository.PerfilPublicadorRepository;
+import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Feed de hechos de los publicadores (script 32, Fase 6).
+ *
+ * La emisión es best-effort con el MISMO contrato que
+ * NotificacionService: un fallo del feed jamás puede voltear el hecho
+ * real que lo originó (aprobar una actividad, publicar una foto).
+ */
+@Service
+public class FeedEventService {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedEventService.class);
+
+    /** Catálogo abierto: cada fase suma tipos, por eso no hay CHECK. */
+    public static final String TIPO_ACTIVIDAD_NUEVA = "ACTIVIDAD_NUEVA";
+    public static final String TIPO_FOTOS_NUEVAS = "FOTOS_NUEVAS";
+    public static final String TIPO_ACTIVIDAD_ACTUALIZADA = "ACTIVIDAD_ACTUALIZADA";
+
+    private static final int MAX_RESUMEN = 200;
+    private static final int MAX_PAGINA = 50;
+    private static final String ESTADO_APROBADA = "APROBADA";
+
+    private final FeedEventRepository feedEventRepository;
+    private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
+    private final PerfilPublicadorRepository perfilPublicadorRepository;
+    private final ActividadRepository actividadRepository;
+    private final ImagenRepository imagenRepository;
+    private final ImagenService imagenService;
+
+    public FeedEventService(
+            FeedEventRepository feedEventRepository,
+            SeguimientoPublicadorRepository seguimientoPublicadorRepository,
+            PerfilPublicadorRepository perfilPublicadorRepository,
+            ActividadRepository actividadRepository,
+            ImagenRepository imagenRepository,
+            ImagenService imagenService
+    ) {
+        this.feedEventRepository = feedEventRepository;
+        this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
+        this.perfilPublicadorRepository = perfilPublicadorRepository;
+        this.actividadRepository = actividadRepository;
+        this.imagenRepository = imagenRepository;
+        this.imagenService = imagenService;
+    }
+
+    /**
+     * Registra un hecho. Best-effort: nunca lanza.
+     *
+     * REQUIRES_NEW para que un rollback del flujo de negocio no deje
+     * eventos fantasma NI un fallo acá voltee al negocio.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void emitir(
+            String tipo,
+            Long perfilPublicadorId,
+            Long actividadId,
+            Long imagenId,
+            String resumen
+    ) {
+        try {
+            if (tipo == null || perfilPublicadorId == null) {
+                return;
+            }
+
+            FeedEvent evento = new FeedEvent();
+            evento.setTipo(tipo);
+            evento.setPerfilPublicadorId(perfilPublicadorId);
+            evento.setActividadId(actividadId);
+            evento.setImagenId(imagenId);
+            evento.setResumen(recortar(resumen));
+            evento.setCreatedAt(OffsetDateTime.now());
+
+            feedEventRepository.save(evento);
+        } catch (RuntimeException excepcion) {
+            log.warn("FEED_EVENT_NO_EMITIDO tipo={} perfil={}: {}",
+                    tipo, perfilPublicadorId, excepcion.getMessage());
+        }
+    }
+
+    /**
+     * El feed del usuario: los hechos de los publicadores que sigue,
+     * PAGINADO (la V1 cortaba en 20 sin forma de pedir más).
+     *
+     * Mismo molde que NotificacionService.listar, incluido el saneo
+     * inline de page/size que nunca lanza por parámetros feos.
+     */
+    @Transactional(readOnly = true)
+    public PaginaResponseDTO<FeedEventDTO> listarParaUsuario(
+            Long usuarioId,
+            int page,
+            int size
+    ) {
+        if (usuarioId == null) {
+            throw new CredencialesInvalidasException("No autenticado.");
+        }
+
+        List<Long> perfilesSeguidos = seguimientoPublicadorRepository
+                .findByUsuario_IdOrderByCreatedAtDesc(usuarioId)
+                .stream()
+                .map(seguimiento -> seguimiento.getPerfilPublicador().getId())
+                .toList();
+
+        int tamanio = Math.min(Math.max(size, 1), MAX_PAGINA);
+        int pagina = Math.max(page, 0);
+
+        /* Sin seguidos no se toca la tabla de eventos. */
+        if (perfilesSeguidos.isEmpty()) {
+            return new PaginaResponseDTO<>(List.of(), pagina, tamanio, 0L, 0, true);
+        }
+
+        Page<FeedEvent> paginaEventos = feedEventRepository
+                .findByPerfilPublicadorIdInOrderByCreatedAtDesc(
+                        perfilesSeguidos,
+                        PageRequest.of(pagina, tamanio)
+                );
+
+        return new PaginaResponseDTO<>(
+                enriquecer(paginaEventos.getContent()),
+                paginaEventos.getNumber(),
+                paginaEventos.getSize(),
+                paginaEventos.getTotalElements(),
+                paginaEventos.getTotalPages(),
+                paginaEventos.isLast()
+        );
+    }
+
+    /**
+     * Completa cada evento con la identidad del publicador y los datos
+     * de la actividad y la foto, todo en queries BATCH: un feed de 20
+     * eventos no puede disparar 60 consultas.
+     */
+    private List<FeedEventDTO> enriquecer(List<FeedEvent> eventos) {
+        if (eventos.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> perfilIds = eventos.stream()
+                .map(FeedEvent::getPerfilPublicadorId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, PerfilPublicador> perfiles = perfilPublicadorRepository
+                .findAllById(perfilIds).stream()
+                .collect(HashMap::new, (mapa, perfil) -> mapa.put(perfil.getId(), perfil), HashMap::putAll);
+        Map<Long, String> logos = imagenService.obtenerLogosAprobadosPorPerfil(perfilIds);
+
+        List<Long> actividadIds = eventos.stream()
+                .map(FeedEvent::getActividadId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, Actividad> actividades = actividadIds.isEmpty()
+                ? Map.of()
+                : actividadRepository.findAllById(actividadIds).stream()
+                        .collect(HashMap::new,
+                                (mapa, actividad) -> mapa.put(actividad.getId(), actividad),
+                                HashMap::putAll);
+
+        /* Imagen PRINCIPAL de esas actividades, en un solo query. */
+        Map<Long, String> principalPorActividad = new HashMap<>();
+        if (!actividadIds.isEmpty()) {
+            for (Imagen imagen : imagenRepository
+                    .findByActivaTrueAndEstadoModeracionAndTipoImagenAndActividad_IdInOrderByOrdenAsc(
+                            ESTADO_APROBADA,
+                            "PRINCIPAL",
+                            actividadIds
+                    )) {
+                if (imagen.getActividad() != null
+                        && ImagenMapper.esUrlPublicable(imagen.getUrl())) {
+                    principalPorActividad.putIfAbsent(
+                            imagen.getActividad().getId(),
+                            imagen.getUrl()
+                    );
+                }
+            }
+        }
+
+        List<Long> imagenIds = eventos.stream()
+                .map(FeedEvent::getImagenId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, Imagen> imagenes = imagenIds.isEmpty()
+                ? Map.of()
+                : imagenRepository.findAllById(imagenIds).stream()
+                        .collect(HashMap::new,
+                                (mapa, imagen) -> mapa.put(imagen.getId(), imagen),
+                                HashMap::putAll);
+
+        return eventos.stream().map(evento -> {
+            FeedEventDTO dto = new FeedEventDTO();
+            dto.setId(evento.getId());
+            dto.setTipo(evento.getTipo());
+            dto.setResumen(evento.getResumen());
+            dto.setCreatedAt(evento.getCreatedAt());
+
+            dto.setPerfilPublicadorId(evento.getPerfilPublicadorId());
+            PerfilPublicador perfil = perfiles.get(evento.getPerfilPublicadorId());
+            if (perfil != null) {
+                dto.setPerfilNombre(perfil.getNombre());
+                dto.setPerfilSlug(perfil.getSlug());
+            }
+            dto.setPerfilLogoUrl(logos.get(evento.getPerfilPublicadorId()));
+
+            Actividad actividad = evento.getActividadId() != null
+                    ? actividades.get(evento.getActividadId())
+                    : null;
+            if (actividad != null) {
+                dto.setActividadId(actividad.getId());
+                dto.setActividadTitulo(actividad.getTitulo());
+                dto.setActividadSlug(actividad.getSlug());
+                dto.setActividadImagenUrl(principalPorActividad.get(actividad.getId()));
+            }
+
+            Imagen imagen = evento.getImagenId() != null
+                    ? imagenes.get(evento.getImagenId())
+                    : null;
+            if (imagen != null && ImagenMapper.esUrlPublicable(imagen.getUrl())) {
+                dto.setImagenId(imagen.getId());
+                dto.setImagenUrl(imagen.getUrl());
+            }
+
+            return dto;
+        }).toList();
+    }
+
+    private String recortar(String texto) {
+        if (texto == null) {
+            return null;
+        }
+
+        return texto.length() <= MAX_RESUMEN ? texto : texto.substring(0, MAX_RESUMEN);
+    }
+}

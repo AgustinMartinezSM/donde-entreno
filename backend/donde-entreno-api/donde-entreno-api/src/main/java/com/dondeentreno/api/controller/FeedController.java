@@ -25,14 +25,39 @@ import java.util.List;
 public class FeedController {
 
     private final SeguimientoPublicadorService seguimientoPublicadorService;
+    private final com.dondeentreno.api.service.FeedEventService feedEventService;
 
-    public FeedController(SeguimientoPublicadorService seguimientoPublicadorService) {
+    public FeedController(
+            SeguimientoPublicadorService seguimientoPublicadorService,
+            com.dondeentreno.api.service.FeedEventService feedEventService
+    ) {
         this.seguimientoPublicadorService = seguimientoPublicadorService;
+        this.feedEventService = feedEventService;
     }
 
+    /**
+     * Feed V1: últimas 20 actividades de los seguidos, sin paginar.
+     * Se mantiene porque lo consumen la home y /mi-cuenta desplegadas
+     * (regla de los dos pushes); se deprecia cuando el frontend nuevo
+     * esté en producción.
+     */
     @GetMapping("/actividades")
     public List<ActividadDTO> obtenerFeedActividades(@AuthenticationPrincipal Jwt jwt) {
         return seguimientoPublicadorService.obtenerFeedActividades(extraerUserId(jwt));
+    }
+
+    /**
+     * Feed V2 (Fase 6): hechos de los publicadores seguidos, PAGINADO
+     * y multi-tipo (actividad nueva, fotos nuevas, cambio aprobado).
+     */
+    @GetMapping
+    public com.dondeentreno.api.dto.PaginaResponseDTO<com.dondeentreno.api.dto.FeedEventDTO>
+    obtenerFeed(
+            @AuthenticationPrincipal Jwt jwt,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "10") int size
+    ) {
+        return feedEventService.listarParaUsuario(extraerUserId(jwt), page, size);
     }
 
     private Long extraerUserId(Jwt jwt) {

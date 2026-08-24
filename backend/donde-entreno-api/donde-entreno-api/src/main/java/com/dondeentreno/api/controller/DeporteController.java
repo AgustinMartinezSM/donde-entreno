@@ -19,7 +19,14 @@ import java.util.List;
 @RequestMapping("/api/deportes")
 public class DeporteController {
 
+    /**
+     * Con menos de 3 deportes con vistas, el "ranking" lo arman dos
+     * clicks: la sección no se muestra (decisión 4 del plan).
+     */
+    private static final int MINIMO_DEPORTES_PARA_RANKING = 3;
+
     private final DeporteService deporteService;
+    private final com.dondeentreno.api.service.InteraccionService interaccionService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -27,8 +34,34 @@ public class DeporteController {
      * Spring detecta automáticamente el DeporteService
      * y lo entrega a este controller.
      */
-    public DeporteController(DeporteService deporteService) {
+    public DeporteController(
+            DeporteService deporteService,
+            com.dondeentreno.api.service.InteraccionService interaccionService
+    ) {
         this.deporteService = deporteService;
+        this.interaccionService = interaccionService;
+    }
+
+    /**
+     * Deportes más vistos de los últimos N días (Fase 6), derivado del
+     * tracking anónimo. Devuelve lista VACÍA si no hay señal
+     * suficiente: el frontend entonces no dibuja la sección, que es
+     * mejor que volver a una lista inventada.
+     */
+    @GetMapping("/populares")
+    public List<com.dondeentreno.api.dto.DeportePopularDTO> listarPopulares(
+            @RequestParam(defaultValue = "30") int dias,
+            @RequestParam(defaultValue = "6") int limite
+    ) {
+        return interaccionService
+                .deportesMasVistos(dias, MINIMO_DEPORTES_PARA_RANKING, limite)
+                .stream()
+                .map(fila -> new com.dondeentreno.api.dto.DeportePopularDTO(
+                        (String) fila[0],
+                        (String) fila[1],
+                        ((Number) fila[2]).longValue()
+                ))
+                .toList();
     }
 
     /**

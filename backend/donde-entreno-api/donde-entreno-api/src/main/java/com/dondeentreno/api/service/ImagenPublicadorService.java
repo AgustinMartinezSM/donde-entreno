@@ -62,19 +62,23 @@ public class ImagenPublicadorService {
     private final ActividadRepository actividadRepository;
     private final AlmacenArchivos almacenArchivos;
     private final MediaProperties mediaProperties;
+    /* Fase 6: hasta ahora esta clase no emitía nada a ningún lado. */
+    private final FeedEventService feedEventService;
 
     public ImagenPublicadorService(
             ImagenRepository imagenRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
             ActividadRepository actividadRepository,
             AlmacenArchivos almacenArchivos,
-            MediaProperties mediaProperties
+            MediaProperties mediaProperties,
+            FeedEventService feedEventService
     ) {
         this.imagenRepository = imagenRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
         this.almacenArchivos = almacenArchivos;
         this.mediaProperties = mediaProperties;
+        this.feedEventService = feedEventService;
     }
 
     /**
@@ -128,6 +132,21 @@ public class ImagenPublicadorService {
         imagen.setUpdatedAt(ahora);
 
         Imagen guardada = imagenRepository.save(imagen);
+
+        /*
+          Feed (Fase 6): una foto nueva es un hecho que los seguidores
+          quieren ver. Best-effort: si falla, la foto igual quedó
+          publicada.
+        */
+        if (actividad.getPerfilPublicador() != null) {
+            feedEventService.emitir(
+                    FeedEventService.TIPO_FOTOS_NUEVAS,
+                    actividad.getPerfilPublicador().getId(),
+                    actividad.getId(),
+                    guardada.getId(),
+                    null
+            );
+        }
 
         return aDTO(guardada);
     }

@@ -53,6 +53,9 @@ class ImagenPublicadorServiceTest {
     @Mock
     private AlmacenArchivos almacenArchivos;
 
+    @Mock
+    private FeedEventService feedEventService;
+
     private ImagenPublicadorService service;
 
     @BeforeEach
@@ -63,7 +66,8 @@ class ImagenPublicadorServiceTest {
                 actividadRepository,
                 almacenArchivos,
                 /* Defaults reales del deploy: 12 de galería, 15 pendientes. */
-                new com.dondeentreno.api.config.MediaProperties()
+                new com.dondeentreno.api.config.MediaProperties(),
+                feedEventService
         );
     }
 

@@ -105,6 +105,103 @@ class InteraccionServiceTest {
         assertTrue(service.contarUltimos30Dias(List.of()).isEmpty());
     }
 
+    /* ============ Ranking de deportes (Fase 6) ============ */
+
+    /**
+     * El ranking agrupa POR DEPORTE a partir de las actividades: dos
+     * actividades del mismo deporte suman al mismo casillero.
+     */
+    @Test
+    void elRankingAgrupaVistasPorDeporte() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                org.mockito.ArgumentMatchers.eq("VISTA_DETALLE"),
+                any(),
+                any()
+        )).thenReturn(List.<Object[]>of(
+                new Object[]{70L, 10L},
+                new Object[]{71L, 5L},
+                new Object[]{72L, 4L}
+        ));
+        when(actividadRepository.findAllById(anyCollection())).thenReturn(List.of(
+                actividadDeDeporte(70L, "karate", "Karate"),
+                actividadDeDeporte(71L, "karate", "Karate"),
+                actividadDeDeporte(72L, "yoga", "Yoga")
+        ));
+
+        List<Object[]> ranking = service.deportesMasVistos(30, 2, 6);
+
+        assertEquals(2, ranking.size());
+        /* karate = 10 + 5 = 15, primero; yoga = 4. */
+        assertEquals("karate", ranking.get(0)[0]);
+        assertEquals(15L, ranking.get(0)[2]);
+        assertEquals("yoga", ranking.get(1)[0]);
+    }
+
+    /**
+     * Con menos deportes que el mínimo, el ranking NO se publica: con
+     * este volumen de tráfico lo armarían dos clicks.
+     */
+    @Test
+    void conPocaSenalElRankingVieneVacio() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                org.mockito.ArgumentMatchers.eq("VISTA_DETALLE"),
+                any(),
+                any()
+        )).thenReturn(List.<Object[]>of(new Object[]{70L, 3L}));
+        when(actividadRepository.findAllById(anyCollection()))
+                .thenReturn(List.of(actividadDeDeporte(70L, "karate", "Karate")));
+
+        assertTrue(service.deportesMasVistos(30, 3, 6).isEmpty());
+    }
+
+    @Test
+    void sinEventosNoConsultaActividades() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                org.mockito.ArgumentMatchers.eq("VISTA_DETALLE"),
+                any(),
+                any()
+        )).thenReturn(List.of());
+
+        assertTrue(service.deportesMasVistos(30, 3, 6).isEmpty());
+        verify(actividadRepository, org.mockito.Mockito.never()).findAllById(anyCollection());
+    }
+
+    /** Una actividad dada de baja no ensucia el ranking. */
+    @Test
+    void lasActividadesNoVivasSeIgnoran() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                org.mockito.ArgumentMatchers.eq("VISTA_DETALLE"),
+                any(),
+                any()
+        )).thenReturn(List.<Object[]>of(new Object[]{70L, 99L}));
+
+        Actividad borrada = actividadDeDeporte(70L, "karate", "Karate");
+        borrada.setDeletedAt(OffsetDateTime.now());
+        when(actividadRepository.findAllById(anyCollection())).thenReturn(List.of(borrada));
+
+        assertTrue(service.deportesMasVistos(30, 1, 6).isEmpty());
+    }
+
+    private Actividad actividadDeDeporte(Long id, String slug, String nombre) {
+        Actividad actividad = new Actividad();
+        try {
+            java.lang.reflect.Field campo = Actividad.class.getDeclaredField("id");
+            campo.setAccessible(true);
+            campo.set(actividad, id);
+        } catch (ReflectiveOperationException excepcion) {
+            throw new IllegalStateException(excepcion);
+        }
+        actividad.setActiva(true);
+        actividad.setEstadoPublicacion("PUBLICADA");
+
+        com.dondeentreno.api.entity.Deporte deporte = new com.dondeentreno.api.entity.Deporte();
+        deporte.setSlug(slug);
+        deporte.setNombre(nombre);
+        actividad.setDeporte(deporte);
+
+        return actividad;
+    }
+
     private Actividad actividadPublica() {
         Actividad actividad = new Actividad();
         try {

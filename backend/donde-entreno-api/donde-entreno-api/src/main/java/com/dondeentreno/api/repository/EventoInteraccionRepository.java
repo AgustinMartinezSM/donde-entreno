@@ -47,4 +47,31 @@ public interface EventoInteraccionRepository
             @Param("perfilPublicadorId") Long perfilPublicadorId,
             @Param("desde") OffsetDateTime desde
     );
+
+    /**
+     * Ranking global de actividades por tipo de interacción en una
+     * ventana (Fase 6): las más vistas de los últimos N días.
+     * Filas: [actividadId, cantidad], de mayor a menor.
+     *
+     * El `actividadId IS NOT NULL` NO es decorativo: desde el script
+     * 31 la columna es nullable porque hay eventos que cuelgan del
+     * PERFIL. Sin este filtro, los clicks del perfil se cuelan en el
+     * conteo por actividad — un bug que no falla, solo miente.
+     *
+     * El índice (actividad_id, tipo, created_at) cubre el query.
+     */
+    @Query("""
+            SELECT e.actividadId, COUNT(e)
+              FROM EventoInteraccion e
+             WHERE e.tipo = :tipo
+               AND e.actividadId IS NOT NULL
+               AND e.createdAt >= :desde
+             GROUP BY e.actividadId
+             ORDER BY COUNT(e) DESC
+            """)
+    List<Object[]> rankingDeActividades(
+            @Param("tipo") String tipo,
+            @Param("desde") OffsetDateTime desde,
+            org.springframework.data.domain.Pageable pageable
+    );
 }

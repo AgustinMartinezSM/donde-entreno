@@ -113,6 +113,84 @@ public class InteraccionService {
     }
 
     /**
+     * Deportes más vistos en una ventana (Fase 6): reemplaza a la
+     * sección "populares" de la home, que hasta ahora era una lista
+     * HARDCODEADA de seis deportes sin ninguna métrica detrás.
+     *
+     * Se agrupa por deporte a partir del ranking de actividades: el
+     * tracking cuelga de la actividad, no del deporte.
+     *
+     * Devuelve una lista ordenada de [deporteSlug, deporteNombre,
+     * vistas]. Si no hay señal suficiente devuelve vacío — y el
+     * frontend no dibuja la sección. Nunca un ranking inventado.
+     */
+    @Transactional(readOnly = true)
+    public List<Object[]> deportesMasVistos(int dias, int minimoDeportes, int limite) {
+        int ventana = Math.min(Math.max(dias, 1), 365);
+        OffsetDateTime desde = OffsetDateTime.now().minusDays(ventana);
+
+        /*
+          Se pide un techo generoso de actividades porque varias pueden
+          ser del mismo deporte: el ranking final es por deporte.
+        */
+        List<Object[]> porActividad = eventoInteraccionRepository.rankingDeActividades(
+                "VISTA_DETALLE",
+                desde,
+                org.springframework.data.domain.PageRequest.of(0, 200)
+        );
+
+        if (porActividad.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Long> vistasPorActividad = new HashMap<>();
+        for (Object[] fila : porActividad) {
+            vistasPorActividad.put((Long) fila[0], ((Number) fila[1]).longValue());
+        }
+
+        /* Un solo findAllById: el deporte sale de la actividad. */
+        Map<String, long[]> vistasPorDeporte = new HashMap<>();
+        Map<String, String> nombrePorSlug = new HashMap<>();
+
+        for (Actividad actividad
+                : actividadRepository.findAllById(vistasPorActividad.keySet())) {
+            if (actividad.getDeporte() == null
+                    || !Boolean.TRUE.equals(actividad.getActiva())
+                    || actividad.getDeletedAt() != null) {
+                continue;
+            }
+
+            String slug = actividad.getDeporte().getSlug();
+            if (slug == null) {
+                continue;
+            }
+
+            nombrePorSlug.putIfAbsent(slug, actividad.getDeporte().getNombre());
+            vistasPorDeporte
+                    .computeIfAbsent(slug, clave -> new long[1])[0] +=
+                    vistasPorActividad.getOrDefault(actividad.getId(), 0L);
+        }
+
+        /*
+          Con menos de N deportes con señal, el "ranking" lo arman dos
+          clicks y miente: mejor no mostrar nada.
+        */
+        if (vistasPorDeporte.size() < Math.max(minimoDeportes, 1)) {
+            return List.of();
+        }
+
+        return vistasPorDeporte.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue()[0], a.getValue()[0]))
+                .limit(Math.min(Math.max(limite, 1), 20))
+                .map(entrada -> new Object[]{
+                        entrada.getKey(),
+                        nombrePorSlug.get(entrada.getKey()),
+                        entrada.getValue()[0]
+                })
+                .toList();
+    }
+
+    /**
      * Conteos de los últimos 30 días por actividad y tipo, en UN query
      * agrupado. Clave del mapa exterior: actividadId; interior: tipo.
      */

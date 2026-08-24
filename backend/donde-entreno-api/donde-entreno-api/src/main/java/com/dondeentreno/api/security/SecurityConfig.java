@@ -78,6 +78,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/categorias-deportivas").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ciudades", "/api/ciudades/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/deportes").permitAll()
+                        /* Fase 6: ranking público de lo más visto. */
+                        .requestMatchers(HttpMethod.GET, "/api/deportes/populares").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/filtros/opciones").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

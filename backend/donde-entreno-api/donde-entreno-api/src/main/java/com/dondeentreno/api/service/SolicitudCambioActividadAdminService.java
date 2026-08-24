@@ -52,6 +52,7 @@ public class SolicitudCambioActividadAdminService {
     private final HorarioActividadRepository horarioActividadRepository;
     private final UbicacionRepository ubicacionRepository;
     private final NotificacionService notificacionService;
+    private final FeedEventService feedEventService;
 
     public SolicitudCambioActividadAdminService(
             SolicitudCambioActividadRepository solicitudCambioRepository,
@@ -59,7 +60,8 @@ public class SolicitudCambioActividadAdminService {
             UsuarioRepository usuarioRepository,
             HorarioActividadRepository horarioActividadRepository,
             UbicacionRepository ubicacionRepository,
-            NotificacionService notificacionService
+            NotificacionService notificacionService,
+            FeedEventService feedEventService
     ) {
         this.solicitudCambioRepository = solicitudCambioRepository;
         this.actividadRepository = actividadRepository;
@@ -67,6 +69,7 @@ public class SolicitudCambioActividadAdminService {
         this.horarioActividadRepository = horarioActividadRepository;
         this.ubicacionRepository = ubicacionRepository;
         this.notificacionService = notificacionService;
+        this.feedEventService = feedEventService;
     }
 
     @Transactional(readOnly = true)
@@ -240,6 +243,22 @@ public class SolicitudCambioActividadAdminService {
                 "Tus cambios sobre \"" + actividad.getTitulo() + "\" fueron aprobados y ya están publicados.",
                 "/actividades/" + actividad.getSlug()
         );
+
+        /*
+          Feed (Fase 6): a diferencia del aviso de arriba —que va SOLO
+          al publicador— el evento lo ven sus seguidores: que una
+          actividad cambió de horario o precio es justo lo que quiere
+          saber quien la sigue.
+        */
+        if (actividad.getPerfilPublicador() != null) {
+            feedEventService.emitir(
+                    FeedEventService.TIPO_ACTIVIDAD_ACTUALIZADA,
+                    actividad.getPerfilPublicador().getId(),
+                    actividad.getId(),
+                    null,
+                    null
+            );
+        }
 
         return SolicitudCambioDetalleDTO.desdeEntidad(guardada, cambios);
     }

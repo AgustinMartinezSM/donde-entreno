@@ -73,6 +73,7 @@ public class SolicitudPublicacionAdminService {
     private final PerfilPublicadorSlugService perfilPublicadorSlugService;
     private final NotificacionService notificacionService;
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
+    private final FeedEventService feedEventService;
 
     public SolicitudPublicacionAdminService(
             SolicitudPublicacionRepository solicitudPublicacionRepository,
@@ -87,7 +88,8 @@ public class SolicitudPublicacionAdminService {
             BarrioRepository barrioRepository,
             PerfilPublicadorSlugService perfilPublicadorSlugService,
             NotificacionService notificacionService,
-            SeguimientoPublicadorRepository seguimientoPublicadorRepository
+            SeguimientoPublicadorRepository seguimientoPublicadorRepository,
+            FeedEventService feedEventService
     ) {
         this.solicitudPublicacionRepository = solicitudPublicacionRepository;
         this.solicitudPublicacionHorarioRepository = solicitudPublicacionHorarioRepository;
@@ -102,6 +104,7 @@ public class SolicitudPublicacionAdminService {
         this.perfilPublicadorSlugService = perfilPublicadorSlugService;
         this.notificacionService = notificacionService;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
+        this.feedEventService = feedEventService;
     }
 
     @Transactional(readOnly = true)
@@ -225,6 +228,18 @@ public class SolicitudPublicacionAdminService {
                 "ACTIVIDAD_NUEVA",
                 perfilPublicador.getNombre() + " publicó una actividad nueva: " + actividad.getTitulo(),
                 "/actividades/" + actividad.getSlug()
+        );
+
+        /*
+          Feed (Fase 6): el mismo hecho, ahora también como evento de
+          la línea de tiempo. Best-effort igual que la notificación.
+        */
+        feedEventService.emitir(
+                FeedEventService.TIPO_ACTIVIDAD_NUEVA,
+                perfilPublicador.getId(),
+                actividad.getId(),
+                null,
+                null
         );
 
         return new SolicitudPublicacionAprobacionResponseDTO(

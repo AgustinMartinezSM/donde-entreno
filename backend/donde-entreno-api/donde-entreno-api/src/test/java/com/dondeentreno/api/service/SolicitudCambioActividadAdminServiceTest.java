@@ -50,6 +50,9 @@ class SolicitudCambioActividadAdminServiceTest {
     @Mock
     private NotificacionService notificacionService;
 
+    @Mock
+    private FeedEventService feedEventService;
+
     private SolicitudCambioActividadAdminService service;
 
     @BeforeEach
@@ -60,7 +63,8 @@ class SolicitudCambioActividadAdminServiceTest {
                 usuarioRepository,
                 horarioActividadRepository,
                 ubicacionRepository,
-                notificacionService
+                notificacionService,
+                feedEventService
         );
     }
 

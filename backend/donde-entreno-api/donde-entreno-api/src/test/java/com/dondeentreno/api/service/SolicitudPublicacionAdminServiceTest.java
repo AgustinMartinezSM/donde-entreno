@@ -103,6 +103,9 @@ class SolicitudPublicacionAdminServiceTest {
     @Mock
     private SeguimientoPublicadorRepository seguimientoPublicadorRepository;
 
+    @Mock
+    private FeedEventService feedEventService;
+
     private SolicitudPublicacionAdminService service;
 
     @BeforeEach
@@ -120,7 +123,8 @@ class SolicitudPublicacionAdminServiceTest {
                 barrioRepository,
                 perfilPublicadorSlugService,
                 notificacionService,
-                seguimientoPublicadorRepository
+                seguimientoPublicadorRepository,
+                feedEventService
         );
     }
 

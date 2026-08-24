@@ -32,12 +32,15 @@ class ImagenServicePrincipalTest {
     @Mock
     private MeGustaImagenRepository meGustaImagenRepository;
 
+    @Mock
+    private com.dondeentreno.api.repository.ComentarioImagenRepository comentarioImagenRepository;
+
     private static final String URL_PUBLICA =
             "https://proyecto.supabase.co/storage/v1/object/public/imagenes-publicas/boxeo.jpg";
 
     @Test
     void asignaLaImagenPrincipalPorActividadYDejaNullLasQueNoTienen() {
-        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository, comentarioImagenRepository);
 
         ActividadDTO conImagen = new ActividadDTO();
         conImagen.setId(1L);
@@ -60,7 +63,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conVariasPrincipalesGanaLaDeMenorOrden() {
-        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository, comentarioImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -89,7 +92,7 @@ class ImagenServicePrincipalTest {
     */
     @Test
     void ignoraLasUrlsRelativasLegadoDeDiscoLocal() {
-        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository, comentarioImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -109,7 +112,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conUnaRelativaYUnaAbsolutaGanaLaAbsolutaAunqueTengaMayorOrden() {
-        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository, comentarioImagenRepository);
 
         ActividadDTO actividad = new ActividadDTO();
         actividad.setId(1L);
@@ -132,7 +135,7 @@ class ImagenServicePrincipalTest {
 
     @Test
     void conListaVaciaNoConsultaElRepositorio() {
-        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository);
+        ImagenService service = new ImagenService(imagenRepository, meGustaImagenRepository, comentarioImagenRepository);
 
         service.asignarImagenPrincipal(List.of());
 

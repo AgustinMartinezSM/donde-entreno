@@ -20,13 +20,16 @@ public class AdminModeracionSocialController {
 
     private final ValoracionService valoracionService;
     private final PreguntaActividadService preguntaActividadService;
+    private final com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService;
 
     public AdminModeracionSocialController(
             ValoracionService valoracionService,
-            PreguntaActividadService preguntaActividadService
+            PreguntaActividadService preguntaActividadService,
+            com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService
     ) {
         this.valoracionService = valoracionService;
         this.preguntaActividadService = preguntaActividadService;
+        this.comentarioImagenService = comentarioImagenService;
     }
 
     @PatchMapping("/valoraciones/{id}/ocultar")
@@ -39,5 +42,11 @@ public class AdminModeracionSocialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void ocultarPregunta(@PathVariable Long id) {
         preguntaActividadService.ocultarPorAdmin(id);
+    }
+
+    @PatchMapping("/comentarios/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarComentario(@PathVariable Long id) {
+        comentarioImagenService.ocultarPorAdmin(id);
     }
 }

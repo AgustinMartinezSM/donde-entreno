@@ -45,6 +45,10 @@ public class ImagenPublicadorService {
     private static final String ESTADO_PUBLICACION_PUBLICADA = "PUBLICADA";
     private static final long TAMANIO_MAXIMO_BYTES = 2L * 1024 * 1024;
     private static final List<String> TIPOS_PERMITIDOS = List.of("PRINCIPAL", "GALERIA");
+
+    /** Secciones de galería (script 30): catálogo fijo, "" = General. */
+    public static final List<String> SECCIONES_PERMITIDAS =
+            List.of("INSTALACIONES", "ENTRENAMIENTOS", "EVENTOS", "EQUIPO");
     static final List<String> TIPOS_PERFIL_PERMITIDOS = List.of("LOGO", "PORTADA");
     private static final String MOTIVO_ELIMINADA_POR_PUBLICADOR =
             "Eliminada por el publicador antes de la revision.";
@@ -93,25 +97,33 @@ public class ImagenPublicadorService {
         byte[] contenido = leerArchivoValidado(archivo);
         String extension = detectarExtension(contenido);
 
+        /*
+          Subida DIRECTA (Fase 4, filosofía de moderación flexible): el
+          archivo se guarda y se publica en el mismo paso — la foto se
+          ve al instante y la moderación pasa a ser reactiva (reportes
+          + admin oculta). Se reusan los dos primitivos ya probados del
+          storage; si publicar falla, la transacción cae entera.
+        */
         String rutaObjeto = almacenArchivos.guardarPendiente(
                 contenido,
                 "actividades/" + actividad.getId(),
                 extension
         );
+        String urlPublica = almacenArchivos.publicar(rutaObjeto);
 
         OffsetDateTime ahora = OffsetDateTime.now();
+
+        /* La PRINCIPAL nueva reemplaza a la anterior (antes lo hacía la aprobación). */
+        if ("PRINCIPAL".equals(tipoNormalizado)) {
+            desactivarAnterioresDeActividad(actividad.getId(), "PRINCIPAL", ahora);
+        }
         Imagen imagen = new Imagen();
         imagen.setActividad(actividad);
-        imagen.setUrl(rutaObjeto);
+        imagen.setUrl(urlPublica);
         imagen.setTipoImagen(tipoNormalizado);
         imagen.setOrden(calcularSiguienteOrden(actividad.getId()));
-        /*
-          activa=false + PENDIENTE: invisible en público hasta que el
-          admin apruebe. Además, el archivo vive en el bucket privado:
-          tampoco es accesible por URL directa.
-        */
-        imagen.setActiva(false);
-        imagen.setEstadoModeracion(ESTADO_PENDIENTE);
+        imagen.setActiva(true);
+        imagen.setEstadoModeracion(ESTADO_APROBADA);
         imagen.setCreatedAt(ahora);
         imagen.setUpdatedAt(ahora);
 
@@ -139,40 +151,63 @@ public class ImagenPublicadorService {
 
         String tipoNormalizado = validarTipoDePerfil(tipo);
 
-        /*
-          Un LOGO/PORTADA pendiente por vez: con uno en la cola, subir
-          otro del mismo tipo solo duplica trabajo de moderación. Para
-          reemplazarlo: retirar el pendiente y subir de nuevo.
-        */
-        if (imagenRepository.existsByPerfilPublicador_IdAndTipoImagenAndEstadoModeracion(
-                perfil.getId(), tipoNormalizado, ESTADO_PENDIENTE)) {
-            throw new ImagenInvalidaException(
-                    "Ya tenes una imagen de tipo " + tipoNormalizado
-                            + " pendiente de revision. Retirala o espera la moderacion."
-            );
-        }
-
         byte[] contenido = leerArchivoValidado(archivo);
         String extension = detectarExtension(contenido);
 
+        /* Subida DIRECTA (Fase 4): igual que las fotos de actividad. */
         String rutaObjeto = almacenArchivos.guardarPendiente(
                 contenido,
                 "perfiles/" + perfil.getId(),
                 extension
         );
+        String urlPublica = almacenArchivos.publicar(rutaObjeto);
 
         OffsetDateTime ahora = OffsetDateTime.now();
+
+        /*
+          El perfil tiene UN logo y UNA portada: el nuevo desactiva al
+          anterior del mismo tipo (antes lo hacía la aprobación).
+        */
+        desactivarAnterioresDePerfil(perfil.getId(), tipoNormalizado, ahora);
+
         Imagen imagen = new Imagen();
         imagen.setPerfilPublicador(perfil);
-        imagen.setUrl(rutaObjeto);
+        imagen.setUrl(urlPublica);
         imagen.setTipoImagen(tipoNormalizado);
         imagen.setOrden(0);
-        imagen.setActiva(false);
-        imagen.setEstadoModeracion(ESTADO_PENDIENTE);
+        imagen.setActiva(true);
+        imagen.setEstadoModeracion(ESTADO_APROBADA);
         imagen.setCreatedAt(ahora);
         imagen.setUpdatedAt(ahora);
 
         return aDTO(imagenRepository.save(imagen));
+    }
+
+    /* Baja lógica de las que la recién subida reemplaza (Fase 4). */
+    private void desactivarAnterioresDeActividad(
+            Long actividadId,
+            String tipoImagen,
+            OffsetDateTime ahora
+    ) {
+        for (Imagen anterior : imagenRepository
+                .findByActividad_IdAndTipoImagenAndActivaTrue(actividadId, tipoImagen)) {
+            anterior.setActiva(false);
+            anterior.setUpdatedAt(ahora);
+            imagenRepository.save(anterior);
+        }
+    }
+
+    private void desactivarAnterioresDePerfil(
+            Long perfilId,
+            String tipoImagen,
+            OffsetDateTime ahora
+    ) {
+        for (Imagen anterior : imagenRepository
+                .findByPerfilPublicador_IdAndTipoImagenAndActivaTrue(perfilId, tipoImagen)) {
+            anterior.setActiva(false);
+            anterior.setUpdatedAt(ahora);
+            imagenRepository.save(anterior);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -412,7 +447,9 @@ public class ImagenPublicadorService {
             Long actividadId,
             Long imagenId,
             String titulo,
-            String descripcion
+            String descripcion,
+            String seccion,
+            Boolean comentariosActivados
     ) {
         PerfilPublicador perfil = buscarPerfil(userId);
         Actividad actividad = buscarActividadPropiaPublicada(actividadId, perfil.getId());
@@ -437,6 +474,22 @@ public class ImagenPublicadorService {
 
         if (descripcion != null) {
             imagen.setDescripcion(normalizarTextoDeImagen(descripcion, 255));
+        }
+
+        /* Fase 4: sección de galería y toggle de comentarios. */
+        if (seccion != null) {
+            String seccionLimpia = seccion.trim();
+            if (seccionLimpia.isEmpty()) {
+                imagen.setSeccion(null);
+            } else if (SECCIONES_PERMITIDAS.contains(seccionLimpia)) {
+                imagen.setSeccion(seccionLimpia);
+            } else {
+                throw new ImagenInvalidaException("La seccion de galeria no es valida.");
+            }
+        }
+
+        if (comentariosActivados != null) {
+            imagen.setComentariosActivados(comentariosActivados);
         }
 
         imagen.setUpdatedAt(OffsetDateTime.now());

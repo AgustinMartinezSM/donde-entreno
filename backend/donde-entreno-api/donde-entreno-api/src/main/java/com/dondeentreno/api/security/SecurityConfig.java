@@ -99,6 +99,8 @@ public class SecurityConfig {
                           cuentan. Rate limit por IP en el controller.
                         */
                         .requestMatchers(HttpMethod.POST, "/api/actividades/*/interacciones").permitAll()
+                        /* Comentarios de fotos (Fase 4): leer es público. */
+                        .requestMatchers(HttpMethod.GET, "/api/imagenes/*/comentarios").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         /*
                           Refresh y logout son publicos como el login: la

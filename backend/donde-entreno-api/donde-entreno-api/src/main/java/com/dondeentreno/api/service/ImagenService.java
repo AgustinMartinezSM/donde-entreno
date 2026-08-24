@@ -33,6 +33,7 @@ public class ImagenService {
 
     private final ImagenRepository imagenRepository;
     private final MeGustaImagenRepository meGustaImagenRepository;
+    private final com.dondeentreno.api.repository.ComentarioImagenRepository comentarioImagenRepository;
 
     /**
      * Inyección de dependencias por constructor.
@@ -42,10 +43,12 @@ public class ImagenService {
      */
     public ImagenService(
             ImagenRepository imagenRepository,
-            MeGustaImagenRepository meGustaImagenRepository
+            MeGustaImagenRepository meGustaImagenRepository,
+            com.dondeentreno.api.repository.ComentarioImagenRepository comentarioImagenRepository
     ) {
         this.imagenRepository = imagenRepository;
         this.meGustaImagenRepository = meGustaImagenRepository;
+        this.comentarioImagenRepository = comentarioImagenRepository;
     }
 
     /**
@@ -53,7 +56,8 @@ public class ImagenService {
      * imágenes, en UN solo query agrupado — sin N+1. Fotos sin likes
      * quedan en 0 explícito: en público el dato siempre viaja.
      */
-    private List<ImagenDTO> conLikes(List<ImagenDTO> imagenes) {
+    /* Package-private: FotoGuardadaService lo reusa para su detalle. */
+    List<ImagenDTO> conLikes(List<ImagenDTO> imagenes) {
         if (imagenes.isEmpty()) {
             return imagenes;
         }
@@ -67,6 +71,15 @@ public class ImagenService {
 
         for (ImagenDTO imagen : imagenes) {
             imagen.setCantidadLikes(conteos.getOrDefault(imagen.getId(), 0L));
+        }
+
+        /* Comentarios visibles (script 30): mismo patrón agrupado. */
+        Map<Long, Long> comentarios = new HashMap<>();
+        for (Object[] fila : comentarioImagenRepository.contarVisiblesPorImagen(ids)) {
+            comentarios.put((Long) fila[0], (Long) fila[1]);
+        }
+        for (ImagenDTO imagen : imagenes) {
+            imagen.setCantidadComentarios(comentarios.getOrDefault(imagen.getId(), 0L));
         }
 
         return imagenes;

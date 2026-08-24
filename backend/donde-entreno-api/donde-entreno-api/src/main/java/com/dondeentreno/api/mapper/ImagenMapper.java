@@ -67,7 +67,7 @@ public class ImagenMapper {
             perfilPublicadorNombre = perfilPublicador.getNombre();
         }
 
-        return new ImagenDTO(
+        ImagenDTO dto = new ImagenDTO(
                 imagen.getId(),
                 imagen.getUrl(),
                 imagen.getTipoImagen(),
@@ -79,5 +79,11 @@ public class ImagenMapper {
                 perfilPublicadorId,
                 perfilPublicadorNombre
         );
+
+        /* Fase 4 (script 30), por setter como cantidadLikes. */
+        dto.setComentariosActivados(imagen.getComentariosActivados());
+        dto.setSeccion(imagen.getSeccion());
+
+        return dto;
     }
 }

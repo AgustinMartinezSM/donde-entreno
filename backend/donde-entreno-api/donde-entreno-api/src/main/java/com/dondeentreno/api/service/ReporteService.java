@@ -32,7 +32,8 @@ public class ReporteService {
             "PERFIL_PUBLICADOR",
             "ACTIVIDAD",
             "VALORACION",
-            "PREGUNTA"
+            "PREGUNTA",
+            "COMENTARIO"
     );
     private static final List<String> MOTIVOS = List.of(
             "CONTENIDO_INAPROPIADO",
@@ -52,6 +53,7 @@ public class ReporteService {
     private final ActividadRepository actividadRepository;
     private final ValoracionService valoracionService;
     private final PreguntaActividadService preguntaActividadService;
+    private final ComentarioImagenService comentarioImagenService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
@@ -59,7 +61,8 @@ public class ReporteService {
             PerfilPublicadorRepository perfilPublicadorRepository,
             ActividadRepository actividadRepository,
             ValoracionService valoracionService,
-            PreguntaActividadService preguntaActividadService
+            PreguntaActividadService preguntaActividadService,
+            ComentarioImagenService comentarioImagenService
     ) {
         this.reporteRepository = reporteRepository;
         this.imagenRepository = imagenRepository;
@@ -67,6 +70,7 @@ public class ReporteService {
         this.actividadRepository = actividadRepository;
         this.valoracionService = valoracionService;
         this.preguntaActividadService = preguntaActividadService;
+        this.comentarioImagenService = comentarioImagenService;
     }
 
     /**
@@ -182,6 +186,7 @@ public class ReporteService {
                     .isPresent();
             case "VALORACION" -> valoracionService.esVisible(objetoId);
             case "PREGUNTA" -> preguntaActividadService.esVisible(objetoId);
+            case "COMENTARIO" -> comentarioImagenService.esVisible(objetoId);
             default -> false;
         };
 

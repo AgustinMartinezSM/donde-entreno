@@ -113,7 +113,9 @@ public class ImagenPublicadorController {
                 actividadId,
                 imagenId,
                 request.getTitulo(),
-                request.getDescripcion()
+                request.getDescripcion(),
+                request.getSeccion(),
+                request.getComentariosActivados()
         );
     }
 

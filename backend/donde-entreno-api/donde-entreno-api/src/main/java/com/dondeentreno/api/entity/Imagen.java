@@ -111,6 +111,19 @@ public class Imagen {
     private Boolean activa;
 
     /**
+     * Toggle de comentarios por foto (script 30): el publicador puede
+     * cerrar la conversación en una foto puntual sin ocultar nada.
+     */
+    @Column(name = "comentarios_activados", nullable = false)
+    private Boolean comentariosActivados = Boolean.TRUE;
+
+    /**
+     * Sección de galería (script 30): catálogo fijo, NULL = General.
+     */
+    @Column(name = "seccion", length = 30)
+    private String seccion;
+
+    /**
      * Estado de moderación: PENDIENTE, APROBADA o RECHAZADA.
      *
      * Las vistas públicas solo muestran las APROBADAS; el panel del
@@ -175,6 +188,22 @@ public class Imagen {
 
     public Integer getOrden() {
         return orden;
+    }
+
+    public Boolean getComentariosActivados() {
+        return comentariosActivados;
+    }
+
+    public void setComentariosActivados(Boolean comentariosActivados) {
+        this.comentariosActivados = comentariosActivados;
+    }
+
+    public String getSeccion() {
+        return seccion;
+    }
+
+    public void setSeccion(String seccion) {
+        this.seccion = seccion;
     }
 
     public Boolean getActiva() {

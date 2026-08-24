@@ -45,6 +45,9 @@ class ReporteServiceTest {
     @Mock
     private PreguntaActividadService preguntaActividadService;
 
+    @Mock
+    private ComentarioImagenService comentarioImagenService;
+
     private ReporteService service;
 
     @BeforeEach
@@ -55,7 +58,8 @@ class ReporteServiceTest {
                 perfilPublicadorRepository,
                 actividadRepository,
                 valoracionService,
-                preguntaActividadService
+                preguntaActividadService,
+                comentarioImagenService
         );
     }
 
@@ -101,7 +105,7 @@ class ReporteServiceTest {
     void tipoYMotivoFueraDeCatalogoDan400() {
         assertThrows(
                 FiltroInvalidoException.class,
-                () -> service.reportar(10L, "COMENTARIO", 7L, "SPAM", null)
+                () -> service.reportar(10L, "CHAT", 7L, "SPAM", null)
         );
         assertThrows(
                 FiltroInvalidoException.class,

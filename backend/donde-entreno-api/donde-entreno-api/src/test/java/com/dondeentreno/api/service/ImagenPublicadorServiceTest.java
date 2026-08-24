@@ -67,36 +67,48 @@ class ImagenPublicadorServiceTest {
         );
     }
 
+    /*
+      Fase 4 (moderación flexible): la subida publica DIRECTO — el
+      archivo termina en el bucket público, la fila nace APROBADA y
+      activa, y la PRINCIPAL nueva desactiva a la anterior.
+    */
     @Test
-    void subirImagenGuardaPendienteEnElEspacioPrivado() {
+    void subirImagenPublicaDirectoYReemplazaLaPrincipalAnterior() {
         prepararPerfilYActividad(5L, 20L, 10L);
 
         when(almacenArchivos.guardarPendiente(any(), eq("actividades/10"), eq("png")))
                 .thenReturn("actividades/10/uuid.png");
+        when(almacenArchivos.publicar("actividades/10/uuid.png"))
+                .thenReturn("https://storage/publica/uuid.png");
         when(imagenRepository.findByActividad_IdOrderByCreatedAtDesc(10L))
                 .thenReturn(List.of());
+
+        Imagen principalAnterior = crearImagen(50L, "https://storage/vieja.png", "APROBADA");
+        principalAnterior.setActiva(true);
+        principalAnterior.setTipoImagen("PRINCIPAL");
+        when(imagenRepository.findByActividad_IdAndTipoImagenAndActivaTrue(10L, "PRINCIPAL"))
+                .thenReturn(List.of(principalAnterior));
+
         when(imagenRepository.save(any(Imagen.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(almacenArchivos.estaConfigurado()).thenReturn(true);
-        when(almacenArchivos.firmarUrl(eq("actividades/10/uuid.png"), any(Duration.class)))
-                .thenReturn("https://storage/firmada");
 
-        ImagenPublicadorDTO dto = service.subirImagen(
+        service.subirImagen(
                 5L,
                 10L,
                 new MockMultipartFile("archivo", "foto.png", "image/png", PNG_MINIMO),
                 "PRINCIPAL"
         );
 
-        ArgumentCaptor<Imagen> captor = ArgumentCaptor.forClass(Imagen.class);
-        verify(imagenRepository).save(captor.capture());
-        Imagen guardada = captor.getValue();
+        /* La anterior quedó desactivada y la nueva es pública al instante. */
+        assertFalse(principalAnterior.getActiva());
 
-        assertEquals("actividades/10/uuid.png", guardada.getUrl());
-        assertEquals("PENDIENTE", guardada.getEstadoModeracion());
-        assertFalse(guardada.getActiva());
-        /* La preview del publicador usa la URL firmada del espacio privado. */
-        assertEquals("https://storage/firmada", dto.getUrl());
+        ArgumentCaptor<Imagen> captor = ArgumentCaptor.forClass(Imagen.class);
+        verify(imagenRepository, org.mockito.Mockito.atLeastOnce()).save(captor.capture());
+        Imagen guardada = captor.getAllValues().get(captor.getAllValues().size() - 1);
+
+        assertEquals("https://storage/publica/uuid.png", guardada.getUrl());
+        assertEquals("APROBADA", guardada.getEstadoModeracion());
+        assertEquals(Boolean.TRUE, guardada.getActiva());
     }
 
     @Test
@@ -294,7 +306,7 @@ class ImagenPublicadorServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         ImagenPublicadorDTO dto = service.actualizarTexto(
-                5L, 10L, 77L, "  Sala de musculacion  ", "   "
+                5L, 10L, 77L, "  Sala de musculacion  ", "   ", null, null
         );
 
         assertEquals("Sala de musculacion", dto.getTitulo());
@@ -314,7 +326,7 @@ class ImagenPublicadorServiceTest {
         when(imagenRepository.save(any(Imagen.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        ImagenPublicadorDTO dto = service.actualizarTexto(5L, 10L, 77L, null, "Nueva desc");
+        ImagenPublicadorDTO dto = service.actualizarTexto(5L, 10L, 77L, null, "Nueva desc", null, null);
 
         assertEquals("titulo vigente", dto.getTitulo());
         assertEquals("Nueva desc", dto.getDescripcion());
@@ -331,7 +343,7 @@ class ImagenPublicadorServiceTest {
 
         assertThrows(
                 ImagenInvalidaException.class,
-                () -> service.actualizarTexto(5L, 10L, 77L, "x", null)
+                () -> service.actualizarTexto(5L, 10L, 77L, "x", null, null, null)
         );
     }
 
@@ -375,22 +387,36 @@ class ImagenPublicadorServiceTest {
         verify(almacenArchivos, never()).guardarPendiente(any(), anyString(), anyString());
     }
 
+    /*
+      Fase 4: sin cola de pendientes, el LOGO nuevo simplemente
+      reemplaza al anterior (baja lógica) — como hacía la aprobación.
+    */
     @Test
-    void subirImagenDePerfilRechazaUnSegundoPendienteDelMismoTipo() {
+    void subirImagenDePerfilReemplazaAlLogoAnterior() {
         PerfilPublicador perfil = prepararPerfil(5L);
         when(perfil.getId()).thenReturn(20L);
 
-        when(imagenRepository.existsByPerfilPublicador_IdAndTipoImagenAndEstadoModeracion(
-                20L, "LOGO", "PENDIENTE"))
-                .thenReturn(true);
+        when(almacenArchivos.guardarPendiente(any(), eq("perfiles/20"), eq("png")))
+                .thenReturn("perfiles/20/uuid.png");
+        when(almacenArchivos.publicar("perfiles/20/uuid.png"))
+                .thenReturn("https://storage/publica/logo.png");
 
-        assertThrows(ImagenInvalidaException.class, () -> service.subirImagenDePerfil(
+        Imagen logoAnterior = crearImagen(60L, "https://storage/logo-viejo.png", "APROBADA");
+        logoAnterior.setActiva(true);
+        logoAnterior.setTipoImagen("LOGO");
+        when(imagenRepository.findByPerfilPublicador_IdAndTipoImagenAndActivaTrue(20L, "LOGO"))
+                .thenReturn(List.of(logoAnterior));
+
+        when(imagenRepository.save(any(Imagen.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.subirImagenDePerfil(
                 5L,
                 new MockMultipartFile("archivo", "logo.png", "image/png", PNG_MINIMO),
                 "LOGO"
-        ));
+        );
 
-        verify(almacenArchivos, never()).guardarPendiente(any(), anyString(), anyString());
+        assertFalse(logoAnterior.getActiva());
     }
 
     /*
@@ -417,11 +443,10 @@ class ImagenPublicadorServiceTest {
                 .thenReturn(0L);
         when(almacenArchivos.guardarPendiente(any(), eq("actividades/10"), eq("png")))
                 .thenReturn("actividades/10/uuid.png");
+        when(almacenArchivos.publicar("actividades/10/uuid.png"))
+                .thenReturn("https://storage/publica/uuid.png");
         when(imagenRepository.save(any(Imagen.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(almacenArchivos.estaConfigurado()).thenReturn(true);
-        when(almacenArchivos.firmarUrl(anyString(), any(Duration.class)))
-                .thenReturn("https://storage/firmada");
 
         service.subirImagen(
                 5L,
@@ -442,6 +467,8 @@ class ImagenPublicadorServiceTest {
 
         when(almacenArchivos.guardarPendiente(any(), eq("perfiles/20"), eq("png")))
                 .thenReturn("perfiles/20/uuid.png");
+        when(almacenArchivos.publicar("perfiles/20/uuid.png"))
+                .thenReturn("https://storage/publica/logo.png");
         when(imagenRepository.save(any(Imagen.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -455,10 +482,11 @@ class ImagenPublicadorServiceTest {
         verify(imagenRepository).save(captor.capture());
         Imagen guardada = captor.getValue();
 
-        assertEquals("perfiles/20/uuid.png", guardada.getUrl());
+        /* Fase 4: nace pública y activa. */
+        assertEquals("https://storage/publica/logo.png", guardada.getUrl());
         assertEquals("LOGO", guardada.getTipoImagen());
-        assertEquals("PENDIENTE", guardada.getEstadoModeracion());
-        assertFalse(guardada.getActiva());
+        assertEquals("APROBADA", guardada.getEstadoModeracion());
+        assertEquals(Boolean.TRUE, guardada.getActiva());
         /*
           La constraint chk_imagen_duenio_unico exige exactamente un
           dueño: si esto se rompe, el insert falla en la base.

@@ -29,6 +29,11 @@ public class ImagenDTO {
      */
     private Long cantidadLikes;
 
+    /* Fase 4 (script 30). Aditivos, por setter como cantidadLikes. */
+    private Long cantidadComentarios;
+    private Boolean comentariosActivados;
+    private String seccion;
+
     public ImagenDTO() {
     }
 
@@ -102,6 +107,30 @@ public class ImagenDTO {
 
     public void setCantidadLikes(Long cantidadLikes) {
         this.cantidadLikes = cantidadLikes;
+    }
+
+    public Long getCantidadComentarios() {
+        return cantidadComentarios;
+    }
+
+    public void setCantidadComentarios(Long cantidadComentarios) {
+        this.cantidadComentarios = cantidadComentarios;
+    }
+
+    public Boolean getComentariosActivados() {
+        return comentariosActivados;
+    }
+
+    public void setComentariosActivados(Boolean comentariosActivados) {
+        this.comentariosActivados = comentariosActivados;
+    }
+
+    public String getSeccion() {
+        return seccion;
+    }
+
+    public void setSeccion(String seccion) {
+        this.seccion = seccion;
     }
 
     public void setId(Long id) {

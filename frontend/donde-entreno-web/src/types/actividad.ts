@@ -153,6 +153,10 @@ export type SocialProofActividad = {
   cantidadFavoritos: number;
   cantidadLikesFotos: number;
   cantidadPersonasEntrenaron30Dias: number;
+  /* Fase 3 (aditivos, opcionales por el orden de deploys). */
+  cantidadQuierenProbar?: number;
+  valoracionPromedio?: number | null;
+  cantidadValoraciones?: number;
 };
 
 export type HorarioActividad = {

@@ -5,7 +5,12 @@ import { API_BASE_URL } from "../lib/apiConfig";
   idempotente: reportar dos veces lo mismo no duplica.
 */
 
-export type TipoObjetoReporte = "IMAGEN" | "PERFIL_PUBLICADOR" | "ACTIVIDAD";
+export type TipoObjetoReporte =
+  | "IMAGEN"
+  | "PERFIL_PUBLICADOR"
+  | "ACTIVIDAD"
+  | "VALORACION"
+  | "PREGUNTA";
 
 export const MOTIVOS_REPORTE = [
   { valor: "CONTENIDO_INAPROPIADO", etiqueta: "Contenido inapropiado" },

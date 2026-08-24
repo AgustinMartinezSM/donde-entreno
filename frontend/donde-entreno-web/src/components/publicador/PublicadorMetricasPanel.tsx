@@ -67,6 +67,34 @@ export function PublicadorMetricasPanel({
       etiqueta: "Seguidores",
       valor: metricas.seguidores,
     },
+    /*
+      Tracking anónimo (Fase 2/3 social). Opcionales: un backend viejo
+      no manda los campos y las tarjetas no aparecen.
+    */
+    ...(metricas.vistas30Dias !== undefined
+      ? [
+          {
+            etiqueta: "Vistas (30 días)",
+            valor: metricas.vistas30Dias,
+          },
+        ]
+      : []),
+    ...(metricas.contactosWhatsapp30Dias !== undefined
+      ? [
+          {
+            etiqueta: "Contactos por WhatsApp (30 días)",
+            valor: metricas.contactosWhatsapp30Dias,
+          },
+        ]
+      : []),
+    ...((metricas.quierenProbar ?? 0) > 0
+      ? [
+          {
+            etiqueta: "Personas que quieren probar",
+            valor: metricas.quierenProbar ?? 0,
+          },
+        ]
+      : []),
   ];
 
   return (

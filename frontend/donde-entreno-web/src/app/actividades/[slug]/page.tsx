@@ -19,7 +19,10 @@ import {
   type FotoActividad,
 } from "../../../components/actividad/ActividadGaleria";
 import { CheckinButton } from "../../../components/actividad/CheckinButton";
+import { QuieroProbarControl } from "../../../components/actividad/QuieroProbarControl";
 import { RegistroVistaDetalle } from "../../../components/actividad/RegistroVistaDetalle";
+import { SeccionPreguntas } from "../../../components/actividad/SeccionPreguntas";
+import { SeccionValoraciones } from "../../../components/actividad/SeccionValoraciones";
 import { FavoritoButton } from "../../../components/actividad/FavoritoButton";
 import { MeGustaButton } from "../../../components/actividad/MeGustaButton";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
@@ -521,8 +524,21 @@ export default async function ActividadDetallePage({
                     actividadId={actividad.id}
                   />
                 </div>
+
+                {/*
+                  El flujo propio (Fase 3): "Quiero probar" es acción
+                  PRE-visita y vive junto al contacto, no en la barra
+                  social (que ya está completa a 375px).
+                */}
+                <QuieroProbarControl actividadId={actividad.id} className="mt-3" />
               </SurfaceCard>
             </aside>
+          </div>
+
+          {/* Confianza (Fase 3): valoraciones y preguntas públicas. */}
+          <div className="mt-12 space-y-8">
+            <SeccionValoraciones actividadId={actividad.id} />
+            <SeccionPreguntas actividadId={actividad.id} />
           </div>
 
           {/* Descubrimiento relacionado */}
@@ -695,6 +711,24 @@ function SocialProofFila({
   }
 
   const senales: string[] = [];
+
+  /* Estrellas primero: es la señal de confianza más fuerte. */
+  if (
+    socialProof.valoracionPromedio !== null &&
+    socialProof.valoracionPromedio !== undefined
+  ) {
+    senales.push(
+      `★ ${socialProof.valoracionPromedio.toFixed(1)} (${socialProof.cantidadValoraciones ?? 0})`
+    );
+  }
+
+  if ((socialProof.cantidadQuierenProbar ?? 0) > 0) {
+    senales.push(
+      socialProof.cantidadQuierenProbar === 1
+        ? "1 persona quiere probarla"
+        : `${socialProof.cantidadQuierenProbar} personas quieren probarla`
+    );
+  }
 
   if (socialProof.cantidadFavoritos > 0) {
     senales.push(

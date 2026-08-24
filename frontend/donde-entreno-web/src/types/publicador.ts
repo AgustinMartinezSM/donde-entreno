@@ -47,6 +47,13 @@ export type MetricasPublicador = {
   solicitudesCambioPendientes: number;
   imagenesPendientesModeracion: number;
   seguidores: number;
+  /*
+    Fase 2/3 social (aditivos, opcionales por el orden de deploys):
+    tracking anónimo de 30 días e interés en probar.
+  */
+  vistas30Dias?: number;
+  contactosWhatsapp30Dias?: number;
+  quierenProbar?: number;
 };
 
 export type PerfilPublicadorActual = {

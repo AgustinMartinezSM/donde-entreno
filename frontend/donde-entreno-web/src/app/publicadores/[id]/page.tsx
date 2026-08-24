@@ -85,6 +85,7 @@ function parsearParametroPerfil(
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: PerfilPublicadorPageProps): Promise<Metadata> {
   const { id: idCrudo } = await params;
   const parametro = parsearParametroPerfil(idCrudo);
@@ -93,38 +94,57 @@ export async function generateMetadata({
     return { title: "Publicador no encontrado", robots: { index: false } };
   }
 
+  let perfil: PerfilPublicadorPublico | null = null;
+
   try {
-    const perfil = await obtenerPerfilPublicadorPorId(parametro.valor);
-
-    if (!perfil) {
-      return { title: "Publicador no encontrado", robots: { index: false } };
-    }
-
-    const tipo = perfil.tipoPublicador
-      ? formatearTipoPublicador(perfil.tipoPublicador)
-      : "Publicador";
-    const descripcion =
-      perfil.descripcion ||
-      `${tipo} en DondeEntreno. Mirá sus actividades, horarios y datos de contacto, y seguilo para no perderte sus novedades.`;
-
-    return {
-      title: `${perfil.nombre}: actividades y contacto`,
-      description: descripcion,
-      alternates: {
-        /* La URL canónica es la del slug cuando existe (script 27). */
-        canonical: `/publicadores/${perfil.slug ?? perfil.id}`,
-      },
-      openGraph: {
-        title: `${perfil.nombre} | DondeEntreno`,
-        description: descripcion,
-        type: "profile",
-      },
-    };
+    perfil = await obtenerPerfilPublicadorPorId(parametro.valor);
   } catch (error) {
     console.error("Error al generar metadata del perfil publicador:", error);
 
     return { title: "Perfil de publicador" };
   }
+
+  if (!perfil) {
+    return { title: "Publicador no encontrado", robots: { index: false } };
+  }
+
+  /*
+    El redirect canónico va ACÁ y no solo en el page component: el
+    shell se streamea antes de que el page corra, así que un redirect
+    del page sale como meta refresh dentro de un 200. generateMetadata
+    corre antes del primer flush y produce el 308 HTTP real. Fuera del
+    try a propósito: un catch se tragaría el NEXT_REDIRECT.
+  */
+  if (parametro.esId && perfil.slug) {
+    const parametros = (await searchParams) ?? {};
+    const tab = Array.isArray(parametros.tab)
+      ? parametros.tab[0]
+      : parametros.tab;
+    permanentRedirect(
+      `/publicadores/${perfil.slug}${tab ? `?tab=${encodeURIComponent(tab)}` : ""}`
+    );
+  }
+
+  const tipo = perfil.tipoPublicador
+    ? formatearTipoPublicador(perfil.tipoPublicador)
+    : "Publicador";
+  const descripcion =
+    perfil.descripcion ||
+    `${tipo} en DondeEntreno. Mirá sus actividades, horarios y datos de contacto, y seguilo para no perderte sus novedades.`;
+
+  return {
+    title: `${perfil.nombre}: actividades y contacto`,
+    description: descripcion,
+    alternates: {
+      /* La URL canónica es la del slug cuando existe (script 27). */
+      canonical: `/publicadores/${perfil.slug ?? perfil.id}`,
+    },
+    openGraph: {
+      title: `${perfil.nombre} | DondeEntreno`,
+      description: descripcion,
+      type: "profile",
+    },
+  };
 }
 
 export default async function PerfilPublicadorPage({

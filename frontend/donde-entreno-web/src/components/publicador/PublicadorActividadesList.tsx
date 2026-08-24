@@ -9,6 +9,7 @@ import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
 import { SelectorDestacadas } from "./SelectorDestacadas";
+import { UbicacionesDelPublicador } from "./UbicacionesDelPublicador";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
@@ -250,6 +251,12 @@ export function PublicadorActividadesList() {
           {!cargando && !error ? (
             <SelectorDestacadas actividades={actividades} />
           ) : null}
+
+          {/*
+            Punto exacto de cada sede (Fase 7): sin coordenadas, la
+            actividad no aparece en "cerca mío".
+          */}
+          {!cargando && !error ? <UbicacionesDelPublicador /> : null}
 
           {paginaActividades ? (
             <div className="mt-6 flex flex-col gap-3 border-t border-[var(--color-border-soft)] pt-5 sm:flex-row sm:items-center sm:justify-between">

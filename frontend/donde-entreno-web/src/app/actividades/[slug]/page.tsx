@@ -40,6 +40,7 @@ import {
   formatearPrecio,
 } from "../../../lib/formatoCatalogo";
 import { formatearFechaRelativa } from "../../../lib/formatoFecha";
+import { construirHrefComoLlegar } from "../../../lib/mapas";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
@@ -219,6 +220,17 @@ export default async function ActividadDetallePage({
   const lugarVisible =
     [actividad.ubicacionNombre, zona].filter(Boolean).join(" · ") ||
     "Ubicación a confirmar";
+  /* Fase 7: link a mapas, con el punto exacto si el publicador lo cargó. */
+  const hrefComoLlegar = construirHrefComoLlegar({
+    latitud: actividad.latitud,
+    longitud: actividad.longitud,
+    googleMapsUrl: actividad.googleMapsUrl,
+    direccion: actividad.direccion,
+    ubicacionNombre: actividad.ubicacionNombre,
+    barrioNombre: actividad.barrioNombre,
+    ciudadNombre: actividad.ciudadNombre,
+  });
+
   const datosFavorito = {
     slug: actividad.slug,
     titulo: actividad.titulo,
@@ -484,6 +496,25 @@ export default async function ActividadDetallePage({
                       <p className="mt-1 text-[var(--color-muted)]">
                         {actividad.direccion}
                       </p>
+
+                      {/*
+                        "Cómo llegar" (Fase 7): con coordenadas va al
+                        punto exacto; sin ellas, a una búsqueda por
+                        dirección. Un link y no un mapa embebido: abre
+                        la app nativa del teléfono y no suma ninguna
+                        dependencia.
+                      */}
+                      {hrefComoLlegar ? (
+                        <a
+                          href={hrefComoLlegar}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-[12px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-3 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:border-[var(--color-primary)]"
+                        >
+                          Cómo llegar
+                          <span aria-hidden="true">↗</span>
+                        </a>
+                      ) : null}
                     </div>
                   )}
 

@@ -14,8 +14,9 @@ import { HomePopularSports } from "../components/home/HomePopularSports";
 import { HomePreferenciasChips } from "../components/home/HomePreferenciasChips";
 import { HomePublicadoresSugeridos } from "../components/home/HomePublicadoresSugeridos";
 import { HomePublishCta } from "../components/home/HomePublishCta";
+import { HomeZonas } from "../components/home/HomeZonas";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
-import { buscarActividades } from "../services/actividadService";
+import { buscarActividades, obtenerZonas } from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
 import {
   obtenerDeportes,
@@ -123,6 +124,12 @@ export default async function Home({ searchParams }: HomeProps) {
   */
   const populares = await obtenerDeportesPopulares().catch(() => []);
 
+  /*
+    Zonas con actividad real (Fase 7): el dato territorial que existe
+    HOY, sin depender de coordenadas cargadas.
+  */
+  const zonas = await obtenerZonas(ciudadSlug).catch(() => []);
+
   return (
     /* overflow-x-clip (y no hidden): hidden crea un scroll container y rompe el sticky del Header. */
     <main className="min-h-screen overflow-x-clip text-[var(--color-text)]">
@@ -164,6 +171,7 @@ export default async function Home({ searchParams }: HomeProps) {
           />
 
           <HomePublicadoresSugeridos publicadores={publicadoresSugeridos} />
+          <HomeZonas zonas={zonas} />
           <HomePopularSports ciudadSlug={ciudadSlug} populares={populares} />
           <HomeCrearCuentaCta />
           <HomeHowItWorks />

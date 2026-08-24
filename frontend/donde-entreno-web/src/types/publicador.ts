@@ -183,6 +183,22 @@ export type ActividadPublicadorHorario = {
   observacion: string | null;
 };
 
+/*
+  Sede del publicador (Fase 7). `latitud`/`longitud` llegan como string
+  desde el backend (BigDecimal) y son null mientras nadie cargó el
+  punto — que es el caso de la mayoría hoy.
+*/
+export type UbicacionPublicador = {
+  id: number;
+  nombre?: string | null;
+  direccion?: string | null;
+  barrioNombre?: string | null;
+  ciudadNombre?: string | null;
+  latitud?: number | string | null;
+  longitud?: number | string | null;
+  googleMapsUrl?: string | null;
+};
+
 export type ActividadPublicadorImagen = {
   id: number;
   url: string;

@@ -159,6 +159,42 @@ export async function obtenerDestacadasDelPublicador(
   return Array.isArray(data) ? (data as Actividad[]) : [];
 }
 
+/*
+  Zonas con actividad real (Fase 7): cuántas actividades publicadas hay
+  por barrio. Es el dato territorial disponible HOY, sin depender de
+  que las sedes tengan coordenadas cargadas.
+*/
+export async function obtenerZonas(
+  ciudadSlug?: string
+): Promise<{ barrioId: number; barrioNombre: string; cantidadActividades: number }[]> {
+  const query = ciudadSlug
+    ? `?ciudadSlug=${encodeURIComponent(ciudadSlug)}`
+    : "";
+
+  try {
+    const respuesta = await fetch(
+      `${API_BASE_URL}/api/actividades/zonas${query}`,
+      { cache: "no-store" }
+    );
+
+    if (!respuesta.ok) {
+      return [];
+    }
+
+    const data: unknown = await respuesta.json();
+
+    return Array.isArray(data)
+      ? (data as {
+          barrioId: number;
+          barrioNombre: string;
+          cantidadActividades: number;
+        }[])
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function obtenerImagenesActividad(
   slug: string
 ): Promise<ImagenActividad[]> {

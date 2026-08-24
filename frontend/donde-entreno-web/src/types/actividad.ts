@@ -24,6 +24,16 @@ export type Actividad = {
   barrioNombre?: string;
   direccion?: string;
 
+  /*
+    Coordenadas de la sede (Fase 7). Llegan como string (BigDecimal de
+    Jackson) y son null mientras el publicador no cargó el punto.
+    `distanciaKm` solo viaja en el modo "cerca mío".
+  */
+  latitud?: number | string | null;
+  longitud?: number | string | null;
+  googleMapsUrl?: string | null;
+  distanciaKm?: number | null;
+
   // Datos relacionados al deporte o categoría
   deporteId?: number;
   deporteNombre?: string;
@@ -135,6 +145,16 @@ export type ActividadDetalle = {
 
   barrioId?: number;
   barrioNombre?: string;
+
+  /*
+    Coordenadas de la sede (Fase 7). Opcionales: la mayoría de las
+    ubicaciones todavía no las tiene y la actividad se muestra igual.
+  */
+  latitud?: number | string | null;
+  longitud?: number | string | null;
+  googleMapsUrl?: string | null;
+  /* Solo viaja en el modo "cerca mío". */
+  distanciaKm?: number | null;
 
   fechaPublicacion?: string | null;
 

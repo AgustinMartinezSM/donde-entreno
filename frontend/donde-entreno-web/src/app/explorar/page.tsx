@@ -7,6 +7,7 @@ import { SocialActivityCard } from "../../components/social/SocialActivityCard";
 import { buscarActividades } from "../../services/actividadService";
 import { obtenerCiudadPorSlug } from "../../services/ciudadService";
 import { SearchBar } from "../../components/home/SearchBar";
+import { CercaMio } from "../../components/explorar/CercaMio";
 import { Pagination } from "../../components/explorar/Pagination";
 import { SortSelect } from "../../components/explorar/SortSelect";
 import { FiltersPanel } from "../../components/explorar/FiltersPanel";
@@ -484,6 +485,13 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
                 nivelActual={nivelActual}
                 modalidadActual={modalidadActual}
               />
+
+              {/*
+                "Cerca mío" (Fase 7): va DEBAJO del listado y no lo
+                reemplaza — es otra forma de mirar lo mismo, no un modo
+                que se apodera de la página.
+              */}
+              <CercaMio ciudadSlug={ciudadSlugActual || undefined} />
             </>
           )}
         </div>

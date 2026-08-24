@@ -26,6 +26,7 @@ import type {
   ActividadPublicadorHorario,
   ActividadPublicadorImagen,
   ImagenActividadPublicador,
+  UbicacionPublicador,
   ActividadPublicadorResumen,
   ActividadesPublicadorPage,
   CrearSolicitudPublicadorRequest,
@@ -316,6 +317,68 @@ function esListaDeActividadesPublicador(
         typeof (item as ActividadPublicadorResumen).id === "number"
     )
   );
+}
+
+/*
+  Sedes del publicador (Fase 7): listar y cargar el punto exacto.
+
+  El backend interpreta lo que la persona PEGA (link de Google Maps o
+  coordenadas), así que acá no hay parseo: si el texto no sirve,
+  vuelve un 400 con un mensaje que explica qué hacer.
+*/
+export async function listarMisUbicaciones(
+  accessToken: string
+): Promise<UbicacionPublicador[]> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/ubicaciones`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+    },
+    esListaDeUbicaciones
+  );
+}
+
+export async function guardarCoordenadasUbicacion(
+  ubicacionId: number,
+  pegado: string,
+  accessToken: string
+): Promise<UbicacionPublicador> {
+  const idSeguro = validarIdPositivo(
+    ubicacionId,
+    () => new PublicadorApiError("El id de la ubicacion es invalido.")
+  );
+
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/ubicaciones/${encodeURIComponent(
+      String(idSeguro)
+    )}/coordenadas`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify({ pegado }),
+    },
+    esUbicacionPublicador
+  );
+}
+
+function esUbicacionPublicador(valor: unknown): valor is UbicacionPublicador {
+  return (
+    typeof valor === "object" &&
+    valor !== null &&
+    typeof (valor as UbicacionPublicador).id === "number"
+  );
+}
+
+function esListaDeUbicaciones(valor: unknown): valor is UbicacionPublicador[] {
+  return Array.isArray(valor) && valor.every(esUbicacionPublicador);
 }
 
 // ============================================================

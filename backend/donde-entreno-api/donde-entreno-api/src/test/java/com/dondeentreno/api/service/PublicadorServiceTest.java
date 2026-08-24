@@ -87,7 +87,8 @@ class PublicadorServiceTest {
                 solicitudPublicacionHorarioRepository,
                 deporteRepository,
                 ciudadRepository,
-                barrioRepository
+                barrioRepository,
+                new ResolutorCoordenadas()
         );
         service = new PublicadorService(
                 perfilPublicadorRepository,

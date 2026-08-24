@@ -78,6 +78,48 @@ public class ActividadController {
      * @param size cantidad de elementos por página.
      * @return página de actividades publicadas en formato DTO.
      */
+    /**
+     * Zonas con actividad real (Fase 7): barrios ordenados por cuántas
+     * actividades publicadas tienen.
+     *
+     * Vive acá y no en /api/barrios porque lo que se cuenta son
+     * ACTIVIDADES; el barrio es el agrupador. Meterlo en el controller
+     * de barrios habría obligado a que ese recurso dependiera del
+     * service de actividades.
+     */
+    @GetMapping("/zonas")
+    public List<com.dondeentreno.api.dto.ZonaBarrioDTO> listarZonas(
+            @RequestParam(required = false) String ciudadSlug
+    ) {
+        return actividadService.obtenerZonasPorBarrio(ciudadSlug);
+    }
+
+    /**
+     * Modo "cerca mío" (Fase 7): actividades ordenadas por distancia
+     * al punto que manda el navegador.
+     *
+     * La ubicación llega por query y NO se persiste en ningún lado —
+     * es lo que ya promete /privacidad. Tampoco se loguea.
+     */
+    @GetMapping("/cerca")
+    public com.dondeentreno.api.dto.BusquedaCercaniaDTO buscarCerca(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(defaultValue = "5") int radioKm,
+            @RequestParam(required = false) String ciudadSlug,
+            @RequestParam(required = false) String deporteSlug,
+            @RequestParam(defaultValue = "12") int limite
+    ) {
+        return actividadService.buscarCerca(
+                lat,
+                lng,
+                radioKm,
+                ciudadSlug,
+                deporteSlug,
+                limite
+        );
+    }
+
     @GetMapping
     public PaginaResponseDTO<ActividadDTO> listarActividades(
             @RequestParam(required = false) Long deporteId,

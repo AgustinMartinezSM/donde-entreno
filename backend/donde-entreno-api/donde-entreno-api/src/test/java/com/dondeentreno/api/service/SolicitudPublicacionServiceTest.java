@@ -66,7 +66,9 @@ class SolicitudPublicacionServiceTest {
                 solicitudPublicacionHorarioRepository,
                 deporteRepository,
                 ciudadRepository,
-                barrioRepository
+                barrioRepository,
+                /* Real y no mock: es lógica pura de parseo, sin colaboradores. */
+                new ResolutorCoordenadas()
         );
     }
 

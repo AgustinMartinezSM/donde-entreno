@@ -158,6 +158,17 @@ public class ActividadMapper {
         /* Slug del perfil (script 27), por setter como perfilLogoUrl. */
         dto.setPerfilSlug(perfil != null ? perfil.getSlug() : null);
 
+        /*
+          Coordenadas de la sede (Fase 7): habilitan "Cómo llegar" y el
+          modo cercanía sin un segundo request. Viajan en null mientras
+          el publicador no haya cargado el punto.
+        */
+        if (ubicacion != null) {
+            dto.setLatitud(ubicacion.getLatitud());
+            dto.setLongitud(ubicacion.getLongitud());
+            dto.setGoogleMapsUrl(ubicacion.getGoogleMapsUrl());
+        }
+
         return dto;
     }
 }

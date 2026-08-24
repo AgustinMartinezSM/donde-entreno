@@ -58,6 +58,7 @@ public class SolicitudPublicacionService {
     private final DeporteRepository deporteRepository;
     private final CiudadRepository ciudadRepository;
     private final BarrioRepository barrioRepository;
+    private final ResolutorCoordenadas resolutorCoordenadas;
 
     /**
      * Inyeccion de dependencias por constructor.
@@ -67,13 +68,15 @@ public class SolicitudPublicacionService {
             SolicitudPublicacionHorarioRepository solicitudPublicacionHorarioRepository,
             DeporteRepository deporteRepository,
             CiudadRepository ciudadRepository,
-            BarrioRepository barrioRepository
+            BarrioRepository barrioRepository,
+            ResolutorCoordenadas resolutorCoordenadas
     ) {
         this.solicitudPublicacionRepository = solicitudPublicacionRepository;
         this.solicitudPublicacionHorarioRepository = solicitudPublicacionHorarioRepository;
         this.deporteRepository = deporteRepository;
         this.ciudadRepository = ciudadRepository;
         this.barrioRepository = barrioRepository;
+        this.resolutorCoordenadas = resolutorCoordenadas;
     }
 
     /**
@@ -162,6 +165,16 @@ public class SolicitudPublicacionService {
 
         List<HorarioValidado> horarios = validarHorarios(request.getHorarios());
 
+        /*
+          Fase 7: el punto de la sede es OPCIONAL. Si el publicador
+          pegó el link de Maps se resuelve acá y la ubicación nace con
+          coordenadas; si no, la actividad se publica igual y él puede
+          cargarlas después desde su panel.
+        */
+        java.math.BigDecimal[] coordenadas = resolverCoordenadasOpcionales(
+                request.getUbicacionPegada()
+        );
+
         return new DatosValidados(
                 deporte,
                 deporteOtro,
@@ -172,6 +185,8 @@ public class SolicitudPublicacionService {
                 nombreLugar,
                 direccion,
                 limpiarTextoOpcional(request.getReferenciaUbicacion()),
+                coordenadas != null ? coordenadas[0] : null,
+                coordenadas != null ? coordenadas[1] : null,
                 whatsapp,
                 whatsappNormalizado,
                 limpiarTextoOpcional(request.getInstagram()),
@@ -494,6 +509,8 @@ public class SolicitudPublicacionService {
         solicitud.setNombreLugar(datos.nombreLugar());
         solicitud.setDireccion(datos.direccion());
         solicitud.setReferenciaUbicacion(datos.referenciaUbicacion());
+        solicitud.setLatitud(datos.latitud());
+        solicitud.setLongitud(datos.longitud());
         solicitud.setWhatsapp(datos.whatsapp());
         solicitud.setWhatsappNormalizado(datos.whatsappNormalizado());
         solicitud.setInstagram(datos.instagram());
@@ -636,6 +653,23 @@ public class SolicitudPublicacionService {
         return null;
     }
 
+    /**
+     * Resuelve el punto de la sede si el publicador lo cargó (Fase 7).
+     *
+     * Devuelve null cuando no pegó nada. Si pegó algo ilegible SÍ
+     * lanza: es mejor decirle que el link no sirve en el momento, que
+     * publicar la actividad y que él crea que quedó ubicada.
+     */
+    private java.math.BigDecimal[] resolverCoordenadasOpcionales(String pegado) {
+        String limpio = limpiarTextoOpcional(pegado);
+
+        if (limpio == null) {
+            return null;
+        }
+
+        return resolutorCoordenadas.resolver(limpio);
+    }
+
     private String normalizarEmail(String email) {
         String emailLimpio = limpiarTextoOpcional(email);
 
@@ -656,6 +690,9 @@ public class SolicitudPublicacionService {
             String nombreLugar,
             String direccion,
             String referenciaUbicacion,
+            /* Fase 7: punto de la sede, resuelto de lo que pegó el publicador. */
+            java.math.BigDecimal latitud,
+            java.math.BigDecimal longitud,
             String whatsapp,
             String whatsappNormalizado,
             String instagram,

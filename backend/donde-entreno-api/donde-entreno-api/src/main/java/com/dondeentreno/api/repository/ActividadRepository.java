@@ -71,6 +71,27 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
             Long perfilPublicadorId
     );
 
+    /**
+     * Cuántas actividades publicadas hay por barrio (Fase 7, "zonas").
+     * Es el dato territorial que se puede dar HOY, sin coordenadas.
+     * Filas: [barrioId, barrioNombre, cantidad], de mayor a menor.
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT a.ubicacion.barrio.id, a.ubicacion.barrio.nombre, COUNT(a)
+              FROM Actividad a
+             WHERE a.activa = true
+               AND a.deletedAt IS NULL
+               AND a.estadoPublicacion = :estadoPublicacion
+               AND (:ciudadSlug IS NULL OR a.ubicacion.ciudad.slug = :ciudadSlug)
+             GROUP BY a.ubicacion.barrio.id, a.ubicacion.barrio.nombre
+             ORDER BY COUNT(a) DESC
+            """)
+    java.util.List<Object[]> contarPublicadasPorBarrio(
+            @org.springframework.data.repository.query.Param("estadoPublicacion")
+            String estadoPublicacion,
+            @org.springframework.data.repository.query.Param("ciudadSlug") String ciudadSlug
+    );
+
     @EntityGraph(attributePaths = {
             "perfilPublicador",
             "deporte",

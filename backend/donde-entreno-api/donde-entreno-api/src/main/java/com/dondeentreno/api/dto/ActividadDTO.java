@@ -64,6 +64,22 @@ public class ActividadDTO {
     private Long barrioId;
     private String barrioNombre;
 
+    /**
+     * Coordenadas de la sede (Fase 7). Aditivas y NULLABLE a propósito:
+     * la mayoría de las ubicaciones creadas por el flujo real todavía
+     * no las tiene, y una actividad sin punto se muestra igual — solo
+     * queda fuera del modo "cerca mío".
+     */
+    private java.math.BigDecimal latitud;
+    private java.math.BigDecimal longitud;
+    private String googleMapsUrl;
+
+    /**
+     * Distancia al punto que mandó el usuario, en km. Solo viaja en el
+     * modo cercanía; null en cualquier otra consulta.
+     */
+    private Double distanciaKm;
+
     private OffsetDateTime fechaPublicacion;
 
     /*
@@ -295,6 +311,38 @@ public class ActividadDTO {
 
     public Long getBarrioId() {
         return barrioId;
+    }
+
+    public java.math.BigDecimal getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(java.math.BigDecimal latitud) {
+        this.latitud = latitud;
+    }
+
+    public java.math.BigDecimal getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(java.math.BigDecimal longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getGoogleMapsUrl() {
+        return googleMapsUrl;
+    }
+
+    public void setGoogleMapsUrl(String googleMapsUrl) {
+        this.googleMapsUrl = googleMapsUrl;
+    }
+
+    public Double getDistanciaKm() {
+        return distanciaKm;
+    }
+
+    public void setDistanciaKm(Double distanciaKm) {
+        this.distanciaKm = distanciaKm;
     }
 
     public String getBarrioNombre() {

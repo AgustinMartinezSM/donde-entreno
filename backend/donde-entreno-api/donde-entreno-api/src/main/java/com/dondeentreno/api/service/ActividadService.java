@@ -7,6 +7,7 @@ import com.dondeentreno.api.dto.ActividadDetalleDTO;
 import com.dondeentreno.api.dto.HorarioActividadDTO;
 import com.dondeentreno.api.dto.ImagenDTO;
 import com.dondeentreno.api.repository.ActividadRepository;
+import com.dondeentreno.api.dto.BusquedaCercaniaDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,8 @@ import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -406,6 +409,112 @@ public class ActividadService {
      * @param orden criterio de ordenamiento.
      * @return página de actividades publicadas.
      */
+    /**
+     * Modo "cerca mío" (Fase 7): las actividades publicadas ordenadas
+     * por distancia al punto que mandó el usuario.
+     *
+     * La distancia se calcula EN MEMORIA sobre el resultado ya
+     * filtrado, no en la base: con el volumen actual (7 actividades)
+     * un índice geográfico o PostGIS sería ceremonia. Umbral anotado
+     * para revisarlo: ~500 actividades.
+     *
+     * La ubicación del usuario llega por parámetro y NO se guarda en
+     * ningún lado: es lo que ya promete /privacidad.
+     */
+    public BusquedaCercaniaDTO buscarCerca(
+            double latitud,
+            double longitud,
+            int radioKm,
+            String ciudadSlug,
+            String deporteSlug,
+            int limite
+    ) {
+        int radioSeguro = Math.min(Math.max(radioKm, 1), 50);
+        int limiteSeguro = Math.min(Math.max(limite, 1), 50);
+
+        /*
+          Se traen las publicadas de la ciudad (filtro barato que ya
+          existe) y recién ahí se mide: sin esto habría que recorrer
+          todo el catálogo.
+        */
+        Page<Actividad> candidatas =
+                actividadRepository.buscarActividadesPublicadasConFiltrosPaginado(
+                        ESTADO_PUBLICADA,
+                        null,
+                        limpiarTexto(deporteSlug),
+                        null,
+                        normalizarSlug(ciudadSlug),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        PageRequest.of(0, 200)
+                );
+
+        List<ActividadDTO> conDistancia = new java.util.ArrayList<>();
+        long sinCoordenadas = 0;
+
+        for (Actividad actividad : candidatas.getContent()) {
+            var ubicacion = actividad.getUbicacion();
+            BigDecimal lat = ubicacion != null ? ubicacion.getLatitud() : null;
+            BigDecimal lng = ubicacion != null ? ubicacion.getLongitud() : null;
+
+            double distancia = CalculadoraDistancia.kilometros(latitud, longitud, lat, lng);
+
+            if (distancia < 0) {
+                /* Sin punto cargado: no se puede ordenar, queda fuera. */
+                sinCoordenadas++;
+                continue;
+            }
+
+            if (distancia > radioSeguro) {
+                continue;
+            }
+
+            ActividadDTO dto = ActividadMapper.toDTO(actividad);
+            dto.setDistanciaKm(distancia);
+            conDistancia.add(dto);
+        }
+
+        conDistancia.sort(
+                java.util.Comparator.comparingDouble(ActividadDTO::getDistanciaKm)
+        );
+
+        long totalEnRadio = conDistancia.size();
+        List<ActividadDTO> recortadas = conDistancia.size() > limiteSeguro
+                ? conDistancia.subList(0, limiteSeguro)
+                : conDistancia;
+
+        imagenService.asignarImagenPrincipal(recortadas);
+
+        return new BusquedaCercaniaDTO(
+                recortadas,
+                radioSeguro,
+                sinCoordenadas,
+                totalEnRadio
+        );
+    }
+
+    /**
+     * Zonas con actividad real (Fase 7): cuántas actividades hay por
+     * barrio. Un query agrupado, sin coordenadas de por medio.
+     */
+    public List<com.dondeentreno.api.dto.ZonaBarrioDTO> obtenerZonasPorBarrio(
+            String ciudadSlug
+    ) {
+        return actividadRepository
+                .contarPublicadasPorBarrio(ESTADO_PUBLICADA, normalizarSlug(ciudadSlug))
+                .stream()
+                .filter(fila -> fila[0] != null)
+                .map(fila -> new com.dondeentreno.api.dto.ZonaBarrioDTO(
+                        (Long) fila[0],
+                        (String) fila[1],
+                        ((Number) fila[2]).longValue()
+                ))
+                .toList();
+    }
+
     public PaginaResponseDTO<ActividadDTO> buscarActividadesConFiltrosPaginado(
             Long deporteId,
             String deporteSlug,

@@ -434,6 +434,13 @@ public class SolicitudPublicacionAdminService {
         ubicacion.setNombre(nombre);
         ubicacion.setDireccion(direccion);
         ubicacion.setReferencia(normalizarTexto(solicitud.getReferenciaUbicacion()));
+        /*
+          Fase 7: el punto que cargó el publicador viaja a la ubicación.
+          Hasta ahora NADIE lo seteaba, y por eso toda ubicación creada
+          por este flujo nacía sin coordenadas (4 de 9 en producción).
+        */
+        ubicacion.setLatitud(solicitud.getLatitud());
+        ubicacion.setLongitud(solicitud.getLongitud());
         ubicacion.setActiva(true);
         ubicacion.setCreatedAt(ahora);
         ubicacion.setUpdatedAt(ahora);

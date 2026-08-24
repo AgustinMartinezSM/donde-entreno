@@ -175,6 +175,17 @@ public class SolicitudPublicacion {
     private String referenciaUbicacion;
 
     /**
+     * Punto exacto de la sede (script 33, Fase 7). Opcional: sin esto,
+     * la ubicación nace sin coordenadas y la actividad queda fuera del
+     * modo "cerca mío".
+     */
+    @Column(name = "latitud", precision = 9, scale = 6)
+    private java.math.BigDecimal latitud;
+
+    @Column(name = "longitud", precision = 9, scale = 6)
+    private java.math.BigDecimal longitud;
+
+    /**
      * WhatsApp informado por el solicitante.
      */
     @Column(name = "whatsapp", length = 40)
@@ -386,6 +397,22 @@ public class SolicitudPublicacion {
 
     public String getReferenciaUbicacion() {
         return referenciaUbicacion;
+    }
+
+    public java.math.BigDecimal getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(java.math.BigDecimal latitud) {
+        this.latitud = latitud;
+    }
+
+    public java.math.BigDecimal getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(java.math.BigDecimal longitud) {
+        this.longitud = longitud;
     }
 
     public String getWhatsapp() {

@@ -107,6 +107,17 @@ public class SolicitudPublicacionRequestDTO {
     @Size(max = 255, message = "La referencia de ubicacion no puede superar los 255 caracteres.")
     private String referenciaUbicacion;
 
+    /**
+     * Punto exacto de la sede (Fase 7): el publicador PEGA el link de
+     * Google Maps (o las coordenadas) y el backend las interpreta.
+     *
+     * Aditivo por setter, fuera del constructor: sumarlo ahí rompería
+     * a todos los llamadores. Opcional — sin esto la actividad se
+     * publica igual, solo queda fuera del modo "cerca mío".
+     */
+    @Size(max = 500, message = "El link de ubicacion no puede superar los 500 caracteres.")
+    private String ubicacionPegada;
+
     @Size(max = 40, message = "El WhatsApp no puede superar los 40 caracteres.")
     private String whatsapp;
 
@@ -264,6 +275,14 @@ public class SolicitudPublicacionRequestDTO {
 
     public String getReferenciaUbicacion() {
         return referenciaUbicacion;
+    }
+
+    public String getUbicacionPegada() {
+        return ubicacionPegada;
+    }
+
+    public void setUbicacionPegada(String ubicacionPegada) {
+        this.ubicacionPegada = ubicacionPegada;
     }
 
     public String getWhatsapp() {

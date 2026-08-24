@@ -46,10 +46,10 @@ export async function obtenerPerfilesPublicadores(): Promise<
   error se propaga y la página muestra su estado de error.
 */
 export async function obtenerPerfilPublicadorPorId(
-  id: number
+  idOSlug: number | string
 ): Promise<PerfilPublicadorPublico | null> {
   const respuesta = await fetch(
-    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(id))}`,
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(idOSlug))}`,
     { cache: "no-store" }
   );
 

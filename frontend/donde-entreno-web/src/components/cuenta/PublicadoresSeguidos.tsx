@@ -95,7 +95,7 @@ export function PublicadoresSeguidos({
                       nombre={publicador.perfilPublicadorNombre}
                       tipo={publicador.tipoPublicador}
                       avatarUrl={publicador.perfilLogoUrl}
-                      href={`/publicadores/${publicador.perfilPublicadorId}`}
+                      href={`/publicadores/${publicador.perfilSlug ?? publicador.perfilPublicadorId}`}
                     />
                     <p className="mt-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-secondary)]">
                       {[
@@ -123,7 +123,7 @@ export function PublicadoresSeguidos({
                       {dejoDeSeguir ? "Seguir" : "Siguiendo"}
                     </AppButton>
                     <AppLinkButton
-                      href={`/publicadores/${publicador.perfilPublicadorId}`}
+                      href={`/publicadores/${publicador.perfilSlug ?? publicador.perfilPublicadorId}`}
                       variant="outline"
                       size="sm"
                     >

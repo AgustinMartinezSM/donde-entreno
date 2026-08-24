@@ -97,7 +97,7 @@ export function ComunidadSugerida({
               tipo={publicador.tipoPublicador}
               verificado={publicador.verificado === true}
               avatarUrl={publicador.logoUrl}
-              href={`/publicadores/${publicador.id}`}
+              href={`/publicadores/${publicador.slug ?? publicador.id}`}
             />
 
             {publicador.descripcion ? (
@@ -112,7 +112,7 @@ export function ComunidadSugerida({
                 perfilPublicadorNombre={publicador.nombre}
               />
               <AppLinkButton
-                href={`/publicadores/${publicador.id}`}
+                href={`/publicadores/${publicador.slug ?? publicador.id}`}
                 variant="outline"
                 size="sm"
               >

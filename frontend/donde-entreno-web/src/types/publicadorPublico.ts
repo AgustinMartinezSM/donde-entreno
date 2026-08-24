@@ -15,6 +15,8 @@ export type PerfilPublicadorPublico = {
   verificado?: boolean | null;
   /* Logo aprobado (identidad única, fix UX 2026-08-22). Aditivo. */
   logoUrl?: string | null;
+  /* URL amigable (script 27). Aditivo: null en perfiles sin backfill. */
+  slug?: string | null;
   /*
     Campo aditivo: tolera respuestas viejas del backend, así el frontend
     no depende del orden de los deploys.

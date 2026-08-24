@@ -40,7 +40,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const perfiles = await obtenerPerfilesPublicadores();
     rutasPublicadores = perfiles.map((perfil) => ({
-      ruta: `/publicadores/${perfil.id}`,
+      /* La URL canónica es la del slug cuando existe (script 27). */
+      ruta: `/publicadores/${perfil.slug ?? perfil.id}`,
       prioridad: 0.6,
     }));
   } catch (error) {

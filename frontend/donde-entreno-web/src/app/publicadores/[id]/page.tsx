@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import type { Actividad } from "../../../types/actividad";
 import type {
@@ -66,24 +66,35 @@ type FotoDelPerfil = {
   cantidadLikes?: number | null;
 };
 
-function parsearId(idCrudo: string): number | null {
-  const id = Number(idCrudo);
+/*
+  El param acepta id numérico (links viejos) o slug (script 27).
+  Devuelve null solo para basura que no puede ser ninguno de los dos.
+*/
+function parsearParametroPerfil(
+  crudo: string
+): { esId: boolean; valor: string } | null {
+  const texto = crudo.trim();
 
-  return Number.isInteger(id) && id > 0 ? id : null;
+  if (/^\d+$/.test(texto)) {
+    const id = Number(texto);
+    return Number.isInteger(id) && id > 0 ? { esId: true, valor: texto } : null;
+  }
+
+  return /^[a-z0-9-]{1,150}$/.test(texto) ? { esId: false, valor: texto } : null;
 }
 
 export async function generateMetadata({
   params,
 }: PerfilPublicadorPageProps): Promise<Metadata> {
   const { id: idCrudo } = await params;
-  const id = parsearId(idCrudo);
+  const parametro = parsearParametroPerfil(idCrudo);
 
-  if (id === null) {
+  if (parametro === null) {
     return { title: "Publicador no encontrado", robots: { index: false } };
   }
 
   try {
-    const perfil = await obtenerPerfilPublicadorPorId(id);
+    const perfil = await obtenerPerfilPublicadorPorId(parametro.valor);
 
     if (!perfil) {
       return { title: "Publicador no encontrado", robots: { index: false } };
@@ -100,7 +111,8 @@ export async function generateMetadata({
       title: `${perfil.nombre}: actividades y contacto`,
       description: descripcion,
       alternates: {
-        canonical: `/publicadores/${perfil.id}`,
+        /* La URL canónica es la del slug cuando existe (script 27). */
+        canonical: `/publicadores/${perfil.slug ?? perfil.id}`,
       },
       openGraph: {
         title: `${perfil.nombre} | DondeEntreno`,
@@ -124,9 +136,9 @@ export default async function PerfilPublicadorPage({
   const tabPedida = Array.isArray(parametros.tab)
     ? parametros.tab[0]
     : parametros.tab;
-  const id = parsearId(idCrudo);
+  const parametro = parsearParametroPerfil(idCrudo);
 
-  if (id === null) {
+  if (parametro === null) {
     notFound();
   }
 
@@ -134,7 +146,7 @@ export default async function PerfilPublicadorPage({
   let huboError = false;
 
   try {
-    perfil = await obtenerPerfilPublicadorPorId(id);
+    perfil = await obtenerPerfilPublicadorPorId(parametro.valor);
   } catch (error) {
     huboError = true;
     console.error("Error al cargar el perfil publicador:", error);
@@ -160,6 +172,17 @@ export default async function PerfilPublicadorPage({
 
   if (!perfil) {
     notFound();
+  }
+
+  /*
+    Redirect canónico (script 27): entrar por id numérico con slug
+    disponible manda a la URL amigable — una sola URL por perfil para
+    los buscadores. Se conserva la tab pedida.
+  */
+  if (parametro.esId && perfil.slug) {
+    permanentRedirect(
+      `/publicadores/${perfil.slug}${tabPedida ? `?tab=${encodeURIComponent(tabPedida)}` : ""}`
+    );
   }
 
   /* Imágenes y actividades: best-effort, el perfil se muestra igual. */
@@ -318,7 +341,7 @@ export default async function PerfilPublicadorPage({
                     perfilPublicadorNombre={perfil.nombre}
                   />
                   <CompartirButton
-                    ruta={`/publicadores/${perfil.id}`}
+                    ruta={`/publicadores/${perfil.slug ?? perfil.id}`}
                     titulo={perfil.nombre}
                   />
                 </div>
@@ -401,7 +424,7 @@ export default async function PerfilPublicadorPage({
               return (
                 <Link
                   key={tab.clave}
-                  href={`/publicadores/${perfil.id}?tab=${tab.clave}`}
+                  href={`/publicadores/${perfil.slug ?? perfil.id}?tab=${tab.clave}`}
                   scroll={false}
                   aria-current={activa ? "page" : undefined}
                   className={`-mb-px shrink-0 border-b-2 px-4 py-3 text-sm font-extrabold transition duration-200 ease-out ${

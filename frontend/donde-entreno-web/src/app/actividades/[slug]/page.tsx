@@ -278,7 +278,7 @@ export default async function ActividadDetallePage({
                   }
                   href={
                     actividad.perfilPublicadorId
-                      ? `/publicadores/${actividad.perfilPublicadorId}`
+                      ? `/publicadores/${actividad.perfilSlug ?? actividad.perfilPublicadorId}`
                       : undefined
                   }
                 />
@@ -290,7 +290,7 @@ export default async function ActividadDetallePage({
                       perfilPublicadorNombre={actividad.perfilPublicadorNombre}
                     />
                     <AppLinkButton
-                      href={`/publicadores/${actividad.perfilPublicadorId}`}
+                      href={`/publicadores/${actividad.perfilSlug ?? actividad.perfilPublicadorId}`}
                       variant="outline"
                       size="sm"
                     >

@@ -37,6 +37,8 @@ export type Actividad = {
   perfilPublicadorNombre?: string;
   tipoPublicador?: string;
   perfilVerificado?: boolean;
+  /* Slug del perfil (script 27), para el link /publicadores/{slug}. */
+  perfilSlug?: string | null;
 
   // Datos visuales o económicos
   imagenPrincipalUrl?: string | null;
@@ -112,6 +114,8 @@ export type ActividadDetalle = {
   perfilVerificado?: boolean;
   /* Logo aprobado del publicador (identidad única). Aditivo. */
   perfilLogoUrl?: string | null;
+  /* Slug del perfil (script 27), para el link /publicadores/{slug}. */
+  perfilSlug?: string | null;
 
   deporteId?: number;
   deporteNombre?: string;

@@ -94,7 +94,7 @@ export function SocialActivityCard({
           avatarUrl={actividad.perfilLogoUrl}
           href={
             actividad.perfilPublicadorId
-              ? `/publicadores/${actividad.perfilPublicadorId}`
+              ? `/publicadores/${actividad.perfilSlug ?? actividad.perfilPublicadorId}`
               : undefined
           }
         />

@@ -17,6 +17,8 @@ export type PublicadorSeguido = {
   seguidoDesde: string | null;
   /* Logo aprobado (identidad única, fix UX 2026-08-22). Aditivo. */
   perfilLogoUrl?: string | null;
+  /* Slug del perfil (script 27). Aditivo. */
+  perfilSlug?: string | null;
 };
 
 /*

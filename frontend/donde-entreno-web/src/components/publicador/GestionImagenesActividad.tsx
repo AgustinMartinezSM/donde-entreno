@@ -326,8 +326,8 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
       setImagenes((previas) => [...subidas.reverse(), ...previas]);
       setMensaje(
         subidas.length === 1
-          ? "Imagen subida. Queda pendiente de revisión: se va a ver en la página pública cuando el equipo la apruebe."
-          : `${subidas.length} imágenes subidas. Quedan pendientes de revisión: se van a ver en la página pública cuando el equipo las apruebe.`
+          ? "¡Foto publicada! Ya se ve en la página pública de la actividad."
+          : `${subidas.length} fotos publicadas. Ya se ven en la página pública de la actividad.`
       );
     }
 
@@ -456,7 +456,9 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
   async function manejarGuardarTexto(
     imagen: ImagenActividadPublicador,
     titulo: string,
-    descripcion: string
+    descripcion: string,
+    seccion: string,
+    comentariosActivados: boolean
   ) {
     if (!accessToken) {
       return;
@@ -469,8 +471,8 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
       const actualizada = await actualizarTextoImagen(
         actividadId,
         imagen.id,
-        /* Siempre los dos: el string vacío limpia (semántica PATCH). */
-        { titulo, descripcion },
+        /* Siempre todos: el string vacío limpia (semántica PATCH). */
+        { titulo, descripcion, seccion, comentariosActivados },
         accessToken
       );
       setImagenes((previas) =>
@@ -517,7 +519,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
       <SectionHeader
         eyebrow="Imágenes"
         title="Fotos de la actividad"
-        description="Subí fotos reales de las clases o del espacio. Las imágenes se publican después de revisión."
+        description="Subí fotos reales de las clases o del espacio. Se publican al instante; la comunidad puede reportar contenido inapropiado."
       />
 
       <form className="mt-6 grid gap-5" onSubmit={manejarEnvio}>
@@ -684,7 +686,7 @@ export function GestionImagenesActividad({ actividadId }: { actividadId: number 
                 : "Subir imagen"}
           </AppButton>
           <p className="text-xs leading-5 text-[var(--color-muted)]">
-            Las imágenes se publican después de revisión.
+            Se publican al instante en la página de la actividad.
           </p>
         </div>
       </form>
@@ -754,7 +756,9 @@ type GrupoImagenesProps = {
   onGuardarTexto: (
     imagen: ImagenActividadPublicador,
     titulo: string,
-    descripcion: string
+    descripcion: string,
+    seccion: string,
+    comentariosActivados: boolean
   ) => Promise<void>;
   /* Solo la galería aprobada se ordena y puede pasar a principal. */
   idsOrdenables?: number[];
@@ -920,12 +924,18 @@ function EditorTextoImagen({
   onGuardar: (
     imagen: ImagenActividadPublicador,
     titulo: string,
-    descripcion: string
+    descripcion: string,
+    seccion: string,
+    comentariosActivados: boolean
   ) => Promise<void>;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [titulo, setTitulo] = useState(imagen.titulo ?? "");
   const [descripcion, setDescripcion] = useState(imagen.descripcion ?? "");
+  const [seccion, setSeccion] = useState(imagen.seccion ?? "");
+  const [comentariosActivados, setComentariosActivados] = useState(
+    imagen.comentariosActivados !== false
+  );
   const [guardando, setGuardando] = useState(false);
 
   async function manejarGuardar() {
@@ -936,7 +946,7 @@ function EditorTextoImagen({
     setGuardando(true);
 
     try {
-      await onGuardar(imagen, titulo, descripcion);
+      await onGuardar(imagen, titulo, descripcion, seccion, comentariosActivados);
       setAbierto(false);
     } catch {
       /* El error ya lo mostró el contenedor; el formulario queda abierto. */
@@ -952,13 +962,15 @@ function EditorTextoImagen({
         onClick={() => {
           setTitulo(imagen.titulo ?? "");
           setDescripcion(imagen.descripcion ?? "");
+          setSeccion(imagen.seccion ?? "");
+          setComentariosActivados(imagen.comentariosActivados !== false);
           setAbierto(true);
         }}
         className="mt-2 text-xs font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
       >
         {imagen.titulo || imagen.descripcion
-          ? "Editar texto de la foto"
-          : "Agregar texto a la foto"}
+          ? "Editar texto y sección"
+          : "Texto, sección y comentarios"}
       </button>
     );
   }
@@ -995,9 +1007,38 @@ function EditorTextoImagen({
         />
       </label>
 
+      <label className="block">
+        <span className="text-xs font-bold text-[var(--color-primary)]">
+          Sección de galería
+        </span>
+        <select
+          value={seccion}
+          onChange={(evento) => setSeccion(evento.target.value)}
+          disabled={guardando}
+          className="mt-1.5 min-h-10 w-full rounded-[12px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-accent)] disabled:opacity-60"
+        >
+          <option value="">General</option>
+          <option value="INSTALACIONES">Instalaciones</option>
+          <option value="ENTRENAMIENTOS">Entrenamientos</option>
+          <option value="EVENTOS">Eventos</option>
+          <option value="EQUIPO">Equipo</option>
+        </select>
+      </label>
+
+      <label className="flex items-end gap-2 pb-2 text-sm font-bold text-[var(--color-primary)]">
+        <input
+          type="checkbox"
+          checked={comentariosActivados}
+          onChange={(evento) => setComentariosActivados(evento.target.checked)}
+          disabled={guardando}
+          className="h-5 w-5 rounded border-[var(--color-border-accent)] accent-[var(--color-secondary)]"
+        />
+        Permitir comentarios en esta foto
+      </label>
+
       <div className="flex gap-2 sm:col-span-2">
         <AppButton size="sm" onClick={manejarGuardar} disabled={guardando}>
-          {guardando ? "Guardando..." : "Guardar texto"}
+          {guardando ? "Guardando..." : "Guardar"}
         </AppButton>
         <AppButton
           size="sm"

@@ -186,6 +186,8 @@ export default async function ActividadDetallePage({
           `Foto de ${actividad.titulo}`,
         titulo: imagen.titulo?.trim() || null,
         cantidadLikes: imagen.cantidadLikes ?? null,
+        cantidadComentarios: imagen.cantidadComentarios ?? null,
+        comentariosActivados: imagen.comentariosActivados ?? null,
       },
     ];
   });

@@ -226,7 +226,7 @@ export function CentroDeFotos() {
         <PublicadorPageHeader
           eyebrow="Centro de fotos"
           title="Tus fotos, en un solo lugar"
-          description="La identidad visual de tu perfil y las fotos de cada actividad, con su estado de revisión y accesos directos para gestionarlas."
+          description="La identidad visual de tu perfil y las fotos de cada actividad, con accesos directos para gestionarlas."
           action={
             <AppLinkButton href="/publicador" variant="secondary" fullWidth>
               Volver al panel
@@ -285,7 +285,7 @@ export function CentroDeFotos() {
                 <SectionHeader
                   eyebrow="Tus actividades"
                   title="Fotos por actividad"
-                  description="El estado visual de cada actividad publicada: su portada, cuántas fotos tiene y cuántas esperan revisión."
+                  description="El estado visual de cada actividad publicada: su portada y cuántas fotos tiene."
                 />
 
                 {actividades.length === 0 ? (

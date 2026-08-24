@@ -905,7 +905,13 @@ export async function elegirImagenPrincipal(
 export async function actualizarTextoImagen(
   actividadId: number,
   imagenId: number,
-  cambios: { titulo?: string; descripcion?: string },
+  cambios: {
+    titulo?: string;
+    descripcion?: string;
+    /* Fase 4 (galería social): sección y toggle de comentarios. */
+    seccion?: string;
+    comentariosActivados?: boolean;
+  },
   accessToken: string
 ): Promise<ImagenActividadPublicador> {
   const idSeguro = validarIdPositivo(

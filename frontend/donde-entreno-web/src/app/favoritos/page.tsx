@@ -2,6 +2,7 @@
 
 import { AuthGuard } from "../../components/auth/AuthGuard";
 import { Header } from "../../components/layout/Header";
+import { FotosGuardadas } from "../../components/favoritos/FotosGuardadas";
 import { MisFavoritos } from "../../components/favoritos/MisFavoritos";
 
 /*
@@ -18,6 +19,8 @@ export default function FavoritosPage() {
 
           <div className="py-8 sm:py-10">
             <MisFavoritos />
+            {/* Fotos guardadas (fase 4 social): solo aparece si hay alguna. */}
+            <FotosGuardadas />
           </div>
         </section>
       </main>

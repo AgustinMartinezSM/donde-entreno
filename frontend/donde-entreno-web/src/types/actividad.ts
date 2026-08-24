@@ -184,4 +184,12 @@ export type ImagenActividad = {
 
   /* Likes públicos de la foto (bloque 14). Opcional: backend viejo no lo trae. */
   cantidadLikes?: number | null;
+
+  /*
+    Fase 4 (galería social): comentarios y secciones. Opcionales por el
+    orden de los deploys (un backend viejo no los manda).
+  */
+  cantidadComentarios?: number | null;
+  comentariosActivados?: boolean | null;
+  seccion?: string | null;
 };

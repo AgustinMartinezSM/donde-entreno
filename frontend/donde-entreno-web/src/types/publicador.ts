@@ -326,5 +326,11 @@ export type ImagenActividadPublicador = {
   orden?: number | null;
   titulo?: string | null;
   descripcion?: string | null;
+  /*
+    Fase 4 (galería social): sección de galería y toggle de comentarios.
+    Opcionales por la misma razón que arriba.
+  */
+  seccion?: string | null;
+  comentariosActivados?: boolean | null;
   createdAt: string | null;
 };

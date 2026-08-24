@@ -38,4 +38,8 @@ export type ImagenPerfilPublicador = {
   orden?: number | null;
   /* Likes públicos (bloque 14). Opcional: backend viejo no lo trae. */
   cantidadLikes?: number | null;
+  /* Fase 4 (galería social). Opcionales por el orden de los deploys. */
+  cantidadComentarios?: number | null;
+  comentariosActivados?: boolean | null;
+  seccion?: string | null;
 };

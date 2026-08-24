@@ -54,8 +54,8 @@ type Seleccion = {
   ya sube. Como la imagen queda fija en la identidad del perfil, el
   encuadre no es opcional acá: vale la pena elegir bien qué se ve.
 
-  Igual que las de actividad, suben PENDIENTE y solo se publican cuando
-  el equipo las aprueba.
+  Igual que las de actividad, desde la fase 4 social se publican al
+  instante (moderación flexible: reportes + admin, no revisión previa).
 */
 export function GestionImagenesPerfil() {
   const { accessToken } = useAuthSession();
@@ -161,7 +161,7 @@ export function GestionImagenesPerfil() {
       const creada = await subirImagenPerfil(recortada, tipo, accessToken);
       setImagenes((previas) => [creada, ...previas]);
       setMensaje(
-        `${tipo === "LOGO" ? "Logo" : "Portada"} enviado a revisión: se va a ver en tu perfil público cuando el equipo lo apruebe.`
+        `${tipo === "LOGO" ? "¡Logo publicado! Ya se ve" : "¡Portada publicada! Ya se ve"} en tu perfil público.`
       );
       limpiarSeleccion();
     } catch (fallo: unknown) {
@@ -235,7 +235,7 @@ export function GestionImagenesPerfil() {
       <SectionHeader
         eyebrow="Identidad"
         title="Logo y portada"
-        description="Así te ve la gente en tu perfil público. Las imágenes se publican después de revisión."
+        description="Así te ve la gente en tu perfil público. Las imágenes se publican al instante."
       />
 
       {cargando ? (

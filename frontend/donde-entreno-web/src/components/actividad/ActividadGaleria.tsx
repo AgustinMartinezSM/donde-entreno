@@ -14,6 +14,9 @@ export type FotoActividad = {
   titulo?: string | null;
   /* Likes públicos (bloque 14); null/ausente = backend viejo, sin corazón. */
   cantidadLikes?: number | null;
+  /* Comentarios (fase 4 social); null/ausente = backend viejo, sin globo. */
+  cantidadComentarios?: number | null;
+  comentariosActivados?: boolean | null;
 };
 
 type ActividadGaleriaProps = {
@@ -162,6 +165,8 @@ export function ActividadGaleria({
           epigrafe: foto.titulo,
           imagenId: foto.id,
           cantidadLikes: foto.cantidadLikes,
+          cantidadComentarios: foto.cantidadComentarios,
+          comentariosActivados: foto.comentariosActivados,
         }))}
         indice={indiceLightbox}
         onCerrar={() => setIndiceLightbox(null)}

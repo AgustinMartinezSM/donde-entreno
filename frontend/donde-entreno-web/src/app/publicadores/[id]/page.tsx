@@ -65,6 +65,10 @@ type FotoDelPerfil = {
   href?: string;
   imagenId?: number;
   cantidadLikes?: number | null;
+  /* Fase 4 (galería social): comentarios y sección. */
+  cantidadComentarios?: number | null;
+  comentariosActivados?: boolean | null;
+  seccion?: string | null;
 };
 
 /*
@@ -529,7 +533,7 @@ export default async function PerfilPublicadorPage({
               <SectionHeader
                 eyebrow="Fotos"
                 title="Fotos reales"
-                description="Imágenes de las actividades que publica, ya revisadas por el equipo."
+                description="Imágenes reales de sus actividades y su espacio."
                 titleId="fotos-perfil-titulo"
               />
 
@@ -636,6 +640,9 @@ async function reunirFotosDelPerfil(
         alt: imagen.titulo?.trim() || `Foto de ${nombrePerfil}`,
         imagenId: imagen.id,
         cantidadLikes: imagen.cantidadLikes ?? null,
+        cantidadComentarios: imagen.cantidadComentarios ?? null,
+        comentariosActivados: imagen.comentariosActivados ?? null,
+        seccion: imagen.seccion ?? null,
       });
     }
   }
@@ -660,6 +667,9 @@ async function reunirFotosDelPerfil(
           href: `/actividades/${actividad.slug}`,
           imagenId: imagen.id,
           cantidadLikes: imagen.cantidadLikes ?? null,
+          cantidadComentarios: imagen.cantidadComentarios ?? null,
+          comentariosActivados: imagen.comentariosActivados ?? null,
+          seccion: imagen.seccion ?? null,
         });
       }
     }

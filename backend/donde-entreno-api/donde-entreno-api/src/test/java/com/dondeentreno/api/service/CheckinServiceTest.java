@@ -110,6 +110,38 @@ class CheckinServiceTest {
     }
 
     @Test
+    void quitarDeHoyBorraSoloLoDeHoyYEsIdempotente() {
+        when(entrenamientoUsuarioRepository
+                .deleteByUsuarioIdAndActividadIdAndCreatedAtGreaterThanEqual(
+                        eq(USUARIO_ID), eq(ACTIVIDAD_ID), any(OffsetDateTime.class)))
+                .thenReturn(1L);
+        when(entrenamientoUsuarioRepository
+                .contarPersonasDesde(eq(ACTIVIDAD_ID), any(OffsetDateTime.class)))
+                .thenReturn(0L);
+
+        CheckinRespuestaDTO respuesta = service.quitarDeHoy(USUARIO_ID, ACTIVIDAD_ID);
+
+        assertFalse(respuesta.isYaRegistradoHoy());
+        assertFalse(respuesta.isRegistradoAhora());
+
+        /* El corte es el inicio del día: el historial anterior no cae. */
+        ArgumentCaptor<OffsetDateTime> captor = ArgumentCaptor.forClass(OffsetDateTime.class);
+        verify(entrenamientoUsuarioRepository)
+                .deleteByUsuarioIdAndActividadIdAndCreatedAtGreaterThanEqual(
+                        eq(USUARIO_ID), eq(ACTIVIDAD_ID), captor.capture());
+        assertTrue(captor.getValue().isAfter(OffsetDateTime.now().minusDays(1)));
+        assertFalse(captor.getValue().isAfter(OffsetDateTime.now()));
+    }
+
+    @Test
+    void quitarDeHoySinUsuarioExigeAutenticacion() {
+        assertThrows(
+                CredencialesInvalidasException.class,
+                () -> service.quitarDeHoy(null, ACTIVIDAD_ID)
+        );
+    }
+
+    @Test
     void estadoDeHoyNoCreaFilas() {
         configurarActividadPublica();
         when(entrenamientoUsuarioRepository

@@ -195,6 +195,24 @@ class CheckinIT {
                 .andExpect(jsonPath("$.yaRegistradoHoy").value(true))
                 .andExpect(jsonPath("$.registradoAhora").value(false));
 
+        /* Deshacer (hallazgo del smoke): la fila de hoy cae y se puede volver. */
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete(BASE_CHECKINS + "/{id}", actividad.getId())
+                        .with(jwtConRol(ROL_USUARIO, usuario.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.yaRegistradoHoy").value(false))
+                .andExpect(jsonPath("$.cantidadPersonasEntrenaron30Dias").value(0));
+
+        long filasTrasQuitar = entrenamientoUsuarioRepository.findAll().stream()
+                .filter(checkin -> checkin.getUsuarioId().equals(usuario.getId()))
+                .count();
+        assertEquals(0L, filasTrasQuitar);
+
+        mockMvc.perform(post(BASE_CHECKINS + "/{id}", actividad.getId())
+                        .with(jwtConRol(ROL_USUARIO, usuario.getId())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.registradoAhora").value(true));
+
         /* Un favorito real para la segunda señal. */
         FavoritoActividad favorito = new FavoritoActividad();
         favorito.setUsuarioId(usuario.getId());
@@ -232,6 +250,9 @@ class CheckinIT {
     void anonimoDevuelve401EnTodo() throws Exception {
         mockMvc.perform(post(BASE_CHECKINS + "/{id}", 1L)).andExpect(status().isUnauthorized());
         mockMvc.perform(get(BASE_CHECKINS + "/{id}/hoy", 1L)).andExpect(status().isUnauthorized());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete(BASE_CHECKINS + "/{id}", 1L))
+                .andExpect(status().isUnauthorized());
     }
 
     /* ================= helpers (mismo patron que LikesFotosIT) ================= */

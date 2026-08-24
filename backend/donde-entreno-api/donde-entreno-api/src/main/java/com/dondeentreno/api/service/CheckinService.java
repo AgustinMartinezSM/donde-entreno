@@ -76,6 +76,27 @@ public class CheckinService {
         );
     }
 
+    /**
+     * Deshace el check-in de HOY (hallazgo del smoke: la elección tenía
+     * que poder revertirse). Solo cae lo de hoy — el historial anterior
+     * queda. Idempotente, y sin validar visibilidad de la actividad a
+     * propósito (patrón "quitar" de likes: deshacer siempre se puede).
+     */
+    @Transactional
+    public CheckinRespuestaDTO quitarDeHoy(Long usuarioId, Long actividadId) {
+        validarUserId(usuarioId);
+
+        entrenamientoUsuarioRepository
+                .deleteByUsuarioIdAndActividadIdAndCreatedAtGreaterThanEqual(
+                        usuarioId, actividadId, inicioDeHoy());
+
+        return new CheckinRespuestaDTO(
+                false,
+                false,
+                contarPersonas30Dias(actividadId)
+        );
+    }
+
     /** Estado del botón al cargar el detalle logueado. */
     @Transactional(readOnly = true)
     public CheckinRespuestaDTO estadoDeHoy(Long usuarioId, Long actividadId) {

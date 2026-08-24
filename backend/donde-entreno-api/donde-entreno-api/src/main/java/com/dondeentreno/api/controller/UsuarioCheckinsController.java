@@ -46,6 +46,15 @@ public class UsuarioCheckinsController {
         return ResponseEntity.status(status).body(respuesta);
     }
 
+    /** Deshace el check-in de hoy (idempotente). */
+    @org.springframework.web.bind.annotation.DeleteMapping("/{actividadId}")
+    public CheckinRespuestaDTO quitarDeHoy(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long actividadId
+    ) {
+        return checkinService.quitarDeHoy(extraerUserId(jwt), actividadId);
+    }
+
     /** Estado del botón al cargar el detalle logueado. */
     @GetMapping("/{actividadId}/hoy")
     public CheckinRespuestaDTO estadoDeHoy(

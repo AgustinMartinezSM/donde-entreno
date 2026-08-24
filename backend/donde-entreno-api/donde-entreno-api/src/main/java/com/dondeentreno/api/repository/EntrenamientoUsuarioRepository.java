@@ -25,6 +25,18 @@ public interface EntrenamientoUsuarioRepository
     );
 
     /**
+     * Deshacer el check-in de hoy: borra las filas del usuario para la
+     * actividad desde el instante dado (con `desde` = inicio del día,
+     * solo cae lo de hoy — el historial anterior queda). Idempotente:
+     * devuelve cuántas filas cayeron (0 o 1).
+     */
+    long deleteByUsuarioIdAndActividadIdAndCreatedAtGreaterThanEqual(
+            Long usuarioId,
+            Long actividadId,
+            OffsetDateTime desde
+    );
+
+    /**
      * Personas DISTINTAS que entrenaron en la actividad desde el
      * instante dado. Es el contador público: agregado y anónimo, y
      * distinct para que insistir con el botón no infle el número.

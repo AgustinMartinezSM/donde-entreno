@@ -28,6 +28,11 @@ public class Valoracion {
     @Column(name = "actividad_id", nullable = false)
     private Long actividadId;
 
+    /*
+      SMALLINT en la base (script 29): sin esta anotación, validate
+      espera int4 y el contexto entero no arranca (lo cazó el IT).
+    */
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.SMALLINT)
     @Column(name = "puntaje", nullable = false)
     private Integer puntaje;
 

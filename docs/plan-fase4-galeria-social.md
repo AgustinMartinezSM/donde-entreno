@@ -1,10 +1,12 @@
 # Plan — Fase 4 social: galería social y moderación flexible de fotos
 
-Estado: **aprobado ("Dale, con las 4 recomendaciones") e IMPLEMENTADO**
-(backend `cec2fe2`, frontend `58cccd1`; 529+ unit verdes, typecheck +
-lint + build 32/32 en worktree limpio). Falta: script 30 aplicado por
-Agustín (Supabase y local) → `verify -Pintegration-local` → deploy en
-dos tandas → su smoke. Es el
+Estado: ✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-24).
+`main` = `origin/main` = **`2517c39`**; script 30 aplicado por él en
+Supabase y local antes del deploy; backend `3b59493` y frontend
+`2517c39` desplegados en dos tandas con marcadores anónimos
+verificados (401→200 en `GET /api/imagenes/9/comentarios`, y el DTO
+público trayendo `cantidadComentarios`/`comentariosActivados`/
+`seccion`). 92 ITs + suite unit en verde con el script aplicado. Es el
 bloque que MATERIALIZA tu filosofía nueva de moderación: las fotos de
 publicadores dejan de esperar aprobación (publican directo, moderadas
 por reportes), y las fotos se vuelven sociales — comentarios, guardar,

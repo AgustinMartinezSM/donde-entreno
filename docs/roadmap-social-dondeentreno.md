@@ -135,10 +135,9 @@ validate no arranca (lo cazó el IT). Alcance original:
 - Notificaciones: nueva pregunta / respuesta / valoración.
 
 ### Fase 4 — Galería social y moderación flexible de fotos
-🚧 **IMPLEMENTADA, EN DEPLOY** (script 30 aplicado por Agustín el
-2026-08-24; backend `cec2fe2` + frontend `58cccd1` + `1667467`; 92 ITs
-y suite unit en verde con el script aplicado). Falta: deploy en dos
-tandas y el smoke de Agustín. Detalle y hallazgos en
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; script 30
+aplicado por él; backend `3b59493` + frontend `2517c39`). Detalle y
+hallazgos en
 `docs/plan-fase4-galeria-social.md` — incluido el que destaparon los
 ITs: al sacar la compuerta previa, `rechazar()` seguía exigiendo
 PENDIENTE y el admin quedaba **sin ninguna forma de bajar una foto

@@ -1,9 +1,19 @@
+"use client";
+
+import { registrarInteraccion } from "../../lib/interacciones";
+
 type ContactButtonProps = {
   whatsapp?: string | null;
   instagram?: string | null;
   email?: string | null;
   /* Título de la actividad para el mensaje prellenado de WhatsApp. */
   tituloActividad?: string;
+  /*
+    Tracking anónimo (Fase 2 social): con actividadId presente, el
+    click de WhatsApp se cuenta para las métricas del publicador.
+    Best-effort, jamás bloquea la navegación.
+  */
+  actividadId?: number;
   className?: string;
 };
 
@@ -15,6 +25,7 @@ export function ContactButton({
   instagram,
   email,
   tituloActividad,
+  actividadId,
   className = "mt-6",
 }: ContactButtonProps) {
   const numeroWhatsapp = normalizarNumeroWhatsapp(whatsapp);
@@ -29,6 +40,11 @@ export function ContactButton({
         href={`https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensaje)}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={
+          actividadId !== undefined
+            ? () => registrarInteraccion(actividadId, "CLICK_WHATSAPP")
+            : undefined
+        }
         className={`${claseBoton} ${className}`}
       >
         Contactar por WhatsApp

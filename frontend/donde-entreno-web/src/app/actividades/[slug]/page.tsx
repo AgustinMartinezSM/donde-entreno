@@ -19,6 +19,7 @@ import {
   type FotoActividad,
 } from "../../../components/actividad/ActividadGaleria";
 import { CheckinButton } from "../../../components/actividad/CheckinButton";
+import { RegistroVistaDetalle } from "../../../components/actividad/RegistroVistaDetalle";
 import { FavoritoButton } from "../../../components/actividad/FavoritoButton";
 import { MeGustaButton } from "../../../components/actividad/MeGustaButton";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
@@ -328,10 +329,14 @@ export default async function ActividadDetallePage({
                   ruta={`/actividades/${actividad.slug}`}
                   titulo={actividad.titulo}
                   ocultarTextoEnMobile
+                  actividadId={actividad.id}
                 />
               </div>
 
               <SocialProofFila socialProof={actividad.socialProof} />
+
+              {/* Beacon anónimo de vista (Fase 2 social). */}
+              <RegistroVistaDetalle actividadId={actividad.id} />
 
               <div className="p-2 pt-6 sm:p-3 sm:pt-7">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -513,6 +518,7 @@ export default async function ActividadDetallePage({
                     instagram={actividad.instagramContacto}
                     email={actividad.emailContacto}
                     tituloActividad={actividad.titulo}
+                    actividadId={actividad.id}
                   />
                 </div>
               </SurfaceCard>
@@ -609,6 +615,7 @@ export default async function ActividadDetallePage({
               instagram={actividad.instagramContacto}
               email={actividad.emailContacto}
               tituloActividad={actividad.titulo}
+              actividadId={actividad.id}
               className=""
             />
           </div>

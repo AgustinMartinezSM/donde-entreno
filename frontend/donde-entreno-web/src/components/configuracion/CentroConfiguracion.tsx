@@ -5,8 +5,8 @@ import Link from "next/link";
 
 import { esRolAdmin, esRolPublicador } from "../../lib/authRedirects";
 import { useAuthSession } from "../auth/AuthSessionProvider";
-import { DialogoDatosDeCuenta } from "../cuenta/MenuAjustes";
 import { DialogoCambiarPassword } from "../cuenta/DialogoCambiarPassword";
+import { FormularioDatosCuenta } from "./FormularioDatosCuenta";
 import { Header } from "../layout/Header";
 import { SelectorTema } from "../tema/SelectorTema";
 import { SectionHeader } from "../ui/SectionHeader";
@@ -31,8 +31,9 @@ type OpcionConfiguracion = {
   claves?: string;
 } & (
   | { tipo: "link"; href: string }
-  | { tipo: "accion"; accion: "datos" | "password" | "cerrar-sesion" }
+  | { tipo: "accion"; accion: "password" | "cerrar-sesion" }
   | { tipo: "tema" }
+  | { tipo: "datos" }
 );
 
 type SeccionConfiguracion = {
@@ -44,7 +45,6 @@ type SeccionConfiguracion = {
 export function CentroConfiguracion() {
   const { usuario, cerrarSesion } = useAuthSession();
   const [busqueda, setBusqueda] = useState("");
-  const [datosAbiertos, setDatosAbiertos] = useState(false);
   const [passwordAbierto, setPasswordAbierto] = useState(false);
 
   const rol = usuario?.rol ?? null;
@@ -65,10 +65,8 @@ export function CentroConfiguracion() {
         .filter((seccion) => seccion.opciones.length > 0)
     : secciones;
 
-  function manejarAccion(accion: "datos" | "password" | "cerrar-sesion") {
-    if (accion === "datos") {
-      setDatosAbiertos(true);
-    } else if (accion === "password") {
+  function manejarAccion(accion: "password" | "cerrar-sesion") {
+    if (accion === "password") {
       setPasswordAbierto(true);
     } else {
       cerrarSesion();
@@ -143,7 +141,17 @@ export function CentroConfiguracion() {
                   <ul className="mt-3 divide-y divide-[var(--color-divisor)]">
                     {seccion.opciones.map((opcion) => (
                       <li key={opcion.id}>
-                        {opcion.tipo === "tema" ? (
+                        {opcion.tipo === "datos" ? (
+                          <div className="py-3">
+                            <p className="text-sm font-bold text-[var(--color-primary)]">
+                              {opcion.titulo}
+                            </p>
+                            <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+                              {opcion.descripcion}
+                            </p>
+                            <FormularioDatosCuenta />
+                          </div>
+                        ) : opcion.tipo === "tema" ? (
                           <div className="py-3">
                             <p className="text-sm font-bold text-[var(--color-primary)]">
                               {opcion.titulo}
@@ -187,12 +195,6 @@ export function CentroConfiguracion() {
           </div>
         </div>
       </section>
-
-      <DialogoDatosDeCuenta
-        usuario={usuario}
-        abierto={datosAbiertos}
-        onCerrar={() => setDatosAbiertos(false)}
-      />
 
       <DialogoCambiarPassword
         abierto={passwordAbierto}
@@ -244,12 +246,12 @@ function construirSecciones(rol: string | null): SeccionConfiguracion[] {
       titulo: "Tu cuenta",
       opciones: [
         {
+          /* Inline, estilo Instagram: se edita ACÁ, sin ir a otro lado. */
           id: "datos",
-          tipo: "accion",
-          accion: "datos",
+          tipo: "datos",
           titulo: "Datos de mi cuenta",
-          descripcion: "Nombre, apellido, email y rol (solo lectura por ahora).",
-          claves: "email nombre",
+          descripcion: "Editá tu nombre y apellido; el email es tu acceso.",
+          claves: "email nombre apellido editar",
         },
         {
           id: "avatar",

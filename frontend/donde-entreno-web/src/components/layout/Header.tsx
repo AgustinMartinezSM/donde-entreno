@@ -7,6 +7,7 @@ import {
 } from "../ciudades/CitySelector";
 import { HeaderSessionMenu } from "../auth/HeaderSessionMenu";
 import { HeaderFavoritosLink } from "./HeaderFavoritosLink";
+import { CampanitaNotificaciones } from "../notificaciones/CampanitaNotificaciones";
 import { HeaderNavLinks } from "./HeaderNavLinks";
 import { MobileAccountShortcut } from "./MobileAccountShortcut";
 
@@ -73,6 +74,9 @@ export function Header() {
           es el acceso. Los CTA contextuales (home, mi-cuenta) siguen
           disparando el mismo evento.
         */}
+        {/* Campanita (Fase 2 social): solo se dibuja con sesión. */}
+        <CampanitaNotificaciones />
+
         <HeaderFavoritosLink />
 
         <Link

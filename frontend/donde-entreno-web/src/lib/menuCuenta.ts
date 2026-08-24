@@ -114,6 +114,12 @@ export function obtenerSeccionesCuenta(
           label: "Imágenes pendientes",
           icono: "imagenes",
         },
+        {
+          /* Cola de reportes (Fase 2 social): moderación flexible. */
+          href: "/admin/reportes",
+          label: "Reportes",
+          icono: "solicitudes",
+        },
       ],
     });
   }

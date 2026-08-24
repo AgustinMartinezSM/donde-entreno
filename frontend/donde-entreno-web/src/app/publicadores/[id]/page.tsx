@@ -13,6 +13,7 @@ import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPubl
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { GaleriaPerfil } from "../../../components/publicadores/GaleriaPerfil";
+import { BotonReportar } from "../../../components/social/BotonReportar";
 import { CompartirButton } from "../../../components/social/CompartirButton";
 import { SocialActivityCard } from "../../../components/social/SocialActivityCard";
 import { AppLinkButton } from "../../../components/ui/AppLinkButton";
@@ -363,6 +364,13 @@ export default async function PerfilPublicadorPage({
                   <CompartirButton
                     ruta={`/publicadores/${perfil.slug ?? perfil.id}`}
                     titulo={perfil.nombre}
+                  />
+                  {/* Reportar (Fase 2 social): moderación flexible. */}
+                  <BotonReportar
+                    tipoObjeto="PERFIL_PUBLICADOR"
+                    objetoId={perfil.id}
+                    etiquetaObjeto="este perfil"
+                    compacto
                   />
                 </div>
               </div>

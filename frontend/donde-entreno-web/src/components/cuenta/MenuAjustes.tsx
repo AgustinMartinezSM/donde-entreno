@@ -207,9 +207,14 @@ export function DialogoDatosDeCuenta({
             </dl>
 
             <p className="mt-4 text-xs leading-5 text-[var(--color-muted)]">
-              Por ahora estos datos son de solo lectura. Si necesitás
-              cambiarlos, escribinos y lo resolvemos. La contraseña sí se
-              cambia desde Ajustes, en &ldquo;Cambiar contraseña&rdquo;.
+              Tu nombre y apellido se editan desde{" "}
+              <a
+                href="/configuracion"
+                className="font-bold text-[var(--color-secondary)] underline-offset-2 hover:underline"
+              >
+                Configuración
+              </a>
+              . El email es tu acceso a la cuenta y por ahora no se cambia.
             </p>
           </>
         ) : (

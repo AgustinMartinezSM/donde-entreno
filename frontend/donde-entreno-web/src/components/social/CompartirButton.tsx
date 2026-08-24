@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { registrarInteraccion } from "../../lib/interacciones";
+
 type CompartirButtonProps = {
   /* Ruta relativa a compartir; se resuelve contra el origin actual. */
   ruta: string;
@@ -17,6 +19,11 @@ type CompartirButtonProps = {
     vuelve desde sm. El perfil del publicador lo deja siempre visible.
   */
   ocultarTextoEnMobile?: boolean;
+  /*
+    Tracking anónimo (Fase 2 social): con actividadId presente, el
+    compartir se cuenta. Best-effort.
+  */
+  actividadId?: number;
 };
 
 /*
@@ -28,6 +35,7 @@ export function CompartirButton({
   titulo,
   soloIcono = false,
   ocultarTextoEnMobile = false,
+  actividadId,
 }: CompartirButtonProps) {
   const [copiado, setCopiado] = useState(false);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,6 +50,10 @@ export function CompartirButton({
 
   async function compartir() {
     const url = `${window.location.origin}${ruta}`;
+
+    if (actividadId !== undefined) {
+      registrarInteraccion(actividadId, "CLICK_COMPARTIR");
+    }
 
     if (navigator.share) {
       try {

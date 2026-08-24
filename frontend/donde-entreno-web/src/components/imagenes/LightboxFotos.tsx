@@ -11,6 +11,7 @@ import {
   useLikesFotos,
 } from "../../lib/likesFotos";
 import { useAuthSession } from "../auth/AuthSessionProvider";
+import { BotonReportar } from "../social/BotonReportar";
 
 export type FotoLightbox = {
   clave: string;
@@ -238,7 +239,7 @@ export function LightboxFotos({
         {foto.imagenId !== undefined &&
         foto.cantidadLikes !== undefined &&
         foto.cantidadLikes !== null ? (
-          <div className="relative z-10 flex justify-center px-4 pb-2">
+          <div className="relative z-10 flex items-center justify-center gap-3 px-4 pb-2">
             <BotonMeGustaFoto
               cantidad={
                 foto.cantidadLikes + (ajustesLikes.get(foto.imagenId) ?? 0)
@@ -246,6 +247,15 @@ export function LightboxFotos({
               activo={likesPropios.has(foto.imagenId)}
               onClick={() => alternarLike(foto.imagenId as number)}
             />
+            {/* Reportar (Fase 2 social): compacto y en tinta clara del visor. */}
+            <span className="text-white/70 [&_button]:text-white/70 [&_button:hover]:text-white">
+              <BotonReportar
+                tipoObjeto="IMAGEN"
+                objetoId={foto.imagenId}
+                etiquetaObjeto="esta foto"
+                compacto
+              />
+            </span>
           </div>
         ) : null}
 

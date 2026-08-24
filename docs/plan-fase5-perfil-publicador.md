@@ -1,6 +1,26 @@
 # Plan — Fase 5 social: el perfil del publicador como perfil de verdad
 
-Estado: **propuesto, pendiente de aprobación de Agustín**.
+Estado: **aprobado ("Dale, con las 5 recomendaciones") e IMPLEMENTADO**
+(backend `cfc36e0`, frontend `6bb9cda`). Script 31 aplicado por Agustín
+en Supabase y local; **suite unit + ITs en verde con el script
+aplicado** (incluido `PerfilPublicadorSocialIT`, 5 flujos); typecheck y
+lint limpios. Falta: deploy en dos tandas y su smoke.
+
+Notas de la implementación, sobre lo planeado:
+
+- El tab Opiniones **aparece solo si hay contenido**, igual que Fotos:
+  una solapa vacía es una promesa rota. `resolverTab` cae en
+  Actividades si alguien entra por URL a una solapa que no aplica.
+- Las destacadas van **arriba** del listado y se filtran de abajo, para
+  que no aparezcan dos veces en la misma pantalla.
+- El selector del panel elige sobre **las actividades de la página
+  actual**: con más de una página hay que navegar. Aceptable mientras
+  el catálogo es chico; anotado por si crece.
+- `MINIMO_PARA_PROMEDIO` pasó de privada a pública en
+  `ValoracionService` en vez de duplicar el 3.
+- La resolución de IP (`X-Forwarded-For`) se mudó de
+  `InteraccionesController` a `LimitadorInteracciones`: ahora la
+  comparten los dos endpoints de tracking en vez de duplicarla.
 
 La Fase 4 hizo que las fotos fueran sociales. Esta fase hace que el
 **perfil que las contiene** deje de ser una ficha de contacto y pase a

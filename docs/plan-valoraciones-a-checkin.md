@@ -1,6 +1,12 @@
 # Plan — Valoraciones etapa A + check-in ("Entrené acá")
 
-Estado: **propuesto, pendiente de aprobación de Agustín**. Implementa
+Estado: **IMPLEMENTADO Y EN DEPLOY** (aprobado con las 4
+recomendaciones, 2026-08-24). Script 26 aplicado por Agustín en
+Supabase y local ANTES del deploy. Backend `122b976` (480 unit + 78
+ITs verdes, CheckinIT de flujo completo incluido), frontend `4f92dc3`
+(typecheck + lint + build 26/26), en dos tandas con marcador OPTIONS.
+
+Implementa
 los puntos 4 y 5A de `docs/fase8-diseno-futuro.md`: señales de
 confianza en el detalle usando SOLO datos reales que ya existen o que
 el usuario genera con un click — sin estrellas, sin texto libre, sin

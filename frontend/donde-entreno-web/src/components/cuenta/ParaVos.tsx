@@ -1,5 +1,6 @@
 "use client";
 
+import { EsqueletoFeedCard } from "../social/EsqueletoFeedCard";
 import { SocialActivityCard } from "../social/SocialActivityCard";
 import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
@@ -94,8 +95,8 @@ export function ParaVos({
             aria-label="Cargando lo nuevo de quienes seguís"
             className="grid gap-6 lg:grid-cols-2"
           >
-            <EsqueletoCard />
-            <EsqueletoCard className="hidden lg:block" />
+            <EsqueletoFeedCard />
+            <EsqueletoFeedCard className="hidden lg:block" />
           </div>
         ) : null}
 
@@ -135,22 +136,3 @@ export function ParaVos({
   );
 }
 
-function EsqueletoCard({ className = "" }: { className?: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 ${className}`}
-    >
-      <div className="flex items-center gap-3">
-        <span className="h-11 w-11 rounded-full bg-[var(--color-info-soft)]" />
-        <div className="flex-1">
-          <div className="h-3 w-1/3 rounded-full bg-[var(--color-info-soft)]" />
-          <div className="mt-2 h-2.5 w-1/4 rounded-full bg-[var(--color-bg)]" />
-        </div>
-      </div>
-      <div className="mt-4 h-48 rounded-[20px] bg-[var(--color-info-soft)]" />
-      <div className="mt-4 h-4 w-2/3 rounded-full bg-[var(--color-info-soft)]" />
-      <div className="mt-3 h-3 w-1/2 rounded-full bg-[var(--color-bg)]" />
-    </div>
-  );
-}

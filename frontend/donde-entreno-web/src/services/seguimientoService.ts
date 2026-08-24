@@ -9,6 +9,7 @@ import {
 import type {
   ActividadFeed,
   EstadoSeguimiento,
+  PaginaFeedEventos,
   PublicadorSeguido,
 } from "../types/seguimiento";
 
@@ -79,6 +80,34 @@ export async function obtenerFeedActividades(
     accessToken,
     esListaActividadesFeed
   );
+}
+
+/*
+  Feed V2 (Fase 6): hechos de los publicadores seguidos, PAGINADO y
+  multi-tipo. El endpoint viejo (arriba) sigue existiendo hasta que
+  este esté desplegado en todos lados.
+*/
+export async function obtenerFeedEventos(
+  accessToken: string,
+  page: number,
+  size: number
+): Promise<PaginaFeedEventos> {
+  return ejecutar(
+    `${API_BASE_URL}/api/usuario/feed?page=${page}&size=${size}`,
+    { method: "GET" },
+    accessToken,
+    esPaginaFeedEventos
+  );
+}
+
+function esPaginaFeedEventos(valor: unknown): valor is PaginaFeedEventos {
+  if (typeof valor !== "object" || valor === null) {
+    return false;
+  }
+
+  const objeto = valor as Record<string, unknown>;
+
+  return Array.isArray(objeto.contenido) && typeof objeto.ultima === "boolean";
 }
 
 async function ejecutar<T>(

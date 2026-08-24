@@ -17,7 +17,10 @@ import { HomePublishCta } from "../components/home/HomePublishCta";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { buscarActividades } from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
-import { obtenerDeportes } from "../services/deportesService";
+import {
+  obtenerDeportes,
+  obtenerDeportesPopulares,
+} from "../services/deportesService";
 import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
 
 export const dynamic = "force-dynamic";
@@ -113,6 +116,13 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("Error al cargar deportes:", error);
   }
 
+  /*
+    Deportes más vistos (Fase 6): sale del tracking anónimo. Si no hay
+    señal suficiente vuelve vacío y la sección cae a su selección
+    curada — nunca se presenta como "lo más visto" algo inventado.
+  */
+  const populares = await obtenerDeportesPopulares().catch(() => []);
+
   return (
     /* overflow-x-clip (y no hidden): hidden crea un scroll container y rompe el sticky del Header. */
     <main className="min-h-screen overflow-x-clip text-[var(--color-text)]">
@@ -154,7 +164,7 @@ export default async function Home({ searchParams }: HomeProps) {
           />
 
           <HomePublicadoresSugeridos publicadores={publicadoresSugeridos} />
-          <HomePopularSports ciudadSlug={ciudadSlug} />
+          <HomePopularSports ciudadSlug={ciudadSlug} populares={populares} />
           <HomeCrearCuentaCta />
           <HomeHowItWorks />
           <HomePublishCta ciudadSlug={ciudadSlug} />

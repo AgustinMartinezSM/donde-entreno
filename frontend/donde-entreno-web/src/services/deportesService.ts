@@ -79,3 +79,48 @@ export const obtenerDeportes = cache(async (): Promise<Deporte[]> => {
     throw new Error(MENSAJE_ERROR_DEPORTES);
   }
 });
+
+/*
+  Deportes más vistos (Fase 6), derivados del tracking anónimo.
+
+  Devuelve [] ante cualquier problema y también cuando el backend
+  decide que no hay señal suficiente: la sección de la home entonces
+  cae a su selección curada, en vez de presentar como "lo más visto"
+  un ranking armado con dos clicks.
+*/
+export const obtenerDeportesPopulares = cache(
+  async (): Promise<{ slug: string; nombre: string }[]> => {
+    try {
+      const respuesta = await fetch(
+        `${API_BASE_URL}/api/deportes/populares?dias=30&limite=6`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        }
+      );
+
+      if (!respuesta.ok) {
+        return [];
+      }
+
+      const datos: unknown = await respuesta.json();
+
+      if (!Array.isArray(datos)) {
+        return [];
+      }
+
+      return datos.flatMap((item) => {
+        if (!esObjeto(item)) {
+          return [];
+        }
+
+        const slug = leerTextoRequerido(item.slug);
+        const nombre = leerTextoRequerido(item.nombre);
+
+        return slug && nombre ? [{ slug, nombre }] : [];
+      });
+    } catch {
+      return [];
+    }
+  }
+);

@@ -28,3 +28,37 @@ export type PublicadorSeguido = {
   las mismas cards sociales que el resto del descubrimiento.
 */
 export type ActividadFeed = Actividad;
+
+/*
+  Feed V2 (Fase 6): un HECHO de un publicador, no una actividad. El
+  backend lo manda listo para pintar (identidad + actividad + foto),
+  así la card no dispara ninguna llamada extra.
+*/
+export type FeedEvento = {
+  id: number;
+  tipo: string;
+  resumen?: string | null;
+  createdAt?: string | null;
+
+  perfilPublicadorId?: number | null;
+  perfilNombre?: string | null;
+  perfilSlug?: string | null;
+  perfilLogoUrl?: string | null;
+
+  actividadId?: number | null;
+  actividadTitulo?: string | null;
+  actividadSlug?: string | null;
+  actividadImagenUrl?: string | null;
+
+  imagenId?: number | null;
+  imagenUrl?: string | null;
+};
+
+export type PaginaFeedEventos = {
+  contenido: FeedEvento[];
+  paginaActual: number;
+  tamanioPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  ultima: boolean;
+};

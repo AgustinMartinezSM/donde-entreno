@@ -1,9 +1,21 @@
 # Plan — Fase 6 social: el feed que se puede seguir leyendo
 
-Estado: **aprobado ("Dale, con las 5 recomendaciones") e IMPLEMENTADO**
-(backend `58121b8`, frontend `1737115`). Script 32 aplicado por Agustín
-en Supabase y local; suite unit + ITs en verde con el script aplicado;
-typecheck y lint limpios. Falta: deploy en dos tandas y su smoke.
+Estado: ✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-24).
+`main` = `origin/main` = **`bc73be7`**; script 32 aplicado por él en
+Supabase y local antes del deploy; backend `72f00fc` (incluye el fix
+del afterCommit) y frontend `bc73be7` desplegados en dos tandas.
+
+Marcador que SÍ discriminó: `GET /api/deportes/populares` (401 → 200).
+El que se había anunciado —`GET /api/usuario/feed`— **no servía**: ya
+daba 401 sin el build nuevo, porque cualquier ruta inexistente bajo
+`/api/usuario/**` cae en `authenticated()`. Se detectó ANTES de
+pushear. Para el frontend, marcador por PRESENCIA de texto nuevo en el
+HTML (lección de la Fase 5).
+
+Verificado en producción: el ranking devuelve datos reales (natación 2,
+jiu-jitsu 2, karate 1 — justo el mínimo de 3), la home muestra "LO MÁS
+VISTO" con esos tres, públicas en 200, privadas en 401/307, consola
+limpia.
 
 ## ⚠️ El hallazgo de la fase: REQUIRES_NEW no sirve para emitir eventos
 

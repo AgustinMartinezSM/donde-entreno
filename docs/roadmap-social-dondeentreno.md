@@ -177,12 +177,27 @@ hallazgos en `docs/plan-fase5-perfil-publicador.md`.
   componente compartido ni se mostró en el perfil.
 
 ### Fase 6 — Feed social V2
-- Tabla `feed_event` (tipo, perfil, actividad, imagen, created_at)
-  poblada por los flujos existentes (foto nueva, actividad nueva,
-  horarios cambiados, evento creado).
-- Home con feed real paginado mezclando eventos + recomendaciones +
-  rankings (de Fase 2 tracking) + "para arrancar de cero".
-- Paginación del feed de seguidos (deuda).
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; script 32
+aplicado por él; backend `72f00fc` + frontend `bc73be7`). Plan y
+hallazgo en `docs/plan-fase6-feed-social.md`.
+
+- Tabla `feed_event` poblada por los flujos existentes (actividad
+  aprobada, foto publicada, cambio aprobado), con **backfill** de las
+  actividades ya publicadas para que el feed no naciera vacío.
+- Feed **paginado** con "Ver más" que acumula (cierra la deuda del
+  top-20 fijo). Card por tipo de hecho.
+- **"Lo más visto" real** derivado del tracking de la Fase 2: la home
+  tenía seis deportes hardcodeados llamados "populares". Si no hay
+  señal suficiente (mínimo 3 deportes), vuelve a la selección curada.
+- **Deuda saldada de paso**: `HomeFeedSeguidos` duplicaba el fetch del
+  hook existente (un logueado pedía el feed DOS veces al pasar por
+  home y /mi-cuenta) y `EsqueletoCard` estaba copiado en dos archivos.
+- **⚠️ Hallazgo grande**: emitir eventos con `REQUIRES_NEW` **rompía la
+  subida de fotos con un 500** — ver el plan. Los eventos que
+  referencian filas de la misma transacción van en `afterCommit`.
+- **Fuera de alcance a propósito**: mezclar recomendaciones y
+  descubrimiento DENTRO del feed. La home ya los tiene como secciones
+  separadas y fundirlos borraría el valor de seguir a alguien.
 
 ### Fase 7 — Mapa y cercanía
 - Cargar lat/lng (las columnas YA existen): geocoding asistido o

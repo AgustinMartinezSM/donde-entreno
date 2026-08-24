@@ -33,6 +33,9 @@ public class PublicadorMetricasDTO {
     private final long vistas30Dias;
     private final long contactosWhatsapp30Dias;
 
+    /** Fase 3: cuántas personas quieren probar sus actividades (agregado). */
+    private final long quierenProbar;
+
     public PublicadorMetricasDTO(
             long actividadesPublicadas,
             long actividadesPausadas,
@@ -41,7 +44,8 @@ public class PublicadorMetricasDTO {
             long imagenesPendientesModeracion,
             long seguidores,
             long vistas30Dias,
-            long contactosWhatsapp30Dias
+            long contactosWhatsapp30Dias,
+            long quierenProbar
     ) {
         this.actividadesPublicadas = actividadesPublicadas;
         this.actividadesPausadas = actividadesPausadas;
@@ -51,6 +55,7 @@ public class PublicadorMetricasDTO {
         this.seguidores = seguidores;
         this.vistas30Dias = vistas30Dias;
         this.contactosWhatsapp30Dias = contactosWhatsapp30Dias;
+        this.quierenProbar = quierenProbar;
     }
 
     public long getActividadesPublicadas() {
@@ -83,5 +88,9 @@ public class PublicadorMetricasDTO {
 
     public long getContactosWhatsapp30Dias() {
         return contactosWhatsapp30Dias;
+    }
+
+    public long getQuierenProbar() {
+        return quierenProbar;
     }
 }

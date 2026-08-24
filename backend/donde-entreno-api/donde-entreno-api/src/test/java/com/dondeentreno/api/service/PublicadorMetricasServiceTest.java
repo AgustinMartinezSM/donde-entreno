@@ -51,6 +51,9 @@ class PublicadorMetricasServiceTest {
     @Mock
     private InteraccionService interaccionService;
 
+    @Mock
+    private com.dondeentreno.api.repository.InteresActividadRepository interesActividadRepository;
+
     private PublicadorMetricasService publicadorMetricasService;
 
     @BeforeEach
@@ -62,7 +65,8 @@ class PublicadorMetricasServiceTest {
                 solicitudCambioActividadRepository,
                 imagenRepository,
                 seguimientoPublicadorRepository,
-                interaccionService
+                interaccionService,
+                interesActividadRepository
         );
     }
 

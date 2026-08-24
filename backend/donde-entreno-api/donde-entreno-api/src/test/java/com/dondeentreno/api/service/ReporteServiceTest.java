@@ -39,6 +39,12 @@ class ReporteServiceTest {
     @Mock
     private ActividadRepository actividadRepository;
 
+    @Mock
+    private ValoracionService valoracionService;
+
+    @Mock
+    private PreguntaActividadService preguntaActividadService;
+
     private ReporteService service;
 
     @BeforeEach
@@ -47,7 +53,9 @@ class ReporteServiceTest {
                 reporteRepository,
                 imagenRepository,
                 perfilPublicadorRepository,
-                actividadRepository
+                actividadRepository,
+                valoracionService,
+                preguntaActividadService
         );
     }
 

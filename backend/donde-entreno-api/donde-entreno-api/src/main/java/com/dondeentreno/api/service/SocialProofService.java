@@ -18,23 +18,41 @@ public class SocialProofService {
     private final FavoritoActividadRepository favoritoActividadRepository;
     private final MeGustaImagenRepository meGustaImagenRepository;
     private final CheckinService checkinService;
+    private final InteresActividadService interesActividadService;
+    private final ValoracionService valoracionService;
 
     public SocialProofService(
             FavoritoActividadRepository favoritoActividadRepository,
             MeGustaImagenRepository meGustaImagenRepository,
-            CheckinService checkinService
+            CheckinService checkinService,
+            InteresActividadService interesActividadService,
+            ValoracionService valoracionService
     ) {
         this.favoritoActividadRepository = favoritoActividadRepository;
         this.meGustaImagenRepository = meGustaImagenRepository;
         this.checkinService = checkinService;
+        this.interesActividadService = interesActividadService;
+        this.valoracionService = valoracionService;
     }
 
     @Transactional(readOnly = true)
     public SocialProofDTO deActividad(Long actividadId) {
-        return new SocialProofDTO(
+        SocialProofDTO proof = new SocialProofDTO(
                 favoritoActividadRepository.countByActividadId(actividadId),
                 meGustaImagenRepository.contarDeActividad(actividadId),
                 checkinService.contarPersonas30Dias(actividadId)
         );
+
+        /* Fase 3: interés y valoraciones. */
+        proof.setCantidadQuierenProbar(
+                interesActividadService.contarQuierenProbar(actividadId)
+        );
+        double[] promedioYCantidad = valoracionService.promedioYCantidad(actividadId);
+        proof.setValoracionPromedio(
+                promedioYCantidad[0] >= 0 ? promedioYCantidad[0] : null
+        );
+        proof.setCantidadValoraciones((long) promedioYCantidad[1]);
+
+        return proof;
     }
 }

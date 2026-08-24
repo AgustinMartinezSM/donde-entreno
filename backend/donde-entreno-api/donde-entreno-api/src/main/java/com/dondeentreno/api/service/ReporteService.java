@@ -27,8 +27,13 @@ import java.util.List;
 @Service
 public class ReporteService {
 
-    private static final List<String> TIPOS_OBJETO =
-            List.of("IMAGEN", "PERFIL_PUBLICADOR", "ACTIVIDAD");
+    private static final List<String> TIPOS_OBJETO = List.of(
+            "IMAGEN",
+            "PERFIL_PUBLICADOR",
+            "ACTIVIDAD",
+            "VALORACION",
+            "PREGUNTA"
+    );
     private static final List<String> MOTIVOS = List.of(
             "CONTENIDO_INAPROPIADO",
             "INFORMACION_FALSA",
@@ -45,17 +50,23 @@ public class ReporteService {
     private final ImagenRepository imagenRepository;
     private final PerfilPublicadorRepository perfilPublicadorRepository;
     private final ActividadRepository actividadRepository;
+    private final ValoracionService valoracionService;
+    private final PreguntaActividadService preguntaActividadService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
             ImagenRepository imagenRepository,
             PerfilPublicadorRepository perfilPublicadorRepository,
-            ActividadRepository actividadRepository
+            ActividadRepository actividadRepository,
+            ValoracionService valoracionService,
+            PreguntaActividadService preguntaActividadService
     ) {
         this.reporteRepository = reporteRepository;
         this.imagenRepository = imagenRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
+        this.valoracionService = valoracionService;
+        this.preguntaActividadService = preguntaActividadService;
     }
 
     /**
@@ -169,6 +180,8 @@ public class ReporteService {
                             && "PUBLICADA".equals(actividad.getEstadoPublicacion())
                             && actividad.getDeletedAt() == null)
                     .isPresent();
+            case "VALORACION" -> valoracionService.esVisible(objetoId);
+            case "PREGUNTA" -> preguntaActividadService.esVisible(objetoId);
             default -> false;
         };
 

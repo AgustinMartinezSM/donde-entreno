@@ -40,6 +40,7 @@ public class PublicadorMetricasService {
     private final ImagenRepository imagenRepository;
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
     private final InteraccionService interaccionService;
+    private final com.dondeentreno.api.repository.InteresActividadRepository interesActividadRepository;
 
     public PublicadorMetricasService(
             PerfilPublicadorRepository perfilPublicadorRepository,
@@ -48,7 +49,8 @@ public class PublicadorMetricasService {
             SolicitudCambioActividadRepository solicitudCambioActividadRepository,
             ImagenRepository imagenRepository,
             SeguimientoPublicadorRepository seguimientoPublicadorRepository,
-            InteraccionService interaccionService
+            InteraccionService interaccionService,
+            com.dondeentreno.api.repository.InteresActividadRepository interesActividadRepository
     ) {
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.actividadRepository = actividadRepository;
@@ -57,6 +59,7 @@ public class PublicadorMetricasService {
         this.imagenRepository = imagenRepository;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
         this.interaccionService = interaccionService;
+        this.interesActividadRepository = interesActividadRepository;
     }
 
     @Transactional(readOnly = true)
@@ -103,10 +106,18 @@ public class PublicadorMetricasService {
           Interacciones de los últimos 30 días (Fase 2 social): un solo
           query agrupado sobre todas las actividades del perfil.
         */
-        var conteosInteracciones = interaccionService
-                .contarUltimos30Dias(actividadRepository.idsDePerfil(perfilId));
+        List<Long> actividadIds = actividadRepository.idsDePerfil(perfilId);
+        var conteosInteracciones = interaccionService.contarUltimos30Dias(actividadIds);
         long vistas30Dias = sumarTipo(conteosInteracciones, "VISTA_DETALLE");
         long contactosWhatsapp30Dias = sumarTipo(conteosInteracciones, "CLICK_WHATSAPP");
+
+        /* Fase 3: interés agregado sobre todas sus actividades. */
+        long quierenProbar = actividadIds.isEmpty()
+                ? 0
+                : interesActividadRepository.countByActividadIdInAndEstado(
+                        actividadIds,
+                        InteresActividadService.QUIERO_PROBAR
+                );
 
         return new PublicadorMetricasDTO(
                 actividadesPublicadas,
@@ -116,7 +127,8 @@ public class PublicadorMetricasService {
                 imagenesPendientesModeracion,
                 seguidores,
                 vistas30Dias,
-                contactosWhatsapp30Dias
+                contactosWhatsapp30Dias,
+                quierenProbar
         );
     }
 

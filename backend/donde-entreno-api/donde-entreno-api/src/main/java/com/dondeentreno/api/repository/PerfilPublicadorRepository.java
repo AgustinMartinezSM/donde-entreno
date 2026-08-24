@@ -44,6 +44,15 @@ public interface PerfilPublicadorRepository extends JpaRepository<PerfilPublicad
      */
     Optional<PerfilPublicador> findByIdAndActivoTrue(Long id);
 
+    /**
+     * Busca un perfil activo por slug (script 27), mismo criterio de
+     * visibilidad que el detalle por id.
+     */
+    Optional<PerfilPublicador> findBySlugAndActivoTrue(String slug);
+
+    /** Para la unicidad al generar slugs nuevos. */
+    boolean existsBySlug(String slug);
+
     Optional<PerfilPublicador> findFirstByUsuario_IdAndTipoPublicadorIgnoreCaseAndNombreIgnoreCaseAndActivoTrueAndDeletedAtIsNull(
             Long usuarioId,
             String tipoPublicador,

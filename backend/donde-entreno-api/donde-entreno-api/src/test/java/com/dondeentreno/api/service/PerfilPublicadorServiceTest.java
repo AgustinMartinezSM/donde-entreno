@@ -132,6 +132,47 @@ class PerfilPublicadorServiceTest {
         verifyNoInteractions(perfilPublicadorRepository);
     }
 
+    @Test
+    void obtenerPorIdOSlugConNumeroResuelvePorIdComoSiempre() {
+        when(perfilPublicadorRepository.findByIdAndActivoTrue(8L))
+                .thenReturn(Optional.of(perfil(8L, "Club Atlético Sur", "CLUB")));
+        when(seguimientoPublicadorRepository.countByPerfilPublicador_Id(8L)).thenReturn(0L);
+
+        PerfilPublicadorDTO perfil =
+                perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("8");
+
+        assertEquals(8L, perfil.getId());
+        verify(perfilPublicadorRepository).findByIdAndActivoTrue(8L);
+        verify(perfilPublicadorRepository, never()).findBySlugAndActivoTrue(any());
+    }
+
+    @Test
+    void obtenerPorIdOSlugConTextoResuelvePorSlug() {
+        PerfilPublicador entidad = perfil(8L, "Club Atlético Sur", "CLUB");
+        entidad.setSlug("club-atletico-sur");
+        when(perfilPublicadorRepository.findBySlugAndActivoTrue("club-atletico-sur"))
+                .thenReturn(Optional.of(entidad));
+        when(seguimientoPublicadorRepository.countByPerfilPublicador_Id(8L)).thenReturn(0L);
+
+        PerfilPublicadorDTO perfil =
+                perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("club-atletico-sur");
+
+        assertEquals(8L, perfil.getId());
+        assertEquals("club-atletico-sur", perfil.getSlug());
+        verify(perfilPublicadorRepository, never()).findByIdAndActivoTrue(any());
+    }
+
+    @Test
+    void obtenerPorIdOSlugInexistenteLanzaRecursoNoEncontrado() {
+        when(perfilPublicadorRepository.findBySlugAndActivoTrue("no-existe"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("no-existe")
+        );
+    }
+
     private SeguimientoPublicadorRepository.ConteoSeguidores conteo(Long perfilId, long cantidad) {
         return new SeguimientoPublicadorRepository.ConteoSeguidores() {
             @Override

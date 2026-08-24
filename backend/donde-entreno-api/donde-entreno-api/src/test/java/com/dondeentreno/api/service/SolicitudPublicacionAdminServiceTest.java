@@ -93,6 +93,9 @@ class SolicitudPublicacionAdminServiceTest {
     @Mock
     private BarrioRepository barrioRepository;
 
+    @Mock
+    private PerfilPublicadorSlugService perfilPublicadorSlugService;
+
     private SolicitudPublicacionAdminService service;
 
     @BeforeEach
@@ -107,7 +110,8 @@ class SolicitudPublicacionAdminServiceTest {
                 ubicacionRepository,
                 deporteRepository,
                 ciudadRepository,
-                barrioRepository
+                barrioRepository,
+                perfilPublicadorSlugService
         );
     }
 

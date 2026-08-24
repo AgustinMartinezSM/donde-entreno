@@ -81,6 +81,13 @@ public class ActividadDTO {
     */
     private String perfilLogoUrl;
 
+    /*
+      Slug del perfil publicador (script 27): para armar el link
+      /publicadores/{slug} desde cards y detalle. Por setter, como
+      perfilLogoUrl. Null si el perfil aún no tiene slug.
+    */
+    private String perfilSlug;
+
     public ActividadDTO() {
     }
 
@@ -452,5 +459,13 @@ public class ActividadDTO {
 
     public void setPerfilLogoUrl(String perfilLogoUrl) {
         this.perfilLogoUrl = perfilLogoUrl;
+    }
+
+    public String getPerfilSlug() {
+        return perfilSlug;
+    }
+
+    public void setPerfilSlug(String perfilSlug) {
+        this.perfilSlug = perfilSlug;
     }
 }

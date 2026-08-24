@@ -32,6 +32,12 @@ public class PerfilPublicadorDTO {
     private Long cantidadSeguidores;
 
     /**
+     * URL amigable del perfil (script 27). Null solo para perfiles
+     * creados en la ventana de deploy de la migración. Aditivo.
+     */
+    private String slug;
+
+    /**
      * URL del LOGO aprobado (o null): la identidad única del publicador
      * en listados y perfil (fix UX 2026-08-22). Aditivo, no viaja por
      * el constructor: lo asigna el service con un query batch.
@@ -159,5 +165,13 @@ public class PerfilPublicadorDTO {
 
     public void setCantidadSeguidores(Long cantidadSeguidores) {
         this.cantidadSeguidores = cantidadSeguidores;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }

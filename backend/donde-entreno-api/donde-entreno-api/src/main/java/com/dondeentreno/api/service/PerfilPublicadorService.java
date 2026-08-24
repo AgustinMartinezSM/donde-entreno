@@ -74,12 +74,44 @@ public class PerfilPublicadorService {
             throw new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO);
         }
 
-        PerfilPublicadorDTO dto = perfilPublicadorRepository.findByIdAndActivoTrue(id)
-                .map(PerfilPublicadorMapper::toDTO)
-                .orElseThrow(() -> new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO));
+        return enriquecerDetalle(
+                perfilPublicadorRepository.findByIdAndActivoTrue(id)
+                        .map(PerfilPublicadorMapper::toDTO)
+                        .orElseThrow(() -> new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO))
+        );
+    }
 
+    /**
+     * Resuelve el detalle por id o por slug (script 27): un path
+     * numérico es un id (los links viejos siguen andando); cualquier
+     * otro texto se busca como slug. Mismo criterio de visibilidad.
+     */
+    public PerfilPublicadorDTO obtenerPerfilActivoPorIdOSlug(String idOSlug) {
+        if (idOSlug == null || idOSlug.isBlank()) {
+            throw new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO);
+        }
+
+        String valor = idOSlug.trim();
+
+        if (valor.matches("\\d+")) {
+            try {
+                return obtenerPerfilActivoPorId(Long.parseLong(valor));
+            } catch (NumberFormatException excepcion) {
+                /* Numérico pero desbordado: no es un id real. */
+                throw new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO);
+            }
+        }
+
+        return enriquecerDetalle(
+                perfilPublicadorRepository.findBySlugAndActivoTrue(valor)
+                        .map(PerfilPublicadorMapper::toDTO)
+                        .orElseThrow(() -> new RecursoNoEncontradoException(MENSAJE_PERFIL_NO_ENCONTRADO))
+        );
+    }
+
+    private PerfilPublicadorDTO enriquecerDetalle(PerfilPublicadorDTO dto) {
         dto.setCantidadSeguidores(
-                seguimientoPublicadorRepository.countByPerfilPublicador_Id(id)
+                seguimientoPublicadorRepository.countByPerfilPublicador_Id(dto.getId())
         );
         asignarLogos(List.of(dto));
 

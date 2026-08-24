@@ -101,19 +101,16 @@ public class PerfilPublicadorController {
     /**
      * Detalle público de un perfil publicador.
      *
-     * GET /api/perfiles-publicadores/{id}
+     * GET /api/perfiles-publicadores/{idOSlug}
      *
-     * Hasta ahora el frontend resolvía el perfil de la página
-     * /publicadores/{id} filtrando el listado completo, así que cada
-     * vista se traía todos los perfiles. Responde 404 si el perfil no
-     * existe o no está activo.
-     *
-     * @param id ID del perfil publicador.
-     * @return el perfil en formato DTO.
+     * Acepta id numérico (los links y clientes viejos siguen andando)
+     * o slug (script 27). Responde 404 si el perfil no existe o no
+     * está activo. La sub-ruta /imagenes sigue siendo por id: el DTO
+     * del detalle trae el id para encadenarla.
      */
-    @GetMapping("/{id}")
-    public PerfilPublicadorDTO obtenerPerfilPublicadorPorId(@PathVariable Long id) {
-        return perfilPublicadorService.obtenerPerfilActivoPorId(id);
+    @GetMapping("/{idOSlug}")
+    public PerfilPublicadorDTO obtenerPerfilPublicador(@PathVariable String idOSlug) {
+        return perfilPublicadorService.obtenerPerfilActivoPorIdOSlug(idOSlug);
     }
 
     @GetMapping("/{id}/imagenes")

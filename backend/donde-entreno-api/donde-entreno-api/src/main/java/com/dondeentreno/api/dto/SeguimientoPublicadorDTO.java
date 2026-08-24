@@ -20,6 +20,9 @@ public class SeguimientoPublicadorDTO {
      */
     private String perfilLogoUrl;
 
+    /** Slug del perfil (script 27), para el link /publicadores/{slug}. */
+    private String perfilSlug;
+
     public SeguimientoPublicadorDTO(
             Long perfilPublicadorId,
             String perfilPublicadorNombre,
@@ -60,5 +63,13 @@ public class SeguimientoPublicadorDTO {
 
     public void setPerfilLogoUrl(String perfilLogoUrl) {
         this.perfilLogoUrl = perfilLogoUrl;
+    }
+
+    public String getPerfilSlug() {
+        return perfilSlug;
+    }
+
+    public void setPerfilSlug(String perfilSlug) {
+        this.perfilSlug = perfilSlug;
     }
 }

@@ -70,6 +70,7 @@ public class AuthService {
     private final CiudadRepository ciudadRepository;
     private final PasswordEncoder passwordEncoder;
     private final LimitadorCambioPassword limitadorCambioPassword;
+    private final PerfilPublicadorSlugService perfilPublicadorSlugService;
 
     public AuthService(
             AuthenticationManager authenticationManager,
@@ -80,7 +81,8 @@ public class AuthService {
             PerfilPublicadorRepository perfilPublicadorRepository,
             CiudadRepository ciudadRepository,
             PasswordEncoder passwordEncoder,
-            LimitadorCambioPassword limitadorCambioPassword
+            LimitadorCambioPassword limitadorCambioPassword,
+            PerfilPublicadorSlugService perfilPublicadorSlugService
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -91,6 +93,7 @@ public class AuthService {
         this.ciudadRepository = ciudadRepository;
         this.passwordEncoder = passwordEncoder;
         this.limitadorCambioPassword = limitadorCambioPassword;
+        this.perfilPublicadorSlugService = perfilPublicadorSlugService;
     }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
@@ -350,6 +353,7 @@ public class AuthService {
         PerfilPublicador perfil = new PerfilPublicador();
         perfil.setUsuario(usuario);
         perfil.setNombre(limpiarTextoRequerido(request.getNombrePublico(), "El nombre publico es obligatorio."));
+        perfil.setSlug(perfilPublicadorSlugService.generarSlugUnico(perfil.getNombre()));
         perfil.setTipoPublicador(tipoPublicador);
         perfil.setEstado(ESTADO_PERFIL_PENDIENTE_REVISION);
         perfil.setCiudadPrincipal(ciudadPrincipal);

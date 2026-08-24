@@ -22,7 +22,7 @@ public class PerfilPublicadorMapper {
             return null;
         }
 
-        return new PerfilPublicadorDTO(
+        PerfilPublicadorDTO dto = new PerfilPublicadorDTO(
                 perfil.getId(),
                 perfil.getNombre(),
                 perfil.getTipoPublicador(),
@@ -34,5 +34,7 @@ public class PerfilPublicadorMapper {
                 perfil.getSitioWeb(),
                 perfil.getVerificado()
         );
+        dto.setSlug(perfil.getSlug());
+        return dto;
     }
 }

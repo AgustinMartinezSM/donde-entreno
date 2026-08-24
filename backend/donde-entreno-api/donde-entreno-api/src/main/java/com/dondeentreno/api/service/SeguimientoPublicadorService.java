@@ -169,13 +169,15 @@ public class SeguimientoPublicadorService {
                 ? perfil.getCiudadPrincipal().getNombre()
                 : null;
 
-        return new SeguimientoPublicadorDTO(
+        SeguimientoPublicadorDTO dto = new SeguimientoPublicadorDTO(
                 perfil.getId(),
                 perfil.getNombre(),
                 perfil.getTipoPublicador(),
                 ciudad,
                 seguimiento.getCreatedAt()
         );
+        dto.setPerfilSlug(perfil.getSlug());
+        return dto;
     }
 
     private void validarUserId(Long userId) {

@@ -36,7 +36,7 @@ class PerfilPublicadorControllerTest {
 
     @Test
     void obtenerPerfilPorIdDevuelveElDetallePublico() throws Exception {
-        when(perfilPublicadorService.obtenerPerfilActivoPorId(8L))
+        when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("8"))
                 .thenReturn(perfilDTO());
 
         mockMvc.perform(get("/api/perfiles-publicadores/8"))
@@ -46,7 +46,18 @@ class PerfilPublicadorControllerTest {
                 .andExpect(jsonPath("$.tipoPublicador").value("CLUB"))
                 .andExpect(jsonPath("$.verificado").value(true));
 
-        verify(perfilPublicadorService).obtenerPerfilActivoPorId(8L);
+        verify(perfilPublicadorService).obtenerPerfilActivoPorIdOSlug("8");
+    }
+
+    /* El path con slug llega al mismo service (script 27). */
+    @Test
+    void obtenerPerfilPorSlugLlegaAlService() throws Exception {
+        when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("club-atletico-sur"))
+                .thenReturn(perfilDTO());
+
+        mockMvc.perform(get("/api/perfiles-publicadores/club-atletico-sur"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(8));
     }
 
     /*
@@ -55,7 +66,7 @@ class PerfilPublicadorControllerTest {
     */
     @Test
     void obtenerPerfilInexistenteDevuelve404() throws Exception {
-        when(perfilPublicadorService.obtenerPerfilActivoPorId(999L))
+        when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("999"))
                 .thenThrow(new RecursoNoEncontradoException(
                         "El perfil publicador solicitado no existe o no está disponible."
                 ));

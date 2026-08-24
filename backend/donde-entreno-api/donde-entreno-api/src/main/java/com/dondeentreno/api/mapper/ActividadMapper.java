@@ -113,7 +113,7 @@ public class ActividadMapper {
             barrioNombre = barrio.getNombre();
         }
 
-        return new ActividadDTO(
+        ActividadDTO dto = new ActividadDTO(
                 actividad.getId(),
                 actividad.getTitulo(),
                 actividad.getSlug(),
@@ -154,5 +154,10 @@ public class ActividadMapper {
                 */
                 actividad.getCreatedAt()
         );
+
+        /* Slug del perfil (script 27), por setter como perfilLogoUrl. */
+        dto.setPerfilSlug(perfil != null ? perfil.getSlug() : null);
+
+        return dto;
     }
 }

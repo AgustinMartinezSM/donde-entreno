@@ -69,6 +69,7 @@ public class SolicitudPublicacionAdminService {
     private final DeporteRepository deporteRepository;
     private final CiudadRepository ciudadRepository;
     private final BarrioRepository barrioRepository;
+    private final PerfilPublicadorSlugService perfilPublicadorSlugService;
 
     public SolicitudPublicacionAdminService(
             SolicitudPublicacionRepository solicitudPublicacionRepository,
@@ -80,7 +81,8 @@ public class SolicitudPublicacionAdminService {
             UbicacionRepository ubicacionRepository,
             DeporteRepository deporteRepository,
             CiudadRepository ciudadRepository,
-            BarrioRepository barrioRepository
+            BarrioRepository barrioRepository,
+            PerfilPublicadorSlugService perfilPublicadorSlugService
     ) {
         this.solicitudPublicacionRepository = solicitudPublicacionRepository;
         this.solicitudPublicacionHorarioRepository = solicitudPublicacionHorarioRepository;
@@ -92,6 +94,7 @@ public class SolicitudPublicacionAdminService {
         this.deporteRepository = deporteRepository;
         this.ciudadRepository = ciudadRepository;
         this.barrioRepository = barrioRepository;
+        this.perfilPublicadorSlugService = perfilPublicadorSlugService;
     }
 
     @Transactional(readOnly = true)
@@ -324,6 +327,7 @@ public class SolicitudPublicacionAdminService {
         PerfilPublicador perfilPublicador = new PerfilPublicador();
         perfilPublicador.setUsuario(usuarioAdmin);
         perfilPublicador.setNombre(nombre);
+        perfilPublicador.setSlug(perfilPublicadorSlugService.generarSlugUnico(nombre));
         perfilPublicador.setTipoPublicador(tipoPublicador);
         perfilPublicador.setEstado(ESTADO_PERFIL_PENDIENTE_REVISION);
         perfilPublicador.setCiudadPrincipal(ciudad);

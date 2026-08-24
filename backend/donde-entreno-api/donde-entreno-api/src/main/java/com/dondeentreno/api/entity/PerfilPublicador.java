@@ -54,6 +54,14 @@ public class PerfilPublicador {
     private String nombre;
 
     /**
+     * URL amigable del perfil (script 27). ESTABLE: renombrar el perfil
+     * no lo cambia — los links compartidos no se rompen. Nullable por
+     * la ventana de deploy; el backend lo genera al crear.
+     */
+    @Column(name = "slug", length = 150)
+    private String slug;
+
+    /**
      * Tipo de publicador.
      *
      * Valores permitidos en base:
@@ -161,6 +169,14 @@ public class PerfilPublicador {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public String getTipoPublicador() {

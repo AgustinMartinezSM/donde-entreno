@@ -82,6 +82,9 @@ class AuthServiceTest {
     @Mock
     private LimitadorCambioPassword limitadorCambioPassword;
 
+    @Mock
+    private PerfilPublicadorSlugService perfilPublicadorSlugService;
+
     @InjectMocks
     private AuthService authService;
 

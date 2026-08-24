@@ -242,56 +242,39 @@ class ImagenModeracionIT {
         marcadores.clear();
     }
 
+    /**
+     * Fase 4 social: la foto se publica DIRECTO (sin cola de admin) y
+     * la PRINCIPAL nueva reemplaza sola a la anterior.
+     */
     @Test
-    void flujoCompletoSubirAprobarYVisibilidadPublica() throws Exception {
+    void flujoCompletoSubidaDirectaYVisibilidadPublica() throws Exception {
         Referencias referencias = obtenerReferenciasActivas();
         String marcador = marcadorUnico();
         Publicador publicador = crearPublicador(marcador, referencias.ciudad());
-        Usuario admin = crearAdmin(marcador);
         Actividad actividad = crearActividadPublicada(marcador, publicador.perfil(), referencias);
 
-        // 1) El publicador sube una imagen PRINCIPAL: nace PENDIENTE e inactiva.
+        // 1) El publicador sube una PRINCIPAL: nace APROBADA y activa.
         ResultActions subida = mockMvc.perform(
                         multipart("/api/publicador/actividades/" + actividad.getId() + "/imagenes")
                                 .file(new MockMultipartFile("archivo", "foto.jpg", "image/jpeg", BYTES_JPEG))
                                 .param("tipo", "PRINCIPAL")
                                 .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.estadoModeracion").value("PENDIENTE"))
-                .andExpect(jsonPath("$.activa").value(false));
+                .andExpect(jsonPath("$.estadoModeracion").value("APROBADA"))
+                .andExpect(jsonPath("$.activa").value(true));
 
         long primeraImagenId = leerJson(subida).path("id").asLong();
         imagenIds.add(primeraImagenId);
 
-        // 2) En público la imagen pendiente NO se ve.
+        // 2) En público se ve al instante: sin paso intermedio.
         JsonNode imagenesPublicas = leerJson(
                 mockMvc.perform(get("/api/actividades/" + actividad.getSlug() + "/imagenes"))
                         .andExpect(status().isOk())
         );
-        assertFalse(listaContieneId(imagenesPublicas, primeraImagenId),
-                "Una imagen PENDIENTE no debe verse en el endpoint publico.");
+        assertTrue(listaContieneId(imagenesPublicas, primeraImagenId),
+                "Con subida directa la foto debe verse en publico enseguida.");
 
-        // 3) El admin la ve en su cola de pendientes.
-        mockMvc.perform(get("/api/admin/imagenes")
-                        .param("estado", "PENDIENTE")
-                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
-                .andExpect(status().isOk());
-
-        // 4) El admin aprueba: queda activa y visible en público.
-        mockMvc.perform(post("/api/admin/imagenes/" + primeraImagenId + "/aprobar")
-                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estadoModeracion").value("APROBADA"))
-                .andExpect(jsonPath("$.activa").value(true));
-
-        JsonNode imagenesTrasAprobar = leerJson(
-                mockMvc.perform(get("/api/actividades/" + actividad.getSlug() + "/imagenes"))
-                        .andExpect(status().isOk())
-        );
-        assertTrue(listaContieneId(imagenesTrasAprobar, primeraImagenId),
-                "Una imagen APROBADA debe verse en el endpoint publico.");
-
-        // 5) Se aprueba una segunda PRINCIPAL: la primera queda inactiva.
+        // 3) Una segunda PRINCIPAL reemplaza a la primera, sin admin.
         ResultActions segundaSubida = mockMvc.perform(
                         multipart("/api/publicador/actividades/" + actividad.getId() + "/imagenes")
                                 .file(new MockMultipartFile("archivo", "foto2.jpg", "image/jpeg", BYTES_JPEG))
@@ -301,13 +284,9 @@ class ImagenModeracionIT {
         long segundaImagenId = leerJson(segundaSubida).path("id").asLong();
         imagenIds.add(segundaImagenId);
 
-        mockMvc.perform(post("/api/admin/imagenes/" + segundaImagenId + "/aprobar")
-                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
-                .andExpect(status().isOk());
-
         Imagen primeraImagen = imagenRepository.findById(primeraImagenId).orElseThrow();
         assertFalse(primeraImagen.getActiva(),
-                "Al aprobar una nueva PRINCIPAL, la anterior debe quedar inactiva.");
+                "Al subir una nueva PRINCIPAL, la anterior debe quedar inactiva.");
 
         JsonNode imagenesFinales = leerJson(
                 mockMvc.perform(get("/api/actividades/" + actividad.getSlug() + "/imagenes"))
@@ -318,8 +297,12 @@ class ImagenModeracionIT {
                 "La PRINCIPAL reemplazada no debe seguir visible en publico.");
     }
 
+    /**
+     * Fase 4 social: la contrapartida de publicar directo. El admin baja
+     * una foto YA PUBLICADA con motivo obligatorio y sale de público.
+     */
     @Test
-    void rechazarRequiereMotivoYLaImagenNoSeVeEnPublico() throws Exception {
+    void elAdminBajaUnaFotoPublicadaYRequiereMotivo() throws Exception {
         Referencias referencias = obtenerReferenciasActivas();
         String marcador = marcadorUnico();
         Publicador publicador = crearPublicador(marcador, referencias.ciudad());
@@ -331,18 +314,26 @@ class ImagenModeracionIT {
                                 .file(new MockMultipartFile("archivo", "foto.jpg", "image/jpeg", BYTES_JPEG))
                                 .param("tipo", "GALERIA")
                                 .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estadoModeracion").value("APROBADA"));
         long imagenId = leerJson(subida).path("id").asLong();
         imagenIds.add(imagenId);
 
-        // Rechazo sin motivo: 400 por Bean Validation.
+        // Publicada: se ve en público antes de que el admin toque nada.
+        JsonNode antesDeBajar = leerJson(
+                mockMvc.perform(get("/api/actividades/" + actividad.getSlug() + "/imagenes"))
+                        .andExpect(status().isOk())
+        );
+        assertTrue(listaContieneId(antesDeBajar, imagenId));
+
+        // Baja sin motivo: 400 por Bean Validation.
         mockMvc.perform(post("/api/admin/imagenes/" + imagenId + "/rechazar")
                         .with(jwtConRol(ROL_ADMIN, admin.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
 
-        // Rechazo con motivo: queda RECHAZADA, inactiva y fuera de público.
+        // Baja con motivo: queda RECHAZADA, inactiva y fuera de público.
         mockMvc.perform(post("/api/admin/imagenes/" + imagenId + "/rechazar")
                         .with(jwtConRol(ROL_ADMIN, admin.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -356,6 +347,13 @@ class ImagenModeracionIT {
                         .andExpect(status().isOk())
         );
         assertFalse(listaContieneId(imagenesPublicas, imagenId));
+
+        // Bajarla de nuevo: 400 (ya no está en pie).
+        mockMvc.perform(post("/api/admin/imagenes/" + imagenId + "/rechazar")
+                        .with(jwtConRol(ROL_ADMIN, admin.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"motivo\":\"De nuevo.\"}"))
+                .andExpect(status().isBadRequest());
 
         // El archivo que no es imagen (PDF disfrazado) se rechaza al subir.
         mockMvc.perform(
@@ -382,14 +380,13 @@ class ImagenModeracionIT {
         Referencias referencias = obtenerReferenciasActivas();
         String marcador = marcadorUnico();
         Publicador publicador = crearPublicador(marcador, referencias.ciudad());
-        Usuario admin = crearAdmin(marcador);
         Actividad actividad = crearActividadPublicada(marcador, publicador.perfil(), referencias);
 
-        // 1) Tres GALERIA + una PRINCIPAL, todas aprobadas.
-        long galeria1 = subirYAprobar(actividad, publicador, admin, "GALERIA");
-        long galeria2 = subirYAprobar(actividad, publicador, admin, "GALERIA");
-        long galeria3 = subirYAprobar(actividad, publicador, admin, "GALERIA");
-        long principalOriginal = subirYAprobar(actividad, publicador, admin, "PRINCIPAL");
+        // 1) Tres GALERIA + una PRINCIPAL, todas publicadas directo.
+        long galeria1 = subirPublicada(actividad, publicador, "GALERIA");
+        long galeria2 = subirPublicada(actividad, publicador, "GALERIA");
+        long galeria3 = subirPublicada(actividad, publicador, "GALERIA");
+        long principalOriginal = subirPublicada(actividad, publicador, "PRINCIPAL");
 
         // 2) Orden inválido (falta una foto): 400 sin tocar nada.
         mockMvc.perform(put("/api/publicador/actividades/" + actividad.getId() + "/imagenes/orden")
@@ -452,27 +449,42 @@ class ImagenModeracionIT {
                 "Una aprobada eliminada por el publicador no debe verse en publico.");
         assertTrue(listaContieneId(publicas, galeria1));
 
-        // 7) Un segundo LOGO pendiente del mismo tipo se rechaza (límite de perfil).
+        /*
+          7) Fase 4 social: el LOGO nuevo REEMPLAZA al anterior. Antes un
+          segundo logo daba 400 ("ya tenés uno pendiente"); con subida
+          directa el guard no tiene sentido y el perfil sigue teniendo
+          un solo logo activo.
+        */
         ResultActions primerLogo = mockMvc.perform(
                         multipart("/api/publicador/perfil/imagenes")
                                 .file(new MockMultipartFile("archivo", "logo.jpg", "image/jpeg", BYTES_JPEG))
                                 .param("tipo", "LOGO")
                                 .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
                 .andExpect(status().isCreated());
-        imagenIds.add(leerJson(primerLogo).path("id").asLong());
+        long logoOriginal = leerJson(primerLogo).path("id").asLong();
+        imagenIds.add(logoOriginal);
 
-        mockMvc.perform(multipart("/api/publicador/perfil/imagenes")
-                        .file(new MockMultipartFile("archivo", "logo2.jpg", "image/jpeg", BYTES_JPEG))
-                        .param("tipo", "LOGO")
-                        .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
-                .andExpect(status().isBadRequest());
+        ResultActions segundoLogo = mockMvc.perform(
+                        multipart("/api/publicador/perfil/imagenes")
+                                .file(new MockMultipartFile("archivo", "logo2.jpg", "image/jpeg", BYTES_JPEG))
+                                .param("tipo", "LOGO")
+                                .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estadoModeracion").value("APROBADA"));
+        imagenIds.add(leerJson(segundoLogo).path("id").asLong());
+
+        Imagen logoViejo = imagenRepository.findById(logoOriginal).orElseThrow();
+        assertFalse(logoViejo.getActiva(),
+                "Al subir un LOGO nuevo, el anterior debe quedar inactivo.");
     }
 
-    /* Sube una imagen del tipo dado y la aprueba como admin. */
-    private long subirYAprobar(
+    /*
+      Sube una imagen del tipo dado: desde la fase 4 social ya queda
+      publicada (APROBADA + activa) sin pasar por el admin.
+    */
+    private long subirPublicada(
             Actividad actividad,
             Publicador publicador,
-            Usuario admin,
             String tipo
     ) throws Exception {
         ResultActions subida = mockMvc.perform(
@@ -480,14 +492,11 @@ class ImagenModeracionIT {
                                 .file(new MockMultipartFile("archivo", "foto.jpg", "image/jpeg", BYTES_JPEG))
                                 .param("tipo", tipo)
                                 .with(jwtConRol(ROL_PUBLICADOR, publicador.usuario().getId())))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.estadoModeracion").value("APROBADA"));
 
         long imagenId = leerJson(subida).path("id").asLong();
         imagenIds.add(imagenId);
-
-        mockMvc.perform(post("/api/admin/imagenes/" + imagenId + "/aprobar")
-                        .with(jwtConRol(ROL_ADMIN, admin.getId())))
-                .andExpect(status().isOk());
 
         return imagenId;
     }

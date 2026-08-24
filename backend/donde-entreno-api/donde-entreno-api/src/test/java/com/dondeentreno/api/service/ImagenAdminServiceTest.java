@@ -115,15 +115,41 @@ class ImagenAdminServiceTest {
         verify(imagenRepository, never()).save(any());
     }
 
+    /*
+      Fase 4 social: con subida directa, bajar una foto YA PUBLICADA es
+      la unica herramienta reactiva del admin. Aprobar sigue siendo solo
+      para las PENDIENTE del legado.
+    */
     @Test
-    void unaImagenYaRevisadaNoSePuedeVolverAModerar() {
+    void bajarUnaFotoPublicadaBorraDelBucketPublicoYGuardaElMotivo() {
+        Imagen publicada = crearImagen(77L, "https://storage/publica.png", "APROBADA");
+        publicada.setActiva(true);
+        when(imagenRepository.findById(77L)).thenReturn(Optional.of(publicada));
+        when(imagenRepository.save(any(Imagen.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.rechazar(77L, "Contenido reportado.");
+
+        verify(almacenArchivos).eliminarPublicoPorUrl("https://storage/publica.png");
+        verify(almacenArchivos, never()).eliminar(anyString());
+        assertEquals("RECHAZADA", publicada.getEstadoModeracion());
+        assertEquals("Contenido reportado.", publicada.getMotivoRechazo());
+        assertFalse(publicada.getActiva());
+    }
+
+    @Test
+    void aprobarNoAplicaAUnaPublicadaYUnaBajaNoSeRepite() {
         Imagen aprobada = crearImagen(77L, "https://storage/publica.png", "APROBADA");
         when(imagenRepository.findById(77L)).thenReturn(Optional.of(aprobada));
 
         assertThrows(ImagenInvalidaException.class, () -> service.aprobar(77L));
+
+        Imagen rechazada = crearImagen(78L, "https://storage/publica2.png", "RECHAZADA");
+        when(imagenRepository.findById(78L)).thenReturn(Optional.of(rechazada));
+
         assertThrows(
                 ImagenInvalidaException.class,
-                () -> service.rechazar(77L, "motivo")
+                () -> service.rechazar(78L, "motivo")
         );
     }
 

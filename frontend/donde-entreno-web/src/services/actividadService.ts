@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "../lib/apiConfig";
 import type {
+  Actividad,
   ActividadDetalle,
   HorarioActividad,
   ImagenActividad,
@@ -135,6 +136,29 @@ export async function obtenerDetalleActividad(
   un publicador de una vez, así que el perfil pide una por actividad;
   cuando exista el agregado, solo cambia el caller.
 */
+/*
+  Actividades DESTACADAS del publicador (Fase 5): hasta 3, en el orden
+  que él eligió. Van arriba de su listado en el perfil público.
+*/
+export async function obtenerDestacadasDelPublicador(
+  perfilPublicadorId: number
+): Promise<Actividad[]> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(
+      String(perfilPublicadorId)
+    )}/destacadas`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    return [];
+  }
+
+  const data: unknown = await respuesta.json();
+
+  return Array.isArray(data) ? (data as Actividad[]) : [];
+}
+
 export async function obtenerImagenesActividad(
   slug: string
 ): Promise<ImagenActividad[]> {

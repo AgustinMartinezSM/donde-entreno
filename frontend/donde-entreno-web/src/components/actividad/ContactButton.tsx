@@ -1,6 +1,9 @@
 "use client";
 
-import { registrarInteraccion } from "../../lib/interacciones";
+import {
+  registrarInteraccion,
+  registrarInteraccionPerfil,
+} from "../../lib/interacciones";
 
 type ContactButtonProps = {
   whatsapp?: string | null;
@@ -14,6 +17,14 @@ type ContactButtonProps = {
     Best-effort, jamás bloquea la navegación.
   */
   actividadId?: number;
+  /*
+    Fase 5: el mismo botón usado en el PERFIL. Con estos dos, el click
+    se cuenta contra el perfil (no contra una actividad) y el mensaje
+    prellenado nombra al publicador. Hasta esta fase, el botón del
+    perfil no registraba absolutamente nada.
+  */
+  perfilPublicadorId?: number;
+  nombrePublicador?: string;
   className?: string;
 };
 
@@ -26,6 +37,8 @@ export function ContactButton({
   email,
   tituloActividad,
   actividadId,
+  perfilPublicadorId,
+  nombrePublicador,
   className = "mt-6",
 }: ContactButtonProps) {
   const numeroWhatsapp = normalizarNumeroWhatsapp(whatsapp);
@@ -33,18 +46,22 @@ export function ContactButton({
   if (numeroWhatsapp) {
     const mensaje = tituloActividad
       ? `Hola! Vi "${tituloActividad}" en DondeEntreno y quiero más info.`
-      : "Hola! Vi tu actividad en DondeEntreno y quiero más info.";
+      : nombrePublicador
+        ? `Hola! Vi el perfil de ${nombrePublicador} en DondeEntreno y quiero más info.`
+        : "Hola! Vi tu actividad en DondeEntreno y quiero más info.";
 
     return (
       <a
         href={`https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensaje)}`}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={
-          actividadId !== undefined
-            ? () => registrarInteraccion(actividadId, "CLICK_WHATSAPP")
-            : undefined
-        }
+        onClick={() => {
+          if (actividadId !== undefined) {
+            registrarInteraccion(actividadId, "CLICK_WHATSAPP");
+          } else if (perfilPublicadorId !== undefined) {
+            registrarInteraccionPerfil(perfilPublicadorId, "CLICK_WHATSAPP");
+          }
+        }}
         className={`${claseBoton} ${className}`}
       >
         Contactar por WhatsApp
@@ -85,7 +102,9 @@ export function ContactButton({
     <div
       className={`rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-4 py-3 text-center text-sm font-bold leading-6 text-[var(--color-muted)] ${className}`}
     >
-      Esta actividad todavía no cargó un canal de contacto.
+      {perfilPublicadorId !== undefined
+        ? "Este publicador todavía no cargó un canal de contacto."
+        : "Esta actividad todavía no cargó un canal de contacto."}
     </div>
   );
 }

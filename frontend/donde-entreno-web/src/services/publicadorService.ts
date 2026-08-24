@@ -264,6 +264,60 @@ export async function cambiarVisibilidadActividad(
   );
 }
 
+/*
+  Actividades destacadas del publicador (Fase 5): hasta 3, ORDENADAS.
+  El PUT reemplaza la selección completa; una lista vacía la limpia.
+  El backend valida el tope y que cada actividad sea suya y publicada.
+*/
+export async function listarDestacadasPublicador(
+  accessToken: string
+): Promise<ActividadPublicadorResumen[]> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/destacadas`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+    },
+    esListaDeActividadesPublicador
+  );
+}
+
+export async function definirDestacadasPublicador(
+  actividadIds: number[],
+  accessToken: string
+): Promise<ActividadPublicadorResumen[]> {
+  return ejecutarPublicadorRequest(
+    `${API_BASE_URL}/api/publicador/actividades/destacadas`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": construirAuthorizationPublicador(accessToken),
+      },
+      body: JSON.stringify({ actividadIds }),
+    },
+    esListaDeActividadesPublicador
+  );
+}
+
+function esListaDeActividadesPublicador(
+  valor: unknown
+): valor is ActividadPublicadorResumen[] {
+  return (
+    Array.isArray(valor) &&
+    valor.every(
+      (item) =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof (item as ActividadPublicadorResumen).id === "number"
+    )
+  );
+}
+
 // ============================================================
 // Solicitudes de cambio sobre actividades publicadas
 // ============================================================

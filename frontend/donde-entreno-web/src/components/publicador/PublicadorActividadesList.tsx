@@ -8,6 +8,7 @@ import { ActivityImage } from "../actividad/ActivityImage";
 import { AppButton } from "../ui/AppButton";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { SectionHeader } from "../ui/SectionHeader";
+import { SelectorDestacadas } from "./SelectorDestacadas";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
@@ -239,6 +240,15 @@ export function PublicadorActividadesList() {
                 />
               ))}
             </div>
+          ) : null}
+
+          {/*
+            Destacadas (Fase 5): se eligen sobre las actividades de
+            esta página. Con más de una página, elegir de otra exige
+            navegar — aceptable mientras el catálogo es chico.
+          */}
+          {!cargando && !error ? (
+            <SelectorDestacadas actividades={actividades} />
           ) : null}
 
           {paginaActividades ? (

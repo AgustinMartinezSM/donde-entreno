@@ -22,6 +22,17 @@ export type PerfilPublicadorPublico = {
     no depende del orden de los deploys.
   */
   cantidadSeguidores?: number | null;
+
+  /*
+    Stats de cabecera (Fase 5). Aditivos por la misma razón.
+    valoracionPromedio es null hasta juntar 3 valoraciones — misma
+    regla que en el detalle de actividad, para que los dos números no
+    se contradigan en pantalla.
+  */
+  cantidadActividades?: number | null;
+  cantidadFotos?: number | null;
+  valoracionPromedio?: number | null;
+  cantidadValoraciones?: number | null;
 };
 
 /*
@@ -42,4 +53,11 @@ export type ImagenPerfilPublicador = {
   cantidadComentarios?: number | null;
   comentariosActivados?: boolean | null;
   seccion?: string | null;
+
+  /*
+    Fase 5: el endpoint agregado de fotos mezcla las del perfil con las
+    de sus actividades, así que cada foto dice de cuál viene.
+  */
+  actividadId?: number | null;
+  actividadSlug?: string | null;
 };

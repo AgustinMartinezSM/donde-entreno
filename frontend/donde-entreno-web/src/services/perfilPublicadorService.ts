@@ -1,5 +1,9 @@
 import { API_BASE_URL } from "../lib/apiConfig";
 import type {
+  PreguntaActividad,
+  ResumenValoraciones,
+} from "./confianzaService";
+import type {
   ImagenPerfilPublicador,
   PerfilPublicadorPublico,
 } from "../types/publicadorPublico";
@@ -89,6 +93,66 @@ export async function obtenerImagenesPerfilPublicador(
   }
 
   return data.filter(esImagenPerfilPublicador);
+}
+
+/*
+  TODAS las fotos visibles del publicador (Fase 5): las del perfil y
+  las de sus actividades, en un solo request. Antes esta misma grilla
+  costaba una llamada por actividad.
+*/
+export async function obtenerFotosDelPublicador(
+  id: number
+): Promise<ImagenPerfilPublicador[]> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(id))}/fotos`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    throw new Error("No se pudieron obtener las fotos del publicador");
+  }
+
+  const data: unknown = await respuesta.json();
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.filter(esImagenPerfilPublicador);
+}
+
+/* Opiniones agregadas del publicador (Fase 5). */
+export async function obtenerValoracionesDelPublicador(
+  idOSlug: number | string
+): Promise<ResumenValoraciones | null> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(idOSlug))}/valoraciones`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    return null;
+  }
+
+  return (await respuesta.json()) as ResumenValoraciones;
+}
+
+/* Preguntas YA RESPONDIDAS del publicador (Fase 5). */
+export async function obtenerPreguntasDelPublicador(
+  idOSlug: number | string
+): Promise<PreguntaActividad[]> {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/perfiles-publicadores/${encodeURIComponent(String(idOSlug))}/preguntas`,
+    { cache: "no-store" }
+  );
+
+  if (!respuesta.ok) {
+    return [];
+  }
+
+  const data: unknown = await respuesta.json();
+
+  return Array.isArray(data) ? (data as PreguntaActividad[]) : [];
 }
 
 function esPerfilPublicadorPublico(

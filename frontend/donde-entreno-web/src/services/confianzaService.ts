@@ -16,6 +16,12 @@ export type ValoracionPublica = {
   autorNombre: string;
   esPropia: boolean;
   createdAt: string | null;
+  /*
+    Fase 5: solo vienen en el listado del PERFIL, donde se mezclan
+    reseñas de varias actividades. En el detalle son null (ahí es obvio).
+  */
+  actividadTitulo?: string | null;
+  actividadSlug?: string | null;
 };
 
 export type ResumenValoraciones = {
@@ -32,6 +38,9 @@ export type PreguntaActividad = {
   respondidaAt: string | null;
   esPropia: boolean;
   createdAt: string | null;
+  /* Fase 5: ídem, solo en el listado del perfil. */
+  actividadTitulo?: string | null;
+  actividadSlug?: string | null;
 };
 
 export const TAGS_VALORACION = [

@@ -95,6 +95,19 @@ export function PublicadorMetricasPanel({
           },
         ]
       : []),
+    /*
+      Fase 5: los contactos desde el perfil van aparte de los de cada
+      actividad. Se muestra recién con el primero — hasta entonces no
+      dice nada y el panel ya tiene números suficientes.
+    */
+    ...((metricas.contactosDesdePerfil30Dias ?? 0) > 0
+      ? [
+          {
+            etiqueta: "Contactos desde tu perfil (30 días)",
+            valor: metricas.contactosDesdePerfil30Dias ?? 0,
+          },
+        ]
+      : []),
   ];
 
   return (

@@ -15,10 +15,29 @@ export function registrarInteraccion(
   actividadId: number,
   tipo: TipoInteraccion
 ): void {
-  try {
-    const url = `${API_BASE_URL}/api/actividades/${actividadId}/interacciones`;
-    const cuerpo = JSON.stringify({ tipo });
+  enviarBeacon(
+    `${API_BASE_URL}/api/actividades/${actividadId}/interacciones`,
+    tipo
+  );
+}
 
+/**
+ * Interacción sobre el PERFIL del publicador (Fase 5). Va a su propio
+ * endpoint: el evento del perfil no cuelga de ninguna actividad, así
+ * las métricas por actividad no se ensucian.
+ */
+export function registrarInteraccionPerfil(
+  perfilPublicadorId: number,
+  tipo: TipoInteraccion
+): void {
+  enviarBeacon(
+    `${API_BASE_URL}/api/perfiles-publicadores/${perfilPublicadorId}/interacciones`,
+    tipo
+  );
+}
+
+function enviarBeacon(url: string, tipo: TipoInteraccion): void {
+  try {
     /*
       fetch keepalive y NO sendBeacon a propósito: la API vive en otro
       origen y un beacon con content-type JSON exige preflight CORS,
@@ -29,7 +48,7 @@ export function registrarInteraccion(
     void fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: cuerpo,
+      body: JSON.stringify({ tipo }),
       keepalive: true,
     }).catch(() => {
       /* Best-effort. */

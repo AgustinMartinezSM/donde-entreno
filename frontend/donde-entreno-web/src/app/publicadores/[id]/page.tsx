@@ -23,11 +23,18 @@ import { construirUrlImagenBackend } from "../../../lib/backendUrl";
 import { formatearTipoPublicador } from "../../../lib/formatoCatalogo";
 import {
   buscarActividades,
-  obtenerImagenesActividad,
+  obtenerDestacadasDelPublicador,
 } from "../../../services/actividadService";
+import type {
+  PreguntaActividad,
+  ResumenValoraciones,
+} from "../../../services/confianzaService";
 import {
+  obtenerFotosDelPublicador,
   obtenerImagenesPerfilPublicador,
   obtenerPerfilPublicadorPorId,
+  obtenerPreguntasDelPublicador,
+  obtenerValoracionesDelPublicador,
 } from "../../../services/perfilPublicadorService";
 
 /*
@@ -53,6 +60,8 @@ type PerfilPublicadorPageProps = {
 const TABS = [
   { clave: "actividades", etiqueta: "Actividades" },
   { clave: "fotos", etiqueta: "Fotos" },
+  /* Fase 5: las valoraciones existían pero solo dentro de cada actividad. */
+  { clave: "opiniones", etiqueta: "Opiniones" },
   { clave: "info", etiqueta: "Info" },
 ] as const;
 
@@ -211,16 +220,22 @@ export default async function PerfilPublicadorPage({
   }
 
   /* Imágenes y actividades: best-effort, el perfil se muestra igual. */
-  const [imagenes, respuestaActividades] = await Promise.all([
-    obtenerImagenesPerfilPublicador(perfil.id).catch(
-      () => [] as ImagenPerfilPublicador[]
-    ),
-    buscarActividades({
-      perfilPublicadorId: perfil.id,
-      page: 0,
-      size: 6,
-    }).catch(() => null),
-  ]);
+  const [imagenes, respuestaActividades, fotosDelPublicador, destacadas] =
+    await Promise.all([
+      obtenerImagenesPerfilPublicador(perfil.id).catch(
+        () => [] as ImagenPerfilPublicador[]
+      ),
+      buscarActividades({
+        perfilPublicadorId: perfil.id,
+        page: 0,
+        size: 6,
+      }).catch(() => null),
+      /* Fase 5: todas sus fotos en UN request (antes, una por actividad). */
+      obtenerFotosDelPublicador(perfil.id).catch(
+        () => [] as ImagenPerfilPublicador[]
+      ),
+      obtenerDestacadasDelPublicador(perfil.id).catch(() => [] as Actividad[]),
+    ]);
 
   const logo = imagenes.find((imagen) => imagen.tipoImagen === "LOGO");
   const portada = imagenes.find((imagen) => imagen.tipoImagen === "PORTADA");
@@ -231,8 +246,25 @@ export default async function PerfilPublicadorPage({
   const totalActividades = respuestaActividades?.totalElementos ?? 0;
   const huboErrorActividades = respuestaActividades === null;
 
-  const fotos = await reunirFotosDelPerfil(perfil.nombre, actividades, imagenes);
-  const tabActiva: ClaveTab = resolverTab(tabPedida, fotos.length > 0);
+  const fotos = reunirFotosDelPerfil(perfil.nombre, fotosDelPublicador);
+
+  /*
+    Opiniones y preguntas del publicador (Fase 5): hasta ahora las
+    valoraciones vivían solo dentro de cada actividad, así que quien
+    miraba el perfil no veía ninguna.
+  */
+  const [opiniones, preguntas] = await Promise.all([
+    obtenerValoracionesDelPublicador(perfil.id).catch(() => null),
+    obtenerPreguntasDelPublicador(perfil.id).catch(() => []),
+  ]);
+  const hayOpiniones =
+    (opiniones?.contenido?.length ?? 0) > 0 || preguntas.length > 0;
+
+  const tabActiva: ClaveTab = resolverTab(
+    tabPedida,
+    fotos.length > 0,
+    hayOpiniones
+  );
 
   const tipoVisible = perfil.tipoPublicador
     ? formatearTipoPublicador(perfil.tipoPublicador)
@@ -386,36 +418,27 @@ export default async function PerfilPublicadorPage({
               ) : null}
 
               {/*
-                Datos de un vistazo: el perfil sin descripción ni portada
-                quedaba prácticamente vacío entre el nombre y el contacto.
+                Fila de stats (Fase 5): los números que hacen decidir,
+                cada uno navegando a donde se ven. Un stat sin dato no
+                se dibuja — nunca un cero falso, la misma regla que ya
+                regía para seguidores.
               */}
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                {!huboErrorActividades ? (
-                  <span className="rounded-full bg-[var(--color-info-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-info-deep)]">
-                    {totalActividades === 1
-                      ? "1 actividad publicada"
-                      : `${totalActividades} actividades publicadas`}
-                  </span>
-                ) : null}
+              <StatsDelPerfil
+                slugOId={perfil.slug ?? String(perfil.id)}
+                actividades={huboErrorActividades ? null : totalActividades}
+                seguidores={seguidores}
+                fotos={fotos.length}
+                promedio={perfil.valoracionPromedio ?? null}
+                cantidadOpiniones={perfil.cantidadValoraciones ?? 0}
+              />
 
-                {/*
-                  El contador se muestra recién a partir del primer
-                  seguidor: con la plataforma recién arrancando, un
-                  "0 seguidores" en todos los perfiles los hace ver
-                  abandonados sin aportar información.
-                */}
-                {seguidores > 0 ? (
-                  <span className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-primary)]">
-                    {seguidores === 1 ? "1 seguidor" : `${seguidores} seguidores`}
-                  </span>
-                ) : null}
-
-                {perfil.verificado === true ? (
+              {perfil.verificado === true ? (
+                <div className="mt-4">
                   <span className="rounded-full bg-[var(--color-success-soft)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-success)]">
                     Perfil verificado
                   </span>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="sm:w-64">
@@ -423,6 +446,9 @@ export default async function PerfilPublicadorPage({
                     whatsapp={perfil.whatsapp}
                     instagram={perfil.instagram}
                     email={perfil.emailContacto}
+                    /* Fase 5: hasta acá el botón del perfil no medía nada. */
+                    perfilPublicadorId={perfil.id}
+                    nombrePublicador={perfil.nombre}
                     className=""
                   />
                 </div>
@@ -449,7 +475,9 @@ export default async function PerfilPublicadorPage({
             aria-label="Secciones del perfil"
           >
             {TABS.filter(
-              (tab) => tab.clave !== "fotos" || fotos.length > 0
+              (tab) =>
+                (tab.clave !== "fotos" || fotos.length > 0) &&
+                (tab.clave !== "opiniones" || hayOpiniones)
             ).map((tab) => {
               const activa = tab.clave === tabActiva;
 
@@ -515,16 +543,64 @@ export default async function PerfilPublicadorPage({
                   Seguilo para enterarte cuando publique.
                 </StatusMessage>
               ) : (
-                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {actividades.map((actividad) => (
-                    <SocialActivityCard
-                      key={actividad.id}
-                      actividad={actividad}
-                      variante="compacta"
-                    />
-                  ))}
-                </div>
+                <>
+                  {/*
+                    Destacadas (Fase 5): lo que el publicador eligió
+                    mostrar primero. Van ARRIBA del listado normal, no
+                    en su lugar.
+                  */}
+                  {destacadas.length > 0 ? (
+                    <div className="mt-5">
+                      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+                        Destacadas por {perfil.nombre}
+                      </p>
+                      <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {destacadas.map((actividad) => (
+                          <SocialActivityCard
+                            key={`destacada-${actividad.id}`}
+                            actividad={actividad}
+                            variante="compacta"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {actividades
+                      .filter(
+                        (actividad) =>
+                          !destacadas.some(
+                            (destacada) => destacada.id === actividad.id
+                          )
+                      )
+                      .map((actividad) => (
+                        <SocialActivityCard
+                          key={actividad.id}
+                          actividad={actividad}
+                          variante="compacta"
+                        />
+                      ))}
+                  </div>
+                </>
               )}
+            </section>
+          ) : null}
+
+          {tabActiva === "opiniones" ? (
+            <section className="mt-7" aria-labelledby="opiniones-perfil-titulo">
+              <SectionHeader
+                eyebrow="Opiniones"
+                title={`Lo que dicen de ${perfil.nombre}`}
+                description="Valoraciones de todas sus actividades y las preguntas que ya respondió."
+                titleId="opiniones-perfil-titulo"
+              />
+
+              <OpinionesDelPublicador
+                resumen={opiniones}
+                preguntas={preguntas}
+                promedioVisible={perfil.valoracionPromedio ?? null}
+              />
             </section>
           ) : null}
 
@@ -598,7 +674,11 @@ export default async function PerfilPublicadorPage({
   );
 }
 
-function resolverTab(pedida: string | undefined, hayFotos: boolean): ClaveTab {
+function resolverTab(
+  pedida: string | undefined,
+  hayFotos: boolean,
+  hayOpiniones: boolean
+): ClaveTab {
   const valida = TABS.some((tab) => tab.clave === pedida);
 
   if (!valida) {
@@ -610,6 +690,11 @@ function resolverTab(pedida: string | undefined, hayFotos: boolean): ClaveTab {
     return "actividades";
   }
 
+  /* Mismo criterio para Opiniones: una solapa vacía es una promesa rota. */
+  if (pedida === "opiniones" && !hayOpiniones) {
+    return "actividades";
+  }
+
   return pedida as ClaveTab;
 }
 
@@ -617,65 +702,263 @@ function resolverTab(pedida: string | undefined, hayFotos: boolean): ClaveTab {
   Junta las fotos visibles del publicador: la galería propia del perfil
   más las imágenes aprobadas de cada una de sus actividades.
 
-  Hoy no existe un endpoint que devuelva las imágenes de todas las
-  actividades de un publicador, así que se pide una por actividad (como
-  máximo las de la primera página). Es best-effort: si alguna falla, el
-  perfil se muestra igual con las que sí respondieron.
+  Desde la Fase 5 vienen TODAS en un solo request
+  (GET /api/perfiles-publicadores/{id}/fotos): antes se pedía una
+  llamada por actividad, hasta 6 por vista. El backend ya filtra LOGO
+  y PORTADA, que se ven en la cabecera.
 */
-async function reunirFotosDelPerfil(
+function reunirFotosDelPerfil(
   nombrePerfil: string,
-  actividades: Actividad[],
-  imagenesDelPerfil: ImagenPerfilPublicador[]
-): Promise<FotoDelPerfil[]> {
+  fotosDelBackend: ImagenPerfilPublicador[]
+): FotoDelPerfil[] {
   const fotos: FotoDelPerfil[] = [];
 
-  for (const imagen of imagenesDelPerfil) {
+  for (const imagen of fotosDelBackend) {
     const url = construirUrlImagenBackend(imagen.url);
 
-    /* LOGO y PORTADA ya se ven en el encabezado: acá va la galería. */
-    if (url && imagen.tipoImagen !== "LOGO" && imagen.tipoImagen !== "PORTADA") {
-      fotos.push({
-        clave: `perfil-${imagen.id}`,
-        url,
-        alt: imagen.titulo?.trim() || `Foto de ${nombrePerfil}`,
-        imagenId: imagen.id,
-        cantidadLikes: imagen.cantidadLikes ?? null,
-        cantidadComentarios: imagen.cantidadComentarios ?? null,
-        comentariosActivados: imagen.comentariosActivados ?? null,
-        seccion: imagen.seccion ?? null,
-      });
+    if (!url) {
+      continue;
     }
+
+    fotos.push({
+      clave: `foto-${imagen.id}`,
+      url,
+      alt:
+        imagen.descripcion?.trim() ||
+        imagen.titulo?.trim() ||
+        `Foto de ${nombrePerfil}`,
+      /* La foto de una actividad linkea a su actividad desde el visor. */
+      href: imagen.actividadSlug
+        ? `/actividades/${imagen.actividadSlug}`
+        : undefined,
+      imagenId: imagen.id,
+      cantidadLikes: imagen.cantidadLikes ?? null,
+      cantidadComentarios: imagen.cantidadComentarios ?? null,
+      comentariosActivados: imagen.comentariosActivados ?? null,
+      seccion: imagen.seccion ?? null,
+    });
   }
 
-  const porActividad = await Promise.all(
-    actividades.map((actividad) =>
-      obtenerImagenesActividad(actividad.slug).catch(() => [])
-    )
-  );
-
-  porActividad.forEach((imagenesActividad, indice) => {
-    const actividad = actividades[indice];
-
-    for (const imagen of imagenesActividad) {
-      const url = construirUrlImagenBackend(imagen.url);
-
-      if (url) {
-        fotos.push({
-          clave: `actividad-${imagen.id}`,
-          url,
-          alt: imagen.descripcion?.trim() || `Foto de ${actividad.titulo}`,
-          href: `/actividades/${actividad.slug}`,
-          imagenId: imagen.id,
-          cantidadLikes: imagen.cantidadLikes ?? null,
-          cantidadComentarios: imagen.cantidadComentarios ?? null,
-          comentariosActivados: imagen.comentariosActivados ?? null,
-          seccion: imagen.seccion ?? null,
-        });
-      }
-    }
-  });
-
   return fotos;
+}
+
+/*
+  Fila de stats de la cabecera (Fase 5). Cada número navega a donde se
+  ve lo que cuenta. Los que no tienen dato NO se dibujan: la regla que
+  ya regía para seguidores ("nunca un cero falso") vale para todos —
+  con la plataforma recién arrancando, cuatro ceros en fila hacen ver
+  cada perfil abandonado.
+*/
+function StatsDelPerfil({
+  slugOId,
+  actividades,
+  seguidores,
+  fotos,
+  promedio,
+  cantidadOpiniones,
+}: {
+  slugOId: string;
+  actividades: number | null;
+  seguidores: number;
+  fotos: number;
+  promedio: number | null;
+  cantidadOpiniones: number;
+}) {
+  const items: { clave: string; valor: string; etiqueta: string; href?: string }[] =
+    [];
+
+  if (actividades !== null && actividades > 0) {
+    items.push({
+      clave: "actividades",
+      valor: String(actividades),
+      etiqueta: actividades === 1 ? "actividad" : "actividades",
+      href: `/publicadores/${slugOId}?tab=actividades`,
+    });
+  }
+
+  if (seguidores > 0) {
+    items.push({
+      clave: "seguidores",
+      valor: String(seguidores),
+      etiqueta: seguidores === 1 ? "seguidor" : "seguidores",
+    });
+  }
+
+  if (fotos > 0) {
+    items.push({
+      clave: "fotos",
+      valor: String(fotos),
+      etiqueta: fotos === 1 ? "foto" : "fotos",
+      href: `/publicadores/${slugOId}?tab=fotos`,
+    });
+  }
+
+  /*
+    El promedio viaja null hasta las 3 valoraciones (regla del backend).
+    Mientras tanto se muestra la CANTIDAD, que sí es un dato honesto.
+  */
+  if (promedio !== null) {
+    items.push({
+      clave: "promedio",
+      valor: `★ ${promedio.toFixed(1)}`,
+      etiqueta: cantidadOpiniones === 1 ? "1 opinión" : `${cantidadOpiniones} opiniones`,
+      href: `/publicadores/${slugOId}?tab=opiniones`,
+    });
+  } else if (cantidadOpiniones > 0) {
+    items.push({
+      clave: "opiniones",
+      valor: String(cantidadOpiniones),
+      etiqueta: cantidadOpiniones === 1 ? "opinión" : "opiniones",
+      href: `/publicadores/${slugOId}?tab=opiniones`,
+    });
+  }
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <dl className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+      {items.map((item) => {
+        const contenido = (
+          <>
+            <dt className="sr-only">{item.etiqueta}</dt>
+            <dd className="text-lg font-extrabold leading-tight text-[var(--color-primary)]">
+              {item.valor}{" "}
+              <span className="text-xs font-bold text-[var(--color-muted)]">
+                {item.etiqueta}
+              </span>
+            </dd>
+          </>
+        );
+
+        return item.href ? (
+          <Link
+            key={item.clave}
+            href={item.href}
+            scroll={false}
+            className="rounded-[10px] transition duration-200 ease-out hover:opacity-80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--color-border-soft)]"
+          >
+            {contenido}
+          </Link>
+        ) : (
+          <div key={item.clave}>{contenido}</div>
+        );
+      })}
+    </dl>
+  );
+}
+
+/*
+  Tab Opiniones (Fase 5): las valoraciones de TODAS sus actividades y
+  las preguntas que ya respondió. Cada una linkea a su actividad,
+  porque acá se mezclan varias.
+*/
+function OpinionesDelPublicador({
+  resumen,
+  preguntas,
+  promedioVisible,
+}: {
+  resumen: ResumenValoraciones | null;
+  preguntas: PreguntaActividad[];
+  promedioVisible: number | null;
+}) {
+  const valoraciones = resumen?.contenido ?? [];
+
+  return (
+    <div className="mt-5 grid gap-6">
+      {valoraciones.length > 0 ? (
+        <div>
+          {promedioVisible !== null ? (
+            <p className="text-sm font-bold text-[var(--color-primary)]">
+              ★ {promedioVisible.toFixed(1)} de 5 ·{" "}
+              {resumen?.cantidad === 1
+                ? "1 opinión"
+                : `${resumen?.cantidad ?? 0} opiniones`}
+            </p>
+          ) : (
+            <p className="text-sm text-[var(--color-muted)]">
+              Todavía no hay suficientes opiniones para un promedio.
+            </p>
+          )}
+
+          <ul className="mt-4 grid gap-3">
+            {valoraciones.map((valoracion) => (
+              <li
+                key={valoracion.id}
+                className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-4"
+              >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-sm font-extrabold text-[#F0B429]">
+                    {"★".repeat(valoracion.puntaje)}
+                    <span className="text-[var(--color-border-accent)]">
+                      {"★".repeat(5 - valoracion.puntaje)}
+                    </span>
+                  </span>
+                  <span className="text-sm font-bold text-[var(--color-primary)]">
+                    {valoracion.autorNombre}
+                  </span>
+                  {valoracion.verificada ? (
+                    <span className="rounded-full bg-[var(--color-success-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-success)]">
+                      Entrenó acá
+                    </span>
+                  ) : null}
+                </div>
+
+                {valoracion.comentario ? (
+                  <p className="mt-2 text-sm leading-6 text-[var(--color-text)]">
+                    {valoracion.comentario}
+                  </p>
+                ) : null}
+
+                {valoracion.actividadSlug && valoracion.actividadTitulo ? (
+                  <Link
+                    href={`/actividades/${valoracion.actividadSlug}`}
+                    className="mt-2 inline-block text-xs font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
+                  >
+                    Sobre {valoracion.actividadTitulo}
+                  </Link>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {preguntas.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
+            Preguntas que ya respondió
+          </h3>
+
+          <ul className="mt-3 grid gap-3">
+            {preguntas.map((pregunta) => (
+              <li
+                key={pregunta.id}
+                className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-4"
+              >
+                <p className="text-sm font-bold leading-6 text-[var(--color-primary)]">
+                  {pregunta.pregunta}
+                </p>
+                <p className="mt-1.5 text-sm leading-6 text-[var(--color-text)]">
+                  {pregunta.respuesta}
+                </p>
+
+                {pregunta.actividadSlug && pregunta.actividadTitulo ? (
+                  <Link
+                    href={`/actividades/${pregunta.actividadSlug}`}
+                    className="mt-2 inline-block text-xs font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
+                  >
+                    Sobre {pregunta.actividadTitulo}
+                  </Link>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function DatoDelPerfil({

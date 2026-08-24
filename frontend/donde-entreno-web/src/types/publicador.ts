@@ -54,6 +54,11 @@ export type MetricasPublicador = {
   vistas30Dias?: number;
   contactosWhatsapp30Dias?: number;
   quierenProbar?: number;
+  /*
+    Fase 5: contactos que salieron del PERFIL, separados de los de cada
+    actividad — así se ve si convierte la vidriera o la propuesta.
+  */
+  contactosDesdePerfil30Dias?: number;
 };
 
 export type PerfilPublicadorActual = {

@@ -76,7 +76,7 @@ class FeedEventServiceTest {
      */
     @Test
     void siLaEmisionFallaNoPropagaLaExcepcion() {
-        when(feedEventRepository.save(any(FeedEvent.class)))
+        when(feedEventRepository.saveAndFlush(any(FeedEvent.class)))
                 .thenThrow(new RuntimeException("base caida"));
 
         service.emitir(
@@ -94,13 +94,13 @@ class FeedEventServiceTest {
         service.emitir(null, PERFIL_ID, null, null, null);
         service.emitir(FeedEventService.TIPO_ACTIVIDAD_NUEVA, null, null, null, null);
 
-        verify(feedEventRepository, never()).save(any());
+        verify(feedEventRepository, never()).saveAndFlush(any());
     }
 
     /** El resumen se recorta al ancho de la columna (VARCHAR 200). */
     @Test
     void elResumenSeRecortaAlAnchoDeLaColumna() {
-        when(feedEventRepository.save(any(FeedEvent.class)))
+        when(feedEventRepository.saveAndFlush(any(FeedEvent.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
 
         service.emitir(
@@ -113,8 +113,41 @@ class FeedEventServiceTest {
 
         org.mockito.ArgumentCaptor<FeedEvent> captor =
                 org.mockito.ArgumentCaptor.forClass(FeedEvent.class);
-        verify(feedEventRepository).save(captor.capture());
+        verify(feedEventRepository).saveAndFlush(captor.capture());
         assertEquals(200, captor.getValue().getResumen().length());
+    }
+
+    /**
+     * Con una transacción en curso el evento NO se guarda todavía: se
+     * difiere al commit, porque las FKs apuntan a filas que esa
+     * transacción aún no confirmó. Guardar acá violaba la FK y —al
+     * fallar recién en el commit de la transacción paralela— rompía
+     * el flujo entero con un 500.
+     */
+    @Test
+    void conTransaccionEnCursoElGuardadoSeDifiereAlCommit() {
+        org.springframework.transaction.support.TransactionSynchronizationManager
+                .initSynchronization();
+
+        try {
+            service.emitir(
+                    FeedEventService.TIPO_FOTOS_NUEVAS,
+                    PERFIL_ID,
+                    20L,
+                    7L,
+                    null
+            );
+
+            verify(feedEventRepository, never()).saveAndFlush(any());
+            assertEquals(
+                    1,
+                    org.springframework.transaction.support.TransactionSynchronizationManager
+                            .getSynchronizations().size()
+            );
+        } finally {
+            org.springframework.transaction.support.TransactionSynchronizationManager
+                    .clearSynchronization();
+        }
     }
 
     /**

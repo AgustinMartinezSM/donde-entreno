@@ -18,8 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -74,10 +75,18 @@ public class FeedEventService {
     /**
      * Registra un hecho. Best-effort: nunca lanza.
      *
-     * REQUIRES_NEW para que un rollback del flujo de negocio no deje
-     * eventos fantasma NI un fallo acá voltee al negocio.
+     * Se emite DESPUÉS del commit del flujo que lo origina, y no en una
+     * transacción paralela. La razón es concreta y costó un 500 en los
+     * ITs: el evento referencia por FK a la actividad/imagen/perfil que
+     * la transacción de negocio todavía no confirmó, así que una
+     * transacción nueva —otra conexión— NO las ve y la FK explota. Y
+     * como esa violación aparece al hacer commit, el try/catch de acá
+     * adentro ni siquiera la atrapa: rompía la subida de fotos entera.
+     *
+     * Con afterCommit las filas referenciadas ya existen, y si el
+     * negocio hace rollback el evento simplemente no se emite, que es
+     * exactamente lo que se quiere.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void emitir(
             String tipo,
             Long perfilPublicadorId,
@@ -85,11 +94,45 @@ public class FeedEventService {
             Long imagenId,
             String resumen
     ) {
-        try {
-            if (tipo == null || perfilPublicadorId == null) {
-                return;
-            }
+        if (tipo == null || perfilPublicadorId == null) {
+            return;
+        }
 
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            guardar(tipo, perfilPublicadorId, actividadId, imagenId, resumen);
+                        }
+                    }
+            );
+            return;
+        }
+
+        /* Sin transacción en curso (tests, jobs): directo. */
+        guardar(tipo, perfilPublicadorId, actividadId, imagenId, resumen);
+    }
+
+    /**
+     * El guardado real, tragándose todo: a esta altura el hecho de
+     * negocio ya está confirmado y nada de lo que pase acá puede
+     * afectarlo.
+     *
+     * Sin `@Transactional` a propósito: se llama desde `emitir` (mismo
+     * bean), así que el proxy no lo interceptaría igual. No hace falta:
+     * `saveAndFlush` abre su propia transacción cuando no hay ninguna
+     * activa —el caso de afterCommit— y su commit ocurre DENTRO de
+     * esta llamada, o sea dentro del try.
+     */
+    void guardar(
+            String tipo,
+            Long perfilPublicadorId,
+            Long actividadId,
+            Long imagenId,
+            String resumen
+    ) {
+        try {
             FeedEvent evento = new FeedEvent();
             evento.setTipo(tipo);
             evento.setPerfilPublicadorId(perfilPublicadorId);
@@ -98,7 +141,7 @@ public class FeedEventService {
             evento.setResumen(recortar(resumen));
             evento.setCreatedAt(OffsetDateTime.now());
 
-            feedEventRepository.save(evento);
+            feedEventRepository.saveAndFlush(evento);
         } catch (RuntimeException excepcion) {
             log.warn("FEED_EVENT_NO_EMITIDO tipo={} perfil={}: {}",
                     tipo, perfilPublicadorId, excepcion.getMessage());

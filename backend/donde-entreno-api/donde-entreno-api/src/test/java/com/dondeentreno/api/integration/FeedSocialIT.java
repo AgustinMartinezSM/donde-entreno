@@ -216,7 +216,7 @@ class FeedSocialIT {
                         .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contenido[0].perfilNombre").value(perfil.getNombre()))
-                .andExpect(jsonPath("$.contenido[0].perfilSlug").exists())
+                .andExpect(jsonPath("$.contenido[0].perfilPublicadorId").value(perfil.getId()))
                 .andExpect(jsonPath("$.contenido[0].actividadTitulo").value(actividad.getTitulo()))
                 .andExpect(jsonPath("$.contenido[0].actividadSlug").value(actividad.getSlug()));
     }

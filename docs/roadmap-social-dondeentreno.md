@@ -67,7 +67,17 @@ además son prerrequisito (normas) de todo lo social.
 Este documento + la auditoría + el draft de normas.
 
 ### Fase 1 — Base de convivencia, configuración y app instalable
-Todo frontend-only, cero migración:
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; `42bccd5`):
+normas/términos/privacidad en el footer, `/configuracion` V1 con
+buscador y secciones por rol, PWA instalable (manifest + íconos +
+iOS), skeletons con Header real en Home/Explorar/detalle/perfil.
+**Regla de producto nueva del smoke (estilo Instagram)**: la
+configuración se maneja EN la configuración — los datos y ajustes se
+editan inline ahí, no con links que te llevan a otra sección. La
+edición de datos del usuario entra en Fase 2; las secciones que hoy
+linkean afuera (deportes, guardados) migran a inline a medida que sus
+funciones lo permitan.
+Alcance original:
 - Páginas **/normas, /terminos, /privacidad** desde el draft, en el
   footer.
 - **Centro de Configuración V1** (`/configuracion`): hub con secciones

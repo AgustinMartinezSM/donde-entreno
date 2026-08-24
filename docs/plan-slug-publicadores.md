@@ -1,8 +1,24 @@
 # Plan — Slug amigable para perfiles de publicador
 
-Estado: **propuesto, pendiente de aprobación de Agustín**. Cierra el
-pendiente D del consolidado: `/publicadores/8` →
-`/publicadores/club-atletico-sur`. Aditivo con migración (script 27).
+Estado: **CERRADO EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24,
+aprobado con las 4 recomendaciones). Script 27 aplicado en Supabase y
+local ANTES del deploy (backfill verificado en producción:
+`club-atletico-kimberley` → 200). Backend `f34074d` (489 unit + 79
+ITs; marcador 400→404 en path no numérico), frontend `e085009` +
+`c4f8f21`. Cierra el pendiente D del consolidado.
+
+**Desvío documentado del plan — el redirect canónico NO es un 308
+HTTP**: en Next 16 el shell Y el metadata se streamean antes de que
+corra el código de la página (verificado en producción: el
+`permanentRedirect` del page component Y el de `generateMetadata`
+salen como `<meta http-equiv="refresh" content="0;url=...">` dentro de
+un 200, incluso con user-agent de Googlebot). Un 308 real exigiría
+resolver id→slug en el middleware con una llamada a la API por
+request. **Decisión: se acepta el meta refresh** — para el navegador
+es instantáneo, Google trata el meta refresh de 0 segundos como
+redirect permanente, el `canonical` apunta a la URL con slug y el
+sitemap solo lista slugs. Si algún día se quiere el 308: middleware
+con cache del mapeo id→slug.
 
 ## Qué cambia para la gente
 

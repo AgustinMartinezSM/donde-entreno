@@ -59,5 +59,7 @@ export const config = {
     "/publicador/:path*",
     "/mi-cuenta/:path*",
     "/favoritos/:path*",
+    /* Centro de configuración (Fase 1 social): alcanza con sesión. */
+    "/configuracion/:path*",
   ],
 };

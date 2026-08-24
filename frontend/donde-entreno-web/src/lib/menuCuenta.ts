@@ -9,6 +9,7 @@ export type IconoCuentaTipo =
   | "actividades"
   | "solicitudes"
   | "imagenes"
+  | "configuracion"
   | "salir";
 
 export type ItemMenuCuenta = {
@@ -60,6 +61,12 @@ export function obtenerSeccionesCuenta(
           href: "/mi-cuenta?tab=siguiendo",
           label: "Publicadores que sigo",
           icono: "siguiendo",
+        },
+        {
+          /* Centro de Configuración (Fase 1 social): cuenta y preferencias. */
+          href: "/configuracion",
+          label: "Configuración",
+          icono: "configuracion",
         },
       ],
     },

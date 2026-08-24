@@ -5,6 +5,8 @@ type SurfaceCardProps = {
   as?: "div" | "section" | "article";
   className?: string;
   variant?: "default" | "soft" | "success" | "info" | "brand";
+  /* Ancla para navegación interna (lo usa el Centro de Configuración). */
+  id?: string;
 };
 
 /*
@@ -39,9 +41,11 @@ export function SurfaceCard({
   as: Tag = "div",
   className,
   variant = "default",
+  id,
 }: SurfaceCardProps) {
   return (
     <Tag
+      id={id}
       className={unirClases(
         "rounded-[var(--radius-xl)] border",
         variantClassNames[variant],

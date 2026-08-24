@@ -161,7 +161,27 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-9 flex items-center gap-3 border-t border-[#2A5B78] pt-5">
+        {/* Normas y legal (Fase 1 de la etapa social). */}
+        <nav
+          aria-label="Normas y legal"
+          className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[#2A5B78] pt-5"
+        >
+          {[
+            { href: "/normas", texto: "Normas de comunidad" },
+            { href: "/terminos", texto: "Términos de uso" },
+            { href: "/privacidad", texto: "Privacidad" },
+          ].map((enlace) => (
+            <Link
+              key={enlace.href}
+              href={enlace.href}
+              className="text-xs font-bold text-[#C9E4EF] underline-offset-2 transition duration-200 ease-out hover:text-white hover:underline"
+            >
+              {enlace.texto}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="mt-5 flex items-center gap-3">
           {/*
             Versión dark del isotipo (fondo navy propio): reemplaza al
             círculo "DE" de iniciales que hacía de logo improvisado.

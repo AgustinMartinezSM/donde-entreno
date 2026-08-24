@@ -34,6 +34,11 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  /* Color de la barra del navegador/instalada, por tema (PWA Fase 1). */
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0F3D5E" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D2233" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -52,8 +57,15 @@ export const metadata: Metadata = {
     icons: {
         icon: "/brand/favicon.png",
         shortcut: "/brand/favicon.png",
-        apple: "/brand/favicon.png",
+        /* 180x180 real: iOS ignora tamaños que no le sirven (PWA Fase 1). */
+        apple: "/brand/apple-touch-icon.png",
       },
+  /* iOS no lee el manifest: esto habilita el modo app en Safari. */
+  appleWebApp: {
+    capable: true,
+    title: "DondeEntreno",
+    statusBarStyle: "default",
+  },
   keywords: [
     "DondeEntreno",
     "deportes",

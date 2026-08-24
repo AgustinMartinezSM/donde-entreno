@@ -129,8 +129,9 @@ export function MenuAjustes({
   fija de la página: son datos que se consultan de vez en cuando, no
   contenido. Son de solo lectura porque no existe endpoint para
   editarlos — decirlo es más honesto que un formulario que no guarda.
+  Exportado: el Centro de Configuración (Fase 1 social) lo reusa.
 */
-function DialogoDatosDeCuenta({
+export function DialogoDatosDeCuenta({
   usuario,
   abierto,
   onCerrar,

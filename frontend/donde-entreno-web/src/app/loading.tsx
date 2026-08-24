@@ -1,24 +1,25 @@
-import { Header } from "../components/layout/Header";
-import { LoadingState } from "../components/feedback/LoadingState";
-import { BrandName } from "../components/brand/BrandName";
+import {
+  Skeleton,
+  SkeletonGrillaActividades,
+  SkeletonPagina,
+} from "../components/ui/Skeleton";
 
+/*
+  Skeleton raíz (Fase 1): cubre la Home y cualquier ruta sin loading
+  propio. Genérico a propósito: barra + hero fantasma + grilla.
+*/
 export default function Loading() {
   return (
-    <main className="min-h-screen text-[var(--color-text)]">
-      <section className="mx-auto w-full max-w-6xl px-4 py-6">
-        <Header />
-
-        <div className="py-16">
-          <LoadingState
-            titulo={
-              <>
-                Cargando <BrandName className="inline" />
-              </>
-            }
-            descripcion="Estamos buscando actividades deportivas disponibles cerca tuyo."
-          />
-        </div>
-      </section>
-    </main>
+    <SkeletonPagina>
+      <Skeleton className="h-40 w-full rounded-[24px] sm:h-52" />
+      <div className="mt-6 flex gap-3 overflow-hidden">
+        {Array.from({ length: 6 }, (_, indice) => (
+          <Skeleton key={indice} className="h-16 w-16 shrink-0 rounded-full" />
+        ))}
+      </div>
+      <div className="mt-8">
+        <SkeletonGrillaActividades />
+      </div>
+    </SkeletonPagina>
   );
 }

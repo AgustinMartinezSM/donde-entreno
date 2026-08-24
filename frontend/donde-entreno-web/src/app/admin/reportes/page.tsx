@@ -12,6 +12,8 @@ import { SectionHeader } from "../../../components/ui/SectionHeader";
 import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 import { obtenerSesionAdmin } from "../../../services/authService";
+import { rechazarImagenAdmin } from "../../../services/adminSolicitudesService";
+import { ocultarComentarioAdmin } from "../../../services/galeriaSocialService";
 import {
   ReportesApiError,
   cambiarEstadoReporteAdmin,
@@ -24,6 +26,9 @@ const ETIQUETAS_TIPO: Record<string, string> = {
   IMAGEN: "Foto",
   PERFIL_PUBLICADOR: "Perfil de publicador",
   ACTIVIDAD: "Actividad",
+  VALORACION: "Valoración",
+  PREGUNTA: "Pregunta",
+  COMENTARIO: "Comentario",
 };
 
 const ETIQUETAS_MOTIVO: Record<string, string> = {
@@ -70,6 +75,18 @@ function AdminReportesListado() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [procesando, setProcesando] = useState<number | null>(null);
+  /*
+    Acción directa sobre el contenido reportado (fase 4 social): una
+    foto no tiene página propia y el panel de imágenes es paginado, así
+    que sin esto un reporte de foto no se puede accionar desde acá.
+  */
+  const [bajaAbierta, setBajaAbierta] = useState<number | null>(null);
+  const [motivoBaja, setMotivoBaja] = useState("");
+  /* El error se ata al reporte para mostrarlo en SU tarjeta. */
+  const [errorAccion, setErrorAccion] = useState<{
+    reporteId: number;
+    mensaje: string;
+  } | null>(null);
 
   useEffect(() => {
     let componenteActivo = true;
@@ -132,6 +149,79 @@ function AdminReportesListado() {
       );
     } catch {
       setError("No pudimos actualizar el reporte. Probá nuevamente.");
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  /*
+    Baja la foto reportada y deja el reporte en ACCIONADO. El estado se
+    mueve solo si la baja salió bien: marcar accionado sin haber
+    accionado es peor que no tener el botón.
+  */
+  async function bajarFotoReportada(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+    const motivo = motivoBaja.trim();
+
+    if (!sesion || procesando !== null) {
+      return;
+    }
+
+    if (!motivo) {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "Indicá el motivo: el publicador lo va a ver.",
+      });
+      return;
+    }
+
+    setProcesando(reporte.id);
+    setErrorAccion(null);
+
+    try {
+      await rechazarImagenAdmin(reporte.objetoId, motivo, sesion.accessToken);
+      setBajaAbierta(null);
+      setMotivoBaja("");
+      await cambiarEstadoReporteAdmin(sesion.accessToken, reporte.id, "ACCIONADO");
+      setReportes((actuales) =>
+        actuales.map((cada) =>
+          cada.id === reporte.id ? { ...cada, estado: "ACCIONADO" } : cada
+        )
+      );
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos dar de baja la foto. Puede que ya esté fuera de línea.",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  /* Ídem para un comentario reportado (script 30). */
+  async function ocultarComentarioReportado(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+
+    if (!sesion || procesando !== null) {
+      return;
+    }
+
+    setProcesando(reporte.id);
+    setErrorAccion(null);
+
+    try {
+      await ocultarComentarioAdmin(sesion.accessToken, reporte.objetoId);
+      await cambiarEstadoReporteAdmin(sesion.accessToken, reporte.id, "ACCIONADO");
+      setReportes((actuales) =>
+        actuales.map((cada) =>
+          cada.id === reporte.id ? { ...cada, estado: "ACCIONADO" } : cada
+        )
+      );
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos ocultar el comentario. Puede que ya esté oculto.",
+      });
     } finally {
       setProcesando(null);
     }
@@ -252,18 +342,92 @@ function AdminReportesListado() {
                       >
                         Desestimar
                       </AppButton>
-                      <AppButton
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        disabled={procesando === reporte.id}
-                        onClick={() => void cambiarEstado(reporte, "ACCIONADO")}
-                      >
-                        Marcar accionado
-                      </AppButton>
+
+                      {/*
+                        Acción real sobre el contenido (fase 4 social):
+                        baja la foto u oculta el comentario y recién ahí
+                        marca el reporte como accionado.
+                      */}
+                      {reporte.tipoObjeto === "IMAGEN" ? (
+                        <AppButton
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          disabled={procesando === reporte.id}
+                          onClick={() => {
+                            setBajaAbierta((previo) =>
+                              previo === reporte.id ? null : reporte.id
+                            );
+                            setMotivoBaja("");
+                            setErrorAccion(null);
+                          }}
+                        >
+                          Dar de baja la foto
+                        </AppButton>
+                      ) : reporte.tipoObjeto === "COMENTARIO" ? (
+                        <AppButton
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          disabled={procesando === reporte.id}
+                          onClick={() => void ocultarComentarioReportado(reporte)}
+                        >
+                          {procesando === reporte.id
+                            ? "Ocultando..."
+                            : "Ocultar el comentario"}
+                        </AppButton>
+                      ) : (
+                        <AppButton
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          disabled={procesando === reporte.id}
+                          onClick={() => void cambiarEstado(reporte, "ACCIONADO")}
+                        >
+                          Marcar accionado
+                        </AppButton>
+                      )}
                     </>
                   ) : null}
                 </div>
+
+                {bajaAbierta === reporte.id ? (
+                  <div className="mt-4 border-t border-[var(--color-border-soft)] pt-4">
+                    <label
+                      htmlFor={`motivo-baja-${reporte.id}`}
+                      className="text-sm font-bold text-[var(--color-primary)]"
+                    >
+                      Motivo de la baja (se le muestra al publicador)
+                    </label>
+                    <textarea
+                      id={`motivo-baja-${reporte.id}`}
+                      rows={2}
+                      maxLength={2000}
+                      value={motivoBaja}
+                      onChange={(evento) => setMotivoBaja(evento.target.value)}
+                      disabled={procesando !== null}
+                      className="mt-2 min-h-20 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-base leading-6 text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
+                    />
+                    <AppButton
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      className="mt-3"
+                      disabled={procesando !== null}
+                      onClick={() => void bajarFotoReportada(reporte)}
+                    >
+                      {procesando === reporte.id
+                        ? "Dando de baja..."
+                        : "Confirmar baja"}
+                    </AppButton>
+                  </div>
+                ) : null}
+
+                {errorAccion?.reporteId === reporte.id ? (
+                  <StatusMessage variant="error" role="alert" className="mt-3">
+                    {errorAccion.mensaje}
+                  </StatusMessage>
+                ) : null}
               </SurfaceCard>
             ))}
           </ul>

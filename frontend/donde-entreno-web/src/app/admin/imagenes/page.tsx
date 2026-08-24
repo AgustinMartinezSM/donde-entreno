@@ -55,9 +55,12 @@ function AdminImagenesListado() {
   const { cerrarSesion } = useAuthSession();
   const [imagenes, setImagenes] = useState<ImagenAdmin[]>([]);
   /*
-    La cola arranca en PENDIENTE: es el trabajo diario del admin.
+    Desde la fase 4 social las fotos se publican directo, así que el
+    trabajo del admin es REACTIVO: arranca en las publicadas, que son
+    las que puede dar de baja por un reporte. La cola PENDIENTE sigue
+    en el selector para las que quedaron del flujo anterior.
   */
-  const [filtroEstado, setFiltroEstado] = useState("PENDIENTE");
+  const [filtroEstado, setFiltroEstado] = useState("APROBADA");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -179,7 +182,7 @@ function AdminImagenesListado() {
     }
 
     if (!motivo) {
-      setErrorAccion("Indicá el motivo del rechazo.");
+      setErrorAccion("Indicá el motivo: el publicador lo va a ver.");
       return;
     }
 
@@ -194,14 +197,16 @@ function AdminImagenesListado() {
         sesion.accessToken
       );
       actualizarImagenEnLista(actualizada);
-      setMensajeAccion("Imagen rechazada: el publicador va a ver el motivo.");
+      setMensajeAccion(
+        "Foto dada de baja: salió de la vista pública y el publicador va a ver el motivo."
+      );
       setRechazoAbierto(null);
       setMotivoRechazo("");
     } catch (errorRechazar: unknown) {
       setErrorAccion(
         errorRechazar instanceof AdminApiError
           ? errorRechazar.message
-          : "No pudimos rechazar la imagen. Probá nuevamente."
+          : "No pudimos dar de baja la imagen. Probá nuevamente."
       );
     } finally {
       setImagenEnAccion(null);
@@ -222,8 +227,10 @@ function AdminImagenesListado() {
                   Moderación de imágenes
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)] sm:text-base">
-                  Fotos subidas por publicadores. Nada se muestra en público
-                  hasta que lo apruebes.
+                  Las fotos se publican al instante: acá las revisás después
+                  y das de baja lo que no corresponda (con motivo, que el
+                  publicador ve). Las pendientes del flujo anterior siguen
+                  aprobándose desde el filtro.
                 </p>
               </div>
 
@@ -295,7 +302,7 @@ function AdminImagenesListado() {
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-[var(--color-muted)]">
               Cuando un publicador suba fotos para sus actividades van a
-              aparecer acá para tu revisión.
+              aparecer acá.
             </p>
           </SurfaceCard>
         ) : null}
@@ -305,6 +312,9 @@ function AdminImagenesListado() {
             {imagenes.map((imagen) => {
               const urlAbsoluta = construirUrlImagenBackend(imagen.url);
               const esPendiente = imagen.estadoModeracion === "PENDIENTE";
+              /* Se puede bajar lo que está en pie: pendiente o publicada. */
+              const puedeBajarse =
+                esPendiente || imagen.estadoModeracion === "APROBADA";
               const enAccion = imagenEnAccion === imagen.id;
 
               return (
@@ -362,16 +372,19 @@ function AdminImagenesListado() {
                       ) : null}
                     </div>
 
-                    {esPendiente ? (
+                    {puedeBajarse ? (
                       <div className="flex w-full flex-col gap-2 sm:w-auto">
-                        <AppButton
-                          type="button"
-                          variant="success"
-                          onClick={() => manejarAprobar(imagen)}
-                          disabled={enAccion || imagenEnAccion !== null}
-                        >
-                          {enAccion ? "Procesando..." : "Aprobar"}
-                        </AppButton>
+                        {/* Aprobar solo aplica a las pendientes del legado. */}
+                        {esPendiente ? (
+                          <AppButton
+                            type="button"
+                            variant="success"
+                            onClick={() => manejarAprobar(imagen)}
+                            disabled={enAccion || imagenEnAccion !== null}
+                          >
+                            {enAccion ? "Procesando..." : "Aprobar"}
+                          </AppButton>
+                        ) : null}
                         <AppButton
                           type="button"
                           variant="danger"
@@ -384,7 +397,7 @@ function AdminImagenesListado() {
                           }}
                           disabled={imagenEnAccion !== null}
                         >
-                          Rechazar
+                          {esPendiente ? "Rechazar" : "Dar de baja"}
                         </AppButton>
                       </div>
                     ) : null}
@@ -396,7 +409,9 @@ function AdminImagenesListado() {
                         htmlFor={`motivo-rechazo-${imagen.id}`}
                         className="text-sm font-bold text-[var(--color-primary)]"
                       >
-                        Motivo del rechazo (se le muestra al publicador)
+                        {esPendiente
+                          ? "Motivo del rechazo (se le muestra al publicador)"
+                          : "Motivo de la baja (se le muestra al publicador)"}
                       </label>
                       <textarea
                         id={`motivo-rechazo-${imagen.id}`}
@@ -414,7 +429,7 @@ function AdminImagenesListado() {
                         disabled={imagenEnAccion !== null}
                         className="mt-3"
                       >
-                        Confirmar rechazo
+                        {esPendiente ? "Confirmar rechazo" : "Confirmar baja"}
                       </AppButton>
                     </div>
                   ) : null}

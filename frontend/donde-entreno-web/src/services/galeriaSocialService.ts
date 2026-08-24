@@ -73,6 +73,18 @@ export async function ocultarComentarioEnMiFoto(
   );
 }
 
+/* El admin oculta cualquier comentario (moderación reactiva). */
+export async function ocultarComentarioAdmin(
+  accessToken: string,
+  comentarioId: number
+): Promise<void> {
+  await ejecutar(
+    `${API_BASE_URL}/api/admin/comentarios/${comentarioId}/ocultar`,
+    "PATCH",
+    accessToken
+  );
+}
+
 /* ========================= Fotos guardadas ========================= */
 
 export async function obtenerIdsFotosGuardadas(

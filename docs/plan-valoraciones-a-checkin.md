@@ -1,10 +1,21 @@
 # Plan — Valoraciones etapa A + check-in ("Entrené acá")
 
-Estado: **IMPLEMENTADO Y EN DEPLOY** (aprobado con las 4
-recomendaciones, 2026-08-24). Script 26 aplicado por Agustín en
-Supabase y local ANTES del deploy. Backend `122b976` (480 unit + 78
-ITs verdes, CheckinIT de flujo completo incluido), frontend `4f92dc3`
-(typecheck + lint + build 26/26), en dos tandas con marcador OPTIONS.
+Estado: **CERRADO EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24,
+aprobado con las 4 recomendaciones). Script 26 aplicado en Supabase y
+local ANTES del deploy. Backend `122b976`, frontend `4f92dc3`, en dos
+tandas con marcador OPTIONS (`Allow: POST,OPTIONS`).
+
+**Dos hallazgos del smoke, corregidos y desplegados el mismo día**
+(backend `0d0c08a` con marcador `Allow: DELETE,POST,OPTIONS`, frontend
+`196760b` con marcador "Registrado hoy" en chunks):
+1. La elección no se podía revertir → `DELETE /api/usuario/checkins/
+   {actividadId}` deshace SOLO el check-in de hoy (corte en el inicio
+   del día, zona AR; el historial anterior queda) y el botón es toggle.
+2. "Entrenaste hoy" era poco intuitivo → el estado activo dice
+   **"Registrado hoy"**, con title y aria-label que avisan que el mismo
+   botón lo deshace.
+Total final: 482 unit + 78 ITs (CheckinIT cubre registrar → deshacer →
+volver a registrar).
 
 Implementa
 los puntos 4 y 5A de `docs/fase8-diseno-futuro.md`: señales de

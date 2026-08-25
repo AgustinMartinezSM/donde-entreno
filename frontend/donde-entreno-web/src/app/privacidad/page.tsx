@@ -6,7 +6,7 @@ import { PaginaLegal, SeccionLegal } from "../../components/legal/PaginaLegal";
 export const metadata: Metadata = {
   title: "Privacidad",
   description:
-    "Cómo maneja DondeEntreno tus datos: qué pedimos, qué mostramos públicamente, qué no hacemos nunca, y cómo pedir la baja.",
+    "Cómo maneja DondeEntreno tus datos: qué pedimos, qué mostramos públicamente, cómo tratamos tus mensajes privados, qué no hacemos nunca y cómo pedir la baja.",
   alternates: { canonical: "/privacidad" },
 };
 
@@ -39,12 +39,48 @@ export default function PrivacidadPage() {
         </p>
       </SeccionLegal>
 
+      {/*
+        Inbox de consultas: cada afirmación de acá está sostenida por
+        código (InboxService) y fijada por InboxConsultasIT. Si alguna
+        de estas reglas cambia, esta sección cambia con ella.
+      */}
+      <SeccionLegal titulo="Mensajes privados con publicadores">
+        <p>
+          Cuando consultás a un club o profe desde la app, esa conversación
+          es <strong>privada entre vos y esa persona</strong>. El equipo de
+          DondeEntreno <strong>no lee las conversaciones</strong>.
+        </p>
+        <p>
+          La única excepción es un mensaje <strong>reportado</strong>: para
+          poder evaluarlo vemos ese mensaje y, como mucho, los dos anteriores
+          del hilo —sin ese contexto no se puede juzgar si algo incumple las
+          normas—. El resto de la conversación no lo vemos, y no existe
+          ninguna pantalla que permita abrirla.
+        </p>
+        <p>
+          Al publicador le mostramos tu nombre y la inicial de tu apellido
+          (por ejemplo, &ldquo;Ana G.&rdquo;). <strong>No ve tu email ni tu
+          teléfono</strong>: esa es justamente la idea de consultar por acá.
+        </p>
+        <p>
+          Nadie puede escribirte primero: solo vos podés iniciar una consulta.
+          Podés cerrarla cuando quieras y el publicador deja de poder
+          responder en ese hilo; si volvés a escribirle, se reabre.
+        </p>
+        <p>
+          No mostramos a qué hora leíste un mensaje. Los mensajes se conservan
+          mientras exista tu cuenta: para darla de baja, escribinos (ver más
+          abajo).
+        </p>
+      </SeccionLegal>
+
       <SeccionLegal titulo="Qué no hacemos">
         <p>
           No vendemos datos personales. No publicamos tu ubicación. No usamos
           tu email para nada distinto de la operación de tu cuenta. Los
           mensajes que escribís al asistente no se registran: solo metadata
-          mínima para que funcione.
+          mínima para que funcione. Y no leemos tus conversaciones privadas
+          con publicadores.
         </p>
       </SeccionLegal>
 

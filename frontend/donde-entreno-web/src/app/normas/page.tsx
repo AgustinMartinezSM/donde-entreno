@@ -48,6 +48,12 @@ export default function NormasPage() {
           falsas, escritas para dañar o para inflar artificialmente una
           actividad, no están permitidas.
         </p>
+        <p>
+          Las consultas privadas son para consultar: hay un límite diario de
+          conversaciones y mensajes para que la bandeja de los publicadores
+          siga siendo útil. Un publicador nunca puede escribirte primero, y
+          si cerrás una consulta deja de poder responderte.
+        </p>
       </SeccionLegal>
 
       <SeccionLegal titulo="Contenido permitido y no permitido">
@@ -77,6 +83,22 @@ export default function NormasPage() {
           actividad, perfil o conversación que incumpla estas normas, sin
           aviso previo cuando la gravedad lo amerite. Los publicadores pueden
           moderar el contenido en sus propias publicaciones.
+        </p>
+        <p>
+          Las <strong>conversaciones privadas</strong> se moderan distinto,
+          porque nadie más las ve: <strong>no las leemos</strong>. Solo
+          intervenimos a partir de un reporte, y en ese caso vemos únicamente
+          el mensaje reportado y hasta dos anteriores, que es el mínimo para
+          entender qué pasó. Si un mensaje se oculta, en el hilo queda dicho
+          que fue moderado: no reescribimos la conversación. El detalle está
+          en la{" "}
+          <Link
+            className="font-bold text-[var(--color-secondary)] underline-offset-2 hover:underline"
+            href="/privacidad"
+          >
+            política de privacidad
+          </Link>
+          .
         </p>
         <p>
           Los reportes se revisan; reportar de mala fe también incumple las

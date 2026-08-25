@@ -267,3 +267,29 @@ orden:
    compartido sigue abriendo y avisa que se canceló.
 7. Borrar otro: ese sí desaparece del todo.
 8. Como admin: reportar un evento y ocultarlo desde `/admin/reportes`.
+
+---
+
+## ✅ FASE 9 CERRADA EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+Su smoke con cuenta de publicador dio "Todo OK". La plataforma ya no
+solo dice dónde entrenar todas las semanas: también dice qué pasa el
+sábado.
+
+Pendientes que quedan anotados, sin dueño todavía:
+
+- **Imagen OG por evento**. Hoy la previsualización del link lleva
+  título y descripción propios, que es lo que hace falta para que se
+  entienda; la imagen generada por evento es una superficie nueva
+  (Satori, que además no soporta `var()`) y se puede sumar después sin
+  tocar el modelo.
+- **Recordatorio "es mañana"**. Necesita un job programado, y el
+  proyecto **no tiene ningún scheduler**; sobre Render free tier con
+  spin-down por inactividad sería una promesa que se incumple sola.
+  Es una decisión de infraestructura propia, no un pendiente de esta
+  fase.
+- **Los eventos individuales en el sitemap** (hoy solo está `/eventos`).
+  Vale la pena cuando haya varios publicados.
+- **Filtros de ciudad y deporte en la UI del calendario**: el backend
+  ya los acepta (`ciudadSlug`, `deporteId`), la pantalla todavía no los
+  ofrece. Con pocos eventos, filtrar de más deja la agenda vacía.

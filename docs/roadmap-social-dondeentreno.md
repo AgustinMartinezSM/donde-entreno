@@ -244,9 +244,17 @@ hallazgos en `docs/plan-fase7-mapa-cercania.md`.
 - Landing social por deporte+ciudad (arregla de paso el soft-404).
 
 ### Fase 9 — Eventos y calendario
-- Entidad evento (clase abierta, torneo, seminario...), "me interesa",
-  compartir, aparecer en Home/perfil/detalle; calendario (hoy /
-  finde / semana); invitaciones por WhatsApp con OG.
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-25; script 35
+aplicado antes del deploy; backend `832e437` + frontend `3d84704`):
+`evento_deportivo` (clase abierta, torneo, seminario), "me interesa"
+con contador, compartir, y presencia en home / perfil / feed;
+calendario `/eventos` con rangos hoy / finde / semana / próximos
+resueltos en el backend en zona argentina.
+**Quedó fuera a propósito**: la **imagen OG generada por evento** (el
+compartir con título y descripción propios sí entra; la imagen es una
+superficie nueva con Satori y se puede sumar sin tocar el modelo), la
+**recurrencia** (eso ES una actividad con sus horarios) y la **reserva
+de cupo** (el cupo se muestra, el contacto sigue siendo WhatsApp).
 
 ### Fase 10 — Descubrimiento inteligente
 - Match deportivo (test guiado + Dondi), comparador (sobre guardados,

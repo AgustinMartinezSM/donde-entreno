@@ -274,3 +274,10 @@ responder y ver el número, y que desaparezca después de abrir el hilo.
 ### Pendiente que queda del inbox
 
 - **Respuestas rápidas guardadas**: Fase 11 (Publicador Pro).
+
+### ✅ Contador CERRADO (smoke de Agustín OK, 2026-08-25)
+
+Con esto **el inbox queda completo**: bandejas, hilo, cierre, reporte y
+moderación, la promesa de privacidad escrita, y el contador de no
+leídos. El único pendiente del módulo son las **respuestas rápidas
+guardadas**, que son Fase 11 (Publicador Pro).

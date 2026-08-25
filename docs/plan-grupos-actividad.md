@@ -120,3 +120,50 @@ con miembros que no pueden ir a ninguna parte.
 2. **IT de privacidad**: un no-miembro recibe 404 (no 403) al pedir el
    grupo, y **no existe endpoint de admin que devuelva su contenido**.
 3. Script 38 (Agustín) → ITs → backend → frontend → su smoke.
+
+---
+
+## Estado: EN PRODUCCIÓN (2026-08-25), pendiente el smoke
+
+`main` = `origin/main` = **`4975ae5`**. Script 38 aplicado por Agustín
+antes del deploy. Backend `e76c89e` + frontend `4975ae5`.
+
+Las 5 recomendaciones quedaron en código.
+
+### Detalle de diseño que apareció al implementar
+
+**El publicador NO es miembro de su propio grupo** —no "va" a su
+actividad, así que nunca se suma— y su panel recibía la lista vacía.
+Ahora el **dueño ve su grupo sin ser miembro** (es su espacio y es
+quien lo modera), pero `esMiembro` sigue reflejando la membresía real,
+que es lo que decide el botón. Lo fija un test.
+
+### Verificación
+
+- 604 unit + 139 ITs verdes, **al primer intento**.
+- `GruposActividadIT` (5 casos) incluye los de privacidad: el curioso
+  **y un ADMIN** reciben la lista vacía, y pedir un aviso ajeno da 404
+  —con la aparición probada antes en cada caso—.
+- Marcador del backend: `OPTIONS /api/usuario/grupos/1/miembros`
+  **404 → 200 con `allow: PUT,DELETE,OPTIONS`**, validado con control.
+- **Verificación profunda post-deploy** (era el deploy más grande de la
+  serie: 4 tablas + CHECK reescrito): catálogo, detalle de actividad,
+  perfiles, novedades, eventos y filtros en 200; grupo, inbox y feed en
+  401 anónimos.
+- Frontend: la sección se ve en el detalle, consola limpia, rutas
+  públicas 200, `/publicador/actividades/[id]/grupo` en 307 anónimo, y
+  **cero llamadas a `/grupos` como visitante**.
+
+### Para el smoke
+
+Hace falta **dos cuentas**: una que se sume al grupo de una actividad
+publicada y la del publicador para mandar el aviso. Con una sola cuenta
+solo se ve la invitación.
+
+1. Con la cuenta usuario: entrar a la actividad → "Sumarme al grupo".
+2. Con la del publicador: `/publicador/actividades/{id}/grupo` → avisar.
+3. Volver a la cuenta usuario: el aviso está y llegó la campanita.
+4. Comentar y reaccionar.
+5. Con el publicador: ocultar ese comentario y ver que desaparece.
+6. Con la cuenta usuario: "Salir del grupo" → deja de ver los avisos.
+7. El tercer aviso del día tiene que rebotar.

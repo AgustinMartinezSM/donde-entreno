@@ -52,6 +52,7 @@ public class PerfilPublicadorController {
     private final InteraccionService interaccionService;
     private final LimitadorInteracciones limitador;
     private final com.dondeentreno.api.service.NovedadService novedadService;
+    private final com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -67,9 +68,11 @@ public class PerfilPublicadorController {
             PreguntaActividadService preguntaActividadService,
             InteraccionService interaccionService,
             LimitadorInteracciones limitador,
-            com.dondeentreno.api.service.NovedadService novedadService
+            com.dondeentreno.api.service.NovedadService novedadService,
+            com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService
     ) {
         this.novedadService = novedadService;
+        this.eventoDeportivoService = eventoDeportivoService;
         this.perfilPublicadorService = perfilPublicadorService;
         this.imagenService = imagenService;
         this.actividadService = actividadService;
@@ -177,6 +180,20 @@ public class PerfilPublicadorController {
             @RequestParam(defaultValue = "10") int limite
     ) {
         return novedadService.listarPublicasDe(id, limite);
+    }
+
+    /**
+     * Los eventos próximos del publicador (Fase 9). Incluye los
+     * cancelados: si alguien entra a ver el torneo del sábado,
+     * enterarse de que se canceló ES el dato.
+     */
+    @GetMapping("/{id}/eventos")
+    public List<com.dondeentreno.api.dto.EventoDeportivoDTO> obtenerEventos(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "10") int limite
+    ) {
+        return eventoDeportivoService.proximosDePerfil(id, extraerUserIdOpcional(jwt), limite);
     }
 
     /**

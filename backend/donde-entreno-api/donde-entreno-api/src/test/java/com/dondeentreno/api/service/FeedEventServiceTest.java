@@ -58,6 +58,9 @@ class FeedEventServiceTest {
     @Mock
     private com.dondeentreno.api.repository.NovedadRepository novedadRepository;
 
+    @Mock
+    private com.dondeentreno.api.repository.EventoDeportivoRepository eventoDeportivoRepository;
+
     /*
       El evento se guarda en transacción propia (ver el javadoc de
       `guardar`): acá alcanza con un manager que devuelva un status
@@ -84,6 +87,7 @@ class FeedEventServiceTest {
                 imagenRepository,
                 imagenService,
                 novedadRepository,
+                eventoDeportivoRepository,
                 transactionManager
         );
     }

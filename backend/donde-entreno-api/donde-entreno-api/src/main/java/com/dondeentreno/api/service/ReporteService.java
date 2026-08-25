@@ -34,7 +34,8 @@ public class ReporteService {
             "VALORACION",
             "PREGUNTA",
             "COMENTARIO",
-            "NOVEDAD"
+            "NOVEDAD",
+            "EVENTO"
     );
     private static final List<String> MOTIVOS = List.of(
             "CONTENIDO_INAPROPIADO",
@@ -56,6 +57,7 @@ public class ReporteService {
     private final PreguntaActividadService preguntaActividadService;
     private final ComentarioImagenService comentarioImagenService;
     private final NovedadService novedadService;
+    private final EventoDeportivoService eventoDeportivoService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
@@ -65,9 +67,11 @@ public class ReporteService {
             ValoracionService valoracionService,
             PreguntaActividadService preguntaActividadService,
             ComentarioImagenService comentarioImagenService,
-            NovedadService novedadService
+            NovedadService novedadService,
+            EventoDeportivoService eventoDeportivoService
     ) {
         this.novedadService = novedadService;
+        this.eventoDeportivoService = eventoDeportivoService;
         this.reporteRepository = reporteRepository;
         this.imagenRepository = imagenRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
@@ -192,6 +196,7 @@ public class ReporteService {
             case "PREGUNTA" -> preguntaActividadService.esVisible(objetoId);
             case "COMENTARIO" -> comentarioImagenService.esVisible(objetoId);
             case "NOVEDAD" -> novedadService.esVisible(objetoId);
+            case "EVENTO" -> eventoDeportivoService.esVisible(objetoId);
             default -> false;
         };
 

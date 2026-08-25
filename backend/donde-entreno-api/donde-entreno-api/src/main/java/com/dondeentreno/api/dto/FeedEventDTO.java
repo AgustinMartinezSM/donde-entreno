@@ -34,6 +34,12 @@ public class FeedEventDTO {
     private Long novedadId;
     private String novedadTexto;
 
+    /* El evento (Fase 9): lo que engancha es la fecha, así que viaja. */
+    private Long eventoDeportivoId;
+    private String eventoTitulo;
+    private String eventoSlug;
+    private OffsetDateTime eventoIniciaAt;
+
     public FeedEventDTO() {
     }
 
@@ -163,5 +169,37 @@ public class FeedEventDTO {
 
     public void setNovedadTexto(String novedadTexto) {
         this.novedadTexto = novedadTexto;
+    }
+
+    public Long getEventoDeportivoId() {
+        return eventoDeportivoId;
+    }
+
+    public void setEventoDeportivoId(Long eventoDeportivoId) {
+        this.eventoDeportivoId = eventoDeportivoId;
+    }
+
+    public String getEventoTitulo() {
+        return eventoTitulo;
+    }
+
+    public void setEventoTitulo(String eventoTitulo) {
+        this.eventoTitulo = eventoTitulo;
+    }
+
+    public String getEventoSlug() {
+        return eventoSlug;
+    }
+
+    public void setEventoSlug(String eventoSlug) {
+        this.eventoSlug = eventoSlug;
+    }
+
+    public OffsetDateTime getEventoIniciaAt() {
+        return eventoIniciaAt;
+    }
+
+    public void setEventoIniciaAt(OffsetDateTime eventoIniciaAt) {
+        this.eventoIniciaAt = eventoIniciaAt;
     }
 }

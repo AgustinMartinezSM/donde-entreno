@@ -86,6 +86,16 @@ public class SecurityConfig {
                                 "/api/perfiles-publicadores",
                                 "/api/perfiles-publicadores/**"
                         ).permitAll()
+                        /*
+                          Calendario de eventos (Fase 9): publico como el
+                          catalogo. El JWT es OPCIONAL — con sesion cada
+                          evento sabe si el usuario marco "me interesa".
+                        */
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/eventos",
+                                "/api/eventos/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ubicaciones").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/solicitudes-publicacion").permitAll()
                         /*

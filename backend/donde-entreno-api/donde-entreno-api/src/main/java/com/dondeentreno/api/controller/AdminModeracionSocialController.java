@@ -22,14 +22,17 @@ public class AdminModeracionSocialController {
     private final PreguntaActividadService preguntaActividadService;
     private final com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService;
     private final com.dondeentreno.api.service.NovedadService novedadService;
+    private final com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService;
 
     public AdminModeracionSocialController(
             ValoracionService valoracionService,
             PreguntaActividadService preguntaActividadService,
             com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService,
-            com.dondeentreno.api.service.NovedadService novedadService
+            com.dondeentreno.api.service.NovedadService novedadService,
+            com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService
     ) {
         this.novedadService = novedadService;
+        this.eventoDeportivoService = eventoDeportivoService;
         this.valoracionService = valoracionService;
         this.preguntaActividadService = preguntaActividadService;
         this.comentarioImagenService = comentarioImagenService;
@@ -58,5 +61,12 @@ public class AdminModeracionSocialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void ocultarNovedad(@PathVariable Long id) {
         novedadService.ocultarPorAdmin(id);
+    }
+
+    /** Evento deportivo (Fase 9). */
+    @PatchMapping("/eventos/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarEvento(@PathVariable Long id) {
+        eventoDeportivoService.ocultarPorAdmin(id);
     }
 }

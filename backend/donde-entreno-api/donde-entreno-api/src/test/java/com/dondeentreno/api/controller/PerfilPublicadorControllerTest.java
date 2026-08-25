@@ -53,6 +53,9 @@ class PerfilPublicadorControllerTest {
     @MockitoBean
     private com.dondeentreno.api.service.NovedadService novedadService;
 
+    @MockitoBean
+    private com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService;
+
     @Test
     void obtenerPerfilPorIdDevuelveElDetallePublico() throws Exception {
         when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("8"))

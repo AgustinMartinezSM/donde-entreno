@@ -43,6 +43,10 @@ public class FeedEvent {
     @Column(name = "novedad_id")
     private Long novedadId;
 
+    /** El evento deportivo, cuando el hecho es uno (script 35). */
+    @Column(name = "evento_deportivo_id")
+    private Long eventoDeportivoId;
+
     /** Solo para lo que no se deduce del join (ej: "3 fotos nuevas"). */
     @Column(name = "resumen", length = 200)
     private String resumen;
@@ -95,6 +99,14 @@ public class FeedEvent {
 
     public void setNovedadId(Long novedadId) {
         this.novedadId = novedadId;
+    }
+
+    public Long getEventoDeportivoId() {
+        return eventoDeportivoId;
+    }
+
+    public void setEventoDeportivoId(Long eventoDeportivoId) {
+        this.eventoDeportivoId = eventoDeportivoId;
     }
 
     public String getResumen() {

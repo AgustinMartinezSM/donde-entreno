@@ -4,6 +4,7 @@ import com.dondeentreno.api.dto.FeedEventDTO;
 import com.dondeentreno.api.dto.PaginaResponseDTO;
 import com.dondeentreno.api.entity.Actividad;
 import com.dondeentreno.api.entity.FeedEvent;
+import com.dondeentreno.api.entity.EventoDeportivo;
 import com.dondeentreno.api.entity.Imagen;
 import com.dondeentreno.api.entity.Novedad;
 import com.dondeentreno.api.entity.PerfilPublicador;
@@ -11,6 +12,7 @@ import com.dondeentreno.api.exception.CredencialesInvalidasException;
 import com.dondeentreno.api.mapper.ImagenMapper;
 import com.dondeentreno.api.repository.ActividadRepository;
 import com.dondeentreno.api.repository.FeedEventRepository;
+import com.dondeentreno.api.repository.EventoDeportivoRepository;
 import com.dondeentreno.api.repository.ImagenRepository;
 import com.dondeentreno.api.repository.NovedadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
@@ -51,6 +53,8 @@ public class FeedEventService {
     public static final String TIPO_ACTIVIDAD_ACTUALIZADA = "ACTIVIDAD_ACTUALIZADA";
     /* Fase 8: sin migración, porque feed_event.tipo no tiene CHECK. */
     public static final String TIPO_NOVEDAD = "NOVEDAD";
+    /* Fase 9: ídem. */
+    public static final String TIPO_EVENTO_NUEVO = "EVENTO_NUEVO";
 
     private static final int MAX_RESUMEN = 200;
     private static final int MAX_PAGINA = 50;
@@ -63,6 +67,7 @@ public class FeedEventService {
     private final ImagenRepository imagenRepository;
     private final ImagenService imagenService;
     private final NovedadRepository novedadRepository;
+    private final EventoDeportivoRepository eventoDeportivoRepository;
     /** Transacción propia para el evento: ver el javadoc de `guardar`. */
     private final TransactionTemplate transaccionPropia;
 
@@ -74,9 +79,11 @@ public class FeedEventService {
             ImagenRepository imagenRepository,
             ImagenService imagenService,
             NovedadRepository novedadRepository,
+            EventoDeportivoRepository eventoDeportivoRepository,
             PlatformTransactionManager transactionManager
     ) {
         this.novedadRepository = novedadRepository;
+        this.eventoDeportivoRepository = eventoDeportivoRepository;
         this.transaccionPropia = new TransactionTemplate(transactionManager);
         this.transaccionPropia.setPropagationBehavior(
                 TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -159,13 +166,52 @@ public class FeedEventService {
         guardarConNovedad(perfilPublicadorId, novedadId, imagenId, resumen);
     }
 
+    /**
+     * El hecho "organiza un evento" (Fase 9). Mismo overload que la
+     * novedad, y por la misma razón: no tocar a los llamadores previos.
+     */
+    public void emitirEvento(
+            Long perfilPublicadorId,
+            Long eventoDeportivoId,
+            Long imagenId,
+            String resumen
+    ) {
+        if (perfilPublicadorId == null || eventoDeportivoId == null) {
+            return;
+        }
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            guardarConEvento(perfilPublicadorId, eventoDeportivoId, imagenId, resumen);
+                        }
+                    }
+            );
+            return;
+        }
+
+        guardarConEvento(perfilPublicadorId, eventoDeportivoId, imagenId, resumen);
+    }
+
+    void guardarConEvento(
+            Long perfilPublicadorId,
+            Long eventoDeportivoId,
+            Long imagenId,
+            String resumen
+    ) {
+        guardar(TIPO_EVENTO_NUEVO, perfilPublicadorId, null, imagenId, null,
+                eventoDeportivoId, resumen);
+    }
+
     void guardarConNovedad(
             Long perfilPublicadorId,
             Long novedadId,
             Long imagenId,
             String resumen
     ) {
-        guardar(TIPO_NOVEDAD, perfilPublicadorId, null, imagenId, novedadId, resumen);
+        guardar(TIPO_NOVEDAD, perfilPublicadorId, null, imagenId, novedadId, null, resumen);
     }
 
     void guardar(
@@ -175,7 +221,7 @@ public class FeedEventService {
             Long imagenId,
             String resumen
     ) {
-        guardar(tipo, perfilPublicadorId, actividadId, imagenId, null, resumen);
+        guardar(tipo, perfilPublicadorId, actividadId, imagenId, null, null, resumen);
     }
 
     /**
@@ -204,6 +250,7 @@ public class FeedEventService {
             Long actividadId,
             Long imagenId,
             Long novedadId,
+            Long eventoDeportivoId,
             String resumen
     ) {
         try {
@@ -213,6 +260,7 @@ public class FeedEventService {
             evento.setActividadId(actividadId);
             evento.setImagenId(imagenId);
             evento.setNovedadId(novedadId);
+            evento.setEventoDeportivoId(eventoDeportivoId);
             evento.setResumen(recortar(resumen));
             evento.setCreatedAt(OffsetDateTime.now());
 
@@ -353,8 +401,31 @@ public class FeedEventService {
                                 (mapa, novedad) -> mapa.put(novedad.getId(), novedad),
                                 HashMap::putAll);
 
+        /*
+          Los eventos deportivos (Fase 9), con el mismo criterio que la
+          novedad: el que ya no está publicado se CAE del feed. Un
+          evento CANCELADO también: su detalle sigue vivo para quien
+          tenga el link, pero anunciarlo de nuevo en el feed de alguien
+          que nunca lo vio sería avisar de algo que no va a pasar.
+        */
+        List<Long> eventoIds = eventos.stream()
+                .map(FeedEvent::getEventoDeportivoId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, EventoDeportivo> eventosDeportivos = eventoIds.isEmpty()
+                ? Map.of()
+                : eventoDeportivoRepository.findAllById(eventoIds).stream()
+                        .filter(deportivo -> EventoDeportivoService.ESTADO_PUBLICADO
+                                .equals(deportivo.getEstado()))
+                        .collect(HashMap::new,
+                                (mapa, deportivo) -> mapa.put(deportivo.getId(), deportivo),
+                                HashMap::putAll);
+
         return eventos.stream().filter(evento ->
-                evento.getNovedadId() == null || novedades.containsKey(evento.getNovedadId())
+                (evento.getNovedadId() == null || novedades.containsKey(evento.getNovedadId()))
+                        && (evento.getEventoDeportivoId() == null
+                            || eventosDeportivos.containsKey(evento.getEventoDeportivoId()))
         ).map(evento -> {
             FeedEventDTO dto = new FeedEventDTO();
             dto.setId(evento.getId());
@@ -395,6 +466,17 @@ public class FeedEventService {
                 dto.setNovedadId(novedad.getId());
                 /* El texto completo: el resumen es para el log, no para leer. */
                 dto.setNovedadTexto(novedad.getTexto());
+            }
+
+            EventoDeportivo deportivo = evento.getEventoDeportivoId() != null
+                    ? eventosDeportivos.get(evento.getEventoDeportivoId())
+                    : null;
+            if (deportivo != null) {
+                dto.setEventoDeportivoId(deportivo.getId());
+                dto.setEventoTitulo(deportivo.getTitulo());
+                dto.setEventoSlug(deportivo.getSlug());
+                /* La fecha es LO que engancha de un evento en el feed. */
+                dto.setEventoIniciaAt(deportivo.getIniciaAt());
             }
 
             return dto;

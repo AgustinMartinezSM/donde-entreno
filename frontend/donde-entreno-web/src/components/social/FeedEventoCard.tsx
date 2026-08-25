@@ -8,6 +8,7 @@ import {
   formatearFechaRelativa,
 } from "../../lib/formatoFecha";
 import type { FeedEvento } from "../../types/seguimiento";
+import { BotonMeGustaNovedad } from "./BotonMeGustaNovedad";
 import { BotonReportar } from "./BotonReportar";
 import { PublisherIdentity } from "./PublisherIdentity";
 
@@ -182,16 +183,24 @@ export function FeedEventoCard({ evento }: { evento: FeedEvento }) {
           están sus actividades, sus fotos y el contacto.
         */
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-4">
-          {hrefPerfil ? (
-            <Link
-              href={hrefPerfil}
-              className="text-sm font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
-            >
-              Ver el perfil de {evento.perfilNombre}
-            </Link>
-          ) : (
-            <span />
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {evento.novedadId ? (
+              <BotonMeGustaNovedad
+                novedadId={evento.novedadId}
+                meGustaInicial={Boolean(evento.novedadMeGustaPropio)}
+                cantidadInicial={evento.novedadMeGusta ?? 0}
+              />
+            ) : null}
+
+            {hrefPerfil ? (
+              <Link
+                href={hrefPerfil}
+                className="text-sm font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
+              >
+                Ver el perfil
+              </Link>
+            ) : null}
+          </div>
 
           {evento.novedadId ? (
             <BotonReportar

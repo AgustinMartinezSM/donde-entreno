@@ -19,7 +19,39 @@ export type Novedad = {
 
   imagenId: number | null;
   imagenUrl: string | null;
+
+  /* Reacciones (script 37). */
+  cantidadMeGusta: number | null;
+  meGusta: boolean | null;
 };
+
+export type RespuestaMeGusta = {
+  cantidadMeGusta: number;
+  meGusta: boolean;
+};
+
+/** Reaccionar es idempotente: PUT/DELETE, no un POST que alterna. */
+export async function darMeGustaNovedad(
+  accessToken: string,
+  novedadId: number
+): Promise<RespuestaMeGusta> {
+  return (await ejecutar(
+    `${API_BASE_URL}/api/usuario/novedades/${novedadId}/me-gusta`,
+    "PUT",
+    accessToken
+  )) as RespuestaMeGusta;
+}
+
+export async function quitarMeGustaNovedad(
+  accessToken: string,
+  novedadId: number
+): Promise<RespuestaMeGusta> {
+  return (await ejecutar(
+    `${API_BASE_URL}/api/usuario/novedades/${novedadId}/me-gusta`,
+    "DELETE",
+    accessToken
+  )) as RespuestaMeGusta;
+}
 
 export const MAX_TEXTO_NOVEDAD = 1000;
 
@@ -98,7 +130,7 @@ export async function ocultarNovedadAdmin(
 
 async function ejecutar(
   url: string,
-  method: "GET" | "POST" | "DELETE" | "PATCH",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
   accessToken?: string,
   cuerpo?: unknown
 ): Promise<unknown> {

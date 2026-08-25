@@ -3,6 +3,7 @@ import Image from "next/image";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
 import { formatearFechaRelativa } from "../../lib/formatoFecha";
 import type { Novedad } from "../../services/novedadesService";
+import { BotonMeGustaNovedad } from "../social/BotonMeGustaNovedad";
 import { BotonReportar } from "../social/BotonReportar";
 import { SurfaceCard } from "../ui/SurfaceCard";
 
@@ -43,11 +44,19 @@ export function NovedadesDelPublicador({
               ) : null}
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-[var(--color-muted)]">
-                  {novedad.createdAt
-                    ? formatearFechaRelativa(novedad.createdAt)
-                    : null}
-                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <BotonMeGustaNovedad
+                    novedadId={novedad.id}
+                    meGustaInicial={Boolean(novedad.meGusta)}
+                    cantidadInicial={novedad.cantidadMeGusta ?? 0}
+                  />
+
+                  <p className="text-xs text-[var(--color-muted)]">
+                    {novedad.createdAt
+                      ? formatearFechaRelativa(novedad.createdAt)
+                      : null}
+                  </p>
+                </div>
 
                 <BotonReportar
                   tipoObjeto="NOVEDAD"

@@ -56,6 +56,9 @@ export type FeedEvento = {
   /* Novedad del canal (Fase 8): el texto completo, no el resumen. */
   novedadId?: number | null;
   novedadTexto?: string | null;
+  /* Reacciones de esa novedad (script 37). */
+  novedadMeGusta?: number | null;
+  novedadMeGustaPropio?: boolean | null;
 
   /* Evento (Fase 9): la fecha es lo que engancha, así que viaja. */
   eventoDeportivoId?: number | null;

@@ -448,7 +448,14 @@ public class ActividadService {
                         null,
                         null,
                         null,
-                        null,
+                        /*
+                          "" y NO null: la condición del texto en el query
+                          es `:texto = '' OR ... LIKE ...`, así que con null
+                          NINGUNA fila pasa el filtro y el modo cercanía
+                          devolvía siempre vacío. Por eso existe
+                          prepararTextoBusqueda — su javadoc lo advierte.
+                        */
+                        prepararTextoBusqueda(null),
                         PageRequest.of(0, 200)
                 );
 

@@ -28,6 +28,15 @@ public interface EventoDeportivoRepository extends JpaRepository<EventoDeportivo
      * join con `ubicacion`, que es justamente por qué `ubicacion_id`
      * es NOT NULL.
      *
+     * **`hasta` NO es nullable**, y no es un descuido: con `null`,
+     * Postgres no puede inferir el tipo del parámetro temporal dentro
+     * de `(:hasta IS NULL OR ...)` y el query entero muere con
+     * "no se pudo determinar el tipo del parámetro" — un 500 en todo
+     * el calendario. Lo destapó el IT. Para "todos los próximos" el
+     * service pasa un horizonte lejano, que en este dominio es lo
+     * mismo que no tener tope. (Misma familia de trampa que el
+     * `:texto` de la búsqueda: hay queries que no toleran null.)
+     *
      * `CANCELADO` NO entra al calendario: quien no se enteró no
      * necesita ver la cancelación en una agenda de lo que viene. El
      * detalle, en cambio, sigue vivo para quien tenga el link.
@@ -37,7 +46,7 @@ public interface EventoDeportivoRepository extends JpaRepository<EventoDeportivo
              WHERE u.id = e.ubicacionId
                AND e.estado = 'PUBLICADO'
                AND e.iniciaAt >= :desde
-               AND (:hasta IS NULL OR e.iniciaAt < :hasta)
+               AND e.iniciaAt < :hasta
                AND (:ciudadId IS NULL OR u.ciudad.id = :ciudadId)
                AND (:ciudadSlug IS NULL OR u.ciudad.slug = :ciudadSlug)
                AND (:barrioId IS NULL OR u.barrio.id = :barrioId)

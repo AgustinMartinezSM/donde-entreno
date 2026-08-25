@@ -67,6 +67,8 @@ public class EventoDeportivoService {
     private static final int MAX_DESCRIPCION = 2000;
     private static final int MAX_PAGINA = 50;
     private static final int MAX_PROXIMOS = 20;
+    /** El "sin tope" del calendario: ver `calendario(...)`. */
+    private static final int HORIZONTE_ANIOS = 5;
 
     private final EventoDeportivoRepository eventoRepository;
     private final InteresEventoRepository interesEventoRepository;
@@ -299,9 +301,18 @@ public class EventoDeportivoService {
         int tamanio = Math.min(Math.max(size, 1), MAX_PAGINA);
         int pagina = Math.max(page, 0);
 
+        OffsetDateTime inicio = desde != null ? desde : OffsetDateTime.now();
+
+        /*
+          "Todos los próximos" no tiene tope conceptual, pero el query
+          NO acepta un `hasta` nulo: Postgres no puede inferir el tipo
+          de un parámetro temporal null y revienta el calendario entero
+          con un 500 (lo destapó el IT). Un horizonte de años es, en
+          este dominio, exactamente lo mismo que no tener tope.
+        */
         Page<EventoDeportivo> resultado = eventoRepository.buscarEnCalendario(
-                desde != null ? desde : OffsetDateTime.now(),
-                hasta,
+                inicio,
+                hasta != null ? hasta : inicio.plusYears(HORIZONTE_ANIOS),
                 ciudadId,
                 ciudadSlug != null && !ciudadSlug.isBlank() ? ciudadSlug : null,
                 barrioId,

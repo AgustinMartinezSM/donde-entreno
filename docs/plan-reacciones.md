@@ -80,3 +80,45 @@ que pide una acción (una consulta, un comentario, un reporte).
    suma y aparece en el perfil y en el feed; repetir no duplica; quitar
    resta; una novedad oculta no acepta reacciones.
 2. Script 37 (Agustín) → ITs → backend → frontend → su smoke.
+
+---
+
+## Estado: EN PRODUCCIÓN (2026-08-25), pendiente el smoke
+
+`main` = `origin/main` = **`3a2fc93`**. Script 37 aplicado por Agustín
+antes del deploy. Backend `6e9d216` + frontend `3a2fc93`.
+
+Las 3 recomendaciones quedaron en código: solo novedades (los eventos
+conservan su "Me interesa"), una sola reacción, y sin notificación.
+
+### Detalles que aparecieron al implementar
+
+- **Un NPE que encontró el test**: `List.of().contains(null)` lanza
+  `NullPointerException`, así que una novedad sin id habría volteado el
+  enriquecido entero por un campo decorativo. Ahora el id se chequea
+  antes de buscar.
+- El endpoint público del perfil pasó a leer **JWT opcional**: con
+  sesión, cada novedad sabe si esa persona ya reaccionó.
+- El contador viaja también en el **feed** (`novedadMeGusta` y
+  `novedadMeGustaPropio` en `FeedEventDTO`), que es la otra superficie
+  donde se ven novedades.
+
+### Verificación
+
+- 593 unit + 134 ITs verdes. El IT cubre: reaccionar suma, repetir no
+  duplica, se ve en el perfil **y** en el feed, **un anónimo ve el
+  contador pero nunca un `meGusta` ajeno**, y quitar resta.
+- Marcador del backend: `OPTIONS /api/usuario/novedades/1/me-gusta`
+  **404 → 200 con `allow: DELETE,PUT,OPTIONS`** —los dos métodos
+  idempotentes—, validado contra una ruta existente como control.
+  Post-deploy: catálogo, novedades y eventos sanos.
+- Frontend: marcador en los chunks, rutas públicas 200, consola limpia.
+
+**Falta el smoke**: reaccionar desde el perfil y desde el feed, que el
+número suba y quede marcado al recargar, y que tocar de nuevo lo quite.
+
+### Nota operativa
+
+Render estaba dormido al empezar el deploy: el health tardó **56 s** en
+responder. Es el spin-down del free tier, no un problema del deploy —
+conviene despertarlo antes de dar por fallado un marcador.

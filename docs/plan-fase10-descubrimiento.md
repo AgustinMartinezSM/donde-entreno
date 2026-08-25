@@ -212,3 +212,46 @@ que transiciona, anular la transición.**
 
 **Pendiente menor que destapó**: el detalle público sigue mostrando el
 enum crudo del día (`MIERCOLES`). Unificarlo es una pasada aparte.
+
+## Ranking semanal: EN PRODUCCIÓN en dos tandas (pendiente smoke)
+
+Backend **`006b731`** + frontend **`c9424a6`**. Sin migración: el
+ranking solo lee `evento_interaccion`.
+
+`GET /api/actividades/mas-vistas?dias=7&limite=6`, público. El query
+`rankingDeActividades` **existía desde la Fase 6** pero nadie lo usaba
+para actividades — solo agrupado por deporte para la fila de populares.
+
+### Los dos candados
+
+1. **Menos de 3 actividades con señal → lista vacía**, y el frontend no
+   dibuja la sección.
+2. **Solo PUBLICADAS y activas**, y las despublicadas **no cuentan
+   siquiera para el umbral**: si contaran, dos publicadas más una
+   despublicada llegarían al mínimo y la sección saldría con dos.
+
+### Verificación
+
+- **Marcador**: `/api/actividades/mas-vistas` — pero **el código no
+  alcanzaba**: en el build viejo esa ruta cae en `/{slug}` y devuelve
+  404, así que el 200 podía confundirse. Lo que distingue es el
+  **cuerpo**: un ARRAY contra el JSON de error "Actividad no
+  encontrada". El control con un slug inventado sigue dando 404.
+- **Conductual, no solo 200**: devuelve 3 actividades con señal real,
+  `limite=2` devuelve 2, y el resto de la API quedó sana.
+- **El caso vacío se verificó rompiendo el endpoint a propósito** (y
+  revirtiendo): la sección desaparece y la home queda entera. Sin eso,
+  "es best-effort" era una afirmación, no un hecho medido.
+
+### Lo que corrigió el IT
+
+El test del despublicado fallaba porque, al sacar una, **desaparecían
+las otras dos**. No era un bug: quedaban 2 con señal y el umbral apagaba
+la sección. Hizo falta una CUARTA actividad para probar las dos cosas
+por separado. **Un test que ejerce un umbral tiene que dejar margen por
+encima del mínimo, o mide el umbral cuando cree medir otra cosa.**
+
+### Dato de producto
+
+Con la ventana de 7 días hay **tres actividades con señal real** en
+producción (karate, jiu jitsu y natación). Hay uso, aunque chico.

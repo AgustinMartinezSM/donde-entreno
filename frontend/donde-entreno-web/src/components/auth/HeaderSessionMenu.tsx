@@ -8,6 +8,8 @@ import { AvatarUsuario } from "../cuenta/AvatarUsuario";
 import { AppLinkButton } from "../ui/AppLinkButton";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
 import { SelectorTema } from "../tema/SelectorTema";
+import { BadgeNoLeidos } from "../inbox/BadgeNoLeidos";
+import { useConsultasNoLeidas } from "../inbox/useConsultasNoLeidas";
 import {
   MenuDesplegable,
   OpcionMenu,
@@ -87,6 +89,33 @@ export function HeaderSessionMenu() {
       }
     >
       {(cerrar) => (
+        <ContenidoMenuCuenta
+          secciones={secciones}
+          cerrar={cerrar}
+          onSalir={manejarCerrarSesion}
+        />
+      )}
+    </MenuDesplegable>
+  );
+}
+
+/*
+  El contenido del menú, en su propio componente porque
+  `MenuDesplegable` solo lo monta cuando el panel está ABIERTO: así el
+  contador de consultas se pide justo ahí y no en cada carga de página.
+*/
+function ContenidoMenuCuenta({
+  secciones,
+  cerrar,
+  onSalir,
+}: {
+  secciones: ReturnType<typeof obtenerSeccionesCuenta>;
+  cerrar: () => void;
+  onSalir: () => void;
+}) {
+  const noLeidosDe = useConsultasNoLeidas(true);
+
+  return (
         <>
           {secciones.map((seccion, indice) => (
             <Fragment key={seccion.titulo ?? indice}>
@@ -110,6 +139,7 @@ export function HeaderSessionMenu() {
                     className="h-[18px] w-[18px] shrink-0 text-[var(--color-accent)]"
                   />
                   {item.label}
+                  <BadgeNoLeidos cantidad={noLeidosDe(item.href)} />
                 </OpcionMenu>
               ))}
             </Fragment>
@@ -124,13 +154,11 @@ export function HeaderSessionMenu() {
 
           <SeparadorMenu />
 
-          <OpcionMenu onClick={manejarCerrarSesion}>
+          <OpcionMenu onClick={onSalir}>
             <IconoMenuCuenta tipo="salir" />
             Cerrar sesión
           </OpcionMenu>
         </>
-      )}
-    </MenuDesplegable>
   );
 }
 

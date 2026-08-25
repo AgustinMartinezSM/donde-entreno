@@ -63,6 +63,31 @@ export async function obtenerBandejaUsuario(
   )) as Conversacion[];
 }
 
+/** El número del badge: una query, sin traer la bandeja. */
+export async function obtenerContadorConsultasUsuario(
+  accessToken: string
+): Promise<number> {
+  const respuesta = (await ejecutar(
+    `${API_BASE_URL}/api/usuario/consultas/contador`,
+    "GET",
+    accessToken
+  )) as { noLeidos?: number };
+
+  return respuesta?.noLeidos ?? 0;
+}
+
+export async function obtenerContadorConsultasPublicador(
+  accessToken: string
+): Promise<number> {
+  const respuesta = (await ejecutar(
+    `${API_BASE_URL}/api/publicador/consultas/contador`,
+    "GET",
+    accessToken
+  )) as { noLeidos?: number };
+
+  return respuesta?.noLeidos ?? 0;
+}
+
 export async function obtenerHiloUsuario(
   accessToken: string,
   conversacionId: number

@@ -10,6 +10,8 @@ import { useAuthSession } from "../auth/AuthSessionProvider";
 import { AvatarUsuario } from "../cuenta/AvatarUsuario";
 import { IconoMenuCuenta } from "../cuenta/IconoMenuCuenta";
 import { SelectorTema } from "../tema/SelectorTema";
+import { BadgeNoLeidos } from "../inbox/BadgeNoLeidos";
+import { useConsultasNoLeidas } from "../inbox/useConsultasNoLeidas";
 
 type MenuCuentaMobileProps = {
   abierto: boolean;
@@ -40,6 +42,8 @@ type MenuCuentaMobileProps = {
 export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
   const { sesion, usuario, cerrarSesion } = useAuthSession();
   const dialogoRef = useRef<HTMLDialogElement | null>(null);
+  /* El contador se pide al ABRIR el sheet, no en cada carga de página. */
+  const noLeidosDe = useConsultasNoLeidas(abierto);
 
   useEffect(() => {
     const dialogo = dialogoRef.current;
@@ -202,6 +206,7 @@ export function MenuCuentaMobile({ abierto, onCerrar }: MenuCuentaMobileProps) {
                     href={item.href}
                     icono={item.icono}
                     onElegir={onCerrar}
+                    noLeidos={noLeidosDe(item.href)}
                   >
                     {item.label}
                   </FilaMenuCuenta>
@@ -238,12 +243,15 @@ function FilaMenuCuenta({
   href,
   onElegir,
   apagada = false,
+  noLeidos = 0,
 }: {
   children: React.ReactNode;
   icono: Parameters<typeof IconoMenuCuenta>[0]["tipo"];
   href?: string;
   onElegir: () => void;
   apagada?: boolean;
+  /** Mensajes sin leer de esa entrada (solo consultas). */
+  noLeidos?: number;
 }) {
   const clase = `flex min-h-12 w-full items-center gap-3 rounded-[16px] px-2.5 py-2 text-left text-[15px] font-bold transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 ${
     apagada
@@ -269,6 +277,7 @@ function FilaMenuCuenta({
       <Link href={href} onClick={onElegir} className={clase}>
         {ficha}
         <span className="min-w-0 flex-1 truncate">{children}</span>
+        {noLeidos ? <BadgeNoLeidos cantidad={noLeidos} /> : null}
         <IconoFlecha />
       </Link>
     );

@@ -24,6 +24,7 @@ public class AdminModeracionSocialController {
     private final com.dondeentreno.api.service.NovedadService novedadService;
     private final com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService;
     private final com.dondeentreno.api.service.InboxService inboxService;
+    private final com.dondeentreno.api.service.GrupoActividadService grupoActividadService;
 
     public AdminModeracionSocialController(
             ValoracionService valoracionService,
@@ -31,8 +32,10 @@ public class AdminModeracionSocialController {
             com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService,
             com.dondeentreno.api.service.NovedadService novedadService,
             com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService,
-            com.dondeentreno.api.service.InboxService inboxService
+            com.dondeentreno.api.service.InboxService inboxService,
+            com.dondeentreno.api.service.GrupoActividadService grupoActividadService
     ) {
+        this.grupoActividadService = grupoActividadService;
         this.novedadService = novedadService;
         this.eventoDeportivoService = eventoDeportivoService;
         this.inboxService = inboxService;
@@ -71,6 +74,25 @@ public class AdminModeracionSocialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void ocultarEvento(@PathVariable Long id) {
         eventoDeportivoService.ocultarPorAdmin(id);
+    }
+
+    /** Aviso de un grupo (script 38). */
+    @PatchMapping("/avisos-grupo/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarAvisoGrupo(@PathVariable Long id) {
+        grupoActividadService.ocultarAvisoPorAdmin(id);
+    }
+
+    /**
+     * Comentario dentro de un grupo (script 38).
+     *
+     * Igual que en el inbox: el admin ACCIONA sobre lo reportado, pero
+     * no existe ningún endpoint que le devuelva el contenido del grupo.
+     */
+    @PatchMapping("/comentarios-grupo/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarComentarioGrupo(@PathVariable Long id) {
+        grupoActividadService.ocultarComentarioPorAdmin(id);
     }
 
     /** Mensaje privado reportado (inbox). */

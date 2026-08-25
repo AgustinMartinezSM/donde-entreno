@@ -36,7 +36,9 @@ public class ReporteService {
             "COMENTARIO",
             "NOVEDAD",
             "EVENTO",
-            "MENSAJE"
+            "MENSAJE",
+            "AVISO_GRUPO",
+            "COMENTARIO_GRUPO"
     );
     private static final List<String> MOTIVOS = List.of(
             "CONTENIDO_INAPROPIADO",
@@ -60,6 +62,7 @@ public class ReporteService {
     private final NovedadService novedadService;
     private final EventoDeportivoService eventoDeportivoService;
     private final InboxService inboxService;
+    private final GrupoActividadService grupoActividadService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
@@ -71,8 +74,10 @@ public class ReporteService {
             ComentarioImagenService comentarioImagenService,
             NovedadService novedadService,
             EventoDeportivoService eventoDeportivoService,
-            InboxService inboxService
+            InboxService inboxService,
+            GrupoActividadService grupoActividadService
     ) {
+        this.grupoActividadService = grupoActividadService;
         this.novedadService = novedadService;
         this.eventoDeportivoService = eventoDeportivoService;
         this.inboxService = inboxService;
@@ -207,6 +212,13 @@ public class ReporteService {
               mensaje con contexto mínimo (ver InboxService).
             */
             case "MENSAJE" -> inboxService.esVisibleMensaje(objetoId);
+            /*
+              El grupo es privado: reportar es la única forma de que
+              algo de adentro llegue al admin, y lo que ve es el objeto
+              reportado, no el grupo.
+            */
+            case "AVISO_GRUPO" -> grupoActividadService.esVisibleAviso(objetoId);
+            case "COMENTARIO_GRUPO" -> grupoActividadService.esVisibleComentario(objetoId);
             default -> false;
         };
 

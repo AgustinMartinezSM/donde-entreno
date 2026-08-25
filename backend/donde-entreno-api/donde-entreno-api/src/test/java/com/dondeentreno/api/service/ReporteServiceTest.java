@@ -57,6 +57,9 @@ class ReporteServiceTest {
     @Mock
     private InboxService inboxService;
 
+    @Mock
+    private GrupoActividadService grupoActividadService;
+
     private ReporteService service;
 
     @BeforeEach
@@ -71,7 +74,8 @@ class ReporteServiceTest {
                 comentarioImagenService,
                 novedadService,
                 eventoDeportivoService,
-                inboxService
+                inboxService,
+                grupoActividadService
         );
     }
 

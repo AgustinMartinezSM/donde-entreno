@@ -230,9 +230,10 @@ hallazgos en `docs/plan-fase7-mapa-cercania.md`.
    `112d537` + frontend `ce67fab`). Broadcast: solo el publicador
    escribe. Tope de 3 por día (el primer límite sobre el rol
    PUBLICADOR) y campanita solo en la primera del día. **Las
-   reacciones NO entraron** a propósito: son otra tabla y otra
-   superficie, y conviene decidirlas cuando haya novedades reales
-   publicadas. De paso destapó y arregló un bug que dejaba el feed sin
+   reacciones entraron después**, el 2026-08-25 (script 37, `3a2fc93`):
+   un "me gusta" por novedad, en el perfil y en el feed. **Los eventos
+   NO llevan reacción**: ya tienen "Me interesa", que es más accionable
+   (`docs/plan-reacciones.md`). De paso destapó y arregló un bug que dejaba el feed sin
    guardar NINGÚN evento desde la Fase 6 (ver
    `docs/plan-fase8-canales-novedades.md`).
 2. ✅ **Inbox de consultas CERRADO EN PRODUCCIÓN** (smoke de Agustín OK

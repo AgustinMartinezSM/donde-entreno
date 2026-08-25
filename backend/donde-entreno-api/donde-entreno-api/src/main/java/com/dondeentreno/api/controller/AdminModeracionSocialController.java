@@ -23,16 +23,19 @@ public class AdminModeracionSocialController {
     private final com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService;
     private final com.dondeentreno.api.service.NovedadService novedadService;
     private final com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService;
+    private final com.dondeentreno.api.service.InboxService inboxService;
 
     public AdminModeracionSocialController(
             ValoracionService valoracionService,
             PreguntaActividadService preguntaActividadService,
             com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService,
             com.dondeentreno.api.service.NovedadService novedadService,
-            com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService
+            com.dondeentreno.api.service.EventoDeportivoService eventoDeportivoService,
+            com.dondeentreno.api.service.InboxService inboxService
     ) {
         this.novedadService = novedadService;
         this.eventoDeportivoService = eventoDeportivoService;
+        this.inboxService = inboxService;
         this.valoracionService = valoracionService;
         this.preguntaActividadService = preguntaActividadService;
         this.comentarioImagenService = comentarioImagenService;
@@ -68,5 +71,29 @@ public class AdminModeracionSocialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void ocultarEvento(@PathVariable Long id) {
         eventoDeportivoService.ocultarPorAdmin(id);
+    }
+
+    /** Mensaje privado reportado (inbox). */
+    @PatchMapping("/mensajes/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarMensaje(@PathVariable Long id) {
+        inboxService.ocultarMensajePorAdmin(id);
+    }
+
+    /**
+     * El contexto del mensaje reportado: ESE mensaje y a lo sumo los
+     * dos anteriores.
+     *
+     * Es lo único que un admin puede ver de una conversación privada.
+     * **No existe un endpoint que devuelva el hilo completo**, y no es
+     * un olvido: la moderación es unipersonal y este sería el único
+     * lugar del producto donde alguien lee lo que dos personas se
+     * escriben en privado. Está prometido en /privacidad.
+     */
+    @org.springframework.web.bind.annotation.GetMapping("/mensajes/{id}/contexto")
+    public java.util.List<com.dondeentreno.api.dto.MensajeDTO> contextoDeMensaje(
+            @PathVariable Long id
+    ) {
+        return inboxService.contextoDeReporte(id);
     }
 }

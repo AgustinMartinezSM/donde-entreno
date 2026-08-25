@@ -35,7 +35,8 @@ public class ReporteService {
             "PREGUNTA",
             "COMENTARIO",
             "NOVEDAD",
-            "EVENTO"
+            "EVENTO",
+            "MENSAJE"
     );
     private static final List<String> MOTIVOS = List.of(
             "CONTENIDO_INAPROPIADO",
@@ -58,6 +59,7 @@ public class ReporteService {
     private final ComentarioImagenService comentarioImagenService;
     private final NovedadService novedadService;
     private final EventoDeportivoService eventoDeportivoService;
+    private final InboxService inboxService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
@@ -68,10 +70,12 @@ public class ReporteService {
             PreguntaActividadService preguntaActividadService,
             ComentarioImagenService comentarioImagenService,
             NovedadService novedadService,
-            EventoDeportivoService eventoDeportivoService
+            EventoDeportivoService eventoDeportivoService,
+            InboxService inboxService
     ) {
         this.novedadService = novedadService;
         this.eventoDeportivoService = eventoDeportivoService;
+        this.inboxService = inboxService;
         this.reporteRepository = reporteRepository;
         this.imagenRepository = imagenRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
@@ -197,6 +201,12 @@ public class ReporteService {
             case "COMENTARIO" -> comentarioImagenService.esVisible(objetoId);
             case "NOVEDAD" -> novedadService.esVisible(objetoId);
             case "EVENTO" -> eventoDeportivoService.esVisible(objetoId);
+            /*
+              Reportar un mensaje privado es la ÚNICA puerta por la que
+              el admin llega a ver algo de una conversación, y ve ese
+              mensaje con contexto mínimo (ver InboxService).
+            */
+            case "MENSAJE" -> inboxService.esVisibleMensaje(objetoId);
             default -> false;
         };
 

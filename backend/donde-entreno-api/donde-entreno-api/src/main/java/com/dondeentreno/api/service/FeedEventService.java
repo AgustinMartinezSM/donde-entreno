@@ -20,9 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -60,6 +63,8 @@ public class FeedEventService {
     private final ImagenRepository imagenRepository;
     private final ImagenService imagenService;
     private final NovedadRepository novedadRepository;
+    /** Transacción propia para el evento: ver el javadoc de `guardar`. */
+    private final TransactionTemplate transaccionPropia;
 
     public FeedEventService(
             FeedEventRepository feedEventRepository,
@@ -68,9 +73,13 @@ public class FeedEventService {
             ActividadRepository actividadRepository,
             ImagenRepository imagenRepository,
             ImagenService imagenService,
-            NovedadRepository novedadRepository
+            NovedadRepository novedadRepository,
+            PlatformTransactionManager transactionManager
     ) {
         this.novedadRepository = novedadRepository;
+        this.transaccionPropia = new TransactionTemplate(transactionManager);
+        this.transaccionPropia.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.feedEventRepository = feedEventRepository;
         this.seguimientoPublicadorRepository = seguimientoPublicadorRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
@@ -156,20 +165,17 @@ public class FeedEventService {
             Long imagenId,
             String resumen
     ) {
-        try {
-            FeedEvent evento = new FeedEvent();
-            evento.setTipo(TIPO_NOVEDAD);
-            evento.setPerfilPublicadorId(perfilPublicadorId);
-            evento.setNovedadId(novedadId);
-            evento.setImagenId(imagenId);
-            evento.setResumen(recortar(resumen));
-            evento.setCreatedAt(OffsetDateTime.now());
+        guardar(TIPO_NOVEDAD, perfilPublicadorId, null, imagenId, novedadId, resumen);
+    }
 
-            feedEventRepository.saveAndFlush(evento);
-        } catch (RuntimeException excepcion) {
-            log.warn("FEED_EVENT_NO_EMITIDO tipo={} perfil={}: {}",
-                    TIPO_NOVEDAD, perfilPublicadorId, excepcion.getMessage());
-        }
+    void guardar(
+            String tipo,
+            Long perfilPublicadorId,
+            Long actividadId,
+            Long imagenId,
+            String resumen
+    ) {
+        guardar(tipo, perfilPublicadorId, actividadId, imagenId, null, resumen);
     }
 
     /**
@@ -177,17 +183,27 @@ public class FeedEventService {
      * negocio ya está confirmado y nada de lo que pase acá puede
      * afectarlo.
      *
-     * Sin `@Transactional` a propósito: se llama desde `emitir` (mismo
-     * bean), así que el proxy no lo interceptaría igual. No hace falta:
-     * `saveAndFlush` abre su propia transacción cuando no hay ninguna
-     * activa —el caso de afterCommit— y su commit ocurre DENTRO de
-     * esta llamada, o sea dentro del try.
+     * EN TRANSACCIÓN PROPIA, y esto NO es un detalle (lo destapó el IT
+     * de la Fase 8): dentro de `afterCommit` el EntityManager de la
+     * request sigue atado al hilo, pero SIN transacción, así que
+     * `saveAndFlush` no abre una nueva — muere con
+     * "no transaction is in progress", el warning se loguea y el evento
+     * se pierde en silencio. Era lo que estaba pasando con TODOS los
+     * eventos emitidos desde que existe el feed.
+     *
+     * `REQUIRES_NEW` acá es seguro —y no repite el error de la Fase 6—
+     * justamente porque corre DESPUÉS del commit: las filas que el
+     * evento referencia por FK ya existen y son visibles para otra
+     * conexión. El `TransactionTemplate` es explícito a propósito: con
+     * `@Transactional` el proxy no intercepta la llamada, que sale del
+     * mismo bean.
      */
-    void guardar(
+    private void guardar(
             String tipo,
             Long perfilPublicadorId,
             Long actividadId,
             Long imagenId,
+            Long novedadId,
             String resumen
     ) {
         try {
@@ -196,10 +212,11 @@ public class FeedEventService {
             evento.setPerfilPublicadorId(perfilPublicadorId);
             evento.setActividadId(actividadId);
             evento.setImagenId(imagenId);
+            evento.setNovedadId(novedadId);
             evento.setResumen(recortar(resumen));
             evento.setCreatedAt(OffsetDateTime.now());
 
-            feedEventRepository.saveAndFlush(evento);
+            transaccionPropia.execute(estado -> feedEventRepository.saveAndFlush(evento));
         } catch (RuntimeException excepcion) {
             log.warn("FEED_EVENT_NO_EMITIDO tipo={} perfil={}: {}",
                     tipo, perfilPublicadorId, excepcion.getMessage());

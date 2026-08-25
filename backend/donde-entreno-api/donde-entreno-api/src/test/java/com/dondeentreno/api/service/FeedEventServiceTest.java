@@ -58,10 +58,24 @@ class FeedEventServiceTest {
     @Mock
     private com.dondeentreno.api.repository.NovedadRepository novedadRepository;
 
+    /*
+      El evento se guarda en transacción propia (ver el javadoc de
+      `guardar`): acá alcanza con un manager que devuelva un status
+      vivo, así el TransactionTemplate ejecuta el callback de verdad.
+    */
+    @Mock
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
     private FeedEventService service;
 
     @BeforeEach
     void setUp() {
+        /* Lenient: los tests de lectura del feed nunca guardan nada. */
+        org.mockito.Mockito.lenient()
+                .when(transactionManager.getTransaction(any()))
+                .thenReturn(
+                        new org.springframework.transaction.support.SimpleTransactionStatus());
+
         service = new FeedEventService(
                 feedEventRepository,
                 seguimientoPublicadorRepository,
@@ -69,7 +83,8 @@ class FeedEventServiceTest {
                 actividadRepository,
                 imagenRepository,
                 imagenService,
-                novedadRepository
+                novedadRepository,
+                transactionManager
         );
     }
 

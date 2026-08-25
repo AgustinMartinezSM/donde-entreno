@@ -209,6 +209,15 @@ class CanalNovedadesIT {
         publicar(perfil.getUsuario(), "Quedan 3 lugares para el turno de la tarde");
         Long novedadId = ultimaNovedadDe(perfil).getId();
 
+        /*
+          Que ANTES esté: sin esta aserción, el test pasaría igual si el
+          evento nunca se hubiera emitido — que es exactamente el bug
+          que se escondía detrás de este mismo caso.
+        */
+        mockMvc.perform(get("/api/usuario/feed")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$.contenido", hasSize(1)));
+
         mockMvc.perform(patch("/api/admin/novedades/" + novedadId + "/ocultar")
                         .with(jwtConRol(ROL_ADMIN, crearUsuario(ROL_USUARIO).getId())))
                 .andExpect(status().isNoContent());

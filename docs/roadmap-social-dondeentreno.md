@@ -249,10 +249,18 @@ hallazgos en `docs/plan-fase7-mapa-cercania.md`.
    **Las respuestas rápidas guardadas NO entraron**: son Fase 11.
    Pendiente que importa: escribir la promesa de privacidad en
    `/privacidad` y `/normas` (ver `docs/plan-inbox-consultas.md`).
-3. **Grupos por actividad V1** (publicador publica, miembros
-   reaccionan/comentan según configuración).
+3. ✅ **Grupos por actividad CERRADOS EN PRODUCCIÓN** (smoke de Agustín
+   OK 2026-08-25; script 38 aplicado antes del deploy; backend
+   `e76c89e` + frontend `4975ae5`). El publicador avisa, los miembros
+   comentan y reaccionan. **Se entra explícitamente** —el check-in no
+   suma a nadie—, el grupo es **privado de sus miembros** (el contenido
+   no sale del backend para quien no lo es, ni para un admin) y el
+   dueño de la actividad lo ve porque es quien lo modera. Detalle en
+   `docs/plan-grupos-actividad.md`.
 4. Chat libre de grupos (V2) y realtime (V3, evaluar Supabase
-   Realtime) — solo con la moderación probada.
+   Realtime) — solo con la moderación probada. **La condición para
+   reabrir V2 no es que pase tiempo: es que haya grupos VIVOS** y se
+   vea cómo se comportan con el tablón moderado que ya existe.
 - Landing social por deporte+ciudad (arregla de paso el soft-404).
 
 ### Fase 9 — Eventos y calendario

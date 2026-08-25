@@ -84,6 +84,12 @@ const TRAZOS: Record<IconoCuentaTipo, React.ReactNode> = {
       <path d="m21 15-4.5-4.5L8 19" />
     </>
   ),
+  novedades: (
+    <>
+      <path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z" />
+      <path d="M17 8.5a5 5 0 0 1 0 7" />
+    </>
+  ),
   salir: (
     <>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

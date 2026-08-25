@@ -13,6 +13,7 @@ import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPubl
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { GaleriaPerfil } from "../../../components/publicadores/GaleriaPerfil";
+import { NovedadesDelPublicador } from "../../../components/publicadores/NovedadesDelPublicador";
 import { BotonReportar } from "../../../components/social/BotonReportar";
 import { CompartirButton } from "../../../components/social/CompartirButton";
 import { SocialActivityCard } from "../../../components/social/SocialActivityCard";
@@ -36,6 +37,10 @@ import {
   obtenerPreguntasDelPublicador,
   obtenerValoracionesDelPublicador,
 } from "../../../services/perfilPublicadorService";
+import {
+  obtenerNovedadesDePerfil,
+  type Novedad,
+} from "../../../services/novedadesService";
 
 /*
   Perfil público de publicador: /publicadores/[id]
@@ -59,6 +64,8 @@ type PerfilPublicadorPageProps = {
 
 const TABS = [
   { clave: "actividades", etiqueta: "Actividades" },
+  /* Fase 8: el canal del publicador. Solo aparece si contó algo. */
+  { clave: "novedades", etiqueta: "Novedades" },
   { clave: "fotos", etiqueta: "Fotos" },
   /* Fase 5: las valoraciones existían pero solo dentro de cada actividad. */
   { clave: "opiniones", etiqueta: "Opiniones" },
@@ -253,9 +260,11 @@ export default async function PerfilPublicadorPage({
     valoraciones vivían solo dentro de cada actividad, así que quien
     miraba el perfil no veía ninguna.
   */
-  const [opiniones, preguntas] = await Promise.all([
+  const [opiniones, preguntas, novedades] = await Promise.all([
     obtenerValoracionesDelPublicador(perfil.id).catch(() => null),
     obtenerPreguntasDelPublicador(perfil.id).catch(() => []),
+    /* Fase 8: el canal. Si falla, el perfil se muestra igual sin él. */
+    obtenerNovedadesDePerfil(perfil.id).catch(() => [] as Novedad[]),
   ]);
   const hayOpiniones =
     (opiniones?.contenido?.length ?? 0) > 0 || preguntas.length > 0;
@@ -263,7 +272,8 @@ export default async function PerfilPublicadorPage({
   const tabActiva: ClaveTab = resolverTab(
     tabPedida,
     fotos.length > 0,
-    hayOpiniones
+    hayOpiniones,
+    novedades.length > 0
   );
 
   const tipoVisible = perfil.tipoPublicador
@@ -477,7 +487,8 @@ export default async function PerfilPublicadorPage({
             {TABS.filter(
               (tab) =>
                 (tab.clave !== "fotos" || fotos.length > 0) &&
-                (tab.clave !== "opiniones" || hayOpiniones)
+                (tab.clave !== "opiniones" || hayOpiniones) &&
+                (tab.clave !== "novedades" || novedades.length > 0)
             ).map((tab) => {
               const activa = tab.clave === tabActiva;
 
@@ -587,6 +598,19 @@ export default async function PerfilPublicadorPage({
             </section>
           ) : null}
 
+          {tabActiva === "novedades" ? (
+            <section className="mt-7" aria-labelledby="novedades-perfil-titulo">
+              <SectionHeader
+                eyebrow="Novedades"
+                title={`Lo último de ${perfil.nombre}`}
+                description="Cambios de horario, cupos que se liberan, cómo salió el torneo. Lo cuenta acá, sin esperar a publicar una actividad nueva."
+                titleId="novedades-perfil-titulo"
+              />
+
+              <NovedadesDelPublicador novedades={novedades} />
+            </section>
+          ) : null}
+
           {tabActiva === "opiniones" ? (
             <section className="mt-7" aria-labelledby="opiniones-perfil-titulo">
               <SectionHeader
@@ -677,7 +701,8 @@ export default async function PerfilPublicadorPage({
 function resolverTab(
   pedida: string | undefined,
   hayFotos: boolean,
-  hayOpiniones: boolean
+  hayOpiniones: boolean,
+  hayNovedades: boolean
 ): ClaveTab {
   const valida = TABS.some((tab) => tab.clave === pedida);
 
@@ -687,6 +712,11 @@ function resolverTab(
 
   /* Sin fotos la solapa no se muestra: entrar por URL cae en actividades. */
   if (pedida === "fotos" && !hayFotos) {
+    return "actividades";
+  }
+
+  /* Ídem el canal: una solapa vacía es una promesa rota. */
+  if (pedida === "novedades" && !hayNovedades) {
     return "actividades";
   }
 

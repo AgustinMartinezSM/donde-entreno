@@ -4,6 +4,7 @@ import Link from "next/link";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
 import { formatearFechaRelativa } from "../../lib/formatoFecha";
 import type { FeedEvento } from "../../types/seguimiento";
+import { BotonReportar } from "./BotonReportar";
 import { PublisherIdentity } from "./PublisherIdentity";
 
 /*
@@ -15,10 +16,19 @@ const FRASES: Record<string, string> = {
   ACTIVIDAD_NUEVA: "publicó una actividad nueva",
   FOTOS_NUEVAS: "subió una foto nueva",
   ACTIVIDAD_ACTUALIZADA: "actualizó una actividad",
+  NOVEDAD: "contó una novedad",
 };
 
 export function FeedEventoCard({ evento }: { evento: FeedEvento }) {
   const frase = FRASES[evento.tipo] ?? "publicó algo nuevo";
+
+  /*
+    La novedad del canal (Fase 8) es texto propio: va entera en el
+    cuerpo, no recortada detrás de dos puntos como el resumen de los
+    otros hechos, y lleva su botón de reporte — es el único tipo de
+    evento cuyo contenido lo escribe una persona.
+  */
+  const esNovedad = evento.tipo === "NOVEDAD" && Boolean(evento.novedadTexto);
 
   /*
     La foto del hecho manda sobre la portada de la actividad: si el
@@ -56,21 +66,40 @@ export function FeedEventoCard({ evento }: { evento: FeedEvento }) {
           {evento.perfilNombre}
         </span>{" "}
         {frase}
-        {evento.resumen ? `: ${evento.resumen}` : ""}
+        {!esNovedad && evento.resumen ? `: ${evento.resumen}` : ""}
       </p>
 
-      {imagenUrl && hrefActividad ? (
-        <Link href={hrefActividad} className="mt-3 block">
-          <div className="relative h-56 w-full sm:h-64">
+      {esNovedad ? (
+        <p className="whitespace-pre-line px-4 pt-2 text-sm leading-6 text-[var(--color-text)]">
+          {evento.novedadTexto}
+        </p>
+      ) : null}
+
+      {imagenUrl ? (
+        hrefActividad ? (
+          <Link href={hrefActividad} className="mt-3 block">
+            <div className="relative h-56 w-full sm:h-64">
+              <Image
+                src={imagenUrl}
+                alt={evento.actividadTitulo ?? "Novedad del publicador"}
+                fill
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className="object-cover transition duration-200 ease-out hover:scale-[1.02]"
+              />
+            </div>
+          </Link>
+        ) : (
+          /* La novedad no cuelga de una actividad: la foto no linkea. */
+          <div className="relative mt-3 h-56 w-full sm:h-64">
             <Image
               src={imagenUrl}
-              alt={evento.actividadTitulo ?? "Novedad del publicador"}
+              alt=""
               fill
               sizes="(max-width: 640px) 100vw, 50vw"
-              className="object-cover transition duration-200 ease-out hover:scale-[1.02]"
+              className="object-cover"
             />
           </div>
-        </Link>
+        )
       ) : null}
 
       {hrefActividad && evento.actividadTitulo ? (
@@ -81,6 +110,32 @@ export function FeedEventoCard({ evento }: { evento: FeedEvento }) {
           >
             {evento.actividadTitulo}
           </Link>
+        </div>
+      ) : esNovedad ? (
+        /*
+          La acción útil de una novedad es entrar al publicador: ahí
+          están sus actividades, sus fotos y el contacto.
+        */
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-4">
+          {hrefPerfil ? (
+            <Link
+              href={hrefPerfil}
+              className="text-sm font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-border-accent)] underline-offset-4 transition hover:decoration-[var(--color-primary)]"
+            >
+              Ver el perfil de {evento.perfilNombre}
+            </Link>
+          ) : (
+            <span />
+          )}
+
+          {evento.novedadId ? (
+            <BotonReportar
+              tipoObjeto="NOVEDAD"
+              objetoId={evento.novedadId}
+              etiquetaObjeto="esta novedad"
+              compacto
+            />
+          ) : null}
         </div>
       ) : (
         <div className="pb-4" aria-hidden="true" />

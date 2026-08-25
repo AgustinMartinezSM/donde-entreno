@@ -14,6 +14,7 @@ import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 import { obtenerSesionAdmin } from "../../../services/authService";
 import { rechazarImagenAdmin } from "../../../services/adminSolicitudesService";
 import { ocultarComentarioAdmin } from "../../../services/galeriaSocialService";
+import { ocultarNovedadAdmin } from "../../../services/novedadesService";
 import {
   ReportesApiError,
   cambiarEstadoReporteAdmin,
@@ -29,6 +30,7 @@ const ETIQUETAS_TIPO: Record<string, string> = {
   VALORACION: "Valoración",
   PREGUNTA: "Pregunta",
   COMENTARIO: "Comentario",
+  NOVEDAD: "Novedad del publicador",
 };
 
 const ETIQUETAS_MOTIVO: Record<string, string> = {
@@ -227,6 +229,35 @@ function AdminReportesListado() {
     }
   }
 
+  /* Ídem para una novedad del canal del publicador (script 34). */
+  async function ocultarNovedadReportada(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+
+    if (!sesion || procesando !== null) {
+      return;
+    }
+
+    setProcesando(reporte.id);
+    setErrorAccion(null);
+
+    try {
+      await ocultarNovedadAdmin(sesion.accessToken, reporte.objetoId);
+      await cambiarEstadoReporteAdmin(sesion.accessToken, reporte.id, "ACCIONADO");
+      setReportes((actuales) =>
+        actuales.map((cada) =>
+          cada.id === reporte.id ? { ...cada, estado: "ACCIONADO" } : cada
+        )
+      );
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos ocultar la novedad. Puede que ya esté oculta.",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  }
+
   return (
     <main className="min-h-screen text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-5xl px-4 py-6">
@@ -375,6 +406,18 @@ function AdminReportesListado() {
                           {procesando === reporte.id
                             ? "Ocultando..."
                             : "Ocultar el comentario"}
+                        </AppButton>
+                      ) : reporte.tipoObjeto === "NOVEDAD" ? (
+                        <AppButton
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          disabled={procesando === reporte.id}
+                          onClick={() => void ocultarNovedadReportada(reporte)}
+                        >
+                          {procesando === reporte.id
+                            ? "Ocultando..."
+                            : "Ocultar la novedad"}
                         </AppButton>
                       ) : (
                         <AppButton

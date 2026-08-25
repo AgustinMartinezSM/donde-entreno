@@ -203,6 +203,13 @@ export function PublicadorDashboard() {
                   Centro de fotos
                 </AppLinkButton>
                 <AppLinkButton
+                  href="/publicador/novedades"
+                  variant="outline"
+                  fullWidth
+                >
+                  Contar una novedad
+                </AppLinkButton>
+                <AppLinkButton
                   href="/publicador/perfil"
                   variant="outline"
                   fullWidth

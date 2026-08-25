@@ -52,6 +52,10 @@ export type FeedEvento = {
 
   imagenId?: number | null;
   imagenUrl?: string | null;
+
+  /* Novedad del canal (Fase 8): el texto completo, no el resumen. */
+  novedadId?: number | null;
+  novedadTexto?: string | null;
 };
 
 export type PaginaFeedEventos = {

@@ -181,6 +181,20 @@ public class InboxService {
         );
     }
 
+    /** El número del badge de "Mis consultas". */
+    @Transactional(readOnly = true)
+    public long contarNoLeidosDelUsuario(Long usuarioId) {
+        validarUsuario(usuarioId);
+
+        return mensajeRepository.contarNoLeidosDelUsuario(usuarioId);
+    }
+
+    /** Ídem del lado del publicador. */
+    @Transactional(readOnly = true)
+    public long contarNoLeidosDelPublicador(Long userId) {
+        return mensajeRepository.contarNoLeidosDelPublicador(obtenerPerfil(userId).getId());
+    }
+
     /** Cerrar es del usuario: deja de recibir y el otro no puede escribir. */
     @Transactional
     public void cerrar(Long usuarioId, Long conversacionId) {

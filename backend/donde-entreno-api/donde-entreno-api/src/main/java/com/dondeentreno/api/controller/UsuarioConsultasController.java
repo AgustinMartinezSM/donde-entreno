@@ -36,6 +36,12 @@ public class UsuarioConsultasController {
         return inboxService.bandejaDelUsuario(extraerUserId(jwt));
     }
 
+    /** El número del badge, sin traer la bandeja entera. */
+    @GetMapping("/contador")
+    public Map<String, Long> contador(@AuthenticationPrincipal Jwt jwt) {
+        return Map.of("noLeidos", inboxService.contarNoLeidosDelUsuario(extraerUserId(jwt)));
+    }
+
     @GetMapping("/{id}")
     public ConversacionDTO hilo(
             @AuthenticationPrincipal Jwt jwt,

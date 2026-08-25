@@ -62,6 +62,35 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
             @Param("ahora") OffsetDateTime ahora
     );
 
+    /**
+     * El número del badge de "Mis consultas": todo lo que le escribieron
+     * al usuario y todavía no leyó, en UNA query.
+     *
+     * Endpoint propio y no "traer la bandeja y sumar": para pintar un
+     * número no hace falta resolver identidades, actividades y vistas
+     * previas de cada conversación.
+     */
+    @Query("""
+            SELECT COUNT(m) FROM Mensaje m, Conversacion c
+             WHERE c.id = m.conversacionId
+               AND c.usuarioId = :usuarioId
+               AND m.autor = 'PUBLICADOR'
+               AND m.leidoAt IS NULL
+               AND m.estado = 'VISIBLE'
+            """)
+    long contarNoLeidosDelUsuario(@Param("usuarioId") Long usuarioId);
+
+    /** Ídem para la bandeja del publicador. */
+    @Query("""
+            SELECT COUNT(m) FROM Mensaje m, Conversacion c
+             WHERE c.id = m.conversacionId
+               AND c.perfilPublicadorId = :perfilPublicadorId
+               AND m.autor = 'USUARIO'
+               AND m.leidoAt IS NULL
+               AND m.estado = 'VISIBLE'
+            """)
+    long contarNoLeidosDelPublicador(@Param("perfilPublicadorId") Long perfilPublicadorId);
+
     /** Tope diario: cuántos mensajes escribió hoy ese usuario. */
     @Query("""
             SELECT COUNT(m) FROM Mensaje m, Conversacion c

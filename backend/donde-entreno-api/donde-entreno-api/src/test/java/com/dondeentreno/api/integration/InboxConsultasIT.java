@@ -339,6 +339,55 @@ class InboxConsultasIT {
                 .andExpect(jsonPath("$.mensajes[0].texto").doesNotExist());
     }
 
+    /**
+     * El contador del badge cuenta lo que le escribió el OTRO y baja al
+     * abrir el hilo. Se prueba en los dos lados porque cada uno cuenta
+     * mensajes del contrario.
+     */
+    @Test
+    void elContadorCuentaLoDelOtroYBajaAlLeer() throws Exception {
+        PerfilPublicador perfil = crearPerfilPublicador();
+        Usuario duenio = perfil.getUsuario();
+        Usuario interesado = crearUsuario(ROL_USUARIO);
+
+        consultar(interesado, perfil, "Una consulta sin leer");
+
+        /* Al publicador le cuenta uno; a quien escribió, cero. */
+        mockMvc.perform(get("/api/publicador/consultas/contador")
+                        .with(jwtConRol(ROL_PUBLICADOR, duenio.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.noLeidos").value(1));
+
+        mockMvc.perform(get("/api/usuario/consultas/contador")
+                        .with(jwtConRol(ROL_USUARIO, interesado.getId())))
+                .andExpect(jsonPath("$.noLeidos").value(0));
+
+        Long conversacionId = conversacionRepository
+                .findByPerfilPublicadorIdOrderByUltimoMensajeAtDesc(perfil.getId())
+                .get(0)
+                .getId();
+
+        /* Abrir el hilo lo baja a cero. */
+        mockMvc.perform(get("/api/publicador/consultas/" + conversacionId)
+                        .with(jwtConRol(ROL_PUBLICADOR, duenio.getId())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/publicador/consultas/contador")
+                        .with(jwtConRol(ROL_PUBLICADOR, duenio.getId())))
+                .andExpect(jsonPath("$.noLeidos").value(0));
+
+        /* Y la respuesta le cuenta al usuario. */
+        mockMvc.perform(post("/api/publicador/consultas/" + conversacionId + "/respuestas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"texto\":\"Te respondo\"}")
+                        .with(jwtConRol(ROL_PUBLICADOR, duenio.getId())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/usuario/consultas/contador")
+                        .with(jwtConRol(ROL_USUARIO, interesado.getId())))
+                .andExpect(jsonPath("$.noLeidos").value(1));
+    }
+
     /** Escribirle dos veces al mismo club no abre dos hilos. */
     @Test
     void dosConsultasAlMismoClubVanAlMismoHilo() throws Exception {

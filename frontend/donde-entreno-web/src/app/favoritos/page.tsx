@@ -3,6 +3,7 @@
 import { AuthGuard } from "../../components/auth/AuthGuard";
 import { Header } from "../../components/layout/Header";
 import { FotosGuardadas } from "../../components/favoritos/FotosGuardadas";
+import { ComparadorGuardados } from "../../components/favoritos/ComparadorGuardados";
 import { MisFavoritos } from "../../components/favoritos/MisFavoritos";
 
 /*
@@ -19,6 +20,8 @@ export default function FavoritosPage() {
 
           <div className="py-8 sm:py-10">
             <MisFavoritos />
+            {/* Comparador (Fase 10): no se dibuja con menos de dos guardadas. */}
+            <ComparadorGuardados />
             {/* Fotos guardadas (fase 4 social): solo aparece si hay alguna. */}
             <FotosGuardadas />
           </div>

@@ -74,13 +74,40 @@ export default function PrivacidadPage() {
         </p>
       </SeccionLegal>
 
+      {/*
+        Grupos por actividad: cada afirmación está sostenida por
+        GrupoActividadService y fijada por GruposActividadIT. Si alguna
+        de estas reglas cambia, esta sección cambia con ella.
+      */}
+      <SeccionLegal titulo="Grupos de actividades">
+        <p>
+          Al grupo de una actividad <strong>se entra a propósito</strong>:
+          nunca te sumamos por haber guardado la actividad, marcado interés o
+          registrado que entrenaste ahí. Podés salir cuando quieras y dejás de
+          ver los avisos y de recibirlos.
+        </p>
+        <p>
+          Lo que se publica en un grupo <strong>lo ven sus miembros</strong>, y
+          también quien organiza la actividad —es su espacio y es quien lo
+          modera—. No lo ve nadie más, y <strong>el equipo de DondeEntreno no
+          lee los grupos</strong>: como en los mensajes privados, solo
+          intervenimos sobre algo que alguien <strong>reporta</strong>.
+        </p>
+        <p>
+          Dos cosas que conviene tener claras antes de escribir: los demás
+          miembros ven tu nombre y la inicial de tu apellido junto a tu
+          comentario, y <strong>si salís del grupo, lo que ya escribiste sigue
+          ahí</strong> —podés borrar tus propios comentarios cuando quieras—.
+        </p>
+      </SeccionLegal>
+
       <SeccionLegal titulo="Qué no hacemos">
         <p>
           No vendemos datos personales. No publicamos tu ubicación. No usamos
           tu email para nada distinto de la operación de tu cuenta. Los
           mensajes que escribís al asistente no se registran: solo metadata
           mínima para que funcione. Y no leemos tus conversaciones privadas
-          con publicadores.
+          con publicadores ni los grupos de actividades.
         </p>
       </SeccionLegal>
 

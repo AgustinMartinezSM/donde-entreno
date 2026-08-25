@@ -54,6 +54,12 @@ export default function NormasPage() {
           siga siendo útil. Un publicador nunca puede escribirte primero, y
           si cerrás una consulta deja de poder responderte.
         </p>
+        <p>
+          En los grupos de actividades escribe quien organiza y responden
+          quienes van. Los demás miembros ven tu nombre y la inicial de tu
+          apellido: tratá al grupo como lo que es, un lugar compartido con
+          gente que no necesariamente conocés.
+        </p>
       </SeccionLegal>
 
       <SeccionLegal titulo="Contenido permitido y no permitido">
@@ -83,6 +89,12 @@ export default function NormasPage() {
           actividad, perfil o conversación que incumpla estas normas, sin
           aviso previo cuando la gravedad lo amerite. Los publicadores pueden
           moderar el contenido en sus propias publicaciones.
+        </p>
+        <p>
+          En los <strong>grupos de actividades</strong>, quien organiza modera
+          su propio grupo: puede ocultar comentarios y borrar sus avisos. Como
+          el grupo no es público, DondeEntreno tampoco lo lee — actúa cuando
+          alguien reporta un aviso o un comentario.
         </p>
         <p>
           Las <strong>conversaciones privadas</strong> se moderan distinto,

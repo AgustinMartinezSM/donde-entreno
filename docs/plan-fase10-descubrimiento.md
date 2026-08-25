@@ -111,3 +111,46 @@ eso a la vista.
 3. Ranking semanal: unit del umbral (con señal y sin señal) + IT del
    endpoint.
 4. Si toca backend, dos tandas como siempre.
+
+---
+
+## ✅ PULSO CERRADO EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+`main` = `origin/main` = **`e16b2b7`**. Backend `45ec331` + frontend
+`e16b2b7`. Sin migración: el pulso solo lee.
+
+### Qué se verificó, y con qué
+
+- **Backend, verificado por mí**: marcador `OPTIONS /api/admin/pulso`
+  **404 → 200 con `allow: GET,HEAD,OPTIONS`** (validado contra
+  `/api/admin/reportes` como control), GET anónimo en **401**, y
+  catálogo, eventos y novedades sanos post-deploy.
+- **Frontend: lo confirma el smoke de Agustín**, no una verificación
+  mía. **No existe marcador anónimo para esta pantalla**: `/admin/pulso`
+  da 307 igual que `/admin/reportes` —que existe hace fases— y que
+  cualquier ruta inexistente bajo `/admin`, porque el middleware las
+  redirige todas. El cookie-trick tampoco sirve acá (el guard de admin
+  no usa la cookie del proxy). Que él haya visto el panel con su cuenta
+  ES la evidencia, y es más fuerte que un marcador.
+- 604 unit + 142 ITs verdes, con las 22 consultas ejercidas contra el
+  schema real.
+
+### La trampa que este panel tiene incorporada
+
+Cada conteo va aislado y devuelve **0** si su SQL falla, para que el
+diagnóstico no se caiga entero por un número. El costo: **un SQL roto
+sería invisible** —el panel mostraría ceros y parecería "no hay uso",
+que es justo la conclusión que este panel existe para informar—. Por
+eso `PulsoIT` verifica que actividades, publicadores y usuarios, que el
+seed **tiene**, den mayor a cero.
+
+**Si algún día una métrica cae a 0 de golpe: antes de concluir nada,
+correr `PulsoIT`.**
+
+### Lo que sigue de la Fase 10
+
+Con los números a la vista, decidir si el resto del plan se ejecuta tal
+cual o se replantea. Las piezas propuestas siguen siendo: entrada
+guiada a Dondi (no un test nuevo), comparador de guardados, ranking
+semanal con umbral, `/empezar`, y la estructura de guías con **una sola
+guía** para revisar antes de publicar.

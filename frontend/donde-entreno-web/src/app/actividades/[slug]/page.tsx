@@ -15,6 +15,7 @@ import {
 import { obtenerImagenesPerfilPublicador } from "../../../services/perfilPublicadorService";
 import { ContactButton } from "../../../components/actividad/ContactButton";
 import { BotonConsultar } from "../../../components/inbox/BotonConsultar";
+import { GrupoDeActividad } from "../../../components/grupos/GrupoDeActividad";
 import {
   ActividadGaleria,
   type FotoActividad,
@@ -620,6 +621,25 @@ export default async function ActividadDetallePage({
               </div>
             </section>
           ) : null}
+
+          {/*
+            El grupo (script 38): el espacio de quienes van. El
+            contenido solo lo trae el backend para miembros, así que
+            acá no se filtra nada — no hay nada que filtrar.
+          */}
+          <section className="mt-12" aria-labelledby="grupo-titulo">
+            <SectionHeader
+              eyebrow="Grupo"
+              title="Para quienes vienen"
+              description="Los avisos de quien organiza, y un lugar para responderlos."
+              titleId="grupo-titulo"
+            />
+
+            <GrupoDeActividad
+              actividadId={actividad.id}
+              actividadTitulo={actividad.titulo}
+            />
+          </section>
 
           {similares.length > 0 ? (
             <section className="mt-12" aria-labelledby="similares-titulo">

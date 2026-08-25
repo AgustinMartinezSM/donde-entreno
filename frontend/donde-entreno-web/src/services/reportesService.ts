@@ -14,7 +14,9 @@ export type TipoObjetoReporte =
   | "COMENTARIO"
   | "NOVEDAD"
   | "EVENTO"
-  | "MENSAJE";
+  | "MENSAJE"
+  | "AVISO_GRUPO"
+  | "COMENTARIO_GRUPO";
 
 export const MOTIVOS_REPORTE = [
   { valor: "CONTENIDO_INAPROPIADO", etiqueta: "Contenido inapropiado" },

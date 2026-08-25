@@ -13,6 +13,7 @@ import { StatusMessage } from "../../../components/ui/StatusMessage";
 import { SurfaceCard } from "../../../components/ui/SurfaceCard";
 import { obtenerImagenFallbackActividad } from "../../../lib/activityImages";
 import { DEFAULT_CITY_SLUG } from "../../../lib/ciudadActiva";
+import { GUIAS } from "../../../lib/guias";
 import { buscarActividades } from "../../../services/actividadService";
 import { obtenerCiudadPorSlug } from "../../../services/ciudadService";
 import { obtenerDeportes } from "../../../services/deportesService";
@@ -137,6 +138,11 @@ export default async function DeporteLandingPage({ params }: DeporteLandingProps
     console.error("Error al cargar actividades del deporte:", error);
   }
 
+  /* Fase 10: si hay guia editorial de este deporte, se enlaza. */
+  const guiaDelDeporte = GUIAS.find(
+    (guia) => guia.deporteSlug === deporte.slug
+  );
+
   const relacionados = deporte.categoriaSlug
     ? deportes
         .filter(
@@ -195,6 +201,14 @@ export default async function DeporteLandingPage({ params }: DeporteLandingProps
                 <AppLinkButton href={hrefExplorar}>
                   Ver todas las actividades
                 </AppLinkButton>
+                {guiaDelDeporte ? (
+                  <AppLinkButton
+                    href={`/guias/${guiaDelDeporte.slug}`}
+                    variant="outline"
+                  >
+                    Guía para empezar
+                  </AppLinkButton>
+                ) : null}
                 <AppLinkButton href="/deportes" variant="secondary">
                   Ver todos los deportes
                 </AppLinkButton>

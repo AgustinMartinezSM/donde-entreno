@@ -8,6 +8,7 @@ import { AppLinkButton } from "../../components/ui/AppLinkButton";
 import { SectionHeader } from "../../components/ui/SectionHeader";
 import { SurfaceCard } from "../../components/ui/SurfaceCard";
 import { DEFAULT_CITY_SLUG } from "../../lib/ciudadActiva";
+import { GUIAS } from "../../lib/guias";
 import { buscarActividades } from "../../services/actividadService";
 import type { Actividad } from "../../types/actividad";
 
@@ -120,6 +121,35 @@ export default async function EmpezarPage() {
               </div>
             )}
           </section>
+
+          {/*
+            Las guías por deporte, cuando existen: quien ya sabe qué
+            quiere probar necesita el detalle, no la orientación.
+          */}
+          {GUIAS.length > 0 ? (
+            <SurfaceCard as="section" className="p-5 sm:p-6">
+              <h2 className="text-lg font-extrabold text-[var(--color-primary)]">
+                Guías por deporte
+              </h2>
+              <p className="mt-1 text-sm text-[var(--color-muted)]">
+                Qué es, cómo es la primera clase y qué preguntar antes de
+                anotarte.
+              </p>
+
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {GUIAS.map((guia) => (
+                  <li key={guia.slug}>
+                    <Link
+                      href={`/guias/${guia.slug}`}
+                      className="inline-block rounded-full border border-[var(--color-border)] px-3 py-1.5 text-sm font-semibold text-[var(--color-primary)] transition hover:border-[var(--color-primary)]"
+                    >
+                      {guia.titulo}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </SurfaceCard>
+          ) : null}
 
           <SurfaceCard as="section" className="p-5 sm:p-6">
             <h2 className="text-lg font-extrabold text-[var(--color-primary)]">

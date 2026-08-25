@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { CATALOGO_DEPORTES_ASISTENTE } from "../lib/asistente/conocimiento";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
+import { GUIAS } from "../lib/guias";
 import { SITE_URL } from "../lib/siteConfig";
 import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
 import { obtenerCalendario } from "../services/eventosService";
@@ -25,10 +26,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { ruta: "/deportes", prioridad: 0.8 },
     /* Fase 10: la puerta para quien nunca entrenó. */
     { ruta: "/empezar", prioridad: 0.8 },
+    /* Fase 10: las guias editoriales. */
+    { ruta: "/guias", prioridad: 0.8 },
     { ruta: "/ciudades", prioridad: 0.8 },
     { ruta: `/ciudades/${DEFAULT_CITY_SLUG}`, prioridad: 0.7 },
     { ruta: "/publicar", prioridad: 0.7 },
   ];
+
+  const rutasGuias = GUIAS.map((guia) => ({
+    ruta: `/guias/${guia.slug}`,
+    prioridad: 0.7,
+  }));
 
   const rutasDeportes = CATALOGO_DEPORTES_ASISTENTE.map((deporte) => ({
     ruta: `/deportes/${deporte.slug}`,
@@ -73,6 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...rutasPublicas,
     ...rutasDeportes,
+    ...rutasGuias,
     ...rutasCiudadDeporte,
     ...rutasPublicadores,
     ...rutasEventos,

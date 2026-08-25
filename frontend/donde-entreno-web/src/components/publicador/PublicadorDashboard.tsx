@@ -210,6 +210,13 @@ export function PublicadorDashboard() {
                   Contar una novedad
                 </AppLinkButton>
                 <AppLinkButton
+                  href="/publicador/eventos"
+                  variant="outline"
+                  fullWidth
+                >
+                  Organizar un evento
+                </AppLinkButton>
+                <AppLinkButton
                   href="/publicador/perfil"
                   variant="outline"
                   fullWidth

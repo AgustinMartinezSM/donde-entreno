@@ -15,6 +15,7 @@ import { obtenerSesionAdmin } from "../../../services/authService";
 import { rechazarImagenAdmin } from "../../../services/adminSolicitudesService";
 import { ocultarComentarioAdmin } from "../../../services/galeriaSocialService";
 import { ocultarNovedadAdmin } from "../../../services/novedadesService";
+import { ocultarEventoAdmin } from "../../../services/eventosService";
 import {
   ReportesApiError,
   cambiarEstadoReporteAdmin,
@@ -31,6 +32,7 @@ const ETIQUETAS_TIPO: Record<string, string> = {
   PREGUNTA: "Pregunta",
   COMENTARIO: "Comentario",
   NOVEDAD: "Novedad del publicador",
+  EVENTO: "Evento",
 };
 
 const ETIQUETAS_MOTIVO: Record<string, string> = {
@@ -258,6 +260,35 @@ function AdminReportesListado() {
     }
   }
 
+  /* Ídem para un evento reportado (script 35). */
+  async function ocultarEventoReportado(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+
+    if (!sesion || procesando !== null) {
+      return;
+    }
+
+    setProcesando(reporte.id);
+    setErrorAccion(null);
+
+    try {
+      await ocultarEventoAdmin(sesion.accessToken, reporte.objetoId);
+      await cambiarEstadoReporteAdmin(sesion.accessToken, reporte.id, "ACCIONADO");
+      setReportes((actuales) =>
+        actuales.map((cada) =>
+          cada.id === reporte.id ? { ...cada, estado: "ACCIONADO" } : cada
+        )
+      );
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos ocultar el evento. Puede que ya esté oculto.",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  }
+
   return (
     <main className="min-h-screen text-[var(--color-text)]">
       <section className="mx-auto w-full max-w-5xl px-4 py-6">
@@ -406,6 +437,18 @@ function AdminReportesListado() {
                           {procesando === reporte.id
                             ? "Ocultando..."
                             : "Ocultar el comentario"}
+                        </AppButton>
+                      ) : reporte.tipoObjeto === "EVENTO" ? (
+                        <AppButton
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          disabled={procesando === reporte.id}
+                          onClick={() => void ocultarEventoReportado(reporte)}
+                        >
+                          {procesando === reporte.id
+                            ? "Ocultando..."
+                            : "Ocultar el evento"}
                         </AppButton>
                       ) : reporte.tipoObjeto === "NOVEDAD" ? (
                         <AppButton

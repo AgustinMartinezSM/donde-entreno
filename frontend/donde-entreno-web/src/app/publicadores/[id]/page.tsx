@@ -41,6 +41,11 @@ import {
   obtenerNovedadesDePerfil,
   type Novedad,
 } from "../../../services/novedadesService";
+import {
+  obtenerEventosDePerfil,
+  type Evento,
+} from "../../../services/eventosService";
+import { EventoCard } from "../../../components/eventos/EventoCard";
 
 /*
   Perfil público de publicador: /publicadores/[id]
@@ -64,6 +69,8 @@ type PerfilPublicadorPageProps = {
 
 const TABS = [
   { clave: "actividades", etiqueta: "Actividades" },
+  /* Fase 9: lo que organiza con fecha. Va primero: caduca. */
+  { clave: "eventos", etiqueta: "Eventos" },
   /* Fase 8: el canal del publicador. Solo aparece si contó algo. */
   { clave: "novedades", etiqueta: "Novedades" },
   { clave: "fotos", etiqueta: "Fotos" },
@@ -260,11 +267,13 @@ export default async function PerfilPublicadorPage({
     valoraciones vivían solo dentro de cada actividad, así que quien
     miraba el perfil no veía ninguna.
   */
-  const [opiniones, preguntas, novedades] = await Promise.all([
+  const [opiniones, preguntas, novedades, eventos] = await Promise.all([
     obtenerValoracionesDelPublicador(perfil.id).catch(() => null),
     obtenerPreguntasDelPublicador(perfil.id).catch(() => []),
     /* Fase 8: el canal. Si falla, el perfil se muestra igual sin él. */
     obtenerNovedadesDePerfil(perfil.id).catch(() => [] as Novedad[]),
+    /* Fase 9: lo que organiza. Ídem: best-effort. */
+    obtenerEventosDePerfil(perfil.id).catch(() => [] as Evento[]),
   ]);
   const hayOpiniones =
     (opiniones?.contenido?.length ?? 0) > 0 || preguntas.length > 0;
@@ -273,7 +282,8 @@ export default async function PerfilPublicadorPage({
     tabPedida,
     fotos.length > 0,
     hayOpiniones,
-    novedades.length > 0
+    novedades.length > 0,
+    eventos.length > 0
   );
 
   const tipoVisible = perfil.tipoPublicador
@@ -488,7 +498,8 @@ export default async function PerfilPublicadorPage({
               (tab) =>
                 (tab.clave !== "fotos" || fotos.length > 0) &&
                 (tab.clave !== "opiniones" || hayOpiniones) &&
-                (tab.clave !== "novedades" || novedades.length > 0)
+                (tab.clave !== "novedades" || novedades.length > 0) &&
+                (tab.clave !== "eventos" || eventos.length > 0)
             ).map((tab) => {
               const activa = tab.clave === tabActiva;
 
@@ -598,6 +609,25 @@ export default async function PerfilPublicadorPage({
             </section>
           ) : null}
 
+          {tabActiva === "eventos" ? (
+            <section className="mt-7" aria-labelledby="eventos-perfil-titulo">
+              <SectionHeader
+                eyebrow="Eventos"
+                title={`Lo que organiza ${perfil.nombre}`}
+                description="Torneos, clases abiertas y seminarios con fecha confirmada."
+                titleId="eventos-perfil-titulo"
+              />
+
+              <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {eventos.map((evento) => (
+                  <li key={evento.id}>
+                    <EventoCard evento={evento} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
           {tabActiva === "novedades" ? (
             <section className="mt-7" aria-labelledby="novedades-perfil-titulo">
               <SectionHeader
@@ -702,7 +732,8 @@ function resolverTab(
   pedida: string | undefined,
   hayFotos: boolean,
   hayOpiniones: boolean,
-  hayNovedades: boolean
+  hayNovedades: boolean,
+  hayEventos: boolean
 ): ClaveTab {
   const valida = TABS.some((tab) => tab.clave === pedida);
 
@@ -717,6 +748,10 @@ function resolverTab(
 
   /* Ídem el canal: una solapa vacía es una promesa rota. */
   if (pedida === "novedades" && !hayNovedades) {
+    return "actividades";
+  }
+
+  if (pedida === "eventos" && !hayEventos) {
     return "actividades";
   }
 

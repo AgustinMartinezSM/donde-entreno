@@ -10,6 +10,7 @@ import { HomeParaVos } from "../components/home/HomeParaVos";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
+import { HomeEventos } from "../components/home/HomeEventos";
 import { HomePopularSports } from "../components/home/HomePopularSports";
 import { HomePreferenciasChips } from "../components/home/HomePreferenciasChips";
 import { HomePublicadoresSugeridos } from "../components/home/HomePublicadoresSugeridos";
@@ -162,6 +163,13 @@ export default async function Home({ searchParams }: HomeProps) {
           <HomeParaVos ciudadSlug={ciudadSlug} ciudadNombre={ciudadNombre} />
 
           <HomePreferenciasChips ciudadSlug={ciudadSlug} />
+
+          {/*
+            Lo que tiene fecha va ARRIBA del catálogo permanente: es lo
+            único de la home que se puede perder. Si no hay eventos
+            esta semana, el componente no dibuja nada.
+          */}
+          <HomeEventos />
 
           <HomeDiscoveryFeed
             actividades={actividades}

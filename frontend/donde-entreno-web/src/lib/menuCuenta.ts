@@ -10,6 +10,7 @@ export type IconoCuentaTipo =
   | "solicitudes"
   | "imagenes"
   | "novedades"
+  | "eventos"
   | "configuracion"
   | "salir";
 
@@ -101,6 +102,11 @@ export function obtenerSeccionesCuenta(
           href: "/publicador/novedades",
           label: "Novedades",
           icono: "novedades",
+        },
+        {
+          href: "/publicador/eventos",
+          label: "Eventos",
+          icono: "eventos",
         },
       ],
     });

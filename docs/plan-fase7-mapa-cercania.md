@@ -1,9 +1,42 @@
 # Plan — Fase 7 social: cercanía primero, mapa después
 
-Estado: **aprobado ("Dale, con las 5 recomendaciones") e IMPLEMENTADO**
-(backend `8b3f88f`, frontend `558f15b`). Script 33 aplicado por Agustín
-en Supabase y local; suite unit + ITs en verde con el script aplicado;
-typecheck y lint limpios. Falta: deploy en dos tandas y su smoke.
+Estado: ✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-24).
+`main` = `origin/main` = **`0ae069d`**; script 33 aplicado por él;
+backend `9411d42` (incluye el fix del modo cercanía) y frontend
+`0ae069d`.
+
+Verificado en producción: `cerca` devuelve 6 actividades ordenadas por
+distancia (0,0 · 0,0 · 0,5 · 0,8 · 1,4 · 3,4 km) y con radio 1 km
+quedan 4 informando 1 sin coordenadas; el Natatorio a 3,4 km coincide
+con el valor fijado en el test unitario; zonas con datos reales;
+"Cómo llegar" apunta al punto exacto donde hay coordenadas y cae a
+búsqueda por dirección donde no.
+
+## ⚠️ El bug que se escapó al deploy (y por qué)
+
+`/api/actividades/cerca` devolvía **siempre vacío** —ni siquiera
+contaba las sin-coordenadas— con cualquier radio y con o sin
+`ciudadSlug`.
+
+Causa: el query de búsqueda evalúa el texto con **`:texto = ''`**, no
+con `IS NULL`. Al pasarle `null`, **ninguna fila pasaba el filtro**. El
+proyecto ya tenía el helper `prepararTextoBusqueda` cuyo javadoc
+advierte exactamente esto, y no se usó.
+
+**Por qué se escapó**: los unit tests mockean el repositorio, así que
+nunca ejecutan el query real, y **no había IT del endpoint nuevo**. Ese
+era el agujero de fondo. Los tres marcadores de deploy (404→200,
+campos nuevos en el DTO, zonas con datos) daban verde igual: lo
+destapó verificar el endpoint **contra datos reales**, no el código de
+estado.
+
+Cubierto por `CercaniaIT` (6 flujos), que empieza por el caso que
+estaba roto: una actividad con coordenadas cerca del punto TIENE que
+aparecer.
+
+**Regla que deja**: un endpoint nuevo necesita su IT. Y verificar un
+deploy es comprobar que el endpoint **hace lo que promete**, no que
+responde 200.
 
 Notas de la implementación, sobre lo planeado:
 

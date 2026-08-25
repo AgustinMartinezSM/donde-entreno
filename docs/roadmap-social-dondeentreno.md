@@ -199,13 +199,30 @@ hallazgo en `docs/plan-fase6-feed-social.md`.
   descubrimiento DENTRO del feed. La home ya los tiene como secciones
   separadas y fundirlos borraría el valor de seguir a alguien.
 
-### Fase 7 — Mapa y cercanía
-- Cargar lat/lng (las columnas YA existen): geocoding asistido o
-  carga manual del publicador en su sede.
-- Exponer en API, mapa con Leaflet+OSM (gratis), vista lista/mapa,
-  "cerca mío" con geolocation del navegador (nunca se guarda la
-  ubicación del usuario), radio 1/3/5 km, distancia aproximada.
-- Zonas populares por barrio (V0 sin mapa puede adelantarse).
+### Fase 7 — Cercanía (el mapa quedó para después)
+✅ **CERRADA EN PRODUCCIÓN** (smoke de Agustín OK 2026-08-24; script 33
+aplicado por él; backend `9411d42` + frontend `0ae069d`). Plan y
+hallazgos en `docs/plan-fase7-mapa-cercania.md`.
+
+- **Carga de coordenadas**: el publicador pega el link de Google Maps
+  (sin geocoding: es impreciso en direcciones argentinas y un pin mal
+  puesto manda gente al lugar equivocado). El resolutor prioriza el
+  punto del LUGAR sobre el de la cámara.
+- **"Cerca mío"** con geolocation, radios 1/3/5/10 km y distancia. La
+  ubicación del usuario no se guarda ni se loguea.
+- Las actividades sin punto quedan fuera **y se informa cuántas**:
+  ubicarlas en el centro del barrio inventaría precisión.
+- **"Cómo llegar"** (link, no mapa embebido: abre la app nativa).
+- **Zonas por barrio**, que de paso hacen navegable el barrio.
+- **EL MAPA NO ENTRÓ, a propósito**: con 4 de 9 sedes sin punto
+  mostraría más huecos que pines, y sería la primera dependencia de UI
+  del proyecto. Se retoma cuando haya coordenadas cargadas.
+- **Cero dependencias nuevas**: el frontend sigue con next/react/
+  react-dom.
+- ⚠️ Bug que llegó a producción y su lección (IT por endpoint nuevo):
+  ver el plan.
+- **Pendiente**: sacar "cerca mío" de las stopwords del buscador — hoy
+  quien lo escribe recibe en silencio una búsqueda sin cercanía.
 
 ### Fase 8 — Comunidad (en este orden)
 1. **Canales de novedades** del publicador (broadcast, el más seguro:

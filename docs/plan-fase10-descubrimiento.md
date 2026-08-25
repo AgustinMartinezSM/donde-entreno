@@ -154,3 +154,33 @@ cual o se replantea. Las piezas propuestas siguen siendo: entrada
 guiada a Dondi (no un test nuevo), comparador de guardados, ranking
 semanal con umbral, `/empezar`, y la estructura de guías con **una sola
 guía** para revisar antes de publicar.
+
+---
+
+## `/empezar` + entrada guiada: EN PRODUCCIÓN (pendiente smoke)
+
+`main` = `origin/main` = **`cb6752e`**. Solo frontend, una sola tanda
+(no toca la API ni la base).
+
+- **Marcador**: `/empezar` pasó de **404 a 200**. Sirve porque es una
+  ruta PÚBLICA nueva y ningún middleware la enmascara — a diferencia de
+  todo lo que cuelga de `/admin` o `/publicador`. Un control con una
+  ruta inventada confirmó que las desconocidas siguen dando 404.
+- Verificado además por contenido: los seis textos de la página en el
+  HTML servido, las tres actividades PRINCIPIANTE reales linkeadas, el
+  CTA en la home, el link en `/deportes` y la ruta en el `sitemap.xml`.
+- **El traspaso a Dondi se ejercitó en producción**: las tres respuestas
+  arman la consulta, el panel la manda sola y Dondi respeta el rechazo
+  (propuso Funcional, Yoga, Stretching y Aqua Gym, y separó lo que hay
+  publicado de la recomendación general). Consola limpia.
+
+### La trampa de verificación que costó tiempo
+
+Al medir el chip elegido con `getComputedStyle` daba **fondo
+transparente** y parecía que la selección no se veía. **No era un bug**:
+con el pane del navegador oculto las transiciones CSS quedan
+**congeladas en t=0**, y el chip transiciona el fondo en 0.15s. Con
+`transition: none` mide azul de marca con tinta blanca.
+
+**Regla: antes de creerle a un `getComputedStyle` sobre una propiedad
+que transiciona, anular la transición.**

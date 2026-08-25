@@ -148,3 +148,68 @@ público**, que es la prueba social barata.
    emisión del feed**, no inserta `feed_event` a mano (que es cómo se
    escapó el bug de la Fase 6).
 2. Script 35 (Agustín) → ITs → backend → frontend → su smoke.
+
+---
+
+## Estado: IMPLEMENTADO (2026-08-25), pendiente script 35 + ITs + deploy
+
+Las 5 recomendaciones fueron aprobadas y están las cinco en código.
+Dos commits, en el orden de los dos pushes.
+
+### Backend
+
+- `database/scripts/35_eventos_deportivos.sql` — **PENDIENTE de aplicar
+  en Supabase y local**. Aditivo salvo el CHECK de `reporte.tipo_objeto`.
+- `EventoDeportivo`, `InteresEvento`, sus repositorios,
+  `EventoDeportivoDTO`, `EventoDeportivoService`, `EventoSlugService`.
+- `GET /api/eventos` (calendario con rango), `GET /api/eventos/{slug}`,
+  `GET /api/eventos/de-actividad/{id}`,
+  `GET /api/perfiles-publicadores/{id}/eventos`,
+  `GET|POST /api/publicador/eventos`,
+  `PATCH /api/publicador/eventos/{id}/cancelar`,
+  `DELETE /api/publicador/eventos/{id}`,
+  `PUT|DELETE /api/usuario/eventos/{id}/interes`,
+  `PATCH /api/admin/eventos/{id}/ocultar`.
+- `FeedEventService`: `TIPO_EVENTO_NUEVO` + `emitirEvento(...)`, y el
+  enriquecido descarta el evento cuyo `evento_deportivo` ya no está
+  PUBLICADO (un cancelado también se cae del feed: anunciarlo de nuevo
+  a quien nunca lo vio sería avisar de algo que no va a pasar).
+- `SecurityConfig`: `/api/eventos/**` público con JWT **opcional**.
+
+### Frontend
+
+- `services/eventosService.ts`, `components/eventos/{EventoCard,BotonMeInteresa}`,
+  `app/eventos/page.tsx`, `app/eventos/[slug]/page.tsx`,
+  `components/publicador/AgendaDeEventos.tsx`,
+  `app/publicador/eventos/page.tsx`, `components/home/HomeEventos.tsx`.
+- Superficies existentes: card de evento en el feed (con la fecha
+  destacada y su chip de urgencia), solapa "Eventos" en el perfil
+  público, "Ocultar el evento" en la cola de reportes, entradas en
+  `menuCuenta.ts` y en el dashboard, y `/eventos` en el sitemap.
+- `formatoFecha.ts` suma `formatearFechaEvento` y `formatearCuantoFalta`.
+  Función aparte y no un caso más de `formatearFechaRelativa`: esa
+  aplasta todo el futuro a "hoy" a propósito, y de un evento lo único
+  que importa es exactamente cuándo es.
+
+### Detalle que apareció al implementar
+
+**La hora que tipea el publicador es la que se guarda.** El formulario
+arma el ISO con el offset del dispositivo en vez de usar
+`toISOString()`, que convierte a UTC y guardaría otra hora escrita.
+
+### Verificación hecha
+
+- 579 unit tests verdes (12 nuevos en `EventoDeportivoServiceTest`).
+- Frontend: typecheck + lint limpios y build con 45 rutas, incluidas
+  `/eventos`, `/eventos/[slug]` y `/publicador/eventos`.
+
+### Lo que falta
+
+1. **Agustín aplica el script 35** en Supabase y local.
+2. `verify -Pintegration-local` — `EventosCalendarioIT` cubre el camino
+   feliz completo, cancelar vs borrar, "me interesa" idempotente, el
+   filtro de rango, el ocultar del admin, la fecha pasada y el 401.
+   Ejerce **el camino real de emisión del feed** (publica por HTTP, no
+   inserta `feed_event` a mano) y cada aserción de desaparición prueba
+   antes la aparición — las dos lecciones de la Fase 8.
+3. Deploy en dos etapas y smoke de Agustín.

@@ -237,3 +237,40 @@ Verificado en producción por contenido: las frases "no lee las
 conversaciones", "los dos anteriores" y "No ve tu email ni tu
 teléfono" están en el HTML servido de `/privacidad`, y "no las leemos"
 y "límite diario" en el de `/normas`.
+
+---
+
+## Contador de no leídos (2026-08-25, backend `bd8126e` + frontend `8297428`)
+
+Cierra el segundo pendiente del bloque. `GET /api/usuario/consultas/contador`
+y su par del publicador, una query cada uno, y badge en las dos
+entradas de menú (desktop y sheet mobile).
+
+**Sin poller nuevo, a propósito.** Cada mensaje ya genera una
+notificación, así que el aviso lo da la campanita —que ya consulta cada
+60 s— y un segundo poller global sería duplicar tráfico de fondo para
+un número que solo importa cuando alguien abre el menú a decidir a
+dónde ir. El contador se pide **al abrir el menú**: en desktop sale
+gratis porque `MenuDesplegable` solo monta su contenido cuando está
+abierto (por eso ese contenido pasó a componente propio), y en mobile
+va atado al estado del sheet.
+
+Con 0 el badge **no se dibuja**: un badge en cero le enseña a la gente
+a ignorar los badges.
+
+**El commit venía mezclando backend y frontend y se partió antes de
+pushear** (misma operación que en la Fase 4), verificando que el árbol
+resultante fuera idéntico al original: sin eso, el badge habría llamado
+a un endpoint inexistente durante la rotación de Render.
+
+Verificado en producción: marcador `OPTIONS .../contador` **404 → 200**
+con `allow: GET,HEAD,OPTIONS`; catálogo intacto; los dos contadores en
+401 anónimo; y **como visitante, cero llamadas** a `/consultas` (el
+hook no dispara sin sesión), con consola limpia.
+
+**Falta el smoke con sesión**: abrir el menú con una consulta sin
+responder y ver el número, y que desaparezca después de abrir el hilo.
+
+### Pendiente que queda del inbox
+
+- **Respuestas rápidas guardadas**: Fase 11 (Publicador Pro).

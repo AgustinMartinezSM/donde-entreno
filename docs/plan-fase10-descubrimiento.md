@@ -255,3 +255,36 @@ encima del mínimo, o mide el umbral cuando cree medir otra cosa.**
 
 Con la ventana de 7 días hay **tres actividades con señal real** en
 producción (karate, jiu jitsu y natación). Hay uso, aunque chico.
+
+---
+
+## ✅ RANKING SEMANAL CERRADO EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+`main` = `origin/main` = **`c9424a6`**. Backend `006b731` + frontend
+`c9424a6`. Sin migración.
+
+Verificado en producción: la home sirve la sección con las tres
+actividades reales linkeadas, cero desbordes, consola limpia; el
+endpoint respeta `limite` y el resto de la API quedó sana.
+
+### Estado de la Fase 10
+
+| Pieza | Estado |
+|---|---|
+| `/admin/pulso` | **CERRADO** |
+| `/empezar` + entrada guiada a Dondi | **CERRADO** |
+| Comparador de guardadas | **CERRADO** |
+| Ranking semanal | **CERRADO** |
+| Guías deportivas | **NO EMPEZADO** — necesita decisión editorial |
+
+Las guías son lo único que queda, y no es una tarea técnica pendiente:
+son textos que el sitio publica **como propios**. La recomendación
+sigue en pie: dejar la estructura con **una sola guía** para revisar
+entera antes de publicar.
+
+### Si el ranking parece flojo
+
+Hoy hay **tres** actividades con señal semanal, que es exactamente el
+mínimo. Si con tres se lee poco creíble, la decisión NO es técnica: es
+subir `MINIMO_ACTIVIDADES_PARA_RANKING` (en `ActividadController`) y
+aceptar que la sección se apague hasta que haya más uso.

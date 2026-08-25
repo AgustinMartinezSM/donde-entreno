@@ -183,3 +183,34 @@ con control contra una ruta que ya existía (`/api/usuario/favoritos`,
 que da 200 con `allow: GET,HEAD,OPTIONS`), porque este bloque **no
 agrega ninguna ruta pública** y todos los 401 son indistinguibles entre
 builds.
+
+---
+
+## ✅ INBOX CERRADO EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+`main` = `origin/main` = **`48e2c7a`**. Script 36 aplicado por él antes
+del deploy. Backend `07e7fbd` + frontend `48e2c7a`.
+
+**Tanda 1 — backend.** Marcador: `OPTIONS /api/usuario/consultas` pasó
+de **404 a 200 con `allow: GET,HEAD,POST,OPTIONS`** —justo los métodos
+del endpoint nuevo—, verificado además contra una ruta preexistente
+como control. Hizo falta este marcador porque **el módulo no agrega
+ninguna ruta pública** y todos los 401 son idénticos entre builds.
+Post-deploy: catálogo y eventos intactos, y las tres rutas nuevas en
+401 anónimo.
+
+**Tanda 2 — frontend.** Marcador: el texto "Consultar sin dar tu
+teléfono" en el HTML del perfil público (ahí el botón se renderiza para
+cualquiera). Las dos rutas privadas dan 307 anónimo.
+
+### Lo que quedó pendiente, anotado
+
+- **Decir la promesa de privacidad en `/privacidad` y `/normas`.** El
+  código ya la cumple —no existe endpoint que devuelva un hilo completo
+  a un admin— pero las páginas todavía no la mencionan, y una promesa
+  de privacidad que no está escrita no existe para quien la lee. Es el
+  pendiente más importante de este bloque.
+- **Contador de no leídos en la campanita/navegación**: hoy el aviso
+  llega por notificación, pero la bandeja no muestra un badge global.
+- **Respuestas rápidas guardadas** (Fase 11) y **adjuntar fotos**:
+  fuera de alcance a propósito.

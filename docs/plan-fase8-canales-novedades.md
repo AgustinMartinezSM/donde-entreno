@@ -237,3 +237,58 @@ Lo que quedó en código y conviene no re-litigar:
    contexto con `ddl-auto=validate` no arranca.
 3. Deploy en dos etapas (backend → marcador anónimo → frontend) y smoke
    de Agustín con su cuenta de publicador.
+
+---
+
+## ⚠️ Hallazgo del IT: el feed no guardaba NINGÚN evento desde la Fase 6
+
+El `CanalNovedadesIT` falló en el caso más obvio —publicar y ver la
+novedad en el feed del seguidor— con esta línea en el log:
+
+```
+FEED_EVENT_NO_EMITIDO tipo=NOVEDAD perfil=1795: no transaction is in progress
+```
+
+**La causa**: dentro de `afterCommit` el `EntityManager` de la request
+sigue atado al hilo, pero ya **sin transacción** (el commit ocurrió y
+la limpieza de recursos pasa después de disparar los callbacks). Con un
+`EntityManager` presente, `saveAndFlush` **no abre una transacción
+nueva**: usa ese y muere con `TransactionRequiredException`. Como la
+emisión es best-effort, el `catch` lo tragaba y solo quedaba el warning.
+
+**El alcance es de la Fase 6, no de esta**: afecta a los tres tipos de
+evento que se emiten desde `afterCommit` (`ACTIVIDAD_NUEVA`,
+`FOTOS_NUEVAS`, `ACTIVIDAD_ACTUALIZADA`). Desde `72f00fc` el feed
+productivo venía mostrando **solo el backfill del script 32**, y nada
+de lo que pasó después. `spring.jpa.open-in-view` no está configurado
+(default `true`) tanto en producción como en los ITs, así que el
+comportamiento es el mismo en los dos lados.
+
+**El fix**: el guardado corre en transacción propia
+(`TransactionTemplate` con `PROPAGATION_REQUIRES_NEW`). Acá
+`REQUIRES_NEW` **es seguro y no repite el error de la Fase 6**
+justamente porque corre *después* del commit: las filas que el evento
+referencia por FK ya existen y otra conexión las ve. Es
+`TransactionTemplate` y no `@Transactional` porque la llamada sale del
+mismo bean y el proxy no la interceptaría.
+
+**Por qué se escapó**, que es la parte que conviene no repetir:
+
+- El `FeedSocialIT` de la Fase 6 **inserta los `feed_event` a mano**
+  (`crearEvento`) para probar la paginación. Nunca ejerció el camino
+  real de emisión.
+- El IT de subida de fotos sí lo ejerce, pero solo verifica que **no
+  rompa** (era el bug del 500 con `REQUIRES_NEW`), no que el evento
+  aparezca después.
+- Los unit tests mockean el repositorio, así que `saveAndFlush` nunca
+  necesita una transacción de verdad.
+
+**Y un falso verde propio de esta fase**: el caso "ocultar por admin la
+saca del feed" pasaba igual con el bug, porque afirmaba que el feed
+quedaba **vacío** — cosa que también pasa si el evento nunca se emitió.
+Ahora afirma primero que la novedad **está**. Regla que deja: un test
+que verifica una desaparición tiene que probar antes la aparición.
+
+**Verificación en producción** (post-deploy): el feed de alguien que
+sigue a un publicador tiene que mostrar los hechos NUEVOS, no solo los
+del backfill. La novedad del canal es la forma más rápida de probarlo.

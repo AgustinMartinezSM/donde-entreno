@@ -11,6 +11,7 @@ import type {
 import { Header } from "../../../components/layout/Header";
 import { SeguirPublicadorButton } from "../../../components/actividad/SeguirPublicadorButton";
 import { ContactButton } from "../../../components/actividad/ContactButton";
+import { BotonConsultar } from "../../../components/inbox/BotonConsultar";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { GaleriaPerfil } from "../../../components/publicadores/GaleriaPerfil";
 import { NovedadesDelPublicador } from "../../../components/publicadores/NovedadesDelPublicador";
@@ -472,6 +473,16 @@ export default async function PerfilPublicadorPage({
                     className=""
                   />
                 </div>
+
+                {/*
+                  El inbox, al lado de WhatsApp y nunca en su lugar.
+                  Sin actividad: acá se consulta al club en general.
+                */}
+                <BotonConsultar
+                  perfilPublicadorId={perfil.id}
+                  nombrePublicador={perfil.nombre}
+                />
+
                 {sitioWebUrl ? (
                   <a
                     href={sitioWebUrl}

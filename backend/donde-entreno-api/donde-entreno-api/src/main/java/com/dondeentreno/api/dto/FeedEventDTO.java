@@ -30,6 +30,10 @@ public class FeedEventDTO {
     private Long imagenId;
     private String imagenUrl;
 
+    /* La novedad del canal (Fase 8): el texto completo, no el resumen. */
+    private Long novedadId;
+    private String novedadTexto;
+
     public FeedEventDTO() {
     }
 
@@ -143,5 +147,21 @@ public class FeedEventDTO {
 
     public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
+    }
+
+    public Long getNovedadId() {
+        return novedadId;
+    }
+
+    public void setNovedadId(Long novedadId) {
+        this.novedadId = novedadId;
+    }
+
+    public String getNovedadTexto() {
+        return novedadTexto;
+    }
+
+    public void setNovedadTexto(String novedadTexto) {
+        this.novedadTexto = novedadTexto;
     }
 }

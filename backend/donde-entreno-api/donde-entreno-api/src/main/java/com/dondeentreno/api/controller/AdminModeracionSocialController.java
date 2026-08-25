@@ -21,12 +21,15 @@ public class AdminModeracionSocialController {
     private final ValoracionService valoracionService;
     private final PreguntaActividadService preguntaActividadService;
     private final com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService;
+    private final com.dondeentreno.api.service.NovedadService novedadService;
 
     public AdminModeracionSocialController(
             ValoracionService valoracionService,
             PreguntaActividadService preguntaActividadService,
-            com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService
+            com.dondeentreno.api.service.ComentarioImagenService comentarioImagenService,
+            com.dondeentreno.api.service.NovedadService novedadService
     ) {
+        this.novedadService = novedadService;
         this.valoracionService = valoracionService;
         this.preguntaActividadService = preguntaActividadService;
         this.comentarioImagenService = comentarioImagenService;
@@ -48,5 +51,12 @@ public class AdminModeracionSocialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void ocultarComentario(@PathVariable Long id) {
         comentarioImagenService.ocultarPorAdmin(id);
+    }
+
+    /** Novedad del canal del publicador (Fase 8). */
+    @PatchMapping("/novedades/{id}/ocultar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ocultarNovedad(@PathVariable Long id) {
+        novedadService.ocultarPorAdmin(id);
     }
 }

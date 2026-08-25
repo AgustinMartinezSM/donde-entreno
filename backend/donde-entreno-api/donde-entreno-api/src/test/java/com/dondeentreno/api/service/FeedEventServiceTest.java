@@ -55,6 +55,9 @@ class FeedEventServiceTest {
     @Mock
     private ImagenService imagenService;
 
+    @Mock
+    private com.dondeentreno.api.repository.NovedadRepository novedadRepository;
+
     private FeedEventService service;
 
     @BeforeEach
@@ -65,7 +68,8 @@ class FeedEventServiceTest {
                 perfilPublicadorRepository,
                 actividadRepository,
                 imagenRepository,
-                imagenService
+                imagenService,
+                novedadRepository
         );
     }
 

@@ -39,6 +39,10 @@ public class FeedEvent {
     @Column(name = "imagen_id")
     private Long imagenId;
 
+    /** La novedad del canal, cuando el hecho es una (script 34). */
+    @Column(name = "novedad_id")
+    private Long novedadId;
+
     /** Solo para lo que no se deduce del join (ej: "3 fotos nuevas"). */
     @Column(name = "resumen", length = 200)
     private String resumen;
@@ -83,6 +87,14 @@ public class FeedEvent {
 
     public void setImagenId(Long imagenId) {
         this.imagenId = imagenId;
+    }
+
+    public Long getNovedadId() {
+        return novedadId;
+    }
+
+    public void setNovedadId(Long novedadId) {
+        this.novedadId = novedadId;
     }
 
     public String getResumen() {

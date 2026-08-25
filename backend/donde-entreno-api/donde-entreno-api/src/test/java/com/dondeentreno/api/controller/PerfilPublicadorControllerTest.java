@@ -50,6 +50,9 @@ class PerfilPublicadorControllerTest {
     @MockitoBean
     private com.dondeentreno.api.security.LimitadorInteracciones limitadorInteracciones;
 
+    @MockitoBean
+    private com.dondeentreno.api.service.NovedadService novedadService;
+
     @Test
     void obtenerPerfilPorIdDevuelveElDetallePublico() throws Exception {
         when(perfilPublicadorService.obtenerPerfilActivoPorIdOSlug("8"))

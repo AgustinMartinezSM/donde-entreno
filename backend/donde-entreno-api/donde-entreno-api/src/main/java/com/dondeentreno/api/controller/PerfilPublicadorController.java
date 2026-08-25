@@ -51,6 +51,7 @@ public class PerfilPublicadorController {
     private final PreguntaActividadService preguntaActividadService;
     private final InteraccionService interaccionService;
     private final LimitadorInteracciones limitador;
+    private final com.dondeentreno.api.service.NovedadService novedadService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -65,8 +66,10 @@ public class PerfilPublicadorController {
             ValoracionService valoracionService,
             PreguntaActividadService preguntaActividadService,
             InteraccionService interaccionService,
-            LimitadorInteracciones limitador
+            LimitadorInteracciones limitador,
+            com.dondeentreno.api.service.NovedadService novedadService
     ) {
+        this.novedadService = novedadService;
         this.perfilPublicadorService = perfilPublicadorService;
         this.imagenService = imagenService;
         this.actividadService = actividadService;
@@ -162,6 +165,18 @@ public class PerfilPublicadorController {
     @GetMapping("/{id}/fotos")
     public List<ImagenDTO> obtenerFotosDelPublicador(@PathVariable Long id) {
         return imagenService.obtenerFotosVisiblesDePublicador(id);
+    }
+
+    /**
+     * Novedades del canal (Fase 8): lo que el publicador contó, sin
+     * necesidad de crear o editar una actividad.
+     */
+    @GetMapping("/{id}/novedades")
+    public List<com.dondeentreno.api.dto.NovedadDTO> obtenerNovedades(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "10") int limite
+    ) {
+        return novedadService.listarPublicasDe(id, limite);
     }
 
     /**

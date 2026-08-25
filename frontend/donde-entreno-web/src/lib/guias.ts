@@ -72,13 +72,6 @@ const GUIA_KARATE: Guia = {
       ],
     },
     {
-      titulo: "Los cinturones",
-      parrafos: [
-        "El progreso se ordena en grados. Antes del cinturón negro están los kyu, que se cuentan de mayor a menor; del cinturón negro en adelante están los dan, que se cuentan al revés. Cada grado se rinde en un examen, y los colores de los kyu no son universales: cambian según el estilo y la federación.",
-        "Vale saberlo para no comparar de más: dos personas con el mismo color de cinturón en escuelas distintas no necesariamente pasaron por lo mismo. El cinturón ordena el aprendizaje adentro de una escuela; no es una medida que se traslade sola de un lado a otro.",
-      ],
-    },
-    {
       titulo: "Cómo elegir dónde",
       parrafos: [
         "Lo primero es práctico: que te quede cerca y en un horario al que puedas ir de verdad. La constancia en un arte marcial pesa más que cualquier otra cosa, y un dojo excelente al que llegás tarde y cansado se abandona rápido.",

@@ -288,3 +288,50 @@ Hoy hay **tres** actividades con señal semanal, que es exactamente el
 mínimo. Si con tres se lee poco creíble, la decisión NO es técnica: es
 subir `MINIMO_ACTIVIDADES_PARA_RANKING` (en `ActividadController`) y
 aceptar que la sección se apague hasta que haya más uso.
+
+---
+
+## Guías: estructura + la primera (karate) — EN PRODUCCIÓN (pendiente smoke)
+
+`main` = `origin/main` = **`b50cd9f`**. Solo frontend.
+
+**Con esto la Fase 10 queda completa en sus cinco piezas.**
+
+`/guias` y `/guias/[slug]`, con el contenido en `lib/guias.ts` — en
+código y no en una tabla: son textos que cambian poco y se revisan
+antes de publicar; una tabla traería editor, moderación y estados para
+algo que hoy escribe una sola persona.
+
+### La regla de contenido (está escrita en el archivo)
+
+**No se afirma nada que la plataforma no pueda sostener.** Sin precios,
+sin duraciones de clase, sin beneficios de salud, sin cuánto se tarda
+en progresar. El texto cuenta qué es el deporte, cómo es empezar y qué
+preguntar; los datos concretos los pone el catálogo real.
+
+Esa separación es lo que hace que una guía envejezca bien: si mañana
+abre un club nuevo de karate, aparece sin tocar una línea del texto.
+
+### Lo que decidió Agustín sobre el contenido
+
+- **Fuera la sección "Los cinturones"** (`b50cd9f`): era la más expuesta
+  a que un karateca la corrija, y la guía funciona sin ella. Quedan
+  cuatro secciones.
+- **El tono sobrio queda como molde** para las guías siguientes.
+
+### Tres defectos que aparecieron VIÉNDOLA, no leyendo el código
+
+1. **La fecha se corría un día**: `new Date("2026-08-25")` se parsea
+   como medianoche UTC y en Argentina cae el 24. Ahora se arma con los
+   números sueltos. Misma familia que el ISO con offset de la Fase 9.
+2. Un error de tipeo en una de las preguntas.
+3. **La explicación de kyu y dan estaba al revés** — el tipo de error
+   que solo ve alguien que lee el texto entero, y la razón por la que
+   una guía no se publica sin que Agustín la lea.
+
+### Soft-404
+
+`/guias/slug-inventado` da **200 y no 404**, igual que las otras seis
+rutas dinámicas: lo causa el `loading.tsx` de la raíz y está decidido
+no tocarlo. El **contenido** sí es el de "no encontrada", con su
+`title` propio.

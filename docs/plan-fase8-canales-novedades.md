@@ -345,3 +345,21 @@ probar, en este orden:
 6. Borrar una propia y ver que desaparece de las dos superficies.
 7. Como admin: reportar una novedad desde el feed y ocultarla desde
    `/admin/reportes`.
+
+---
+
+## ✅ FASE 8 CERRADA EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-24)
+
+Su smoke con cuenta de publicador dio "Todo OK". Eso cierra la fase y,
+con ella, **confirma en producción el fix del feed**: la novedad
+apareció en el feed del seguidor, o sea que los eventos vuelven a
+guardarse después de venir perdiéndose desde la Fase 6.
+
+Lo que queda anotado como pendiente de esta fase, sin dueño todavía:
+
+- **Reacciones a las novedades** (el roadmap las menciona). Quedaron
+  fuera a propósito: son otra tabla, otro contador y otra superficie.
+  Con novedades reales publicadas ya se puede decidir si hacen falta.
+- **El resto de la Fase 8 del roadmap** —inbox de consultas, grupos por
+  actividad, chat— sigue sin empezar. El inbox además abre una decisión
+  de privacidad que conviene resolver con tiempo, no de apuro.

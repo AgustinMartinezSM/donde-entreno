@@ -225,8 +225,16 @@ hallazgos en `docs/plan-fase7-mapa-cercania.md`.
   quien lo escribe recibe en silencio una búsqueda sin cercanía.
 
 ### Fase 8 — Comunidad (en este orden)
-1. **Canales de novedades** del publicador (broadcast, el más seguro:
-   solo el publicador escribe; usuarios reaccionan) + notificaciones.
+1. ✅ **Canales de novedades CERRADOS EN PRODUCCIÓN** (smoke de Agustín
+   OK 2026-08-24; script 34 aplicado antes del deploy; backend
+   `112d537` + frontend `ce67fab`). Broadcast: solo el publicador
+   escribe. Tope de 3 por día (el primer límite sobre el rol
+   PUBLICADOR) y campanita solo en la primera del día. **Las
+   reacciones NO entraron** a propósito: son otra tabla y otra
+   superficie, y conviene decidirlas cuando haya novedades reales
+   publicadas. De paso destapó y arregló un bug que dejaba el feed sin
+   guardar NINGÚN evento desde la Fase 6 (ver
+   `docs/plan-fase8-canales-novedades.md`).
 2. **Inbox de consultas** usuario↔publicador (V1 sin realtime:
    mensajes + polling suave + leídos + respuestas rápidas).
 3. **Grupos por actividad V1** (publicador publica, miembros

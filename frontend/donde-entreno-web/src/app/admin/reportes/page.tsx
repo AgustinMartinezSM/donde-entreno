@@ -17,6 +17,11 @@ import { ocultarComentarioAdmin } from "../../../services/galeriaSocialService";
 import { ocultarNovedadAdmin } from "../../../services/novedadesService";
 import { ocultarEventoAdmin } from "../../../services/eventosService";
 import {
+  obtenerContextoMensajeAdmin,
+  ocultarMensajeAdmin,
+  type MensajeConsulta,
+} from "../../../services/inboxService";
+import {
   ReportesApiError,
   cambiarEstadoReporteAdmin,
   listarReportesAdmin,
@@ -33,6 +38,7 @@ const ETIQUETAS_TIPO: Record<string, string> = {
   COMENTARIO: "Comentario",
   NOVEDAD: "Novedad del publicador",
   EVENTO: "Evento",
+  MENSAJE: "Mensaje privado",
 };
 
 const ETIQUETAS_MOTIVO: Record<string, string> = {
@@ -90,6 +96,11 @@ function AdminReportesListado() {
   const [errorAccion, setErrorAccion] = useState<{
     reporteId: number;
     mensaje: string;
+  } | null>(null);
+  /* El contexto acotado del mensaje reportado que se está mirando. */
+  const [contexto, setContexto] = useState<{
+    reporteId: number;
+    mensajes: MensajeConsulta[];
   } | null>(null);
 
   useEffect(() => {
@@ -254,6 +265,69 @@ function AdminReportesListado() {
       setErrorAccion({
         reporteId: reporte.id,
         mensaje: "No pudimos ocultar la novedad. Puede que ya esté oculta.",
+      });
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  /*
+    El contexto de un mensaje privado reportado.
+
+    Es lo ÚNICO que se puede ver de una conversación: ese mensaje y a
+    lo sumo los dos anteriores. No hay forma de abrir el hilo completo
+    —el backend no expone ningún endpoint que lo devuelva— y eso está
+    prometido en /privacidad.
+  */
+  async function verContextoDelMensaje(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+
+    if (!sesion) {
+      return;
+    }
+
+    if (contexto?.reporteId === reporte.id) {
+      setContexto(null);
+      return;
+    }
+
+    try {
+      const mensajes = await obtenerContextoMensajeAdmin(
+        sesion.accessToken,
+        reporte.objetoId
+      );
+      setContexto({ reporteId: reporte.id, mensajes });
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos leer el contexto del mensaje.",
+      });
+    }
+  }
+
+  async function ocultarMensajeReportado(reporte: ReporteAdmin) {
+    const sesion = obtenerSesionAdmin();
+
+    if (!sesion || procesando !== null) {
+      return;
+    }
+
+    setProcesando(reporte.id);
+    setErrorAccion(null);
+
+    try {
+      await ocultarMensajeAdmin(sesion.accessToken, reporte.objetoId);
+      await cambiarEstadoReporteAdmin(sesion.accessToken, reporte.id, "ACCIONADO");
+      setReportes((actuales) =>
+        actuales.map((cada) =>
+          cada.id === reporte.id ? { ...cada, estado: "ACCIONADO" } : cada
+        )
+      );
+      setContexto(null);
+    } catch {
+      setErrorAccion({
+        reporteId: reporte.id,
+        mensaje: "No pudimos ocultar el mensaje. Puede que ya esté oculto.",
       });
     } finally {
       setProcesando(null);
@@ -438,6 +512,30 @@ function AdminReportesListado() {
                             ? "Ocultando..."
                             : "Ocultar el comentario"}
                         </AppButton>
+                      ) : reporte.tipoObjeto === "MENSAJE" ? (
+                        <>
+                          <AppButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => void verContextoDelMensaje(reporte)}
+                          >
+                            {contexto?.reporteId === reporte.id
+                              ? "Ocultar el contexto"
+                              : "Ver el contexto"}
+                          </AppButton>
+                          <AppButton
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            disabled={procesando === reporte.id}
+                            onClick={() => void ocultarMensajeReportado(reporte)}
+                          >
+                            {procesando === reporte.id
+                              ? "Ocultando..."
+                              : "Ocultar el mensaje"}
+                          </AppButton>
+                        </>
                       ) : reporte.tipoObjeto === "EVENTO" ? (
                         <AppButton
                           type="button"
@@ -476,6 +574,36 @@ function AdminReportesListado() {
                     </>
                   ) : null}
                 </div>
+
+                {contexto?.reporteId === reporte.id ? (
+                  <div className="mt-4 border-t border-[var(--color-border-soft)] pt-4">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--color-muted)]">
+                      El mensaje reportado y su contexto
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--color-muted)]">
+                      Solo se muestran este mensaje y hasta dos anteriores. El
+                      resto de la conversación es privado y no se puede abrir.
+                    </p>
+
+                    <ul className="mt-3 grid gap-2">
+                      {contexto.mensajes.map((mensaje) => (
+                        <li
+                          key={mensaje.id}
+                          className="rounded-[12px] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-3"
+                        >
+                          <p className="text-xs font-bold text-[var(--color-muted)]">
+                            {mensaje.esPropio ? "Publicador" : "Usuario"}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-[var(--color-text)]">
+                            {mensaje.oculto
+                              ? "(ya ocultado por moderación)"
+                              : mensaje.texto}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
 
                 {bajaAbierta === reporte.id ? (
                   <div className="mt-4 border-t border-[var(--color-border-soft)] pt-4">

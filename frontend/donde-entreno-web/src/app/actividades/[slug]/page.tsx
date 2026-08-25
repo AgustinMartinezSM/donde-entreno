@@ -14,6 +14,7 @@ import {
 } from "../../../services/actividadService";
 import { obtenerImagenesPerfilPublicador } from "../../../services/perfilPublicadorService";
 import { ContactButton } from "../../../components/actividad/ContactButton";
+import { BotonConsultar } from "../../../components/inbox/BotonConsultar";
 import {
   ActividadGaleria,
   type FotoActividad,
@@ -556,6 +557,21 @@ export default async function ActividadDetallePage({
                     tituloActividad={actividad.titulo}
                     actividadId={actividad.id}
                   />
+
+                  {/*
+                    El inbox va AL LADO de WhatsApp, nunca en su lugar:
+                    WhatsApp es lo único que hoy convierte. Esto es para
+                    quien no quiere dar su número para preguntar un
+                    precio.
+                  */}
+                  {actividad.perfilPublicadorId ? (
+                    <BotonConsultar
+                      perfilPublicadorId={actividad.perfilPublicadorId}
+                      actividadId={actividad.id}
+                      nombrePublicador={actividad.perfilPublicadorNombre}
+                      className="mt-3 w-full justify-center"
+                    />
+                  ) : null}
                 </div>
 
                 {/*

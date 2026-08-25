@@ -90,6 +90,12 @@ const TRAZOS: Record<IconoCuentaTipo, React.ReactNode> = {
       <path d="M17 8.5a5 5 0 0 1 0 7" />
     </>
   ),
+  consultas: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H8l-4 3V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z" />
+      <path d="M8 9h8M8 12h5" />
+    </>
+  ),
   eventos: (
     <>
       <rect x="3" y="5" width="18" height="16" rx="2" />

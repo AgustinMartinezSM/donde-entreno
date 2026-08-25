@@ -11,6 +11,7 @@ export type IconoCuentaTipo =
   | "imagenes"
   | "novedades"
   | "eventos"
+  | "consultas"
   | "configuracion"
   | "salir";
 
@@ -65,6 +66,12 @@ export function obtenerSeccionesCuenta(
           icono: "siguiendo",
         },
         {
+          /* Inbox: página propia porque las solapas son cuatro por ancho. */
+          href: "/mi-cuenta/consultas",
+          label: "Mis consultas",
+          icono: "consultas",
+        },
+        {
           /* Centro de Configuración (Fase 1 social): cuenta y preferencias. */
           href: "/configuracion",
           label: "Configuración",
@@ -107,6 +114,11 @@ export function obtenerSeccionesCuenta(
           href: "/publicador/eventos",
           label: "Eventos",
           icono: "eventos",
+        },
+        {
+          href: "/publicador/consultas",
+          label: "Consultas",
+          icono: "consultas",
         },
       ],
     });

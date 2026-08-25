@@ -10,6 +10,7 @@ import { HomeParaVos } from "../components/home/HomeParaVos";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
 import { HomeEmpezarCta } from "../components/home/HomeEmpezarCta";
+import { HomeMasVistas } from "../components/home/HomeMasVistas";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
 import { HomeEventos } from "../components/home/HomeEventos";
 import { HomePopularSports } from "../components/home/HomePopularSports";
@@ -18,7 +19,11 @@ import { HomePublicadoresSugeridos } from "../components/home/HomePublicadoresSu
 import { HomePublishCta } from "../components/home/HomePublishCta";
 import { HomeZonas } from "../components/home/HomeZonas";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
-import { buscarActividades, obtenerZonas } from "../services/actividadService";
+import {
+  buscarActividades,
+  obtenerActividadesMasVistas,
+  obtenerZonas,
+} from "../services/actividadService";
 import { obtenerCiudadPorSlug } from "../services/ciudadService";
 import {
   obtenerDeportes,
@@ -127,6 +132,12 @@ export default async function Home({ searchParams }: HomeProps) {
   const populares = await obtenerDeportesPopulares().catch(() => []);
 
   /*
+    Ranking semanal (Fase 10). Best-effort: sin señal el backend
+    devuelve vacío y la sección no se dibuja.
+  */
+  const masVistas = await obtenerActividadesMasVistas();
+
+  /*
     Zonas con actividad real (Fase 7): el dato territorial que existe
     HOY, sin depender de coordenadas cargadas.
   */
@@ -181,6 +192,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
           <HomePublicadoresSugeridos publicadores={publicadoresSugeridos} />
           <HomeZonas zonas={zonas} />
+          <HomeMasVistas actividades={masVistas} />
           <HomePopularSports ciudadSlug={ciudadSlug} populares={populares} />
           <HomeCrearCuentaCta />
           <HomeEmpezarCta />

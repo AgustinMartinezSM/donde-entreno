@@ -221,3 +221,38 @@ export async function obtenerImagenesActividad(
       typeof (item as ImagenActividad).url === "string"
   );
 }
+
+/*
+  Actividades más vistas de los últimos N días (Fase 10).
+
+  Best-effort a propósito: si el backend falla o todavía no tiene el
+  endpoint, devuelve vacío y la home simplemente no dibuja la sección.
+  Un error acá no puede voltear la home.
+
+  El backend ya aplica el umbral: si la lista viene vacía es porque no
+  hay señal suficiente, y eso NO es un error que haya que mostrar.
+*/
+export async function obtenerActividadesMasVistas(
+  dias = 7,
+  limite = 6
+): Promise<Actividad[]> {
+  try {
+    const respuesta = await fetch(
+      `${API_BASE_URL}/api/actividades/mas-vistas?dias=${dias}&limite=${limite}`,
+      {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      }
+    );
+
+    if (!respuesta.ok) {
+      return [];
+    }
+
+    const datos: unknown = await respuesta.json();
+
+    return Array.isArray(datos) ? (datos as Actividad[]) : [];
+  } catch {
+    return [];
+  }
+}

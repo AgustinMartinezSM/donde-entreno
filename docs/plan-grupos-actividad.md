@@ -185,3 +185,26 @@ justamente las que sorprenden después:
 Las dos se verificaron en el código antes de escribirlas: `salir` solo
 cambia el estado del miembro y no toca los comentarios, y el DTO viaja
 con `autorNombre`. **Si alguna cambia, esas páginas cambian con ella.**
+
+---
+
+## ✅ GRUPOS CERRADOS EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+Con esto la **Fase 8 del roadmap queda completa en sus tres puntos**:
+canales de novedades, inbox de consultas y grupos por actividad.
+
+### Lo que queda anotado para cuando se retome
+
+- **El chat libre entre miembros (V2) sigue sin hacerse, y a propósito.**
+  Es el canal más difícil de moderar del producto. La condición para
+  reabrir la discusión no es que pase tiempo: es que haya **grupos
+  vivos** y se vea cómo se comportan con el tablón moderado que ya
+  existe.
+- **Realtime (V3)**: sigue bloqueado por el free tier de Render
+  (spin-down). Es una decisión de infraestructura, no de producto.
+- **Roles dentro del grupo** (moderadores auxiliares): recién tiene
+  sentido con grupos grandes.
+- **El trade-off del arranque sigue vigente**: este bloque se hizo con
+  poca evidencia de demanda. Si en unas semanas los grupos siguen
+  vacíos, la conclusión útil no es "faltan features" sino que el valor
+  estaba en otro lado — y conviene mirarlo antes de invertir en V2.

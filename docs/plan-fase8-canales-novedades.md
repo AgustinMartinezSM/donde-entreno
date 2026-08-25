@@ -169,3 +169,71 @@ ALTER TABLE feed_event ADD CONSTRAINT fk_feed_event_novedad
    después de que haya novedades y opiniones para mostrar ahí. El
    soft-404 que arrastra sigue con impacto bajo (el sitemap solo lista
    slugs válidos) y se puede atacar aparte.
+
+---
+
+## Estado: IMPLEMENTADO (2026-08-24), pendiente script 34 + deploy
+
+Las 5 recomendaciones fueron aprobadas por Agustín y están las cinco en
+código. Dos commits, en el orden de los dos pushes.
+
+### Backend (commit "canal de novedades del publicador - backend")
+
+- `database/scripts/34_canales_novedades.sql` — **PENDIENTE de aplicar
+  en Supabase y local**. Aditivo salvo el CHECK de `reporte.tipo_objeto`,
+  que enumera y hay que reescribir (mismo costo que los scripts 29 y 30).
+- `entity/Novedad.java`, `repository/NovedadRepository.java`,
+  `dto/NovedadDTO.java`, `service/NovedadService.java`,
+  `controller/PublicadorNovedadController.java`.
+- `GET /api/perfiles-publicadores/{id}/novedades` (público),
+  `GET|POST /api/publicador/novedades`, `DELETE /api/publicador/novedades/{id}`,
+  `PATCH /api/admin/novedades/{id}/ocultar`.
+- `FeedEventService`: `TIPO_NOVEDAD` + `emitirNovedad(...)` como
+  **overload** (no un parámetro más en `emitir`, para no tocar a los
+  cuatro llamadores que ya existen), también con `afterCommit`.
+- `ReporteService`: `NOVEDAD` en `TIPOS_OBJETO` y su `case` delegando en
+  `novedadService.esVisible`.
+
+Lo que quedó en código y conviene no re-litigar:
+
+- **El tope cuenta también las borradas** (`countBy...CreatedAtGreaterThanEqual`
+  sin filtrar estado): borrar y republicar no puede ser la forma de
+  saltear el límite.
+- **Ocultar por admin la saca del feed**, no solo del perfil: el
+  enriquecido de `FeedEventService` descarta el evento cuya novedad no
+  está VISIBLE. Efecto lateral aceptado: el `totalElementos` de la
+  página queda un pelo alto, igual que con cualquier filtro de
+  moderación posterior al query.
+- **Una foto ajena no voltea la publicación**: sale sin foto.
+- **404 y no 403** al borrar una ajena.
+
+### Frontend (commit "canal de novedades - frontend")
+
+- `services/novedadesService.ts`, `components/publicador/CanalDeNovedades.tsx`,
+  `app/publicador/novedades/page.tsx`,
+  `components/publicadores/NovedadesDelPublicador.tsx`.
+- Solapa "Novedades" en el perfil público (solo si hay contenido; entrar
+  por URL sin novedades cae en actividades), novedad en el feed con su
+  `BotonReportar` tipo `NOVEDAD`, "Ocultar la novedad" en la cola de
+  reportes del admin, entradas en `menuCuenta.ts` y en el dashboard.
+- La foto de la novedad **se elige entre las ya publicadas**, no se sube
+  acá: subir es un flujo propio (el centro de fotos) y duplicarlo sería
+  una segunda cola de moderación con las mismas reglas.
+
+### Verificación hecha
+
+- 567 unit tests verdes (8 nuevos en `NovedadServiceTest`).
+- Frontend: typecheck + lint limpios y build con 42 rutas, incluida
+  `/publicador/novedades`.
+
+### Lo que falta
+
+1. **Agustín aplica el script 34** en Supabase y local (migración antes
+   que código).
+2. `verify -Pintegration-local` — `CanalNovedadesIT` cubre el camino
+   feliz completo (publicar → perfil público → feed del seguidor →
+   campanita), el ocultar del admin, el borrado propio, el tope diario y
+   el 401 anónimo. **No se pudo correr todavía**: sin la tabla, el
+   contexto con `ddl-auto=validate` no arranca.
+3. Deploy en dos etapas (backend → marcador anónimo → frontend) y smoke
+   de Agustín con su cuenta de publicador.

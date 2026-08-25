@@ -122,3 +122,20 @@ número suba y quede marcado al recargar, y que tocar de nuevo lo quite.
 Render estaba dormido al empezar el deploy: el health tardó **56 s** en
 responder. Es el spin-down del free tier, no un problema del deploy —
 conviene despertarlo antes de dar por fallado un marcador.
+
+---
+
+## ✅ REACCIONES CERRADAS EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+Las novedades dejaron de ser lo único social sin forma de responder.
+
+Lo que queda anotado, por si alguna vez se reabre la discusión:
+
+- **Los eventos siguen sin reacción, y es deliberado**: ya tienen
+  "Me interesa", que además le dice al publicador cuánta gente piensa
+  ir. Si algún día se ve que es una barrera muy alta para un gesto de
+  apoyo simple, se evalúa **con datos de uso**, no antes.
+- **Sigue siendo una sola reacción**. Un set de emojis multiplica
+  tabla, contadores, UI y decisiones de producto.
+- **Sigue sin notificar**. La campanita se reserva para lo que pide una
+  acción.

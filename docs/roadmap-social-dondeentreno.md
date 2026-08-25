@@ -235,8 +235,19 @@ hallazgos en `docs/plan-fase7-mapa-cercania.md`.
    publicadas. De paso destapó y arregló un bug que dejaba el feed sin
    guardar NINGÚN evento desde la Fase 6 (ver
    `docs/plan-fase8-canales-novedades.md`).
-2. **Inbox de consultas** usuario↔publicador (V1 sin realtime:
-   mensajes + polling suave + leídos + respuestas rápidas).
+2. ✅ **Inbox de consultas CERRADO EN PRODUCCIÓN** (smoke de Agustín OK
+   2026-08-25; script 36 aplicado antes del deploy; backend `07e7fbd` +
+   frontend `48e2c7a`). "Consultar sin dar tu teléfono" al lado del
+   WhatsApp —nunca en su lugar—, bandejas para los dos lados, leídos y
+   cierre por parte del usuario. **Sin realtime**: polling de 30 s solo
+   en el hilo abierto y con la pestaña visible (Render free tier hace
+   spin-down; un WebSocket sería una promesa incumplible).
+   **La decisión de privacidad quedó estructural**: no existe endpoint
+   que devuelva un hilo completo a un admin — de un mensaje reportado
+   ve ese mensaje y a lo sumo dos anteriores, y lo fija un IT.
+   **Las respuestas rápidas guardadas NO entraron**: son Fase 11.
+   Pendiente que importa: escribir la promesa de privacidad en
+   `/privacidad` y `/normas` (ver `docs/plan-inbox-consultas.md`).
 3. **Grupos por actividad V1** (publicador publica, miembros
    reaccionan/comentan según configuración).
 4. Chat libre de grupos (V2) y realtime (V3, evaluar Supabase

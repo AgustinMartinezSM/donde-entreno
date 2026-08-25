@@ -125,3 +125,61 @@ justamente lo que queremos que pase.
    **no** devuelva el hilo completo, y que un usuario ajeno reciba 404
    —no 403— al pedir una conversación que no es suya.
 3. Script 36 (Agustín) → ITs → backend → frontend → su smoke.
+
+---
+
+## Estado: IMPLEMENTADO (2026-08-25)
+
+Las 5 recomendaciones aprobadas y en código. Dos commits, en el orden
+de los dos pushes.
+
+### Backend
+
+- `database/scripts/36_inbox_consultas.sql` (aplicado por Agustín antes
+  del deploy), `Conversacion`, `Mensaje`, sus repositorios,
+  `ConversacionDTO`, `MensajeDTO`, `InboxService`.
+- `GET|POST /api/usuario/consultas`, `GET /api/usuario/consultas/{id}`,
+  `PATCH /api/usuario/consultas/{id}/cerrar`,
+  `GET /api/publicador/consultas`, `GET /api/publicador/consultas/{id}`,
+  `POST /api/publicador/consultas/{id}/respuestas`,
+  `PATCH /api/admin/mensajes/{id}/ocultar`,
+  `GET /api/admin/mensajes/{id}/contexto`.
+- `ReporteService` +`MENSAJE`.
+
+**La privacidad quedó estructural, no declarativa**: no existe método
+ni endpoint que devuelva un hilo completo a un admin. Lo fija el IT.
+
+### Detalles que aparecieron al implementar
+
+- **La unicidad del hilo son DOS índices parciales**, no un `UNIQUE`:
+  en Postgres los NULL no colisionan entre sí, así que con
+  `actividad_id` nulo un UNIQUE normal habría permitido infinitos hilos
+  con el mismo club. Por lo mismo, buscar el hilo existente necesita
+  una `@Query` explícita: un `findBy...` derivado genera
+  `= :actividadId` y NULL nunca es igual a NULL.
+- **Las consultas del usuario son página propia** (`/mi-cuenta/consultas`)
+  y no una quinta solapa: la grilla de solapas es de cuatro porque a
+  375px no entran más.
+- **El lint atajó dos bugs reales** en el componente del hilo: una ref
+  tocada durante el render y un `setState` en cascada disparado desde
+  un efecto. Se corrigieron alineando al patrón del resto del proyecto
+  (carga inicial dentro del propio efecto, con bandera de montaje).
+
+### Verificación
+
+- 590 unit + 131 ITs verdes, **al primer intento**.
+- `InboxConsultasIT` (8 casos) incluye los dos de privacidad:
+  **ni un admin puede abrir un hilo** (403 en el endpoint del
+  publicador, 404 en el del usuario) y **el contexto de un reporte
+  nunca trae la conversación entera** — el hilo tiene cuatro mensajes,
+  el contexto devuelve como mucho tres, y el test **prueba primero que
+  los cuatro existan**.
+- Frontend: typecheck + lint + build con las dos rutas nuevas.
+
+### Marcador de deploy del backend
+
+`OPTIONS /api/usuario/consultas`: **404 → 200 con `allow`**. Verificado
+con control contra una ruta que ya existía (`/api/usuario/favoritos`,
+que da 200 con `allow: GET,HEAD,OPTIONS`), porque este bloque **no
+agrega ninguna ruta pública** y todos los 401 son indistinguibles entre
+builds.

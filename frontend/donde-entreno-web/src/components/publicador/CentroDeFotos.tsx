@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useAuthSession } from "../auth/AuthSessionProvider";
@@ -10,6 +9,10 @@ import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";
+import {
+  ChecklistPresencia,
+  calcularPasosPresencia,
+} from "./ChecklistPresencia";
 import { construirUrlImagenBackend } from "../../lib/backendUrl";
 import { obtenerImagenFallbackActividad } from "../../lib/activityImages";
 import {
@@ -24,13 +27,6 @@ import type {
   ImagenActividadPublicador,
   PerfilPublicadorActual,
 } from "../../types/publicador";
-
-/*
-  Cuántas fotos aprobadas de galería consideramos "una galería que
-  genera confianza" para el checklist. Tres alcanza para que el detalle
-  público deje de sentirse vacío.
-*/
-const GALERIA_RECOMENDADA = 3;
 
 type FotosPorActividad = Record<number, ImagenActividadPublicador[]>;
 
@@ -174,51 +170,15 @@ export function CentroDeFotos() {
   });
 
   /*
-    Checklist de presencia: solo pasos medibles con los datos que ya
-    tenemos (por eso no está "horarios cargados": el resumen del panel
-    no los trae y no vamos a inventar el dato).
+    Checklist de presencia: el cálculo vive en `ChecklistPresencia`
+    para que el perfil muestre EXACTAMENTE lo mismo. Acá los datos ya
+    están cargados, así que se le pasan en vez de volver a pedirlos.
   */
-  const checklist = [
-    {
-      clave: "logo",
-      etiqueta: "Logo cargado",
-      completado: Boolean(logo),
-      href: "/publicador/perfil",
-    },
-    {
-      clave: "portada",
-      etiqueta: "Portada cargada",
-      completado: Boolean(portada),
-      href: "/publicador/perfil",
-    },
-    {
-      clave: "principal",
-      etiqueta: "Al menos una actividad con imagen principal",
-      completado: resumenPorActividad.some((item) => item.tienePrincipal),
-      href: "/publicador/actividades",
-    },
-    {
-      clave: "galeria",
-      etiqueta: `Una galería con ${GALERIA_RECOMENDADA} fotos o más`,
-      completado: resumenPorActividad.some(
-        (item) => item.galeriaAprobada >= GALERIA_RECOMENDADA
-      ),
-      href: "/publicador/actividades",
-    },
-    {
-      clave: "descripcion",
-      etiqueta: "Descripción del perfil completa",
-      completado: Boolean(perfil?.descripcion?.trim()),
-      href: "/publicador/perfil",
-    },
-    {
-      clave: "whatsapp",
-      etiqueta: "WhatsApp de contacto cargado",
-      completado: Boolean(perfil?.whatsapp?.trim()),
-      href: "/publicador/perfil",
-    },
-  ];
-  const pasosCompletados = checklist.filter((paso) => paso.completado).length;
+  const checklist = calcularPasosPresencia({
+    perfil,
+    imagenesPerfil,
+    resumenActividades: resumenPorActividad,
+  });
 
   return (
     <main className="min-h-screen px-4 py-8 text-[var(--color-text)] sm:py-12">
@@ -332,31 +292,8 @@ export function CentroDeFotos() {
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-info-deep)]">
                 Recomendaciones
               </p>
-              <h2 className="mt-1 text-lg font-extrabold text-[var(--color-primary)]">
-                Tu presencia visual: {pasosCompletados} de {checklist.length}
-              </h2>
-
-              <ul className="mt-4 grid gap-2">
-                {checklist.map((paso) => (
-                  <li key={paso.clave}>
-                    {paso.completado ? (
-                      <span className="flex items-start gap-2.5 rounded-[12px] px-2 py-1.5 text-sm font-bold text-[var(--color-success)]">
-                        <MarcaPaso completado />
-                        {paso.etiqueta}
-                      </span>
-                    ) : (
-                      /* Un pendiente sin camino es un reproche: cada uno linkea. */
-                      <Link
-                        href={paso.href}
-                        className="flex items-start gap-2.5 rounded-[12px] px-2 py-1.5 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:bg-[var(--color-surface)]/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
-                      >
-                        <MarcaPaso />
-                        {paso.etiqueta}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {/* El mismo checklist que ve en su perfil: uno solo. */}
+              <ChecklistPresencia pasos={checklist} />
 
               <p className="mt-5 border-t border-[var(--color-border-accent)] pt-4 text-sm leading-6 text-[var(--color-muted)]">
                 Las actividades con fotos reales generan más confianza y ayudan
@@ -516,21 +453,6 @@ function EstadoImagen({
   return (
     <span className="rounded-full bg-[var(--color-success-soft)] px-2.5 py-1 text-xs font-extrabold text-[var(--color-success)]">
       Aprobada
-    </span>
-  );
-}
-
-function MarcaPaso({ completado = false }: { completado?: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${
-        completado
-          ? "bg-[var(--color-secondary)] text-white"
-          : "bg-[var(--color-surface)] text-transparent ring-2 ring-[var(--color-border-accent)]"
-      }`}
-    >
-      ✓
     </span>
   );
 }

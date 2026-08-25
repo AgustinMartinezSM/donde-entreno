@@ -6,6 +6,7 @@ import {
   obtenerCategoriasBusquedaDeportes,
   obtenerDestinoBusquedaDeportes,
   obtenerSugerenciasBusquedaDeportes,
+  pidioCercania,
 } from "../../lib/deporteSearch";
 import type { SugerenciaBusquedaDeporte } from "../../lib/deporteSearch";
 import { obtenerDeportes } from "../../services/deportesService";
@@ -118,13 +119,28 @@ export function SearchBar({
       busqueda: textoLimpio,
     });
 
+    /*
+      "yoga cerca mío" pedía DOS cosas y el buscador atendía una sola:
+      la frase de cercanía se descartaba junto con las muletillas para
+      poder matchear el deporte. Desde la Fase 7 esa señal vale por sí
+      sola —hay modo cercanía de verdad—, así que viaja en la URL.
+    */
+    const quiereCerca = pidioCercania(textoLimpio);
+
     if (destino?.tipo === "deporte") {
       router.push(
         crearHrefExplorar({
           deporteSlug: destino.valor,
           page: "0",
+          ...(quiereCerca ? { cerca: "1" } : {}),
         })
       );
+      return;
+    }
+
+    /* Pidió cercanía sin nombrar un deporte: igual va al modo cercanía. */
+    if (quiereCerca) {
+      router.push(crearHrefExplorar({ cerca: "1" }));
       return;
     }
 

@@ -3,6 +3,7 @@ import { CATALOGO_DEPORTES_ASISTENTE } from "../lib/asistente/conocimiento";
 import { DEFAULT_CITY_SLUG } from "../lib/ciudadActiva";
 import { SITE_URL } from "../lib/siteConfig";
 import { obtenerPerfilesPublicadores } from "../services/perfilPublicadorService";
+import { obtenerCalendario } from "../services/eventosService";
 
 /*
   Sitemap con las páginas públicas principales, las landings por deporte,
@@ -50,11 +51,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap sin perfiles de publicadores:", error);
   }
 
+  /*
+    Los eventos próximos (Fase 9). Solo los que todavía no pasaron: un
+    evento vencido en el sitemap es pedirle a Google que indexe algo
+    que ya no sirve. El calendario los devuelve ya filtrados por fecha.
+  */
+  let rutasEventos: Array<{ ruta: string; prioridad: number }> = [];
+
+  try {
+    const pagina = await obtenerCalendario({ rango: "proximos", size: 50 });
+    rutasEventos = pagina.contenido.map((evento) => ({
+      ruta: `/eventos/${evento.slug}`,
+      prioridad: 0.6,
+    }));
+  } catch (error) {
+    console.error("Sitemap sin eventos:", error);
+  }
+
   return [
     ...rutasPublicas,
     ...rutasDeportes,
     ...rutasCiudadDeporte,
     ...rutasPublicadores,
+    ...rutasEventos,
   ].map(({ ruta, prioridad }) => ({
     url: `${SITE_URL}${ruta}`,
     changeFrequency: "weekly" as const,

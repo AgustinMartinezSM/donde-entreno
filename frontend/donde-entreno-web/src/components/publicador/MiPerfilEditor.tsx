@@ -11,6 +11,10 @@ import { SectionHeader } from "../ui/SectionHeader";
 import { StatusMessage } from "../ui/StatusMessage";
 import { SurfaceCard } from "../ui/SurfaceCard";
 import { GestionImagenesPerfil } from "./GestionImagenesPerfil";
+import {
+  ChecklistPresencia,
+  usePresenciaPublicador,
+} from "./ChecklistPresencia";
 import { PublicadorPageHeader } from "./PublicadorPageHeader";
 import {
   PublicadorApiError,
@@ -38,6 +42,9 @@ export function MiPerfilEditor() {
   const [perfil, setPerfil] = useState<PerfilPublicadorActual | null>(null);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
+
+  /* El checklist compartido con el Centro de fotos (best-effort). */
+  const pasosPresencia = usePresenciaPublicador(accessToken);
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -421,6 +428,32 @@ export function MiPerfilEditor() {
             <div className="lg:col-span-2">
               <GestionImagenesPerfil />
             </div>
+
+            {/*
+              El mismo checklist del Centro de fotos, acá: cuatro de
+              sus seis pasos se resuelven EN esta pantalla, así que era
+              el lugar donde más falta hacía. Si los datos no cargan
+              completos no se dibuja: un "2 de 6" falso sería peor que
+              no mostrar nada.
+            */}
+            {pasosPresencia ? (
+              <SurfaceCard
+                as="section"
+                variant="info"
+                className="p-5 sm:p-6 lg:col-span-2"
+              >
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-info-deep)]">
+                  Recomendaciones
+                </p>
+
+                <ChecklistPresencia pasos={pasosPresencia} />
+
+                <p className="mt-5 border-t border-[var(--color-border-accent)] pt-4 text-sm leading-6 text-[var(--color-muted)]">
+                  Un perfil completo genera más confianza y ayuda a que las
+                  personas decidan dónde entrenar.
+                </p>
+              </SurfaceCard>
+            ) : null}
           </div>
         ) : null}
       </section>

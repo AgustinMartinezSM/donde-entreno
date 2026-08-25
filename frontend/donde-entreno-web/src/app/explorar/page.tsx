@@ -53,6 +53,8 @@ type ExplorarPageProps = {
     deporteSlug?: string;
     nivel?: string;
     modalidad?: string;
+    /* Fase 7 + pulido: la búsqueda pidió algo cerca. */
+    cerca?: string;
   }>;
 };
 
@@ -87,6 +89,7 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
   const barrioIdActual = params.barrioId || "";
   const perfilPublicadorIdActual = params.perfilPublicadorId || "";
   const deporteSlugActual = params.deporteSlug || "";
+  const pidioCerca = params.cerca === "1";
   const nivelActual = params.nivel || "";
   const modalidadActual = params.modalidad || "";
   const ciudadIdParaBusqueda = ciudadSlugActual
@@ -194,6 +197,12 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
     huboError = true;
     console.error("Error al cargar actividades o filtros:", error);
   }
+
+  /* Para titular la cercanía con el nombre real, no con el slug. */
+  const nombreDeporteActual = deporteSlugActual
+    ? filtros.deportes.find((deporte) => deporte.slug === deporteSlugActual)
+        ?.nombre
+    : undefined;
 
   return (
     <main className="min-h-screen text-[var(--color-text)]">
@@ -341,6 +350,24 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
 
           {!huboError && !huboErrorCiudad && (
             <>
+              {/*
+                Si la búsqueda pidió cercanía ("yoga cerca mío"), el
+                modo cercanía va ARRIBA: es la respuesta a lo que se
+                preguntó, no un extra al pie. El permiso de ubicación
+                lo sigue pidiendo el click, nunca la carga de la
+                página.
+              */}
+              {pidioCerca ? (
+                <div className="mt-8">
+                  <CercaMio
+                    ciudadSlug={ciudadSlugActual || undefined}
+                    deporteSlug={deporteSlugActual || undefined}
+                    deporteNombre={nombreDeporteActual}
+                    destacado
+                  />
+                </div>
+              ) : null}
+
               <SurfaceCard
                 as="section"
                 variant="soft"
@@ -489,9 +516,12 @@ export default async function ExplorarPage({ searchParams }: ExplorarPageProps) 
               {/*
                 "Cerca mío" (Fase 7): va DEBAJO del listado y no lo
                 reemplaza — es otra forma de mirar lo mismo, no un modo
-                que se apodera de la página.
+                que se apodera de la página. Salvo que lo hayan pedido
+                explícitamente, y ahí ya se dibujó arriba.
               */}
-              <CercaMio ciudadSlug={ciudadSlugActual || undefined} />
+              {!pidioCerca ? (
+                <CercaMio ciudadSlug={ciudadSlugActual || undefined} />
+              ) : null}
             </>
           )}
         </div>

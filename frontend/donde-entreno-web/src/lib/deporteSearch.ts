@@ -264,6 +264,39 @@ const aliasesAmpliosDeCategoria = [
   "outdoor",
 ];
 
+/*
+  Las frases que piden CERCANÍA.
+
+  Están dentro de `palabrasIntencionBusqueda` —o sea que se quitan del
+  texto para poder matchear el deporte, y eso está bien— pero desde la
+  Fase 7 esa señal vale por sí sola: existe el modo "cerca mío" de
+  verdad. Antes de tirarla, el buscador la lee de acá.
+*/
+export const FRASES_CERCANIA = [
+  "cerca mio",
+  "cerca mío",
+  "cerca de mi",
+  "cerca de mí",
+  "cerca de casa",
+  "cerca tuyo",
+  "por mi barrio",
+  "en mi barrio",
+  "cerca",
+];
+
+/**
+ * ¿La búsqueda pedía algo cerca? Se evalúa ANTES de depurar el texto,
+ * porque justamente estas frases son de las que se descartan.
+ */
+export function pidioCercania(query: string): boolean {
+  const normalizada = ` ${normalizarTexto(query)} `;
+
+  return FRASES_CERCANIA.some((frase) => {
+    const patron = new RegExp(`\\b${escaparRegExp(normalizarTexto(frase))}\\b`);
+    return patron.test(normalizada);
+  });
+}
+
 const palabrasIntencionBusqueda = [
   "clases",
   "clase",

@@ -31,7 +31,19 @@ const RADIOS = [1, 3, 5, 10];
   cargado, un mapa mostraría más huecos que pines. Ordenar por
   distancia da el valor real sin sumar una sola dependencia.
 */
-export function CercaMio({ ciudadSlug }: { ciudadSlug?: string }) {
+export function CercaMio({
+  ciudadSlug,
+  deporteSlug,
+  deporteNombre,
+  destacado = false,
+}: {
+  ciudadSlug?: string;
+  /** Si la búsqueda nombró un deporte, la cercanía lo respeta. */
+  deporteSlug?: string;
+  deporteNombre?: string;
+  /** Llegó pidiendo cercanía: la sección se presenta como la respuesta. */
+  destacado?: boolean;
+}) {
   const [estado, setEstado] = useState<
     "inicial" | "pidiendo" | "buscando" | "listo" | "sin-permiso" | "error"
   >("inicial");
@@ -61,6 +73,11 @@ export function CercaMio({ ciudadSlug }: { ciudadSlug?: string }) {
           parametros.set("ciudadSlug", ciudadSlug);
         }
 
+        /* El endpoint ya lo aceptaba desde la Fase 7; nadie se lo mandaba. */
+        if (deporteSlug) {
+          parametros.set("deporteSlug", deporteSlug);
+        }
+
         fetch(`${API_BASE_URL}/api/actividades/cerca?${parametros.toString()}`, {
           cache: "no-store",
         })
@@ -85,11 +102,22 @@ export function CercaMio({ ciudadSlug }: { ciudadSlug?: string }) {
   }
 
   return (
-    <section className="mt-8" aria-labelledby="cerca-mio-titulo">
+    <section
+      className={destacado ? "mt-2" : "mt-8"}
+      aria-labelledby="cerca-mio-titulo"
+    >
       <SectionHeader
         eyebrow="Cerca tuyo"
-        title="¿Qué hay cerca de dónde estás?"
-        description="Usamos tu ubicación solo para esta búsqueda: no la guardamos."
+        title={
+          deporteNombre
+            ? `¿Dónde hay ${deporteNombre} cerca tuyo?`
+            : "¿Qué hay cerca de dónde estás?"
+        }
+        description={
+          destacado
+            ? "Elegí a qué distancia buscar. Usamos tu ubicación solo para esta búsqueda: no la guardamos."
+            : "Usamos tu ubicación solo para esta búsqueda: no la guardamos."
+        }
         titleId="cerca-mio-titulo"
       />
 

@@ -1,6 +1,30 @@
 # Plan — Fase 7 social: cercanía primero, mapa después
 
-Estado: **propuesto, pendiente de aprobación de Agustín**.
+Estado: **aprobado ("Dale, con las 5 recomendaciones") e IMPLEMENTADO**
+(backend `8b3f88f`, frontend `558f15b`). Script 33 aplicado por Agustín
+en Supabase y local; suite unit + ITs en verde con el script aplicado;
+typecheck y lint limpios. Falta: deploy en dos tandas y su smoke.
+
+Notas de la implementación, sobre lo planeado:
+
+- **Cero dependencias nuevas**, como se prometió: "Cómo llegar" es un
+  link (que además abre la app nativa del teléfono, mejor que un mapa
+  embebido) y la distancia se calcula en el backend.
+- **La distancia devuelve −1 y no 0 cuando falta el dato.** Con 0, las
+  actividades sin punto se ordenarían **primero**, o sea aparecerían
+  como "las más cercanas". Hay un test que lo fija.
+- **El resolutor prioriza `!3d!4d` sobre `@lat,lng`**: el segundo es el
+  centro de la cámara y se corre si la persona arrastró el mapa antes
+  de copiar; el primero es el punto del lugar. Con los dos presentes
+  gana el del lugar, y hay un test con un link donde difieren.
+- El endpoint de zonas quedó en `/api/actividades/zonas` y no en
+  `/api/barrios/zonas`: lo que se cuenta son **actividades**, y meterlo
+  en el controller de barrios obligaba a que ese recurso dependiera
+  del service de actividades (rompía su `@WebMvcTest`).
+- **Queda pendiente**: sacar "cerca mío" de las *stopwords* del
+  buscador. Hoy quien lo escribe recibe en silencio una búsqueda del
+  deporte a secas; con la fase desplegada, esa frase debería activar
+  el modo cercanía. No entró en esta tanda.
 
 El roadmap pide "mapa y cercanía". Este plan **separa las dos cosas y
 las ordena**, porque el mapa sin datos cargados es una pantalla vacía

@@ -184,3 +184,31 @@ con el pane del navegador oculto las transiciones CSS quedan
 
 **Regla: antes de creerle a un `getComputedStyle` sobre una propiedad
 que transiciona, anular la transición.**
+
+## Comparador de guardadas: EN PRODUCCIÓN (pendiente smoke)
+
+`main` = `origin/main` = **`cddb802`**. Solo frontend.
+
+- **Marcador**: el string `Comparar guardadas` en el chunk servido de
+  `/favoritos`. Como la ruta está detrás del guard, el HTML se obtiene
+  con la **cookie del proxy bien formada** — su valor es
+  `<rol>.<vencimientoEnMs>`, no un valor cualquiera: con `de_sesion=1`
+  el proxy la descarta y sigue devolviendo 307. La cookie **no da
+  acceso a datos** (el `AuthGuard` redirige igual y el backend valida
+  JWT): sirve para leer qué build se está sirviendo.
+- Guards intactos (`/favoritos` y `/mi-cuenta` anónimos siguen en 307) y
+  públicas en 200.
+
+### Lo que quedó decidido en el código
+
+- Una fila que **ninguna** de las elegidas tiene, no se dibuja;
+  verificado con datos reales (la fila Valoración no aparece porque las
+  tres tienen `cantidadValoraciones` en 0). Dentro de una fila que sí
+  existe, el guion **sí** se muestra: que a una le falte el precio es
+  información para decidir.
+- Hasta 3, y con la tercera elegida las demás quedan deshabilitadas.
+- Los días se traducen del enum y **se ordenan por semana**: "Jueves,
+  Martes" se lee como un error aunque sea fiel al dato.
+
+**Pendiente menor que destapó**: el detalle público sigue mostrando el
+enum crudo del día (`MIERCOLES`). Unificarlo es una pasada aparte.

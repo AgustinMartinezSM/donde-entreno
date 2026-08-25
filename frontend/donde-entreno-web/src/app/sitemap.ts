@@ -23,6 +23,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* Fase 9: la agenda. Los eventos individuales, cuando haya. */
     { ruta: "/eventos", prioridad: 0.8 },
     { ruta: "/deportes", prioridad: 0.8 },
+    /* Fase 10: la puerta para quien nunca entrenó. */
+    { ruta: "/empezar", prioridad: 0.8 },
     { ruta: "/ciudades", prioridad: 0.8 },
     { ruta: `/ciudades/${DEFAULT_CITY_SLUG}`, prioridad: 0.7 },
     { ruta: "/publicar", prioridad: 0.7 },

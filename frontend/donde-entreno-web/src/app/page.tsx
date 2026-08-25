@@ -9,6 +9,7 @@ import { HomeFeedSeguidos } from "../components/home/HomeFeedSeguidos";
 import { HomeParaVos } from "../components/home/HomeParaVos";
 import { HomeDiscoveryFeed } from "../components/home/HomeDiscoveryFeed";
 import { HomeCrearCuentaCta } from "../components/home/HomeCrearCuentaCta";
+import { HomeEmpezarCta } from "../components/home/HomeEmpezarCta";
 import { HomeHowItWorks } from "../components/home/HomeHowItWorks";
 import { HomeEventos } from "../components/home/HomeEventos";
 import { HomePopularSports } from "../components/home/HomePopularSports";
@@ -182,6 +183,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <HomeZonas zonas={zonas} />
           <HomePopularSports ciudadSlug={ciudadSlug} populares={populares} />
           <HomeCrearCuentaCta />
+          <HomeEmpezarCta />
           <HomeHowItWorks />
           <HomePublishCta ciudadSlug={ciudadSlug} />
         </div>

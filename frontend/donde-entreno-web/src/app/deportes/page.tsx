@@ -76,6 +76,9 @@ export default async function DeportesPage() {
                 <AppLinkButton href="/explorar">
                   Ver todas las actividades
                 </AppLinkButton>
+                <AppLinkButton href="/empezar" variant="outline">
+                  No sé cuál elegir
+                </AppLinkButton>
                 <AppLinkButton href="/" variant="secondary">
                   Volver al inicio
                 </AppLinkButton>

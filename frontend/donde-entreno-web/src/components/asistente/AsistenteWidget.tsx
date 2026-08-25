@@ -97,6 +97,17 @@ export function AsistenteWidget() {
     solo desde handlers (la X o cualquier apertura del panel).
   */
   const [burbujaDescartadaAhora, setBurbujaDescartadaAhora] = useState(false);
+
+  /*
+    Una consulta con la que arrancar la charla, para cuando quien abre a
+    Dondi ya sabe qué preguntarle (la entrada guiada de /empezar).
+
+    La consulta va en un ref y el disparador es un contador: el efecto
+    que la envía tiene que correr una vez por apertura, no una vez por
+    cambio de texto.
+  */
+  const consultaInicial = useRef<string | null>(null);
+  const [pedidosDeApertura, setPedidosDeApertura] = useState(0);
   const burbujaDescartadaEnSesion = useSyncExternalStore(
     suscripcionInerte,
     leerBurbujaDescartada,
@@ -131,7 +142,19 @@ export function AsistenteWidget() {
   }, []);
 
   useEffect(() => {
-    function abrirDesdeLaPagina() {
+    function abrirDesdeLaPagina(evento: Event) {
+      /*
+        Quien abre puede mandar una consulta inicial en el detalle del
+        evento. Los tres disparadores viejos mandan un Event pelado y
+        siguen andando igual: sin detalle, no hay consulta.
+      */
+      const consulta =
+        evento instanceof CustomEvent && typeof evento.detail?.consulta === "string"
+          ? evento.detail.consulta.trim()
+          : "";
+
+      consultaInicial.current = consulta || null;
+
       /*
         Guardamos quién abrió el asistente para devolverle el foco al
         cerrar: ahora el disparador puede ser la barra inferior o el
@@ -155,6 +178,7 @@ export function AsistenteWidget() {
       }
 
       setAbierto(true);
+      setPedidosDeApertura((pedidos) => pedidos + 1);
     }
 
     window.addEventListener(
@@ -169,6 +193,28 @@ export function AsistenteWidget() {
       );
     };
   }, []);
+
+  /*
+    Si la apertura traía consulta, se manda sola: la persona ya
+    respondió las preguntas de la entrada guiada y volver a pedirle que
+    escriba sería hacerle repetir lo que ya dijo.
+
+    Depende del contador y no del texto para que dos aperturas con la
+    misma consulta manden las dos veces.
+  */
+  useEffect(() => {
+    if (pedidosDeApertura === 0) {
+      return;
+    }
+
+    const consulta = consultaInicial.current;
+    consultaInicial.current = null;
+
+    if (consulta) {
+      void enviarMensaje(consulta);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pedidosDeApertura]);
 
   /*
     Al cerrar el panel devolvemos el foco a quien lo abrió, para no dejar

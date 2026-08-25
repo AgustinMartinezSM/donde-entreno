@@ -292,3 +292,56 @@ que verifica una desaparición tiene que probar antes la aparición.
 **Verificación en producción** (post-deploy): el feed de alguien que
 sigue a un publicador tiene que mostrar los hechos NUEVOS, no solo los
 del backfill. La novedad del canal es la forma más rápida de probarlo.
+
+---
+
+## Estado: EN PRODUCCIÓN EN DOS TANDAS (2026-08-24), pendiente el smoke
+
+`main` = `origin/main` = **`ce67fab`**. Script 34 aplicado por Agustín
+en Supabase y local ANTES del deploy.
+
+**Tanda 1 — backend `112d537`** (`853ee55` canal + `112d537` el fix del
+feed; la historia se reordenó con worktree para que TODO el backend
+viajara primero, verificando que el árbol final quedara idéntico).
+
+Marcador: `GET /api/perfiles-publicadores/8/novedades` pasó de **404 a
+200 `[]`** — esa ruta no existía en el build viejo y caía en el handler
+genérico ("Recurso no encontrado."). Verificado además **contra datos
+reales**, que es lo que la Fase 7 dejó como regla: un perfil inexistente
+(`/99999/novedades`) responde 404 con el **mensaje propio** ("El perfil
+publicador solicitado no existe o no está disponible"), o sea que el
+endpoint consulta la tabla y no es una ruta que devuelve 200 y nada más.
+Las tres privadas nuevas (GET/POST `/api/publicador/novedades`, PATCH
+`/api/admin/novedades/{id}/ocultar`) dan 401 anónimas, y el catálogo
+público, las fotos del publicador y `/api/health` quedaron intactos.
+
+**Tanda 2 — frontend `ce67fab`.** Verificado en el navegador en
+producción: el perfil público **no dibuja** la solapa "Novedades"
+(correcto: ninguna existe todavía), `?tab=novedades` cae en Actividades
+sin romper, las cuatro privadas dan 307 a login, las públicas 200 y la
+consola está limpia.
+
+**⚠️ Marcador que NO sirve para el frontend de esta fase**:
+`/publicador/novedades` devuelve **307 anónimo tanto en el build viejo
+como en el nuevo**, porque el middleware redirige cualquier subruta de
+`/publicador`, exista o no. Es la misma trampa que `/api/usuario/feed`
+en la Fase 6. Se usó en cambio un texto del `FeedEventoCard` nuevo
+("Ver el perfil de"), que por ser componente `"use client"` viaja a los
+chunks de la **home pública** y se puede buscar sin sesión.
+
+### Lo que falta
+
+**El smoke de Agustín con su cuenta de publicador.** Lo que conviene
+probar, en este orden:
+
+1. `/publicador/novedades` → publicar una novedad (con y sin foto).
+2. Verla en su perfil público, en la solapa "Novedades" que recién
+   ahora tiene que aparecer.
+3. Con otra cuenta que lo siga: verla **en el feed** y recibir la
+   campanita. Esto además **verifica el fix del feed**: si aparece, los
+   eventos vuelven a guardarse.
+4. Publicar una segunda: entra al feed pero **no** vuelve a notificar.
+5. La cuarta del día tiene que ser rechazada con el mensaje del tope.
+6. Borrar una propia y ver que desaparece de las dos superficies.
+7. Como admin: reportar una novedad desde el feed y ocultarla desde
+   `/admin/reportes`.

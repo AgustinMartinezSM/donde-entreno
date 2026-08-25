@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -215,5 +216,74 @@ public class InteraccionService {
         }
 
         return conteos;
+    }
+
+    /**
+     * Actividades más vistas de los últimos N días (Fase 10).
+     *
+     * Es el ranking que faltaba: `rankingDeActividades` existía desde la
+     * Fase 6 pero solo se usaba AGRUPADO POR DEPORTE para la fila de
+     * populares de la home. Nadie mostraba las actividades en sí.
+     *
+     * Dos candados para no inventar un ranking:
+     *
+     * 1. Con menos de `minimoActividades` con señal devuelve VACÍO, y el
+     *    frontend no dibuja la sección. "Lo más visto de la semana" con
+     *    tres clicks enseña a desconfiar de los números del sitio.
+     * 2. Solo entran actividades PUBLICADAS y activas: una despublicada
+     *    puede seguir teniendo vistas viejas en el tracking.
+     */
+    @Transactional(readOnly = true)
+    public List<Actividad> actividadesMasVistas(int dias, int minimoActividades, int limite) {
+        int ventana = Math.min(Math.max(dias, 1), 365);
+        int tope = Math.min(Math.max(limite, 1), 20);
+        OffsetDateTime desde = OffsetDateTime.now().minusDays(ventana);
+
+        /*
+          Se pide más de lo que se devuelve porque el filtro de estado
+          descarta filas DESPUÉS de contar: pedir justo `tope` dejaría
+          la sección corta cada vez que una despublicada esté arriba.
+        */
+        List<Object[]> ranking = eventoInteraccionRepository.rankingDeActividades(
+                "VISTA_DETALLE",
+                desde,
+                org.springframework.data.domain.PageRequest.of(0, Math.max(tope * 5, 50))
+        );
+
+        if (ranking.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Long> vistasPorActividad = new LinkedHashMap<>();
+        for (Object[] fila : ranking) {
+            vistasPorActividad.put((Long) fila[0], ((Number) fila[1]).longValue());
+        }
+
+        Map<Long, Actividad> publicables = new HashMap<>();
+
+        for (Actividad actividad
+                : actividadRepository.findAllById(vistasPorActividad.keySet())) {
+            if (!Boolean.TRUE.equals(actividad.getActiva())
+                    || actividad.getDeletedAt() != null
+                    || !"PUBLICADA".equals(actividad.getEstadoPublicacion())) {
+                continue;
+            }
+
+            publicables.put(actividad.getId(), actividad);
+        }
+
+        if (publicables.size() < Math.max(minimoActividades, 1)) {
+            return List.of();
+        }
+
+        /*
+          El orden lo manda el ranking, no el findAllById: la lista que
+          devuelve el repositorio no respeta el orden de los ids.
+        */
+        return vistasPorActividad.keySet().stream()
+                .map(publicables::get)
+                .filter(java.util.Objects::nonNull)
+                .limit(tope)
+                .toList();
     }
 }

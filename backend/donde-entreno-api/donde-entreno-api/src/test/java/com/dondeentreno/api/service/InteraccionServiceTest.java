@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -208,6 +209,97 @@ class InteraccionServiceTest {
             java.lang.reflect.Field campo = Actividad.class.getDeclaredField("id");
             campo.setAccessible(true);
             campo.set(actividad, 70L);
+        } catch (ReflectiveOperationException excepcion) {
+            throw new IllegalStateException(excepcion);
+        }
+        actividad.setActiva(true);
+        actividad.setEstadoPublicacion("PUBLICADA");
+        return actividad;
+    }
+
+    /**
+     * El umbral del ranking (Fase 10): con menos actividades con señal
+     * que el mínimo, la lista sale VACÍA.
+     *
+     * Va como unit test y no como IT a propósito: el umbral cuenta
+     * sobre TODA la base, así que un IT lo daría verde o rojo según los
+     * datos ajenos que hubiera en la base local.
+     */
+    @Test
+    void elRankingSeApagaSinSenalSuficiente() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                eq("VISTA_DETALLE"), any(), any()
+        )).thenReturn(List.<Object[]>of(new Object[]{70L, 30L}));
+
+        when(actividadRepository.findAllById(any()))
+                .thenReturn(List.of(actividadPublica()));
+
+        /* Una sola con señal contra un mínimo de tres. */
+        assertTrue(service.actividadesMasVistas(7, 3, 6).isEmpty());
+    }
+
+    /**
+     * Con señal suficiente sí devuelve, y respetando el orden del
+     * ranking: `findAllById` no garantiza el orden de los ids.
+     */
+    @Test
+    void elRankingRespetaElOrdenDelTrackingYNoElDeLaBase() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                eq("VISTA_DETALLE"), any(), any()
+        )).thenReturn(List.<Object[]>of(
+                new Object[]{72L, 30L},
+                new Object[]{70L, 20L},
+                new Object[]{71L, 10L}
+        ));
+
+        /* A propósito en otro orden que el ranking. */
+        when(actividadRepository.findAllById(any())).thenReturn(List.of(
+                actividadPublicaConId(70L),
+                actividadPublicaConId(71L),
+                actividadPublicaConId(72L)
+        ));
+
+        List<Actividad> ranking = service.actividadesMasVistas(7, 3, 6);
+
+        assertEquals(3, ranking.size());
+        assertEquals(72L, ranking.get(0).getId());
+        assertEquals(70L, ranking.get(1).getId());
+        assertEquals(71L, ranking.get(2).getId());
+    }
+
+    /**
+     * Una despublicada con muchas vistas no entra, y además NO cuenta
+     * para el umbral: si contara, dos publicadas más una despublicada
+     * alcanzarían el mínimo de tres y la sección se dibujaría con dos.
+     */
+    @Test
+    void unaDespublicadaNoCuentaNiSiquieraParaElUmbral() {
+        when(eventoInteraccionRepository.rankingDeActividades(
+                eq("VISTA_DETALLE"), any(), any()
+        )).thenReturn(List.<Object[]>of(
+                new Object[]{70L, 30L},
+                new Object[]{71L, 20L},
+                new Object[]{72L, 10L}
+        ));
+
+        Actividad despublicada = actividadPublicaConId(72L);
+        despublicada.setEstadoPublicacion("BORRADOR");
+
+        when(actividadRepository.findAllById(any())).thenReturn(List.of(
+                actividadPublicaConId(70L),
+                actividadPublicaConId(71L),
+                despublicada
+        ));
+
+        assertTrue(service.actividadesMasVistas(7, 3, 6).isEmpty());
+    }
+
+    private Actividad actividadPublicaConId(Long id) {
+        Actividad actividad = new Actividad();
+        try {
+            java.lang.reflect.Field campo = Actividad.class.getDeclaredField("id");
+            campo.setAccessible(true);
+            campo.set(actividad, id);
         } catch (ReflectiveOperationException excepcion) {
             throw new IllegalStateException(excepcion);
         }

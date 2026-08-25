@@ -30,9 +30,13 @@ import java.util.List;
 @RequestMapping("/api/actividades")
 public class ActividadController {
 
+    /* Con menos de tres actividades con señal, el ranking miente. */
+    private static final int MINIMO_ACTIVIDADES_PARA_RANKING = 3;
+
     private final ActividadService actividadService;
     private final HorarioActividadService horarioActividadService;
     private final ImagenService imagenService;
+    private final com.dondeentreno.api.service.InteraccionService interaccionService;
 
     /**
      * Inyección de dependencias por constructor.
@@ -43,11 +47,13 @@ public class ActividadController {
     public ActividadController(
             ActividadService actividadService,
             HorarioActividadService horarioActividadService,
-            ImagenService imagenService
+            ImagenService imagenService,
+            com.dondeentreno.api.service.InteraccionService interaccionService
     ) {
         this.actividadService = actividadService;
         this.horarioActividadService = horarioActividadService;
         this.imagenService = imagenService;
+        this.interaccionService = interaccionService;
     }
 
     /**
@@ -92,6 +98,30 @@ public class ActividadController {
             @RequestParam(required = false) String ciudadSlug
     ) {
         return actividadService.obtenerZonasPorBarrio(ciudadSlug);
+    }
+
+    /**
+     * Actividades más vistas de los últimos N días (Fase 10).
+     *
+     * Público y derivado del tracking anónimo. Devuelve lista VACÍA si
+     * no hay señal suficiente: el frontend entonces NO dibuja la
+     * sección. Con poco volumen, un "lo más visto" que se arma con tres
+     * clicks enseña a desconfiar de los números del sitio.
+     *
+     * El default es 7 días —la ventana semanal que pedía la fase— y no
+     * los 30 de la fila de deportes populares: son dos preguntas
+     * distintas ("qué se mira siempre" y "qué se mira ahora").
+     */
+    @GetMapping("/mas-vistas")
+    public java.util.List<ActividadDTO> listarMasVistas(
+            @RequestParam(defaultValue = "7") int dias,
+            @RequestParam(defaultValue = "6") int limite
+    ) {
+        return interaccionService
+                .actividadesMasVistas(dias, MINIMO_ACTIVIDADES_PARA_RANKING, limite)
+                .stream()
+                .map(com.dondeentreno.api.mapper.ActividadMapper::toDTO)
+                .toList();
     }
 
     /**

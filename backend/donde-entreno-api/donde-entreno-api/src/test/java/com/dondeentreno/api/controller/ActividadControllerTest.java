@@ -46,6 +46,10 @@ class ActividadControllerTest {
     @MockitoBean
     private ImagenService imagenService;
 
+    /* La suma el ranking de la Fase 10: sin este mock el contexto no levanta. */
+    @MockitoBean
+    private com.dondeentreno.api.service.InteraccionService interaccionService;
+
     /**
      * Configura el service mockeado para devolver una pagina vacia
      * ante cualquier combinacion de filtros.

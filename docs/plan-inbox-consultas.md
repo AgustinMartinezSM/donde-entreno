@@ -214,3 +214,26 @@ cualquiera). Las dos rutas privadas dan 307 anónimo.
   llega por notificación, pero la bandeja no muestra un badge global.
 - **Respuestas rápidas guardadas** (Fase 11) y **adjuntar fotos**:
   fuera de alcance a propósito.
+
+---
+
+## La promesa de privacidad, escrita (2026-08-25, `2dd6f26`)
+
+El pendiente más importante que había dejado el bloque queda cerrado:
+`/privacidad` tiene la sección **"Mensajes privados con publicadores"**
+y `/normas` explica cómo se modera algo que nadie más ve.
+
+Cada afirmación está sostenida por `InboxService` y fijada por
+`InboxConsultasIT`. **Si alguna de esas reglas cambia, estas páginas
+cambian con ella** — quedó dicho en un comentario arriba de la sección.
+
+Lo que deliberadamente **NO** se prometió, porque el código no lo
+cumple: borrar mensajes propios (no existe) y borrado automático de las
+conversaciones al dar de baja la cuenta (no hay endpoint de baja: se
+pide por email, como la página ya decía). En su lugar se dice que los
+mensajes se conservan mientras exista la cuenta.
+
+Verificado en producción por contenido: las frases "no lee las
+conversaciones", "los dos anteriores" y "No ve tu email ni tu
+teléfono" están en el HTML servido de `/privacidad`, y "no las leemos"
+y "límite diario" en el de `/normas`.

@@ -167,3 +167,21 @@ solo se ve la invitación.
 5. Con el publicador: ocultar ese comentario y ver que desaparece.
 6. Con la cuenta usuario: "Salir del grupo" → deja de ver los avisos.
 7. El tercer aviso del día tiene que rebotar.
+
+### La promesa de privacidad, escrita (`1b3f459`)
+
+`/privacidad` tiene la sección "Grupos de actividades" y `/normas`
+explica cómo se modera un espacio que nadie más ve. Verificado en
+producción por contenido, no solo por estado.
+
+Dos cosas se dicen **antes de que alguien escriba**, porque son
+justamente las que sorprenden después:
+
+- los demás miembros ven **tu nombre y la inicial de tu apellido** (es
+  la diferencia con el inbox, que es 1:1);
+- **salir del grupo NO borra lo que ya escribiste** — para eso están
+  los "borrar mi comentario".
+
+Las dos se verificaron en el código antes de escribirlas: `salir` solo
+cambia el estado del miembro y no toca los comentarios, y el DTO viaja
+con `autorNombre`. **Si alguna cambia, esas páginas cambian con ella.**

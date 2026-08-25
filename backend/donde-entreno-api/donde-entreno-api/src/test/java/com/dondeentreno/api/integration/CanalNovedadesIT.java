@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -291,6 +292,63 @@ class CanalNovedadesIT {
         publicar(perfil.getUsuario(), "Segunda del dia");
 
         assertEquals(1, notificacionRepository.countByUsuarioIdAndLeidaFalse(seguidor.getId()));
+    }
+
+    /**
+     * Reacciones (script 37): suman, son idempotentes, se ven en el
+     * perfil público y en el feed, y se pueden quitar.
+     */
+    @Test
+    void reaccionarSumaSeVeEnLasDosSuperficiesYSePuedeQuitar() throws Exception {
+        PerfilPublicador perfil = crearPerfilPublicador();
+        Usuario seguidor = crearUsuario(ROL_USUARIO);
+        seguir(seguidor, perfil);
+
+        publicar(perfil.getUsuario(), "Una novedad para reaccionar");
+        Long novedadId = ultimaNovedadDe(perfil).getId();
+
+        /* Antes de reaccionar: cero y sin marcar. */
+        mockMvc.perform(get("/api/perfiles-publicadores/" + perfil.getId() + "/novedades")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$[0].cantidadMeGusta").value(0))
+                .andExpect(jsonPath("$[0].meGusta").value(false));
+
+        mockMvc.perform(put("/api/usuario/novedades/" + novedadId + "/me-gusta")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cantidadMeGusta").value(1));
+
+        /* Repetir no duplica. */
+        mockMvc.perform(put("/api/usuario/novedades/" + novedadId + "/me-gusta")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$.cantidadMeGusta").value(1));
+
+        /* Se ve en el perfil, con su sesión. */
+        mockMvc.perform(get("/api/perfiles-publicadores/" + perfil.getId() + "/novedades")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$[0].cantidadMeGusta").value(1))
+                .andExpect(jsonPath("$[0].meGusta").value(true));
+
+        /* Y en el feed, que es la otra superficie donde se ven. */
+        mockMvc.perform(get("/api/usuario/feed")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$.contenido[0].novedadMeGusta").value(1))
+                .andExpect(jsonPath("$.contenido[0].novedadMeGustaPropio").value(true));
+
+        /* Anónimo ve el contador pero no un "meGusta" ajeno. */
+        mockMvc.perform(get("/api/perfiles-publicadores/" + perfil.getId() + "/novedades"))
+                .andExpect(jsonPath("$[0].cantidadMeGusta").value(1))
+                .andExpect(jsonPath("$[0].meGusta").value(false));
+
+        mockMvc.perform(delete("/api/usuario/novedades/" + novedadId + "/me-gusta")
+                        .with(jwtConRol(ROL_USUARIO, seguidor.getId())))
+                .andExpect(jsonPath("$.cantidadMeGusta").value(0));
+    }
+
+    @Test
+    void reaccionarExigeSesion() throws Exception {
+        mockMvc.perform(put("/api/usuario/novedades/1/me-gusta"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

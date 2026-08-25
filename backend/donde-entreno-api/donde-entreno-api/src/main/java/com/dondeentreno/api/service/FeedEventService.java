@@ -14,6 +14,7 @@ import com.dondeentreno.api.repository.ActividadRepository;
 import com.dondeentreno.api.repository.FeedEventRepository;
 import com.dondeentreno.api.repository.EventoDeportivoRepository;
 import com.dondeentreno.api.repository.ImagenRepository;
+import com.dondeentreno.api.repository.MeGustaNovedadRepository;
 import com.dondeentreno.api.repository.NovedadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
@@ -68,6 +69,7 @@ public class FeedEventService {
     private final ImagenService imagenService;
     private final NovedadRepository novedadRepository;
     private final EventoDeportivoRepository eventoDeportivoRepository;
+    private final MeGustaNovedadRepository meGustaNovedadRepository;
     /** Transacción propia para el evento: ver el javadoc de `guardar`. */
     private final TransactionTemplate transaccionPropia;
 
@@ -80,10 +82,12 @@ public class FeedEventService {
             ImagenService imagenService,
             NovedadRepository novedadRepository,
             EventoDeportivoRepository eventoDeportivoRepository,
+            MeGustaNovedadRepository meGustaNovedadRepository,
             PlatformTransactionManager transactionManager
     ) {
         this.novedadRepository = novedadRepository;
         this.eventoDeportivoRepository = eventoDeportivoRepository;
+        this.meGustaNovedadRepository = meGustaNovedadRepository;
         this.transaccionPropia = new TransactionTemplate(transactionManager);
         this.transaccionPropia.setPropagationBehavior(
                 TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -309,7 +313,7 @@ public class FeedEventService {
                 );
 
         return new PaginaResponseDTO<>(
-                enriquecer(paginaEventos.getContent()),
+                enriquecer(paginaEventos.getContent(), usuarioId),
                 paginaEventos.getNumber(),
                 paginaEventos.getSize(),
                 paginaEventos.getTotalElements(),
@@ -323,7 +327,7 @@ public class FeedEventService {
      * de la actividad y la foto, todo en queries BATCH: un feed de 20
      * eventos no puede disparar 60 consultas.
      */
-    private List<FeedEventDTO> enriquecer(List<FeedEvent> eventos) {
+    private List<FeedEventDTO> enriquecer(List<FeedEvent> eventos, Long usuarioId) {
         if (eventos.isEmpty()) {
             return List.of();
         }
@@ -422,6 +426,26 @@ public class FeedEventService {
                                 (mapa, deportivo) -> mapa.put(deportivo.getId(), deportivo),
                                 HashMap::putAll);
 
+        /* Reacciones de esas novedades (script 37), en batch. */
+        Map<Long, Long> meGustaPorNovedad = new HashMap<>();
+        List<Long> conMeGustaPropio = List.of();
+
+        if (!novedades.isEmpty()) {
+            List<Long> visibles = List.copyOf(novedades.keySet());
+
+            for (MeGustaNovedadRepository.ConteoMeGusta conteo
+                    : meGustaNovedadRepository.contarPorNovedades(visibles)) {
+                meGustaPorNovedad.put(conteo.getNovedadId(), conteo.getCantidad());
+            }
+
+            if (usuarioId != null) {
+                conMeGustaPropio =
+                        meGustaNovedadRepository.novedadIdsConMeGustaDe(usuarioId, visibles);
+            }
+        }
+
+        final List<Long> conMeGustaPropioFinal = conMeGustaPropio;
+
         return eventos.stream().filter(evento ->
                 (evento.getNovedadId() == null || novedades.containsKey(evento.getNovedadId()))
                         && (evento.getEventoDeportivoId() == null
@@ -466,6 +490,8 @@ public class FeedEventService {
                 dto.setNovedadId(novedad.getId());
                 /* El texto completo: el resumen es para el log, no para leer. */
                 dto.setNovedadTexto(novedad.getTexto());
+                dto.setNovedadMeGusta(meGustaPorNovedad.getOrDefault(novedad.getId(), 0L));
+                dto.setNovedadMeGustaPropio(conMeGustaPropioFinal.contains(novedad.getId()));
             }
 
             EventoDeportivo deportivo = evento.getEventoDeportivoId() != null

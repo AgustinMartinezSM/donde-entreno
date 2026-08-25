@@ -176,10 +176,12 @@ public class PerfilPublicadorController {
      */
     @GetMapping("/{id}/novedades")
     public List<com.dondeentreno.api.dto.NovedadDTO> obtenerNovedades(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
             @RequestParam(defaultValue = "10") int limite
     ) {
-        return novedadService.listarPublicasDe(id, limite);
+        /* JWT opcional: con sesión, cada novedad sabe si ya reaccionó. */
+        return novedadService.listarPublicasDe(id, extraerUserIdOpcional(jwt), limite);
     }
 
     /**

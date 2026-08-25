@@ -2,6 +2,7 @@ package com.dondeentreno.api.service;
 
 import com.dondeentreno.api.dto.NovedadDTO;
 import com.dondeentreno.api.entity.Imagen;
+import com.dondeentreno.api.entity.MeGustaNovedad;
 import com.dondeentreno.api.entity.Novedad;
 import com.dondeentreno.api.entity.PerfilPublicador;
 import com.dondeentreno.api.exception.CredencialesInvalidasException;
@@ -9,6 +10,7 @@ import com.dondeentreno.api.exception.FiltroInvalidoException;
 import com.dondeentreno.api.exception.RecursoNoEncontradoException;
 import com.dondeentreno.api.mapper.ImagenMapper;
 import com.dondeentreno.api.repository.ImagenRepository;
+import com.dondeentreno.api.repository.MeGustaNovedadRepository;
 import com.dondeentreno.api.repository.NovedadRepository;
 import com.dondeentreno.api.repository.PerfilPublicadorRepository;
 import com.dondeentreno.api.repository.SeguimientoPublicadorRepository;
@@ -57,6 +59,7 @@ public class NovedadService {
     private final SeguimientoPublicadorRepository seguimientoPublicadorRepository;
     private final NotificacionService notificacionService;
     private final FeedEventService feedEventService;
+    private final MeGustaNovedadRepository meGustaNovedadRepository;
 
     public NovedadService(
             NovedadRepository novedadRepository,
@@ -65,8 +68,10 @@ public class NovedadService {
             ImagenService imagenService,
             SeguimientoPublicadorRepository seguimientoPublicadorRepository,
             NotificacionService notificacionService,
-            FeedEventService feedEventService
+            FeedEventService feedEventService,
+            MeGustaNovedadRepository meGustaNovedadRepository
     ) {
+        this.meGustaNovedadRepository = meGustaNovedadRepository;
         this.novedadRepository = novedadRepository;
         this.perfilPublicadorRepository = perfilPublicadorRepository;
         this.imagenRepository = imagenRepository;
@@ -142,12 +147,16 @@ public class NovedadService {
             );
         }
 
-        return enriquecer(List.of(guardada), perfil).get(0);
+        return enriquecer(List.of(guardada), perfil, userId).get(0);
     }
 
     /** Las visibles de un publicador (perfil público), paginadas. */
     @Transactional(readOnly = true)
-    public List<NovedadDTO> listarPublicasDe(Long perfilPublicadorId, int limite) {
+    public List<NovedadDTO> listarPublicasDe(
+            Long perfilPublicadorId,
+            Long usuarioId,
+            int limite
+    ) {
         PerfilPublicador perfil = perfilPublicadorRepository
                 .findByIdAndActivoTrue(perfilPublicadorId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
@@ -161,7 +170,7 @@ public class NovedadService {
                         PageRequest.of(0, Math.min(Math.max(limite, 1), MAX_PAGINA))
                 );
 
-        return enriquecer(pagina.getContent(), perfil);
+        return enriquecer(pagina.getContent(), perfil, usuarioId);
     }
 
     /** Las del publicador autenticado, para su panel. */
@@ -174,8 +183,68 @@ public class NovedadService {
                         perfil.getId(),
                         ESTADO_ELIMINADA
                 ),
-                perfil
+                perfil,
+                userId
         );
+    }
+
+    /* ===================== reacciones ===================== */
+
+    /**
+     * "Me gusta" en una novedad (script 37). Idempotente: el UNIQUE
+     * hace que reaccionar dos veces no sume dos.
+     *
+     * NO notifica al publicador, y es deliberado: una novedad con
+     * veinte reacciones serían veinte campanitas por algo que no pide
+     * respuesta. Es el mismo criterio que los likes de fotos. La
+     * campanita se reserva para lo que sí pide una acción.
+     */
+    @Transactional
+    public long darMeGusta(Long usuarioId, Long novedadId) {
+        validarUsuario(usuarioId);
+        exigirVisible(novedadId);
+
+        if (!meGustaNovedadRepository.existsByUsuarioIdAndNovedadId(usuarioId, novedadId)) {
+            MeGustaNovedad meGusta = new MeGustaNovedad();
+            meGusta.setUsuarioId(usuarioId);
+            meGusta.setNovedadId(novedadId);
+            meGusta.setCreatedAt(OffsetDateTime.now());
+
+            try {
+                meGustaNovedadRepository.saveAndFlush(meGusta);
+            } catch (org.springframework.dao.DataIntegrityViolationException excepcion) {
+                /* Otro request lo marcó en el medio: mismo resultado. */
+            }
+        }
+
+        return meGustaNovedadRepository.countByNovedadId(novedadId);
+    }
+
+    @Transactional
+    public long quitarMeGusta(Long usuarioId, Long novedadId) {
+        validarUsuario(usuarioId);
+        exigirVisible(novedadId);
+
+        meGustaNovedadRepository
+                .findByUsuarioIdAndNovedadId(usuarioId, novedadId)
+                .ifPresent(meGustaNovedadRepository::delete);
+
+        return meGustaNovedadRepository.countByNovedadId(novedadId);
+    }
+
+    /** Una novedad oculta o borrada no acepta reacciones. */
+    private void exigirVisible(Long novedadId) {
+        novedadRepository.findById(novedadId)
+                .filter(novedad -> ESTADO_VISIBLE.equals(novedad.getEstado()))
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "La novedad solicitada no existe o no está disponible."
+                ));
+    }
+
+    private void validarUsuario(Long usuarioId) {
+        if (usuarioId == null) {
+            throw new CredencialesInvalidasException("No autenticado.");
+        }
     }
 
     /** El publicador borra la suya (baja lógica). */
@@ -215,7 +284,11 @@ public class NovedadService {
 
     /* ===================== interno ===================== */
 
-    private List<NovedadDTO> enriquecer(List<Novedad> novedades, PerfilPublicador perfil) {
+    private List<NovedadDTO> enriquecer(
+            List<Novedad> novedades,
+            PerfilPublicador perfil,
+            Long usuarioId
+    ) {
         if (novedades.isEmpty()) {
             return List.of();
         }
@@ -232,6 +305,29 @@ public class NovedadService {
                         .collect(java.util.HashMap::new,
                                 (mapa, imagen) -> mapa.put(imagen.getId(), imagen),
                                 java.util.HashMap::putAll);
+
+        /* Reacciones (script 37), en batch: nunca una query por novedad. */
+        List<Long> novedadIds = novedades.stream()
+                .map(Novedad::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
+        Map<Long, Long> meGustaPorNovedad = new java.util.HashMap<>();
+        List<Long> conMeGustaPropio = List.of();
+
+        if (!novedadIds.isEmpty()) {
+            for (MeGustaNovedadRepository.ConteoMeGusta conteo
+                    : meGustaNovedadRepository.contarPorNovedades(novedadIds)) {
+                meGustaPorNovedad.put(conteo.getNovedadId(), conteo.getCantidad());
+            }
+
+            if (usuarioId != null) {
+                conMeGustaPropio =
+                        meGustaNovedadRepository.novedadIdsConMeGustaDe(usuarioId, novedadIds);
+            }
+        }
+
+        final List<Long> propias = conMeGustaPropio;
 
         String logoUrl = imagenService
                 .obtenerLogosAprobadosPorPerfil(List.of(perfil.getId()))
@@ -256,6 +352,18 @@ public class NovedadService {
                         dto.setImagenId(imagen.getId());
                         dto.setImagenUrl(imagen.getUrl());
                     }
+
+                    /*
+                      El id se chequea antes de buscar: las listas
+                      inmutables de Java lanzan NPE con `contains(null)`,
+                      y una novedad sin id sería un NPE en el enriquecido
+                      entero por un campo decorativo.
+                    */
+                    dto.setCantidadMeGusta(novedad.getId() != null
+                            ? meGustaPorNovedad.getOrDefault(novedad.getId(), 0L)
+                            : 0L);
+                    dto.setMeGusta(novedad.getId() != null
+                            && propias.contains(novedad.getId()));
 
                     return dto;
                 })

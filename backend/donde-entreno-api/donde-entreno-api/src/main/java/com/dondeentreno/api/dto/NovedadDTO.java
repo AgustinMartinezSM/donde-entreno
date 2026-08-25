@@ -20,6 +20,11 @@ public class NovedadDTO {
     private Long imagenId;
     private String imagenUrl;
 
+    /* Reacciones (script 37). Aditivos, por setter. */
+    private Long cantidadMeGusta;
+    /** Con sesión: si esta persona ya reaccionó. */
+    private Boolean meGusta;
+
     public NovedadDTO() {
     }
 
@@ -93,5 +98,21 @@ public class NovedadDTO {
 
     public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
+    }
+
+    public Long getCantidadMeGusta() {
+        return cantidadMeGusta;
+    }
+
+    public void setCantidadMeGusta(Long cantidadMeGusta) {
+        this.cantidadMeGusta = cantidadMeGusta;
+    }
+
+    public Boolean getMeGusta() {
+        return meGusta;
+    }
+
+    public void setMeGusta(Boolean meGusta) {
+        this.meGusta = meGusta;
     }
 }

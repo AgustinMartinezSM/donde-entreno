@@ -65,6 +65,9 @@ class NovedadServiceTest {
     @Mock
     private FeedEventService feedEventService;
 
+    @Mock
+    private com.dondeentreno.api.repository.MeGustaNovedadRepository meGustaNovedadRepository;
+
     private NovedadService service;
 
     @BeforeEach
@@ -76,7 +79,8 @@ class NovedadServiceTest {
                 imagenService,
                 seguimientoPublicadorRepository,
                 notificacionService,
-                feedEventService
+                feedEventService,
+                meGustaNovedadRepository
         );
 
         when(perfilPublicadorRepository
@@ -207,6 +211,61 @@ class NovedadServiceTest {
 
         assertThat(novedad.getEstado()).isEqualTo("OCULTA_POR_ADMIN");
         assertThat(service.esVisible(5L)).isFalse();
+    }
+
+    /* ===================== reacciones (script 37) ===================== */
+
+    /** El UNIQUE lo hace idempotente: reaccionar dos veces no suma dos. */
+    @Test
+    void reaccionarDosVecesNoDuplica() {
+        Novedad visible = new Novedad();
+        visible.setPerfilPublicadorId(PERFIL_ID);
+        visible.setEstado("VISIBLE");
+        when(novedadRepository.findById(5L)).thenReturn(Optional.of(visible));
+        when(meGustaNovedadRepository.existsByUsuarioIdAndNovedadId(USUARIO_ID, 5L))
+                .thenReturn(false, true);
+        when(meGustaNovedadRepository.countByNovedadId(5L)).thenReturn(1L);
+
+        assertThat(service.darMeGusta(USUARIO_ID, 5L)).isEqualTo(1L);
+        assertThat(service.darMeGusta(USUARIO_ID, 5L)).isEqualTo(1L);
+
+        verify(meGustaNovedadRepository, org.mockito.Mockito.times(1))
+                .saveAndFlush(any(com.dondeentreno.api.entity.MeGustaNovedad.class));
+    }
+
+    /**
+     * Una reacción NO notifica al publicador: veinte "me gusta" serían
+     * veinte campanitas por algo que no pide respuesta (mismo criterio
+     * que los likes de fotos).
+     */
+    @Test
+    void reaccionarNoNotificaAlPublicador() {
+        Novedad visible = new Novedad();
+        visible.setPerfilPublicadorId(PERFIL_ID);
+        visible.setEstado("VISIBLE");
+        when(novedadRepository.findById(5L)).thenReturn(Optional.of(visible));
+
+        service.darMeGusta(USUARIO_ID, 5L);
+
+        verify(notificacionService, never())
+                .emitir(anyLong(), anyString(), anyString(), anyString());
+        verify(notificacionService, never())
+                .emitirATodos(anyList(), anyString(), anyString(), anyString());
+    }
+
+    /** Una novedad ocultada por el admin no acepta reacciones. */
+    @Test
+    void noSePuedeReaccionarAUnaNovedadOculta() {
+        Novedad oculta = new Novedad();
+        oculta.setPerfilPublicadorId(PERFIL_ID);
+        oculta.setEstado("OCULTA_POR_ADMIN");
+        when(novedadRepository.findById(5L)).thenReturn(Optional.of(oculta));
+
+        assertThatThrownBy(() -> service.darMeGusta(USUARIO_ID, 5L))
+                .isInstanceOf(RecursoNoEncontradoException.class);
+
+        verify(meGustaNovedadRepository, never())
+                .saveAndFlush(any(com.dondeentreno.api.entity.MeGustaNovedad.class));
     }
 
     private PerfilPublicador perfil() {

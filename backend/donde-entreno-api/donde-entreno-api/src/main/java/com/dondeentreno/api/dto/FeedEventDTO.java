@@ -33,6 +33,9 @@ public class FeedEventDTO {
     /* La novedad del canal (Fase 8): el texto completo, no el resumen. */
     private Long novedadId;
     private String novedadTexto;
+    /* Sus reacciones (script 37): el feed es la otra superficie donde se ve. */
+    private Long novedadMeGusta;
+    private Boolean novedadMeGustaPropio;
 
     /* El evento (Fase 9): lo que engancha es la fecha, así que viaja. */
     private Long eventoDeportivoId;
@@ -169,6 +172,22 @@ public class FeedEventDTO {
 
     public void setNovedadTexto(String novedadTexto) {
         this.novedadTexto = novedadTexto;
+    }
+
+    public Long getNovedadMeGusta() {
+        return novedadMeGusta;
+    }
+
+    public void setNovedadMeGusta(Long novedadMeGusta) {
+        this.novedadMeGusta = novedadMeGusta;
+    }
+
+    public Boolean getNovedadMeGustaPropio() {
+        return novedadMeGustaPropio;
+    }
+
+    public void setNovedadMeGustaPropio(Boolean novedadMeGustaPropio) {
+        this.novedadMeGustaPropio = novedadMeGustaPropio;
     }
 
     public Long getEventoDeportivoId() {

@@ -213,3 +213,57 @@ arma el ISO con el offset del dispositivo en vez de usar
    inserta `feed_event` a mano) y cada aserción de desaparición prueba
    antes la aparición — las dos lecciones de la Fase 8.
 3. Deploy en dos etapas y smoke de Agustín.
+
+---
+
+## Estado: EN PRODUCCIÓN EN DOS TANDAS (2026-08-25), pendiente el smoke
+
+`main` = `origin/main` = **`3d84704`**. Script 35 aplicado por Agustín
+en Supabase y local ANTES del deploy.
+
+**Tanda 1 — backend `832e437`** (`058d485` la fase + `832e437` el fix
+del calendario; historia reordenada con worktree para que todo el
+backend viajara primero, verificando que el árbol final quedara
+idéntico).
+
+Verificado en producción **por comportamiento, no solo por estado**:
+
+- `GET /api/eventos` → **200** con la página bien formada. (Marcador
+  real: **401 → 200**, no 404 → 200 como se había anunciado —
+  cualquier ruta desconocida cae en `authenticated()`. Es la trampa ya
+  documentada en las fases 6 y 8.)
+- `?rango=cuandosea` → **400 con el mensaje propio** ("El rango tiene
+  que ser hoy, finde, semana o proximos"): prueba que el resolutor de
+  rango nuevo se está ejecutando, no que la ruta existe.
+- `/api/eventos/torneo-que-no-existe` → **404 con su mensaje propio**.
+- Los tres rangos válidos responden 200 — incluido `proximos`, que era
+  justamente el que tiraba 500.
+- Las tres privadas nuevas (POST publicador, PUT interés, PATCH admin)
+  dan 401 anónimas; catálogo público y novedades de la Fase 8 intactos.
+
+**Tanda 2 — frontend `3d84704`.** Marcador `/eventos` **404 → 200**
+(ruta pública: acá el middleware no lo enmascara). Verificado en el
+navegador en producción: la agenda carga con su estado vacío correcto,
+cambiar de rango cambia el texto ("No hay eventos en ese rango" + "Ver
+todos los próximos"), la **home NO dibuja** la sección de eventos
+—medido en el DOM, que es lo que promete el componente—, el perfil
+público no muestra la solapa Eventos, las privadas dan 307, `/eventos`
+está en el sitemap y la consola está limpia.
+
+### Lo que falta
+
+**El smoke de Agustín con su cuenta de publicador.** Sugerido, en este
+orden:
+
+1. `/publicador/eventos` → crear uno para esta semana (probá con
+   actividad asociada y sin ella).
+2. Verlo en `/eventos`, y que el chip de urgencia diga lo correcto
+   (hoy / mañana / en N días).
+3. Verlo en la home ("Lo que se viene"), que recién ahora aparece.
+4. Con otra cuenta: verlo en el feed y marcar **Me interesa** (el
+   contador tiene que subir y quedar marcado al recargar).
+5. Compartir el link por WhatsApp y mirar la previsualización.
+6. **Cancelarlo**: sale del calendario y del feed, pero el link
+   compartido sigue abriendo y avisa que se canceló.
+7. Borrar otro: ese sí desaparece del todo.
+8. Como admin: reportar un evento y ocultarlo desde `/admin/reportes`.

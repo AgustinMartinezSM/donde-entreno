@@ -276,11 +276,18 @@ superficie nueva con Satori y se puede sumar sin tocar el modelo), la
 **recurrencia** (eso ES una actividad con sus horarios) y la **reserva
 de cupo** (el cupo se muestra, el contacto sigue siendo WhatsApp).
 
-### Fase 10 — Descubrimiento inteligente
+### Fase 10 — Descubrimiento inteligente ✅ CERRADA (2026-08-25)
 - Match deportivo (test guiado + Dondi), comparador (sobre guardados,
   frontend), rankings semanales (del tracking), "para arrancar de
   cero", guías deportivas (editorial/SEO; pueden adelantarse — no
   dependen de nada).
+- **Cerrada en producción con smoke de Agustín**, en cinco bloques y
+  **sin una sola migración**: `/admin/pulso`, `/empezar` + entrada
+  guiada a Dondi, comparador de guardadas, ranking semanal y las guías
+  (la primera, karate). Detalle en `docs/plan-fase10-descubrimiento.md`.
+- **El "test guiado" NO se hizo como motor aparte**: es una puerta que
+  arma la consulta y se la pasa a Dondi. Dos motores recomendando
+  deportes habrían sido dos formas distintas de entender un rechazo.
 
 ### Fase 11 — Publicador Pro y monetización futura
 - Bandeja de consultas unificada (Q&A + inbox + clicks), respuestas

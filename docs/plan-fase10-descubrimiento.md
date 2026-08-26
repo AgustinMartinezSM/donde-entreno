@@ -335,3 +335,54 @@ abre un club nuevo de karate, aparece sin tocar una línea del texto.
 rutas dinámicas: lo causa el `loading.tsx` de la raíz y está decidido
 no tocarlo. El **contenido** sí es el de "no encontrada", con su
 `title` propio.
+
+---
+
+# ✅ FASE 10 CERRADA EN PRODUCCIÓN (smoke de Agustín OK, 2026-08-25)
+
+`main` = `origin/main` = **`b50cd9f`**. **Cinco bloques y ninguna
+migración**: la primera fase entera de la etapa social que no tocó el
+schema.
+
+| Pieza | Commits |
+|---|---|
+| `/admin/pulso` | `45ec331` + `e16b2b7` |
+| `/empezar` + entrada guiada | `cb6752e` |
+| Comparador de guardadas | `cddb802` |
+| Ranking semanal | `006b731` + `c9424a6` |
+| Guías (estructura + karate) | `3a00598` + `b50cd9f` |
+
+## Lo que esta fase deja escrito para las que vengan
+
+- **Una puerta nueva no necesita un motor nuevo.** La entrada guiada
+  alimenta a Dondi en vez de competirle. Vale para cualquier superficie
+  que "recomiende" algo.
+- **Un número sin señal suficiente no se muestra.** El ranking se apaga
+  bajo el umbral, el pulso muestra crudo y sin gráficos, y el
+  comparador no dibuja filas que nadie tiene.
+- **El código de estado no siempre distingue builds**; a veces el
+  marcador es el cuerpo, y hay pantallas que directamente no tienen
+  marcador anónimo.
+- **Lo editorial lo lee Agustín antes de publicarse.** Los tres
+  defectos de la guía de karate aparecieron leyéndola, no revisando el
+  código.
+
+## Pendientes que quedaron fuera, a propósito
+
+- **Más guías**: el molde está; cada una se escribe y se lee entera
+  antes de publicar. El tono sobrio de la de karate es la referencia.
+- **La palabra "cinturón"** sigue apareciendo una vez en "Qué
+  necesitás" (se compra junto al karategi). Es factual y no afirma nada
+  sobre grados.
+- **El día crudo del enum** (`MIERCOLES`) en el detalle público: el
+  comparador lo traduce, el detalle todavía no.
+- **Imagen OG por evento** y **filtros de ciudad/deporte en el
+  calendario** siguen sin hacerse desde la Fase 9.
+
+## Un hallazgo que no es de esta fase pero se confirmó acá
+
+El DOM sirve **dos `<main>`**, uno dentro de un `div[hidden]`. Pasa en
+`/eventos` también, así que es de toda la app: es el streaming de
+Suspense del `loading.tsx` de la raíz — **la misma causa raíz del
+soft-404**, y lo que explica la trampa ya documentada de que "cada
+frase aparece dos veces".

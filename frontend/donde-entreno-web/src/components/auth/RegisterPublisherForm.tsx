@@ -387,7 +387,7 @@ export function RegisterPublisherForm() {
             {erroresPorCampo?.tipoPublicador ? (
               <p
                 id="registro-publicador-tipo-error"
-                className="mt-2 text-sm font-bold text-red-700"
+                className="mt-2 text-sm font-bold text-[var(--color-danger)]"
               >
                 {erroresPorCampo.tipoPublicador}
               </p>
@@ -450,7 +450,7 @@ export function RegisterPublisherForm() {
             {ciudadError ? (
               <p
                 id="registro-publicador-ciudad-error"
-                className="mt-2 text-sm font-bold text-red-700"
+                className="mt-2 text-sm font-bold text-[var(--color-danger)]"
               >
                 {ciudadError}
               </p>
@@ -464,7 +464,7 @@ export function RegisterPublisherForm() {
             {errorCiudades ? (
               <p
                 id="registro-publicador-ciudad-carga-error"
-                className="mt-2 text-sm font-bold text-red-700"
+                className="mt-2 text-sm font-bold text-[var(--color-danger)]"
               >
                 {errorCiudades}
               </p>
@@ -610,7 +610,7 @@ function CampoTexto({
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} className="mt-2 text-sm font-bold text-red-700">
+        <p id={errorId} className="mt-2 text-sm font-bold text-[var(--color-danger)]">
           {error}
         </p>
       ) : null}

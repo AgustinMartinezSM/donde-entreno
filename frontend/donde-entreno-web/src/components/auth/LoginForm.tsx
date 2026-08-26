@@ -214,7 +214,7 @@ export function LoginForm() {
           className="mt-2 min-h-12 w-full rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-base text-[var(--color-text)] outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
         />
         {errorEmail ? (
-          <p id="login-email-error" className="mt-2 text-sm font-bold text-red-700">
+          <p id="login-email-error" className="mt-2 text-sm font-bold text-[var(--color-danger)]">
             {errorEmail}
           </p>
         ) : null}
@@ -267,7 +267,7 @@ export function LoginForm() {
         {errorPassword ? (
           <p
             id="login-password-error"
-            className="mt-2 text-sm font-bold text-red-700"
+            className="mt-2 text-sm font-bold text-[var(--color-danger)]"
           >
             {errorPassword}
           </p>

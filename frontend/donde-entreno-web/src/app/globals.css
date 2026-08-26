@@ -56,7 +56,18 @@
   --color-warning: #8A4B00;
   --color-warning-surface: #FFF4E5;
   --color-warning-border: #F6C56D;
-  --color-danger: #9A3D3D;
+  /*
+    Familia danger completa, con el MISMO molde que warning: color de
+    tinta, superficie y borde. Antes existía solo la tinta, y por eso
+    los bloques de error caían a `red-*` crudo de Tailwind — que en
+    oscuro es una sábana casi blanca sobre el navy.
+
+    Los valores claros son EXACTAMENTE los de red-50 / red-200 /
+    red-700 medidos en el navegador, para que el modo claro no cambie.
+  */
+  --color-danger: #C10007;
+  --color-danger-surface: #FEF2F2;
+  --color-danger-border: #FFC9C9;
 
   /*
     Marca como SUPERFICIE (avatares, badges, respaldo de botones).
@@ -141,7 +152,16 @@
   --color-warning: #F2B76F;
   --color-warning-surface: #372711;
   --color-warning-border: #7C5A24;
+  /*
+    La superficie no se elige "a ojo": se calibró para caer en la misma
+    banda de contraste contra el fondo de página que las otras tres
+    (info 1.23, success 1.29, warning 1.13). Con #3A1C1C daba 1.05 y el
+    bloque se perdía; con #452323 da 1.17 y la tinta encima queda en
+    6.75, holgado.
+  */
   --color-danger: #F0A0A0;
+  --color-danger-surface: #452323;
+  --color-danger-border: #7C3A3A;
 
   --color-divisor: #1C3A54;
 
@@ -367,7 +387,9 @@ body {
   --color-warning: #8A4B00;
   --color-warning-surface: #FFF4E5;
   --color-warning-border: #F6C56D;
-  --color-danger: #9A3D3D;
+  --color-danger: #C10007;
+  --color-danger-surface: #FEF2F2;
+  --color-danger-border: #FFC9C9;
   --color-divisor: #EDF3F8;
   --shadow-card: 0 8px 24px rgba(15, 61, 94, 0.08);
   --shadow-button: 0 6px 16px rgba(15, 61, 94, 0.18);

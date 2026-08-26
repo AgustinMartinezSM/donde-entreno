@@ -13,7 +13,7 @@ const variantClassNames: Record<NonNullable<StatusMessageProps["variant"]>, stri
     info: "border-[var(--color-border-accent)] bg-[var(--color-info-soft)] text-[var(--color-info-deep)]",
     success: "border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)]",
     warning: "border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] text-[var(--color-warning)]",
-    error: "border-red-200 bg-red-50 text-red-700",
+    error: "border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] text-[var(--color-danger)]",
   };
 
 function unirClases(...clases: Array<string | undefined | false>) {

@@ -385,7 +385,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
               <button
                 type="button"
                 onClick={() => manejarEliminarColeccion(coleccionActiva)}
-                className="underline underline-offset-4 transition hover:text-red-700"
+                className="underline underline-offset-4 transition hover:text-[var(--color-danger)]"
               >
                 Eliminar colección
               </button>
@@ -490,7 +490,7 @@ export function MisFavoritos({ accionesVacio }: MisFavoritosProps = {}) {
                         type="button"
                         onClick={() => manejarQuitar(favorito)}
                         aria-label={`Quitar ${favorito.titulo} de favoritos`}
-                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-[var(--color-surface)] active:scale-[0.98]"
+                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-4 text-xs font-extrabold text-[var(--color-danger)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-danger)] hover:bg-[var(--color-surface)] active:scale-[0.98]"
                       >
                         Quitar
                       </button>
@@ -684,7 +684,7 @@ function DialogoOrganizarGuardado({
         </p>
 
         {error ? (
-          <p role="alert" className="mt-2 text-sm font-bold text-red-700">
+          <p role="alert" className="mt-2 text-sm font-bold text-[var(--color-danger)]">
             No pudimos guardar los cambios. Probá de nuevo.
           </p>
         ) : null}

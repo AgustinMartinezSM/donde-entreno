@@ -284,7 +284,7 @@ function CampoTexto({
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} className="mt-2 text-sm font-bold text-red-700">
+        <p id={errorId} className="mt-2 text-sm font-bold text-[var(--color-danger)]">
           {error}
         </p>
       ) : null}

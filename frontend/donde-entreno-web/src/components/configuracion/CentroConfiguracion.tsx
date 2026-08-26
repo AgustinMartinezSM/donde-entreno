@@ -219,7 +219,7 @@ function FilaOpcion({
         <span
           className={`block text-sm font-bold ${
             peligrosa
-              ? "text-red-700"
+              ? "text-[var(--color-danger)]"
               : "text-[var(--color-primary)] group-hover:text-[var(--color-secondary)]"
           }`}
         >

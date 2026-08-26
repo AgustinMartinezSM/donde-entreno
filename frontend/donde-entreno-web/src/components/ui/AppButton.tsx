@@ -22,13 +22,14 @@ const variantClassNames: Record<NonNullable<AppButtonProps["variant"]>, string> 
   outline:
     "border border-[var(--color-border-accent)] bg-[var(--color-surface)]/70 text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface)]",
   /*
-    danger conserva la paleta red-* de Tailwind a propósito: unificarla
-    con --color-danger (el rojo propio, #9A3D3D) cambiaría el color y
-    esta fase promete cero delta visual. Queda anotado en el doc del
-    bloque como decisión pendiente.
+    danger ya NO usa la paleta red-* de Tailwind: la familia
+    --color-danger tiene ahora superficie y borde propios, con los
+    valores claros calcados de red-50/200/700 para no mover el modo
+    claro. El motivo del cambio es el oscuro: `red-*` es fijo, así que
+    un bloque de error quedaba casi blanco sobre el navy.
   */
   danger:
-    "border border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-[var(--color-surface)]",
+    "border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] text-[var(--color-danger)] hover:border-[var(--color-danger)] hover:bg-[var(--color-surface)]",
   success:
     "border border-[var(--color-success-border)] bg-[var(--color-success-wash)] text-[var(--color-success)] hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface)]",
 };

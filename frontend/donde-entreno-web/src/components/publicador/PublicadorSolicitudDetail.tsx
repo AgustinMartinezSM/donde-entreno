@@ -1,5 +1,6 @@
 "use client";
 
+import { formatearEtiquetaCatalogo as formatearCatalogo } from "../../lib/formatoCatalogo";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -368,13 +369,6 @@ function formatearPrecio(solicitud: SolicitudPublicadorDetalle): string {
   }).format(solicitud.precioReferencia);
 }
 
-function formatearCatalogo(valor: string): string {
-  return valor
-    .toLowerCase()
-    .split("_")
-    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
-    .join(" ");
-}
 
 function formatearFechaHora(valor: string | null): string | null {
   if (!valor) {

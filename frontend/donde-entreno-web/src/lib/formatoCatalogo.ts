@@ -63,3 +63,60 @@ export function formatearPrecio(valor: number | null | undefined): string | null
 
   return formateadorPesos.format(valor);
 }
+
+/* Igual que formatearEtiquetaCatalogo, tolerando null. */
+export function formatearEtiquetaCatalogoONull(
+  valor: string | null | undefined
+): string | null {
+  return valor ? formatearEtiquetaCatalogo(valor) : null;
+}
+
+/*
+  Los días llevan mapa explícito y no pasan por el capitalizador
+  genérico: el enum viaja SIN acento (MIERCOLES, SABADO) y "Miercoles"
+  en pantalla se lee como un error de tipeo del sitio.
+
+  El orden de este objeto ES el orden de la semana, y se usa para
+  ordenar en listarDiasOrdenados.
+*/
+const NOMBRE_DEL_DIA: Record<string, string> = {
+  LUNES: "Lunes",
+  MARTES: "Martes",
+  MIERCOLES: "Miércoles",
+  JUEVES: "Jueves",
+  VIERNES: "Viernes",
+  SABADO: "Sábado",
+  DOMINGO: "Domingo",
+};
+
+/* MIERCOLES → "Miércoles". Un valor desconocido cae al capitalizador. */
+export function formatearDiaSemana(
+  dia: string | null | undefined
+): string | null {
+  if (!dia) {
+    return null;
+  }
+
+  return NOMBRE_DEL_DIA[dia.trim().toUpperCase()] ?? formatearEtiquetaCatalogo(dia);
+}
+
+/*
+  Días únicos y ordenados por semana. Ordenar importa: "Jueves, Martes"
+  se lee como un error aunque sea fiel al orden de carga.
+*/
+export function listarDiasOrdenados(
+  horarios: Array<{ diaSemana?: string | null }>
+): string[] {
+  const orden = Object.values(NOMBRE_DEL_DIA);
+  const dias: string[] = [];
+
+  for (const horario of horarios) {
+    const nombre = formatearDiaSemana(horario.diaSemana);
+
+    if (nombre && !dias.includes(nombre)) {
+      dias.push(nombre);
+    }
+  }
+
+  return dias.sort((a, b) => orden.indexOf(a) - orden.indexOf(b));
+}

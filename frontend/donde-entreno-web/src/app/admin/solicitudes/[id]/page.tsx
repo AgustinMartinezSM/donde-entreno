@@ -1,5 +1,6 @@
 "use client";
 
+import { formatearDiaSemana } from "../../../../lib/formatoCatalogo";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminGuard } from "../../../../components/admin/AdminGuard";
@@ -904,7 +905,7 @@ function HorarioCard({
       className="rounded-[20px] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
     >
       <p className="inline-flex rounded-full bg-[var(--color-success-soft)] px-3 py-1 text-sm font-extrabold text-[var(--color-success)]">
-        {horario.diaSemana}
+        {formatearDiaSemana(horario.diaSemana) ?? horario.diaSemana}
       </p>
       <dl className="mt-3 grid gap-3 text-sm">
         <CampoDetalle etiqueta="Registro interno" valor={horario.id} />

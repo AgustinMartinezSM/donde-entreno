@@ -1,5 +1,6 @@
 "use client";
 
+import { formatearEtiquetaCatalogoONull as formatearCatalogoONull } from "../../lib/formatoCatalogo";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -430,17 +431,6 @@ function formatearPrecio(actividad: ActividadPublicadorResumen): string | null {
   }).format(actividad.precioReferencia);
 }
 
-function formatearCatalogoONull(valor: string | null): string | null {
-  if (!valor) {
-    return null;
-  }
-
-  return valor
-    .toLowerCase()
-    .split("_")
-    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
-    .join(" ");
-}
 
 function formatearFecha(valor: string): string {
   const fecha = new Date(valor);

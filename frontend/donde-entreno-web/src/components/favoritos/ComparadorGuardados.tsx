@@ -1,5 +1,6 @@
 "use client";
 
+import { listarDiasOrdenados } from "../../lib/formatoCatalogo";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -76,52 +77,14 @@ function formatearNivel(nivel?: string | null) {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-/*
-  El backend devuelve el enum crudo ("MIERCOLES"). En una tabla de
-  comparación eso se lee a los gritos y además sin acento, así que se
-  traduce acá. NOTA: el detalle público todavía muestra el enum tal
-  cual; unificarlo es una pasada aparte.
-*/
-const NOMBRE_DEL_DIA: Record<string, string> = {
-  LUNES: "Lunes",
-  MARTES: "Martes",
-  MIERCOLES: "Miércoles",
-  JUEVES: "Jueves",
-  VIERNES: "Viernes",
-  SABADO: "Sábado",
-  DOMINGO: "Domingo",
-};
-
 function formatearDias(detalle: ActividadDetalle | undefined) {
-  const horarios = detalle?.horarios ?? [];
-
-  if (horarios.length === 0) {
-    return null;
-  }
-
   /*
-    Los días sin repetir y en el orden en que el publicador los cargó:
-    "Lunes, Miércoles" dice más para decidir que cinco filas de horas.
+    Los días sin repetir y ordenados por semana: "Lunes, Miércoles"
+    dice más para decidir que cinco filas de horas. La traducción del
+    enum y el orden viven en lib/formatoCatalogo, compartidos con el
+    detalle público.
   */
-  const dias: string[] = [];
-
-  for (const horario of horarios) {
-    const dia = horario.diaSemana;
-
-    const nombre = dia ? NOMBRE_DEL_DIA[dia] ?? dia : null;
-
-    if (nombre && !dias.includes(nombre)) {
-      dias.push(nombre);
-    }
-  }
-
-  /*
-    Ordenados por semana y no por el orden de carga: "Jueves, Martes"
-    se lee como un error aunque sea fiel al dato.
-  */
-  const orden = Object.values(NOMBRE_DEL_DIA);
-
-  dias.sort((a, b) => orden.indexOf(a) - orden.indexOf(b));
+  const dias = listarDiasOrdenados(detalle?.horarios ?? []);
 
   return dias.length > 0 ? dias.join(", ") : null;
 }

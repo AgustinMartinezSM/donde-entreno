@@ -1,5 +1,6 @@
 "use client";
 
+import { formatearEtiquetaCatalogo as formatearCatalogo } from "../../lib/formatoCatalogo";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "../auth/AuthSessionProvider";
@@ -274,12 +275,4 @@ function DatoPerfil({
 
 function formatearEstadoPerfil(estado: string): string {
   return formatearCatalogo(estado);
-}
-
-function formatearCatalogo(valor: string): string {
-  return valor
-    .toLowerCase()
-    .split("_")
-    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
-    .join(" ");
 }

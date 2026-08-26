@@ -38,6 +38,7 @@ import {
   obtenerImagenFallbackActividad,
 } from "../../../lib/activityImages";
 import {
+  formatearDiaSemana,
   formatearEtiquetaCatalogo,
   formatearPrecio,
 } from "../../../lib/formatoCatalogo";
@@ -428,7 +429,7 @@ export default async function ActividadDetallePage({
                           className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-bg)] p-4 transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-border-accent)] hover:bg-[var(--color-surface)] hover:shadow-[0_12px_30px_rgba(12,52,80,0.08)]"
                         >
                           <p className="font-bold text-[var(--color-primary)]">
-                            {horario.diaSemana}
+                            {formatearDiaSemana(horario.diaSemana) ?? horario.diaSemana}
                           </p>
 
                           <p className="mt-2 text-lg font-extrabold text-[var(--color-primary)]">

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatearEtiquetaCatalogoONull as formatearCatalogoONull } from "../../lib/formatoCatalogo";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthSession } from "../auth/AuthSessionProvider";
@@ -560,17 +561,6 @@ function formatearBooleano(valor: boolean | null): string | null {
   return valor ? "Sí" : "No";
 }
 
-function formatearCatalogoONull(valor: string | null): string | null {
-  if (!valor) {
-    return null;
-  }
-
-  return valor
-    .toLowerCase()
-    .split("_")
-    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
-    .join(" ");
-}
 
 function formatearFechaHora(valor: string | null): string | null {
   if (!valor) {

@@ -1,7 +1,7 @@
 # Modo oscuro V2 — las áreas internas y los estados de error
 
-Estado: **EN PRODUCCIÓN** (`main` = `origin/main` = **`fab5c67`**),
-pendiente del smoke de Agustín sobre `/publicador` y `/admin`.
+Estado: **✅ CERRADO EN PRODUCCIÓN** (smoke de Agustín OK, 2026-08-26;
+`main` = `origin/main` = **`fab5c67`**).
 
 Cierra la deuda que dejó anotada la Fase 7 en el propio CSS: *"cuando
 esas áreas se barran (tanda pendiente), este bloque se borra"*.
@@ -79,10 +79,21 @@ body: **el mismo cambio deliberado** que la Fase 7a hizo con los 19
 - Guards intactos (307 en las cuatro privadas), públicas en 200,
   consola limpia.
 
-## Lo que falta
+## Lo que cubrió el smoke
 
-**`/publicador/*` y `/admin/*` necesitan sesión y no se pudieron ver.**
-Se intentó el bypass de guards documentado, pero el dashboard redirige
-por su cuenta y seguir bypasseando implicaba tocar el componente bajo
-prueba; se revirtió (verificado: no quedó ningún bypass). **Es el smoke
-más importante de este bloque, porque es donde está todo el barrido.**
+`/publicador/*` y `/admin/*` **necesitan sesión y no se pudieron ver
+desde acá**. Se intentó el bypass de guards documentado, pero el
+dashboard redirige por su cuenta y seguir bypasseando implicaba tocar el
+componente bajo prueba; se revirtió (verificado: no quedó ningún
+bypass). **Esas 22 rutas las cerró el smoke de Agustín**, que es donde
+estaba todo el barrido.
+
+## Lo que queda como regla
+
+- **Un detector de sábanas mira `background-color` Y `background-image`.**
+- **Todo `var(--color-*)` referenciado tiene que estar declarado**, y se
+  compara con `comm`. Un token inexistente no falla ni avisa.
+- **Los tokens que se invierten (`--color-primary`, `--color-text`) no
+  van como parada de gradiente**; para eso está `--color-brand`.
+- **Nunca un token de borde como color de texto** (regla del pulido
+  dark, sigue vigente).

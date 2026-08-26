@@ -146,7 +146,7 @@ export function PublicadorSolicitudDetail() {
 
         {solicitud ? (
           <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <SurfaceCard className="border-[var(--color-success-border)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-6 sm:p-8">
+            <SurfaceCard className="border-[var(--color-success-border)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface)] to-[var(--color-surface-soft)] p-6 sm:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -233,7 +233,7 @@ export function PublicadorSolicitudDetail() {
                     {solicitud.horarios.map((horario) => (
                       <div
                         key={horario.id}
-                        className="rounded-[18px] border border-[var(--color-border-soft)] bg-gradient-to-br from-white to-[var(--color-surface-soft)] p-4 transition duration-200 ease-out hover:border-[var(--color-success-border)]"
+                        className="rounded-[18px] border border-[var(--color-border-soft)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-soft)] p-4 transition duration-200 ease-out hover:border-[var(--color-success-border)]"
                       >
                         <p className="text-sm font-extrabold text-[var(--color-primary)]">
                           {formatearCatalogo(horario.diaSemana)}
@@ -308,7 +308,7 @@ function SeccionDetalle({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[22px] border border-[var(--color-border-soft)] bg-white/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
+    <section className="rounded-[22px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/80 p-4 shadow-[0_10px_24px_rgba(12,52,80,0.05)]">
       <h3 className="text-lg font-extrabold text-[var(--color-primary)]">
         {titulo}
       </h3>

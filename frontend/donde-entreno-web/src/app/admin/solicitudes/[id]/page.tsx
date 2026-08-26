@@ -304,7 +304,7 @@ function AdminSolicitudDetalle() {
     <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -349,7 +349,7 @@ function AdminSolicitudDetalle() {
         {cargandoDetalle && (
           <div
             role="status"
-            className="rounded-[24px] border border-[var(--color-border-soft)] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
@@ -432,7 +432,7 @@ function DetalleSolicitud({
         as="section"
         className="overflow-hidden rounded-[28px] shadow-[0_18px_45px_rgba(12,52,80,0.10)]"
       >
-        <div className="bg-gradient-to-br from-[var(--color-surface-soft)] to-white p-5 sm:p-6">
+        <div className="bg-gradient-to-br from-[var(--color-surface-soft)] to-[var(--color-surface)] p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-muted)]">
@@ -700,8 +700,8 @@ function AccionesRevision({
           )}
 
           {confirmandoAprobacion && (
-            <div className="rounded-[18px] border border-[#F7D87A] bg-[#FFF8E1] px-4 py-4">
-              <p className="text-sm font-bold leading-6 text-[#7A5A00]">
+            <div className="rounded-[18px] border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] px-4 py-4">
+              <p className="text-sm font-bold leading-6 text-[var(--color-warning)]">
                 Esta acción creará una actividad pública visible en{" "}
                 <BrandName className="inline" />. Revisá que los datos estén
                 listos antes de confirmar.
@@ -713,7 +713,7 @@ function AccionesRevision({
                   disabled={accionEnCurso}
                   variant="outline"
                   fullWidth
-                  className="border-[#D9B94E] text-[#7A5A00] hover:border-[#A98300]"
+                  className="border-[var(--color-warning-border)] text-[var(--color-warning)] hover:border-[var(--color-warning)]"
                 >
                   Cancelar
                 </AppButton>
@@ -741,7 +741,7 @@ function AccionesRevision({
           )}
 
           {puedeMarcarEnRevision && (
-            <div className="rounded-[18px] border border-[#A9D8EA] bg-white p-4">
+            <div className="rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] p-4">
               <h3 className="text-base font-extrabold text-[var(--color-primary)]">
                 Seguimiento de revisión
               </h3>
@@ -761,7 +761,7 @@ function AccionesRevision({
             </div>
           )}
 
-          <div className="rounded-[18px] border border-red-100 bg-white p-4">
+          <div className="rounded-[18px] border border-[var(--color-danger-border)] bg-[var(--color-surface)] p-4">
             <label
               htmlFor="motivo-rechazo"
               className="text-sm font-bold text-[var(--color-primary)]"
@@ -862,7 +862,7 @@ function CampoDetalle({
   valor: string | number | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#EDF4F8] bg-[var(--color-surface-soft)] px-4 py-3">
+    <div className="rounded-[18px] border border-[var(--color-info-soft)] bg-[var(--color-surface-soft)] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>
@@ -881,7 +881,7 @@ function CampoDetalleEstado({
   estado: EstadoSolicitudAdmin;
 }) {
   return (
-    <div className="rounded-[18px] border border-[#EDF4F8] bg-[var(--color-surface-soft)] px-4 py-3">
+    <div className="rounded-[18px] border border-[var(--color-info-soft)] bg-[var(--color-surface-soft)] px-4 py-3">
       <dt className="text-sm font-bold text-[var(--color-primary)]">
         {etiqueta}
       </dt>

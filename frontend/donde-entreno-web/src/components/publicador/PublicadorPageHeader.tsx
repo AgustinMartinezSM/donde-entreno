@@ -21,8 +21,8 @@ export function PublicadorPageHeader({
   action,
 }: PublicadorPageHeaderProps) {
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border-accent)] bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-6 shadow-[0_22px_55px_rgba(12,52,80,0.12)] sm:p-8">
-      <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-[#4FB3D9]/12" />
+    <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border-accent)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-info-soft)] p-6 shadow-[0_22px_55px_rgba(12,52,80,0.12)] sm:p-8">
+      <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-[var(--color-accent)]/12" />
       <div className="absolute bottom-0 left-0 h-20 w-20 rounded-tr-full bg-[#2EB872]/8" />
 
       {/* Barra superior: identidad del sitio, el puente de vuelta al
@@ -48,7 +48,7 @@ export function PublicadorPageHeader({
           */}
           <Link
             href="/mi-cuenta"
-            className="inline-flex min-h-9 items-center rounded-full border border-[var(--color-border-accent)] bg-white/80 px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-white"
+            className="inline-flex min-h-9 items-center rounded-full border border-[var(--color-border-accent)] bg-[var(--color-surface)]/80 px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:border-[var(--color-primary)] hover:bg-[var(--color-surface)]"
           >
             Mi perfil deportivo
           </Link>

@@ -396,15 +396,15 @@ function obtenerMensajesErrores(errores: ErroresSolicitudPublicacionForm) {
 const OPCION_OTRO = "__OTRO__";
 
 const inputClassName =
-  "min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 disabled:cursor-not-allowed disabled:opacity-70";
+  "min-h-12 rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[var(--color-accent)]/30 disabled:cursor-not-allowed disabled:opacity-70";
 
 const textareaClassName =
-  "rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30";
+  "rounded-[var(--radius-md)] border border-[var(--color-border-accent)] bg-[var(--color-bg)] px-4 py-3 text-sm outline-none transition duration-200 ease-out hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] focus-visible:ring-4 focus-visible:ring-[var(--color-accent)]/30";
 
 const labelClassName = "text-sm font-bold text-[var(--color-primary)]";
 const helpTextClassName = "text-xs leading-5 text-[var(--color-muted)]";
 const fieldsetClassName =
-  "rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
+  "rounded-[var(--radius-xl)] border border-[var(--color-border-soft)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface)] to-[var(--color-surface-soft)] p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)] sm:p-6";
 
 function formatearEtiquetaCatalogo(valor: string) {
   return valor
@@ -1110,9 +1110,9 @@ export function PublishForm({
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
       <aside className="lg:sticky lg:top-8">
-        <SurfaceCard className="bg-white/90 p-4 lg:hidden">
+        <SurfaceCard className="bg-[var(--color-surface)]/90 p-4 lg:hidden">
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[var(--radius-lg)] outline-none transition duration-200 ease-out focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[var(--radius-lg)] outline-none transition duration-200 ease-out focus-visible:ring-4 focus-visible:ring-[var(--color-accent)]/30 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
               <span>
                 <span className="block text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
                   Guía rápida
@@ -1185,7 +1185,7 @@ export function PublishForm({
                 </span>
               </li>
               <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[var(--color-success)]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-sm font-extrabold text-[var(--color-success)]">
                   5
                 </span>
                 <span>
@@ -1202,7 +1202,7 @@ export function PublishForm({
           </details>
         </SurfaceCard>
 
-        <SurfaceCard className="hidden bg-white/90 p-5 lg:block">
+        <SurfaceCard className="hidden bg-[var(--color-surface)]/90 p-5 lg:block">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
             Antes de enviar
           </p>
@@ -1268,7 +1268,7 @@ export function PublishForm({
               </span>
             </li>
             <li className="flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] p-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-extrabold text-[var(--color-success)]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-sm font-extrabold text-[var(--color-success)]">
                 5
               </span>
               <span>
@@ -1286,7 +1286,7 @@ export function PublishForm({
       </aside>
 
       <form onSubmit={manejarEnvio} className="space-y-5">
-        <p className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-white px-4 py-3 text-sm font-bold text-[var(--color-muted)]">
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-border-soft)] bg-[var(--color-surface)] px-4 py-3 text-sm font-bold text-[var(--color-muted)]">
           Los campos marcados con{" "}
           <span className="font-bold text-[var(--color-secondary)]">*</span> son
           obligatorios.
@@ -2210,7 +2210,7 @@ export function PublishForm({
                         type="button"
                         aria-label={`Quitar horario ${indice + 1}`}
                         onClick={() => quitarHorario(horario.idInterno)}
-                        className="min-h-10 rounded-[var(--radius-md)] border border-[#C96B6B] bg-white px-4 text-sm font-bold text-[var(--color-danger)] transition duration-200 ease-out hover:bg-[#FFF4F4] active:scale-[0.98]"
+                        className="min-h-10 rounded-[var(--radius-md)] border border-[var(--color-danger-border)] bg-[var(--color-surface)] px-4 text-sm font-bold text-[var(--color-danger)] transition duration-200 ease-out hover:bg-[var(--color-danger-surface)] active:scale-[0.98]"
                       >
                         Quitar
                       </button>
@@ -2502,7 +2502,7 @@ export function PublishForm({
           </h2>
           <p className="mt-2">La vamos a revisar antes de publicarla.</p>
           <p className="mt-2 font-bold">{respuestaEnvio.mensaje}</p>
-          <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-success-border)] bg-white p-3">
+          <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-success-border)] bg-[var(--color-surface)] p-3">
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-muted)]">
               Código de seguimiento
             </p>

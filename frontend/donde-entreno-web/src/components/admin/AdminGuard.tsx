@@ -59,7 +59,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
         <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
           <div
             role="status"
-            className="w-full rounded-[28px] border border-[var(--color-border-soft)] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
+            className="w-full rounded-[28px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
           >
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
@@ -90,7 +90,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
         <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center justify-center">
           <div
             role="alert"
-            className="w-full rounded-[28px] border border-[var(--color-warning-border)] bg-white/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
+            className="w-full rounded-[28px] border border-[var(--color-warning-border)] bg-[var(--color-surface)]/95 p-7 text-center shadow-[0_24px_65px_rgba(12,52,80,0.14)]"
           >
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--color-secondary)]">
               Acceso restringido

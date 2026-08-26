@@ -162,7 +162,7 @@ export function PublicadorActividadesList() {
           }
         />
 
-        <SurfaceCard className="mt-6 border-[var(--color-border-accent)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-5 sm:p-6">
+        <SurfaceCard className="mt-6 border-[var(--color-border-accent)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface)] to-[var(--color-surface-soft)] p-5 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
               eyebrow="Actividades"
@@ -182,7 +182,7 @@ export function PublicadorActividadesList() {
                 value={orden}
                 onChange={cambiarOrden}
                 disabled={cargando}
-                className="mt-2 min-h-11 w-full rounded-[16px] border border-[var(--color-border-accent)] bg-white px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 min-h-11 w-full rounded-[16px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {ORDENES.map((opcion) => (
                   <option key={opcion.valor} value={opcion.valor}>
@@ -306,7 +306,7 @@ function ActividadCardPublicador({
   });
 
   return (
-    <article className="overflow-hidden rounded-[22px] border border-[var(--color-border-soft)] bg-gradient-to-br from-white to-[var(--color-surface-soft)] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-success-border)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
+    <article className="overflow-hidden rounded-[22px] border border-[var(--color-border-soft)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-soft)] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-success-border)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
       <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
         <ActivityImage
           src={imagenUrl}
@@ -359,7 +359,7 @@ function ActividadCardPublicador({
               {slugPublico ? (
                 <Link
                   href={`/actividades/${slugPublico}`}
-                  className="inline-flex items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white px-4 py-2 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
+                  className="inline-flex items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 py-2 text-sm font-extrabold text-[var(--color-primary)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)]"
                 >
                   Ver pública
                 </Link>
@@ -380,7 +380,7 @@ function DatoRapido({
   valor: string | null;
 }) {
   return (
-    <div className="rounded-[16px] border border-[var(--color-border-soft)] bg-white/80 px-3 py-2">
+    <div className="rounded-[16px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/80 px-3 py-2">
       <dt className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--color-secondary)]">
         {etiqueta}
       </dt>

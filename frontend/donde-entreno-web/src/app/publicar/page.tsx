@@ -39,7 +39,7 @@ export default function PublicarPage() {
           <SurfaceCard
             as="section"
             variant="success"
-            className="mt-6 overflow-hidden bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-8"
+            className="mt-6 overflow-hidden bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-8"
           >
             <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
               <div>
@@ -58,7 +58,7 @@ export default function PublicarPage() {
                 </p>
               </div>
 
-              <div className="rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-white/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-success-border)] bg-[var(--color-surface)]/90 p-4 shadow-[0_16px_40px_rgba(12,52,80,0.08)]">
                 <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[var(--color-success)]">
                   ¿Qué pasa después?
                 </p>

@@ -183,7 +183,7 @@ function AdminSolicitudesListado() {
     <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -201,7 +201,7 @@ function AdminSolicitudesListado() {
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
                 {sesion && (
-                  <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/85 px-4 py-3 shadow-sm">
+                  <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/85 px-4 py-3 shadow-sm">
                     <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
                       Usuario conectado
                     </p>
@@ -237,7 +237,7 @@ function AdminSolicitudesListado() {
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="mb-5 rounded-[24px] bg-white/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+        <SurfaceCard className="mb-5 rounded-[24px] bg-[var(--color-surface)]/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -277,7 +277,7 @@ function AdminSolicitudesListado() {
         {cargandoSolicitudes && (
           <div
             role="status"
-            className="rounded-[24px] border border-[var(--color-border-soft)] bg-white p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
+            className="rounded-[24px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-7 text-center shadow-[0_14px_35px_rgba(12,52,80,0.08)]"
           >
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-info-soft)]">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border-accent)] border-t-[var(--color-secondary)]" />
@@ -323,7 +323,7 @@ function AdminSolicitudesListado() {
           <>
             <ListadoSolicitudes solicitudes={solicitudes} />
 
-            <SurfaceCard className="mt-5 flex flex-col gap-3 rounded-[24px] bg-white/90 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <SurfaceCard className="mt-5 flex flex-col gap-3 rounded-[24px] bg-[var(--color-surface)]/90 p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-bold text-[var(--color-muted)]">
                 Página {(paginaSolicitudes?.paginaActual ?? paginaActual) + 1}{" "}
                 de {paginaSolicitudes?.totalPaginas ?? 1} ·{" "}

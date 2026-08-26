@@ -333,7 +333,7 @@ export default async function PerfilPublicadorPage({
               ) : (
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)] via-[#145276] to-[var(--color-secondary)]"
+                  className="absolute inset-0 bg-gradient-to-br from-[var(--color-brand)] via-[#145276] to-[var(--color-secondary)]"
                 />
               )}
             </div>

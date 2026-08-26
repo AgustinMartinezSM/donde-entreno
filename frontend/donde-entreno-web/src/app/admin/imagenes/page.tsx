@@ -22,9 +22,9 @@ import {
 } from "../../../services/adminSolicitudesService";
 
 const ESTILOS_ESTADO: Record<string, string> = {
-  PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
+  PENDIENTE: "bg-[var(--color-warning-surface)] text-[var(--color-warning)] ring-1 ring-[var(--color-warning-border)]",
   APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
-  RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
+  RECHAZADA: "bg-[var(--color-danger-surface)] text-[var(--color-danger)] ring-1 ring-red-200",
 };
 
 const FILTROS_ESTADO = [
@@ -217,7 +217,7 @@ function AdminImagenesListado() {
     <main className="min-h-screen px-4 py-6 text-[var(--color-text)] sm:py-10">
       <section className="mx-auto w-full max-w-6xl">
         <SurfaceCard className="mb-6 overflow-hidden rounded-[28px] shadow-[0_24px_65px_rgba(12,52,80,0.12)]">
-          <div className="bg-gradient-to-br from-white via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
+          <div className="bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface-soft)] to-[var(--color-success-soft)] p-5 sm:p-7">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
@@ -246,7 +246,7 @@ function AdminImagenesListado() {
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="mb-5 rounded-[24px] bg-white/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
+        <SurfaceCard className="mb-5 rounded-[24px] bg-[var(--color-surface)]/90 p-5 shadow-[0_14px_35px_rgba(12,52,80,0.08)]">
           <label
             htmlFor="filtro-estado-imagenes"
             className="block text-sm font-bold text-[var(--color-primary)]"
@@ -365,7 +365,7 @@ function AdminImagenesListado() {
                       ) : null}
 
                       {imagen.motivoRechazo ? (
-                        <p className="mt-2 text-sm text-red-700">
+                        <p className="mt-2 text-sm text-[var(--color-danger)]">
                           <span className="font-bold">Motivo:</span>{" "}
                           {imagen.motivoRechazo}
                         </p>

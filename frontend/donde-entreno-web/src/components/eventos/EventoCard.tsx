@@ -42,7 +42,7 @@ export function EventoCard({ evento }: { evento: Evento }) {
         <div className="p-5">
           <div className="flex flex-wrap items-center gap-2">
             {cancelado ? (
-              <span className="rounded-full bg-[var(--color-error-soft)] px-3 py-1 text-xs font-extrabold text-[var(--color-error)]">
+              <span className="rounded-full bg-[var(--color-danger-surface)] px-3 py-1 text-xs font-extrabold text-[var(--color-danger)]">
                 Cancelado
               </span>
             ) : falta ? (

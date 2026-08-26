@@ -13,17 +13,17 @@ const etiquetasPorEstado: Record<EstadoSolicitudPublicacion, string> = {
 };
 
 const clasesPorEstado: Record<EstadoSolicitudPublicacion, string> = {
-  PENDIENTE: "border-[#F2C94C] bg-[#FFF8E1] text-[#684A00]",
-  EN_REVISION: "border-[#8CCCE6] bg-[var(--color-info-soft)] text-[var(--color-primary)]",
-  APROBADA: "border-[#7FD4A7] bg-[var(--color-success-soft)] text-[var(--color-success)]",
-  RECHAZADA: "border-[#F3B6B6] bg-[#FFF1F1] text-[#A53030]",
+  PENDIENTE: "border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] text-[var(--color-warning)]",
+  EN_REVISION: "border-[var(--color-border-accent)] bg-[var(--color-info-soft)] text-[var(--color-primary)]",
+  APROBADA: "border-[var(--color-success-border)] bg-[var(--color-success-soft)] text-[var(--color-success)]",
+  RECHAZADA: "border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] text-[var(--color-danger)]",
 };
 
 const puntoPorEstado: Record<EstadoSolicitudPublicacion, string> = {
-  PENDIENTE: "bg-[#D99B00]",
+  PENDIENTE: "bg-[var(--color-warning)]",
   EN_REVISION: "bg-[var(--color-accent)]",
   APROBADA: "bg-[var(--color-secondary)]",
-  RECHAZADA: "bg-red-500",
+  RECHAZADA: "bg-[var(--color-danger-surface)]0",
 };
 
 const clasesPorTamanio: Record<

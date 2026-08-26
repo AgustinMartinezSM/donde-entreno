@@ -262,7 +262,7 @@ export function MiPerfilEditor() {
                   {errorNombre ? (
                     <p
                       id="perfil-nombre-error"
-                      className="mt-2 text-sm font-bold text-red-700"
+                      className="mt-2 text-sm font-bold text-[var(--color-danger)]"
                     >
                       {errorNombre}
                     </p>
@@ -297,7 +297,7 @@ export function MiPerfilEditor() {
                   {errorDescripcion ? (
                     <p
                       id="perfil-descripcion-error"
-                      className="mt-2 text-sm font-bold text-red-700"
+                      className="mt-2 text-sm font-bold text-[var(--color-danger)]"
                     >
                       {errorDescripcion}
                     </p>
@@ -332,7 +332,7 @@ export function MiPerfilEditor() {
                   {errorInstagram ? (
                     <p
                       id="perfil-instagram-error"
-                      className="mt-2 text-sm font-bold text-red-700"
+                      className="mt-2 text-sm font-bold text-[var(--color-danger)]"
                     >
                       {errorInstagram}
                     </p>
@@ -367,7 +367,7 @@ export function MiPerfilEditor() {
                   {errorEmail ? (
                     <p
                       id="perfil-email-error"
-                      className="mt-2 text-sm font-bold text-red-700"
+                      className="mt-2 text-sm font-bold text-[var(--color-danger)]"
                     >
                       {errorEmail}
                     </p>
@@ -469,7 +469,7 @@ function DatoProtegido({
   valor: string | null;
 }) {
   return (
-    <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-4">
+    <div className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/80 p-4">
       <dt className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-muted)]">
         {etiqueta}
       </dt>

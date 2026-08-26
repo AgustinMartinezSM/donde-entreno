@@ -189,7 +189,7 @@ function FilaUbicacion({
             Ubicación cargada
           </span>
         ) : (
-          <span className="rounded-full bg-[#FFF7E6] px-3 py-1 text-xs font-extrabold text-[#8A5A00]">
+          <span className="rounded-full bg-[var(--color-warning-surface)] px-3 py-1 text-xs font-extrabold text-[var(--color-warning)]">
             Falta el punto
           </span>
         )}

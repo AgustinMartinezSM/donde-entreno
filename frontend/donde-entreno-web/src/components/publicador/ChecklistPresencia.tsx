@@ -217,7 +217,7 @@ export function ChecklistPresencia({
               /* Un pendiente sin camino es un reproche: cada uno linkea. */
               <Link
                 href={paso.href}
-                className="flex items-start gap-2.5 rounded-[12px] px-2 py-1.5 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:bg-[var(--color-surface)]/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4FB3D9]/30"
+                className="flex items-start gap-2.5 rounded-[12px] px-2 py-1.5 text-sm font-bold text-[var(--color-primary)] transition duration-200 ease-out hover:bg-[var(--color-surface)]/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--color-accent)]/30"
               >
                 <MarcaPaso />
                 {paso.etiqueta}

@@ -134,14 +134,14 @@ export function PublicadorMetricasPanel({
 function MetricaTile({ item }: { item: MetricaItem }) {
   const pendiente = Boolean(item.resaltarSiHay) && item.valor > 0;
   const claseCaja = `group flex flex-col justify-between rounded-[20px] border p-5 shadow-[0_10px_24px_rgba(12,52,80,0.05)] transition duration-200 ease-out ${
-    pendiente ? "border-[#F4CE9A] bg-[#FDF6EC]" : "border-[var(--color-border-soft)] bg-white/80"
+    pendiente ? "border-[var(--color-warning-border)] bg-[var(--color-warning-surface)]" : "border-[var(--color-border-soft)] bg-[var(--color-surface)]/80"
   }`;
 
   const contenido = (
     <>
       <span
         className={`text-3xl font-extrabold tabular-nums ${
-          pendiente ? "text-[#B5730E]" : "text-[var(--color-primary)]"
+          pendiente ? "text-[var(--color-warning)]" : "text-[var(--color-primary)]"
         }`}
       >
         {item.valor}

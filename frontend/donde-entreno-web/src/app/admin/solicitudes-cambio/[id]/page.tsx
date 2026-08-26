@@ -37,10 +37,10 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 };
 
 const ESTILOS_ESTADO: Record<string, string> = {
-  PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
+  PENDIENTE: "bg-[var(--color-warning-surface)] text-[var(--color-warning)] ring-1 ring-[var(--color-warning-border)]",
   EN_REVISION: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
   APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
-  RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
+  RECHAZADA: "bg-[var(--color-danger-surface)] text-[var(--color-danger)] ring-1 ring-red-200",
 };
 
 function formatearEstado(estado: string): string {
@@ -314,7 +314,7 @@ function AdminSolicitudCambioDetalle() {
                         <td className="border-b border-r border-[var(--color-border-soft)] px-4 py-3 text-[var(--color-muted)]">
                           {cambio.valorActual || "Sin valor"}
                         </td>
-                        <td className="border-b border-r border-[var(--color-border-soft)] bg-[#F4FBF7] px-4 py-3 font-bold text-[var(--color-success)]">
+                        <td className="border-b border-r border-[var(--color-border-soft)] bg-[var(--color-success-surface)] px-4 py-3 font-bold text-[var(--color-success)]">
                           {cambio.valorPropuesto}
                         </td>
                       </tr>

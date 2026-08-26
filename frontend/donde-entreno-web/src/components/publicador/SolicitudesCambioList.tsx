@@ -33,10 +33,10 @@ const ETIQUETAS_CAMPOS: Record<string, string> = {
 };
 
 const ESTILOS_ESTADO: Record<string, string> = {
-  PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
+  PENDIENTE: "bg-[var(--color-warning-surface)] text-[var(--color-warning)] ring-1 ring-[var(--color-warning-border)]",
   EN_REVISION: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
   APROBADA: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",
-  RECHAZADA: "bg-red-50 text-red-700 ring-1 ring-red-200",
+  RECHAZADA: "bg-[var(--color-danger-surface)] text-[var(--color-danger)] ring-1 ring-red-200",
 };
 
 function formatearEstado(estado: string): string {

@@ -530,7 +530,7 @@ export function AgendaDeEventos() {
                         </p>
 
                         {cancelado ? (
-                          <span className="mt-2 inline-flex rounded-full bg-[var(--color-error-soft)] px-3 py-1 text-xs font-extrabold text-[var(--color-error)]">
+                          <span className="mt-2 inline-flex rounded-full bg-[var(--color-danger-surface)] px-3 py-1 text-xs font-extrabold text-[var(--color-danger)]">
                             Cancelado
                           </span>
                         ) : null}

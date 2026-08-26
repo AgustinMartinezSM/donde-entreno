@@ -113,7 +113,7 @@ export function BotonMeInteresa({
       </button>
 
       {error ? (
-        <p role="alert" className="mt-2 text-xs text-[var(--color-error)]">
+        <p role="alert" className="mt-2 text-xs text-[var(--color-danger)]">
           {error}
         </p>
       ) : null}

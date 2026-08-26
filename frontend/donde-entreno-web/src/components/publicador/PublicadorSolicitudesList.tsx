@@ -156,7 +156,7 @@ export function PublicadorSolicitudesList() {
           }
         />
 
-        <SurfaceCard className="mt-6 border-[var(--color-success-border)] bg-gradient-to-br from-white via-white to-[var(--color-surface-soft)] p-5 sm:p-6">
+        <SurfaceCard className="mt-6 border-[var(--color-success-border)] bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-surface)] to-[var(--color-surface-soft)] p-5 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
               eyebrow="Solicitudes"
@@ -176,7 +176,7 @@ export function PublicadorSolicitudesList() {
                 value={filtroEstado}
                 onChange={cambiarFiltroEstado}
                 disabled={cargando}
-                className="mt-2 min-h-11 w-full rounded-[16px] border border-[var(--color-border-accent)] bg-white px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 min-h-11 w-full rounded-[16px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-4 text-sm font-bold text-[var(--color-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-4 focus:ring-[var(--color-border-soft)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {FILTROS_ESTADO.map((opcion) => (
                   <option key={opcion.valor || "todas"} value={opcion.valor}>
@@ -264,7 +264,7 @@ function SolicitudCard({
   solicitud: SolicitudPublicadorResumen;
 }) {
   return (
-    <article className="rounded-[22px] border border-[var(--color-border-soft)] bg-gradient-to-br from-white to-[var(--color-surface-soft)] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-success-border)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
+    <article className="rounded-[22px] border border-[var(--color-border-soft)] bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-soft)] p-4 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-success-border)] hover:shadow-[0_18px_45px_rgba(12,52,80,0.10)] sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--color-secondary)]">
@@ -292,7 +292,7 @@ function SolicitudCard({
         </p>
         <Link
           href={`/publicador/solicitudes/${solicitud.id}`}
-          className="inline-flex items-center justify-center rounded-[18px] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-4 py-2 text-sm font-extrabold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] hover:bg-white"
+          className="inline-flex items-center justify-center rounded-[18px] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-4 py-2 text-sm font-extrabold text-[var(--color-success)] transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-secondary)] hover:bg-[var(--color-surface)]"
         >
           Ver detalle
         </Link>

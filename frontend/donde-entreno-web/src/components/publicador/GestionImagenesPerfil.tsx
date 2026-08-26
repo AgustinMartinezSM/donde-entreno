@@ -274,7 +274,7 @@ export function GestionImagenesPerfil() {
             return (
               <div
                 key={ranura.tipo}
-                className="rounded-[18px] border border-[var(--color-border-soft)] bg-white/80 p-4"
+                className="rounded-[18px] border border-[var(--color-border-soft)] bg-[var(--color-surface)]/80 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -290,7 +290,7 @@ export function GestionImagenesPerfil() {
                   </div>
 
                   {pendiente ? (
-                    <span className="rounded-full bg-[#FFF7E6] px-3 py-1 text-xs font-extrabold text-[#8A5A00] ring-1 ring-[#F5D48F]">
+                    <span className="rounded-full bg-[var(--color-warning-surface)] px-3 py-1 text-xs font-extrabold text-[var(--color-warning)] ring-1 ring-[var(--color-warning-border)]">
                       En revisión
                     </span>
                   ) : vigente ? (
@@ -302,7 +302,7 @@ export function GestionImagenesPerfil() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                   <div
-                    className={`relative shrink-0 overflow-hidden border border-[var(--color-border-soft)] bg-[#F1F5F9] ${ranura.marco} ${
+                    className={`relative shrink-0 overflow-hidden border border-[var(--color-border-soft)] bg-[var(--color-surface-soft)] ${ranura.marco} ${
                       ranura.tipo === "PORTADA" ? "max-w-sm" : ""
                     }`}
                   >
@@ -335,7 +335,7 @@ export function GestionImagenesPerfil() {
                     />
                     <label
                       htmlFor={idInput}
-                      className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-white px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] peer-focus-visible:ring-4 peer-focus-visible:ring-[#4FB3D9]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                      className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[18px] border border-[var(--color-border-accent)] bg-[var(--color-surface)] px-5 py-3 text-sm font-extrabold text-[var(--color-primary)] shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-soft)] peer-focus-visible:ring-4 peer-focus-visible:ring-[var(--color-accent)]/30 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
                     >
                       {vigente ? "Cambiar" : `Subir ${ranura.titulo.toLowerCase()}`}
                     </label>
@@ -346,7 +346,7 @@ export function GestionImagenesPerfil() {
                         type="button"
                         onClick={() => retirar(vigente)}
                         disabled={subiendo}
-                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-red-200 bg-red-50 px-4 text-xs font-extrabold text-red-700 shadow-sm transition duration-200 ease-out hover:border-red-300 hover:bg-[var(--color-surface)] disabled:opacity-50"
+                        className="inline-flex min-h-10 items-center justify-center rounded-[18px] border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-4 text-xs font-extrabold text-[var(--color-danger)] shadow-sm transition duration-200 ease-out hover:border-[var(--color-danger)] hover:bg-[var(--color-surface)] disabled:opacity-50"
                       >
                         {pendiente ? "Retirar" : "Eliminar"}
                       </button>
@@ -355,7 +355,7 @@ export function GestionImagenesPerfil() {
                 </div>
 
                 {rechazo?.motivoRechazo ? (
-                  <p className="mt-3 text-sm leading-6 text-red-700">
+                  <p className="mt-3 text-sm leading-6 text-[var(--color-danger)]">
                     <span className="font-bold">
                       Rechazamos la última que subiste:
                     </span>{" "}

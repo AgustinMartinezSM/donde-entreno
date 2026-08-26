@@ -50,7 +50,7 @@ const ETIQUETAS_MOTIVO: Record<string, string> = {
 };
 
 const ESTILOS_ESTADO: Record<string, string> = {
-  PENDIENTE: "bg-[#FFF7E6] text-[#8A5A00] ring-1 ring-[#F5D48F]",
+  PENDIENTE: "bg-[var(--color-warning-surface)] text-[var(--color-warning)] ring-1 ring-[var(--color-warning-border)]",
   REVISADO: "bg-[var(--color-info-soft)] text-[var(--color-info-deep)] ring-1 ring-[var(--color-border-accent)]",
   DESESTIMADO: "bg-[var(--color-surface-soft)] text-[var(--color-muted)] ring-1 ring-[var(--color-border-soft)]",
   ACCIONADO: "bg-[var(--color-success-soft)] text-[var(--color-success)] ring-1 ring-[var(--color-success-border)]",

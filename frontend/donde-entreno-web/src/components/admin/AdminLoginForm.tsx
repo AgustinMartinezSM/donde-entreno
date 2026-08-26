@@ -80,7 +80,7 @@ export function AdminLoginForm() {
 
   return (
     <SurfaceCard className="grid w-full max-w-5xl overflow-hidden rounded-[28px] shadow-[0_30px_80px_rgba(12,52,80,0.16)] lg:grid-cols-[0.95fr_1.05fr]">
-      <aside className="bg-gradient-to-br from-[var(--color-primary)] via-[#145276] to-[var(--color-secondary)] p-6 text-white sm:p-8 lg:p-10">
+      <aside className="bg-gradient-to-br from-[var(--color-brand)] via-[#145276] to-[var(--color-secondary)] p-6 text-white sm:p-8 lg:p-10">
         <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[var(--color-success-border)]">
           <BrandName className="inline" onDark />
         </p>
@@ -99,7 +99,7 @@ export function AdminLoginForm() {
           ].map((item) => (
             <div
               key={item}
-              className="rounded-[18px] border border-white/18 bg-white/12 px-4 py-3 text-sm font-bold backdrop-blur"
+              className="rounded-[18px] border border-white/18 bg-[var(--color-surface)]/12 px-4 py-3 text-sm font-bold backdrop-blur"
             >
               {item}
             </div>
